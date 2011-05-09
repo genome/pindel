@@ -13,7 +13,7 @@ SAMTOOLS=samtools-0.1.9
 # -I $(SAMTOOLS) add the samtools to the include path
 # -L $(SAMTOOLS) add the samtools to the linker path 
 # -lm -lz -lbam link statically with libm.a libz.a and libbam.a
-CXXFLAGS=-O3 -fopenmp -I $(SAMTOOLS) -L $(SAMTOOLS) -lm -lz -lbam
+CXXFLAGS=-O3 -fopenmp -I $(realpath $(SAMTOOLS)) -L $(realpath $(SAMTOOLS)) -lm -lz -lbam
 
 all:	pindel
 	
