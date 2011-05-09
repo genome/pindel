@@ -1,7 +1,7 @@
 # Make file for pindel
 #
 # Enable implicit rules for .cpp
-.SUFFIXES:.cpp
+.SUFFIXES:.cpp .xml
 	
 # Define the location of the samtools, you can override on the commandline
 # e.g. make SAMTOOLS=../samtools-0.1.9
@@ -21,6 +21,11 @@ pindel:	pindel.cpp
 
 clean:
 	rm -f pindel
+	rm -f cppcheck-result-pindel.xml
 
-test:	pindel
-	echo "Not implemented yet"
+test:	pindel cppcheck
+
+cppcheck: cppcheck-result-pindel.xml
+	
+cppcheck-result-pindel.xml: pindel.cpp
+	cppcheck --quiet --enable=all --xml $< 2> $@
