@@ -1,0 +1,23 @@
+= Pindel =
+
+== Compiling ==
+To compile Pindel you need GNU Make, GCC and cppcheck. Usually they are already
+installed on Linux. On the Mac you will need to install XCode (3 or higher),
+the latest version can be downloaded from the Mac App Store. cppcheck can be
+installed with Fink, MacPorts or Homebrew, where homebrew is more convenient if
+you don't need to install other software from source.
+
+Pindel requires samtools, you can download the latest version of samtools from
+http://sourceforge.net/projects/samtools/files/, you need to extract and build
+samtools before you compile Pindel. Refer to the documentation of samtools for
+the requirements to build samtools.
+
+To build pindel you must specify the location of samtools on the make
+commandline with the SAMTOOLS= option.
+For example if you extracted and built samtools in the samtools-0.1.16 directory
+in your home directory you will specify:
+
+make SAMTOOLS=~/samtools-0.1.16
+
+If you do not specify SAMTOOLS on the commandline it will default to the
+directory samtools-0.1.16 in the top directory of the Pindel project.

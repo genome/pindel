@@ -3,10 +3,6 @@
 # Enable implicit rules for .cpp
 .SUFFIXES:.cpp .xml
 	
-# Define the location of the samtools, you can override on the commandline
-# e.g. make SAMTOOLS=../samtools-0.1.9
-SAMTOOLS=samtools-0.1.9
-
 # Define the flags for the g++ compile on the target itself, since it fails otherwise.
 # -O3 use all optimizations (including inlining of functions and unrolling loops)
 # -fopenmp use openmp
