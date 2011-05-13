@@ -320,9 +320,9 @@ CheckLeft_Far (SPLIT_READ & OneRead,
 				}
 			const char CurrentChar = CurrentReadSeq[CurrentLength];
 			//const int SizeOfCurrent = Left_PD.size();
-			unsigned int pos;
 			//if (TOTAL_SNP_ERROR_CHECKED_Minus) 
 			{
+				unsigned int pos;
 				for (int i = 0; i < OneRead.TOTAL_SNP_ERROR_CHECKED_Minus; i++)
 					{
 						int SizeOfCurrent = Left_PD[i].size ();
@@ -456,10 +456,10 @@ CheckRight_Far (SPLIT_READ & OneRead,
 				}
 			const char CurrentChar =
 				CurrentReadSeq[ReadLengthMinus - CurrentLength];
-			unsigned int pos;
 
 			//if (TOTAL_SNP_ERROR_CHECKED_Minus) 
 			{
+				unsigned int pos;
 				for (int i = 0; i < OneRead.TOTAL_SNP_ERROR_CHECKED_Minus; i++)
 					{
 						int SizeOfCurrent = Right_PD[i].size ();
