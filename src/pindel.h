@@ -99,7 +99,7 @@ const char
 	FirstCharReadName = '@';
 const short
 	Max_short = 128;
-const int
+const unsigned int
 	NumberOfReadsPerBuffer = 1000;	// estimate later
 
 

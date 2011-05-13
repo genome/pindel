@@ -266,7 +266,7 @@ ReadInRead (ifstream & inf_ReadSeq, const string & FragName,
 			getline (inf_ReadSeq, TempLine);
 
 
-			if (Temp_One_Read.MatchedRelPos > g_maxPos)
+			if ((signed int)Temp_One_Read.MatchedRelPos > g_maxPos)
 				{
 					g_maxPos = Temp_One_Read.MatchedRelPos;
 				}
@@ -380,7 +380,7 @@ ReadInRead (ifstream & inf_ReadSeq, const string & FragName,
 				GetCloseEnd (CurrentChr, BufferReads[BufferReadsIndex]);
 			}
 	}
-	for (int BufferReadsIndex = 0; BufferReadsIndex < BufferReads.size ();
+	for (unsigned int BufferReadsIndex = 0; BufferReadsIndex < BufferReads.size ();
 			 BufferReadsIndex++)
 		{
 			if (BufferReads[BufferReadsIndex].UP_Close.size ())
@@ -450,9 +450,9 @@ ReadInRead (ifstream & inf_ReadSeq, const string & FragName,
 	//cout << LeftReads.size() << endl;
 	cout << "sorting tags ... ";
 	string Str4Exchange;
-	for (short i = 0; i < VectorTag.size () - 1; i++)
+	for (unsigned short i = 0; i < VectorTag.size () - 1; i++)
 		{
-			for (short j = 1; j < VectorTag.size (); j++)
+			for (unsigned short j = 1; j < VectorTag.size (); j++)
 				{
 					if (VectorTag[i].size () > VectorTag[j].size ())
 						{
@@ -462,7 +462,7 @@ ReadInRead (ifstream & inf_ReadSeq, const string & FragName,
 						}
 					else if (VectorTag[i].size () == VectorTag[j].size ())
 						{
-							for (short k = 0; k < VectorTag[i].size (); k++)
+							for (unsigned short k = 0; k < VectorTag[i].size (); k++)
 								{
 									if ((short) VectorTag[i][k] > (short) VectorTag[j][k])
 										{
@@ -499,10 +499,7 @@ ReadInBamReads (const char *bam_path, const string & FragName,
 	bam_init_header_hash (header);
 	assert (header);
 	//need thing that converts "tid" to "chromosome name" 
-	int ret;
 	int tid;
-	unsigned long int sw_count = 0;
-	unsigned long int one_end_count = 0;
 	tid = bam_get_tid (header, FragName.c_str ());
 	//kai does the below line in readinreads. dunno why yet
 	//VectorTag.clear();
@@ -559,9 +556,9 @@ ReadInBamReads (const char *bam_path, const string & FragName,
 	string Str4Exchange;
 	if (VectorTag.size () > 0)
 		{
-			for (short i = 0; i < VectorTag.size () - 1; i++)
+			for (unsigned short i = 0; i < VectorTag.size () - 1; i++)
 				{
-					for (short j = 1; j < VectorTag.size (); j++)
+					for (unsigned short j = 1; j < VectorTag.size (); j++)
 						{
 							if (VectorTag[i].size () > VectorTag[j].size ())
 								{
@@ -571,7 +568,7 @@ ReadInBamReads (const char *bam_path, const string & FragName,
 								}
 							else if (VectorTag[i].size () == VectorTag[j].size ())
 								{
-									for (short k = 0; k < VectorTag[i].size (); k++)
+									for (unsigned short k = 0; k < VectorTag[i].size (); k++)
 										{
 											if ((short) VectorTag[i][k] > (short) VectorTag[j][k])
 												{
@@ -598,9 +595,6 @@ fetch_func (const bam1_t * b1, void *data)
 
 	NumReadScanned++;
 	fetch_func_data *data_for_bam = (fetch_func_data *) data;
-	vector < SPLIT_READ > *LeftReads =
-		(vector < SPLIT_READ > *)data_for_bam->LeftReads;
-	bam_header_t *header = (bam_header_t *) data_for_bam->header;
 	khash_t (read_name) * read_to_map_qual =
 		(khash_t (read_name) *) data_for_bam->read_to_map_qual;
 	flagshit *b1_flags = data_for_bam->b1_flags;
@@ -918,7 +912,7 @@ parse_flags_and_tags (const bam1_t * b, flagshit * flags)
 {
 	const bam1_core_t *c = &b->core;
 	char xt_code = 0;
-	int mf_code = 0, nm_code = 0, best_hits = 0, sub_hits = 0;
+	int mf_code = 0, nm_code = 0, best_hits = 0;
 	flags->unique = 0;
 	flags->mapped = !(c->flag & BAM_FUNMAP);
 
@@ -962,7 +956,7 @@ parse_flags_and_tags (const bam1_t * b, flagshit * flags)
 	s = bam_aux_get (b, "X1");
 	if (s != 0)
 		{
-			sub_hits = bam_aux2i (s);
+			int sub_hits = bam_aux2i (s);
 
 			if (best_hits + sub_hits == 1)
 				{
