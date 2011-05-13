@@ -1,4 +1,35 @@
-// Sorter and Reporter (or Writer)
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <string.h>
+#include <vector>
+#include <stdio.h>
+#include <cstdlib>
+#include <list>
+#include <set>
+#include <iomanip>
+#include <cmath>
+#include <math.h>
+#include <time.h>
+#include <bits/basic_string.h>
+#include <getopt.h>
+#include <faidx.h>
+#include <assert.h>
+#include <omp.h>
+// Samtools
+#include "bam.h"
+#include "sam.h"
+#include "kstring.h"
+#include "kseq.h"
+#include "khash.h"
+#include "ksort.h"
+// Pindel
+#include "pindel.h"
+#include "reader.h"
+#include "searcher.h"
+#include "reporter.h"
+
+using namespace std;
 
 void OutputTDs(const vector <SPLIT_READ> & TDs,
 					const string & TheInput, 
@@ -2174,4 +2205,3 @@ void SortOutputRest(const string & CurrentChr, vector <SPLIT_READ> & Reads, vect
 	delete[] minus_LI_Pos ;
 	cout << "Other unassigned breakpoints (BP): " << Count_BP << "\n\n";
 }
-

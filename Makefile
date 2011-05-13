@@ -1,6 +1,6 @@
 # Define the location of the samtools, you can override on the commandline
 # e.g. make SAMTOOLS=~/samtools-0.1.16
-SAMTOOLS=/Users/rob/Source/samtools
+SAMTOOLS=samtools-0.1.16
 .PHONY : test
 
 all:

@@ -1,4 +1,52 @@
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <string.h>
+#include <vector>
+#include <stdio.h>
+#include <cstdlib>
+#include <list>
+#include <set>
+#include <iomanip>
+#include <cmath>
+#include <math.h>
+#include <time.h>
+#include <bits/basic_string.h>
+#include <getopt.h>
+#include <faidx.h>
+#include <assert.h>
+#include <omp.h>
+// Samtools
+#include "bam.h"
+#include "sam.h"
+#include "kstring.h"
+#include "kseq.h"
+#include "khash.h"
+#include "ksort.h"
+// Pindel
+#include "pindel.h"
+#include "reader.h"
+#include "searcher.h"
+#include "reporter.h"
+
 // Reader (BamReader and PindelReader)
+using namespace std;
+
+//init hash/maps for read pairing on the fly
+KSORT_INIT_GENERIC(uint32_t)
+KHASH_MAP_INIT_STR(read_name, bam1_t*)    
+
+struct fetch_func_data { 
+	 fetch_func_data() { read_to_map_qual=NULL; header=NULL; b1_flags=NULL; b2_flags=NULL; CurrentChr=NULL; Tag=""; InsertSize=0; }
+    std::vector <SPLIT_READ>* LeftReads;
+    khash_t(read_name) *read_to_map_qual;
+    bam_header_t* header;
+    flagshit* b1_flags;
+    flagshit* b2_flags;
+    std::string* CurrentChr;
+    std::string Tag;
+    int InsertSize;
+};
 
 void ReadInOneChr(ifstream & inf_Seq, string & TheInput, const string & ChrName) {
     TheInput.clear();

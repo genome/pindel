@@ -1,27 +1,27 @@
 # Make file for pindel
 #
 # Enable implicit rules for .cpp
-.SUFFIXES:.cpp .xml
+.SUFFIXES:.cpp .o .xml
 	
 # Define the location of the samtools, you can override on the commandline
-# e.g. make SAMTOOLS=../samtools-0.1.9
-SAMTOOLS=/home/leon/Downloads/samtools-0.1.9
-
-# Define the flags for the g++ compile
-# -O3 use all optimizations (including inlining of functions and unrolling loops)
-# -fopenmp use openmp
-# -I $(SAMTOOLS) add the samtools to the include path
-# -L $(SAMTOOLS) add the samtools to the linker path 
-# -lm -lz -lbam link statically with libm.a libz.a and libbam.a
-CXXFLAGS=-O3 -fopenmp -I$(realpath $(SAMTOOLS)) -lm -lz -L$(realpath $(SAMTOOLS)) -lbam
+# e.g. make SAMTOOLS=../samtools-0.1.16
+SAMTOOLS=../samtools-0.1.16
 
 all:	pindel
 	
-pindel:	pindel.cpp
-	$(CXX) $(CXXFLAGS) -O3 -fopenmp -I$(SAMTOOLS) $< -o $@ -lm -lz -L$(SAMTOOLS) -lbam
+.cpp.o:
+	$(CXX) $(CXXFLAGS) -c -O3 -fopenmp -I$(SAMTOOLS) $<
+
+reader.o: reader.cpp pindel.h
+reporter.o: reporter.cpp pindel.h
+searcher.o: searcher.cpp pindel.h
+pindel.o: pindel.cpp pindel.h
+
+pindel:	pindel.o reader.o reporter.o searcher.o
+	$(CXX) $^ -O3 -fopenmp -lm -lz -L$(SAMTOOLS) -lbam -o $@
 
 clean:
-	rm -f pindel
+	rm -f pindel reader.o reporter.o searcher.o pindel.o
 	rm -f cppcheck-result-pindel.xml
 
 test:	pindel cppcheck

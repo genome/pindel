@@ -12,25 +12,24 @@
 #include <math.h>
 #include <time.h>
 #include <bits/basic_string.h>
-//added by charris
 #include <getopt.h>
+#include <faidx.h>
+#include <assert.h>
+#include <omp.h>
 #include "bam.h"
 #include "sam.h"
 #include "kstring.h"
 #include "kseq.h"
 #include "khash.h"
 #include "ksort.h"
-#include <faidx.h>
-#include <assert.h>
-#include <omp.h>
+#include "pindel.h"
+#include "reader.h"
+#include "searcher.h"
+#include "reporter.h"
 
 using namespace std;
 
 /*v EWL update 0.0.1, April 8th 2011; can use the -c option with specified regions, and produces LI output that can be read by vcfcreator */
-
-//init hash/maps for read pairing on the fly
-KSORT_INIT_GENERIC(uint32_t)
-KHASH_MAP_INIT_STR(read_name, bam1_t*)    
 
 int g_binIndex = -1; // global variable for the bin index, as I cannot easily pass an extra parameter to the diverse functions
 int g_maxPos = -1; // to calculate which is the last position in the chromosome, and hence to calculate the number of bins
@@ -41,7 +40,6 @@ int g_maxPos = -1; // to calculate which is the last position in the chromosome,
 
     const string Pindel_Version_str = "Pindel version 0.2.2, April 8 2011.";
 
-    const unsigned SpacerBeforeAfter = 10000000;
     //unsigned int DSizeArray[15];
 
     short Before, After;
@@ -303,18 +301,10 @@ char Cap2LowArray[256];
 bool FirstChr = true;
 const double InsertSizeExtra = 2;
 unsigned int CONS_Chr_Size;
-const string N_str = "N";
-const char N_char = 'N';
-const char BD_char = 'A';
 unsigned int DSizeArray[15];
-const short Max_uint8_t = 100;
 
 string BreakDancerMask;
 string CurrentChrMask;
-
-const char Plus = '+';
-const char Minus = '-';
-const char FirstCharReadName = '@';
 
 unsigned int NumReadScanned = 0;
 unsigned int NumReadInChr = 0;
@@ -324,8 +314,6 @@ unsigned int GetPlus = 0;
 unsigned int GetMinus = 0;
 
 //short MAX_SNP_ERROR = 2;
-
-const short Max_short = 128;
 
 //short TOTAL_SNP_ERROR_CHECKED = MAX_SNP_ERROR + ADDITIONAL_MISMATCH + 1;
 //short TOTAL_SNP_ERROR_CHECKED_Minus = MAX_SNP_ERROR + ADDITIONAL_MISMATCH;
@@ -357,7 +345,6 @@ int MaxRangeIndex = 9;// 5 or 6 or 7 or maximum 8      //# // user
 double MaximumAllowedMismatchRate = 0.1;            //#  // user
 int Min_Num_Matched_Bases = 30;                  //# // user
 int Max_Length_NT = 30;  // user
-const int NumberOfReadsPerBuffer = 1000;  // estimate later
 bool ReportCloseMappedRead = false; // user
 const bool ReportSVReads = false; 
 const bool ReportLargeInterChrSVReads = false; 
@@ -377,100 +364,6 @@ short MinFar_D = 8;//atoi(argv[3]);
 const short MaxDI = 30; 
 const short FirstBase = 1;
 
-//struct Fragment {
-//   unsigned int Start; 
-//   unsigned int End;  
-//};
-
-struct SupportPerSample {
-	int NumPlus;
-	int NumMinus;
-	int NumUPlus;
-	int NumUMinus;	
-};
-
-struct UniquePoint {
-    short LengthStr;
-    unsigned int AbsLoc; 
-    char Direction; // forward reverse
-    char Strand; // sense antisense
-    short Mismatches;
-};
-
-const char SENSE = '+';
-const char ANTISENSE = '-';
-const char FORWARD = '+';
-const char BACKWARD = '-';
-
-// UP_Close[0].AbsLoc
-
-struct SPLIT_READ {
-	SPLIT_READ() { FragName=""; Name=""; UnmatchedSeq=""; HalfMapped="";HalfUnmapped=""; MatchedD=0; MatchedRelPos=0; MS=0;
-					  InsertSize=0; Tag=""; ReadLength=0; ReadLengthMinus=0; MAX_SNP_ERROR=0; TOTAL_SNP_ERROR_CHECKED=0;
-					  TOTAL_SNP_ERROR_CHECKED_Minus=0; MinClose=0; BP=0; Left=0; Right=0; BPLeft=0; BPRight=0; IndelSize=0; Unique=false;
-					  score=0.0; InsertedStr="";  NT_str=""; NT_size=0; Used=false; CloseEndLength=0; Found=false; LeftMostPos = 0; }
-	string FragName;
-	string Name;
-	string UnmatchedSeq;
-	string HalfMapped;
-	string HalfUnmapped;
-	char MatchedD;
-	int MatchedRelPos;
-	short MS;
-	short InsertSize;	
-	string Tag;
-	vector <UniquePoint> UP_Close; // partial alignment of the unmapped reads close to the mapped read
-	vector <UniquePoint> UP_Far;
-	vector <UniquePoint> UP_Far_backup;
-	short ReadLength;
-	short ReadLengthMinus;
-	short MAX_SNP_ERROR;// = (short)(Temp_One_Read.UnmatchedSeq.size() * Seq_Error_Rate);
-	
-	short TOTAL_SNP_ERROR_CHECKED;// = MAX_SNP_ERROR + ADDITIONAL_MISMATCH + 1;
-	short TOTAL_SNP_ERROR_CHECKED_Minus;// = MAX_SNP_ERROR + ADDITIONAL_MISMATCH;
-	short MinClose;
-	short BP;
-	int Left;
-	int Right;
-	int BPLeft;
-	int BPRight;
-	int IndelSize;
-	bool Unique;
-	double score;
-	string InsertedStr;
-	string NT_str;	
-	short NT_size;
-	//string NT_2str;
-	//short NT_2size;
-	bool Used;
-	short CloseEndLength;
-	bool Found;
-	int LeftMostPos;
-};
-
-//add charris structs
-struct flagshit {
-	 flagshit() { mapped=false; unique=false; sw=false; edits=0; suboptimal=false; }
-    bool mapped;
-    bool unique;
-    bool sw;
-    int edits;
-    bool suboptimal;
-};
-
-
-struct fetch_func_data { 
-	 fetch_func_data() { read_to_map_qual=NULL; header=NULL; b1_flags=NULL; b2_flags=NULL; CurrentChr=NULL; Tag=""; InsertSize=0; }
-    vector <SPLIT_READ>* LeftReads;
-    khash_t(read_name) *read_to_map_qual;
-    bam_header_t* header;
-    flagshit* b1_flags;
-    flagshit* b2_flags;
-    string* CurrentChr;
-    string Tag;
-    int InsertSize;
-};
-
 struct bam_info {
 	 bam_info() { BamFile=""; InsertSize=0; Tag="";}
     string BamFile;
@@ -478,67 +371,6 @@ struct bam_info {
     string Tag;
 };
 
-
-struct LI_Pos {
-	 LI_Pos() { Plus_Pos=0; Minus_Pos=0; WhetherReport=false; }
-    unsigned Plus_Pos;
-    unsigned Minus_Pos;
-    vector <unsigned> Plus_Reads; // put index here
-    vector <unsigned> Minus_Reads;
-    bool WhetherReport;
-};
-
-struct Rest_Pos {
-	 Rest_Pos() { Strand='X'; Pos=0; }
-    char Strand;
-    unsigned Pos;
-    vector <unsigned> Pos_Reads; // put index here
-};
-
-struct Indel4output {
-	 Indel4output() { BPLeft=0; BPRight=0; IndelSize=0; Start=0; End=0; RealStart=0; RealEnd=0; NT_size=0; WhetherReport=false; 
-							IndelStr=""; Support=0; }
-    unsigned int BPLeft;
-    unsigned int BPRight;
-    int IndelSize;
-    unsigned int Start;
-    unsigned int End;
-    unsigned int RealStart;
-    unsigned int RealEnd;
-    short NT_size;
-    bool WhetherReport;
-    string IndelStr;
-    short Support;
-};
-
-void ReadInOneChr(ifstream & inf_Seq, string & TheInput, const string & ChrName);
-void GetOneChrSeq(ifstream & inf_Seq, string & CurrentChr, bool WhetherBuildUp);
-short ReadInRead(ifstream & inf_Seq, const string & CurrentFragName, const string & CurrentFrag, vector <SPLIT_READ> & Reads, const int lowerBinBorder, const int upperBinBorder);
-///////ADDED BY CHARRIS
-void parse_flags_and_tags(const bam1_t *b, flagshit* flags); 
-bool ReadInBamReads(const char* bam_path, const string & FragName, string * CurrentChr, vector <SPLIT_READ> & LeftReads, int InsertSize, string Tag, int binStart, int binEnd);
-int32_t bam_cigar2len(const bam1_core_t *c, const uint32_t *cigar);
-static int fetch_func(const bam1_t *b1, void *data); 
-void build_record(const bam1_t* mapped_read, const bam1_t* unmapped_read, void* data); 
-#ifdef __cplusplus
-extern "C" {
-    int32_t bam_get_tid(const bam_header_t *header, const char *seq_name);
-    int32_t bam_aux2i(const uint8_t *s);
-    void bam_init_header_hash(bam_header_t *header);
-}
-#endif
-
-///END CHARRIS ADD
-
-void GetCloseEnd(const string & CurrentChr, SPLIT_READ & Temp_One_Read);
-void GetFarEnd_BothStrands(const string & CurrentChr, SPLIT_READ & Temp_One_Read, const short & RangeIndex);
-void GetFarEnd_OtherStrand(const string & CurrentChr, SPLIT_READ & Temp_One_Read, const short & RangeIndex);
-void GetFarEnd_SingleStrandDownStream(const string & CurrentChr, SPLIT_READ & Temp_One_Read, const short & RangeIndex);
-void GetFarEnd_SingleStrandUpStream(const string & CurrentChr, SPLIT_READ & Temp_One_Read, const short & RangeIndex);
-void GetFarEnd_SingleStrandDownStreamInsertions(const string & CurrentChr, SPLIT_READ & Temp_One_Read, const short & RangeIndex);
-//void GetFarEnd(const string & CurrentChr, SPLIT_READ & Temp_One_Read, const int & Range, const string & BreakDancerMask);
-void GetFarEnd(const string & CurrentChr, SPLIT_READ & Temp_One_Read, const int & start, const int & end);
-//void CheckConsistancy(vector <SPLIT_READ> & input);
 struct BreakDancer {
 	BreakDancer() { ChrName_A=""; ChrName_B=""; Size=0; Score=0; S1=0; S2=0; S3=0; S4=0; }
 	string ChrName_A;
@@ -558,122 +390,6 @@ struct Region {
     unsigned end;
 };
 
-
-void OutputDeletions(const vector <SPLIT_READ> & Deletions, 
-                     const string & TheInput, 
-                     const unsigned int & C_S, 
-                     const unsigned int & C_E,
-		               const unsigned int & RealStart,
-		               const unsigned int & RealEnd,
-                     ofstream & DeletionOutf);
-
-void OutputTDs(const vector <SPLIT_READ> & TDs, 
-					const string & TheInput, 
-					const unsigned int & C_S, 
-					const unsigned int & C_E,
-					const unsigned int & RealStart,
-					const unsigned int & RealEnd,
-					ofstream & TDOutf);
-
-
-void OutputInversions(const vector <SPLIT_READ> & Inv, 
-							 const string & TheInput, 
-							 const unsigned int & C_S, 
-							 const unsigned int & C_E,
-							 const unsigned int & RealStart,
-							 const unsigned int & RealEnd,
-							 ofstream & InvOutf);
-
-void OutputSIs(const vector <SPLIT_READ> & SIs,
-               const string & TheInput,
-               const unsigned int & C_S,
-               const unsigned int & C_E,
-	            const unsigned int & RealStart,
-	            const unsigned int & RealEnd,
-               ofstream & SIsOutf);
-
-
-
-//void SortAndPutLI(vector <SPLIT_READ> & Input, vector <int> & Output, const string & CurrentFragName, const string & chr, const char & Direction, ofstream & LI_SR_Outf);
-//void ProcessLIs(vector <SPLIT_READ> & LIs, ofstream & LIoutputfile);
-
-short CompareTwoReads(const SPLIT_READ & First, const SPLIT_READ & Second);
-vector <string> ReverseComplement(const vector <string> & input);
-string Reverse(const string & InputPattern);
-string ReverseComplement(const string & InputPattern);
-string Cap2Low(const string & input);
-
-void CheckLeft_Close(const SPLIT_READ & OneRead,
-							const string & TheInput, 
-							const string & CurrentReadSeq, 
-							const vector <unsigned int> Left_PD[], 
-							const short & BP_Left_Start, 
-							const short & BP_Left_End, 
-							const short & CurrentLength,
-							vector <UniquePoint> & LeftUP);
-
-void CheckRight_Close(const SPLIT_READ & OneRead,
-							 const string & TheInput, 
-							 const string & CurrentReadSeq, 
-							 const vector <unsigned int> Right_PD[], 
-							 const short & BP_Right_Start, 
-							 const short & BP_Right_End, 
-							 const short & CurrentPos, 
-							 vector <UniquePoint> & RightUP);
-
-void CheckLeft_Far(SPLIT_READ & OneRead,
-						 const string & TheInput, 
-						 const string & CurrentReadSeq, 
-						 const vector <unsigned int> Left_PD[], 
-						 const short & BP_Left_Start, 
-						 const short & BP_Left_End, 
-						 const short & CurrentLength,
-						 vector <UniquePoint> & LeftUP);
-
-void CheckRight_Far(SPLIT_READ & OneRead,
-						  const string & TheInput, 
-						  const string & CurrentReadSeq, 
-						  const vector <unsigned int> Right_PD[], 
-						  const short & BP_Right_Start, 
-						  const short & BP_Right_End, 
-						  const short & CurrentPos, 
-						  vector <UniquePoint> & RightUP);
-
-
-void CheckBoth(const SPLIT_READ & OneRead,
-					const string & TheInput, 
-               const string & CurrentReadSeq,
-               const vector <unsigned int> PD_Plus[],
-					const vector <unsigned int> PD_Minus[],
-               const short & BP_Start,
-               const short & BP_End,
-               const short & CurrentLength,
-               vector <UniquePoint> & UP);
-bool CheckMismatches(const string & TheInput, 
-                     const string & CurrentReadSeq, 
-                     //const unsigned int & Start,
-							const UniquePoint & UP);
-
-//void ProcessLIs(vector <SPLIT_READ> & LIs, ofstream & LIoutputfile);
-void SortOutputSI(const unsigned & NumBoxes, const string & CurrentChr, vector <SPLIT_READ> & AllReads, vector <unsigned> SIs[], ofstream & SIsOutf);
-void SortOutputD(const unsigned & NumBoxes, const string & CurrentChr, vector <SPLIT_READ> & AllReads, vector <unsigned> Deletions[], ofstream & DeletionOutf);
-void SortOutputTD(const unsigned & NumBoxes, const string & CurrentChr, vector <SPLIT_READ> & AllReads, vector <unsigned> TDs[], ofstream & TDOutf);
-void SortOutputTD_NT(const unsigned & NumBoxes, const string & CurrentChr, vector <SPLIT_READ> & AllReads, vector <unsigned> TDs[], ofstream & TDOutf);
-void SortOutputInv(const unsigned & NumBoxes, const string & CurrentChr, vector <SPLIT_READ> & AllReads, vector <unsigned> Inv[], ofstream & InvOutf);
-void SortOutputInv_NT(const unsigned & NumBoxes, const string & CurrentChr, vector <SPLIT_READ> & AllReads, vector <unsigned> Inv[], ofstream & InvOutf);
-void SortOutputDI(const unsigned & NumBoxes, const string & CurrentChr, vector <SPLIT_READ> & AllReads, vector <unsigned> DI[], ofstream & DIOutf);
-void SortOutputLI(const string & CurrentChr, vector <SPLIT_READ> & AllReads, ofstream & Outf_LI);
-void SortOutputRest(const string & CurrentChr, vector <SPLIT_READ> & AllReads, vector <SPLIT_READ> & BP_Reads, ofstream & Outf_Rest);
-bool NotInVector(const string & OneTag, const vector <string> & VectorTag);
-void GetIndelTypeAndRealStart(const string & TheInput, const unsigned int & BPLeft, 
-                              const unsigned int & IndelSize, const string & IndelStr, 
-                              string & IndelType, unsigned int & RealStart, const bool & WhetherD);
-void GetRealStart4Deletion(const string & TheInput, unsigned int & RealStart, unsigned int & RealEnd);
-
-void GetRealStart4Insertion(const string & TheInput, const string & InsertedStr, unsigned int & RealStart, unsigned int & RealEnd);
-bool ReportEvent(const vector <SPLIT_READ> & Deletions, const unsigned int & Pre_S, const unsigned int & Pre_E);
-
-void CleanUniquePoints (vector <UniquePoint> & Input_UP);
 
 short WhetherRemoveDuplicates;
 
@@ -3114,11 +2830,6 @@ do {
     return 0;
     } //main
 
-
-#include "reader.cpp"
-
-
-
 vector <string> ReverseComplement(const vector <string> & InputPatterns) {
     vector <string> OutputPatterns;// = InputPatterns;
     unsigned int NumPattern = InputPatterns.size();
@@ -3151,9 +2862,6 @@ string ReverseComplement(const string & InputPattern) {
 //const short TOTAL_SNP_ERROR_CHECKED = MAX_SNP_ERROR + ADDITIONAL_MISMATCH + 1;
 
 
-#include "searcher.cpp"
-
-
 string Cap2Low(const string & input) {
    string output = input;
    for (unsigned int i = 0; i < output.size(); i++) {
@@ -3161,10 +2869,6 @@ string Cap2Low(const string & input) {
    }
    return output;
 }
-
-
-#include "reporter.cpp"
-
 
 bool NotInVector(const string & OneTag, const vector <string> & VectorTag) {
 	for (unsigned i = 0; i < VectorTag.size(); i++) {
