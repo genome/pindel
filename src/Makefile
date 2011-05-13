@@ -15,7 +15,7 @@ all:	pindel
 	$(CXX) $(CXXFLAGS) -c -O3 -fopenmp -I$(SAMTOOLS) $<
 	
 cppcheck-result-%.xml: %.cpp
-	cppcheck --quiet --enable=all --xml $< 2> $@
+	cppcheck --quiet --enable=all --xml -I$(SAMTOOLS) $< 2> $@
 	
 reader.o: reader.cpp pindel.h
 reporter.o: reporter.cpp pindel.h
