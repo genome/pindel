@@ -3115,7 +3115,7 @@ do {
     } //main
 
 
-#include "Reader.cpp"
+#include "reader.cpp"
 
 
 
@@ -3151,7 +3151,7 @@ string ReverseComplement(const string & InputPattern) {
 //const short TOTAL_SNP_ERROR_CHECKED = MAX_SNP_ERROR + ADDITIONAL_MISMATCH + 1;
 
 
-#include "Searcher.cpp"
+#include "searcher.cpp"
 
 
 string Cap2Low(const string & input) {
@@ -3163,7 +3163,7 @@ string Cap2Low(const string & input) {
 }
 
 
-#include "Reporter.cpp"
+#include "reporter.cpp"
 
 
 bool NotInVector(const string & OneTag, const vector <string> & VectorTag) {
