@@ -1900,8 +1900,6 @@ SortOutputInv (const unsigned &NumBoxes, const string & CurrentChr,
 					unsigned int RealEnd;
 					//bool WhetherDeletion = true;
 					string IndelStr;
-					unsigned int Max_Support;
-					unsigned int Max_Support_Index;
 
 					if (IndelEvents.size ())
 						{
@@ -2104,8 +2102,6 @@ SortOutputInv_NT (const unsigned &NumBoxes, const string & CurrentChr,
 					unsigned int RealEnd;
 					//bool WhetherDeletion = true;
 					string IndelStr;
-					unsigned int Max_Support;
-					unsigned int Max_Support_Index;
 
 					if (IndelEvents.size ())
 						{
@@ -2379,11 +2375,11 @@ SortOutputLI (const string & CurrentChr, vector < SPLIT_READ > &Reads,
 	bool SkipThis;
 	int LI_Positions_Size = 0;
 	bool SkipPlus;
-	for (int Index_Minus = SpacerBeforeAfter;
+	for (unsigned int Index_Minus = SpacerBeforeAfter;
 			 Index_Minus < CurrentChr.size () - SpacerBeforeAfter; Index_Minus++)
 		{
 			SkipPlus = false;
-			for (int MaskedPosIndexMinus = Index_Minus + 10;
+			for (unsigned int MaskedPosIndexMinus = Index_Minus + 10;
 					 MaskedPosIndexMinus >= Index_Minus - 10; MaskedPosIndexMinus--)
 				{
 					if (CurrentChrMask[MaskedPosIndexMinus] == 'B')
@@ -2396,11 +2392,11 @@ SortOutputLI (const string & CurrentChr, vector < SPLIT_READ > &Reads,
 			if (SkipPlus == false
 					&& minus_LI_Pos[Index_Minus] >= NumRead2ReportCutOff)
 				{
-					for (int Index_Plus = Index_Minus - 1;
+					for (unsigned int Index_Plus = Index_Minus - 1;
 							 Index_Plus <= Index_Minus + 30; Index_Plus++)
 						{
 							SkipThis = false;
-							for (int MaskedPosIndexPlus = Index_Plus + 10;
+							for (unsigned int MaskedPosIndexPlus = Index_Plus + 10;
 									 MaskedPosIndexPlus >= Index_Plus - 10;
 									 MaskedPosIndexPlus--)
 								{
@@ -2477,13 +2473,13 @@ SortOutputLI (const string & CurrentChr, vector < SPLIT_READ > &Reads,
 			temp_Plus_Reads.clear ();
 			temp_Minus_Reads.clear ();
 			//cout << "Here: " << LI_index << "\t" << LI_Positions[LI_index].Minus_Reads.size() << "\t" << LI_Positions[LI_index].Plus_Reads.size() << endl;
-			for (int i = 0; i < LI_Positions[LI_index].Minus_Reads.size (); i++)
+			for (unsigned int i = 0; i < LI_Positions[LI_index].Minus_Reads.size (); i++)
 				{
 					temp_Minus_Reads.
 						push_back (Reads[LI_Positions[LI_index].Minus_Reads[i]]);
 				}
 			//CheckConsistancy(temp_Minus_Reads);
-			for (int i = 0; i < LI_Positions[LI_index].Minus_Reads.size (); i++)
+			for (unsigned int i = 0; i < LI_Positions[LI_index].Minus_Reads.size (); i++)
 				{
 					UP_Close_index = temp_Minus_Reads[i].UP_Close.size () - 1;
 					temp_LengthStr =
@@ -2494,13 +2490,13 @@ SortOutputLI (const string & CurrentChr, vector < SPLIT_READ > &Reads,
 									 temp_Minus_Reads[i].ReadLength * 0.5)
 						temp_BalancedMinus_Minus = true;
 				}
-			for (int i = 0; i < LI_Positions[LI_index].Plus_Reads.size (); i++)
+			for (unsigned int i = 0; i < LI_Positions[LI_index].Plus_Reads.size (); i++)
 				{
 					temp_Plus_Reads.
 						push_back (Reads[LI_Positions[LI_index].Plus_Reads[i]]);
 				}
 			//CheckConsistancy(temp_Plus_Reads);
-			for (int i = 0; i < LI_Positions[LI_index].Plus_Reads.size (); i++)
+			for (unsigned int i = 0; i < LI_Positions[LI_index].Plus_Reads.size (); i++)
 				{
 					UP_Close_index = temp_Plus_Reads[i].UP_Close.size () - 1;
 					temp_LengthStr =
@@ -2514,14 +2510,14 @@ SortOutputLI (const string & CurrentChr, vector < SPLIT_READ > &Reads,
 
 			unsigned int NumSupportPerTagPlus[VectorTag.size ()];
 			unsigned int NumSupportPerTagMinus[VectorTag.size ()];
-			for (short i = 0; i < VectorTag.size (); i++)
+			for (unsigned short i = 0; i < VectorTag.size (); i++)
 				{
 					NumSupportPerTagPlus[i] = 0;
 					NumSupportPerTagMinus[i] = 0;
 				}
-			for (int i = 0; i < temp_Minus_Reads.size (); i++)
+			for (unsigned int i = 0; i < temp_Minus_Reads.size (); i++)
 				{
-					for (short j = 0; j < VectorTag.size (); j++)
+					for (unsigned short j = 0; j < VectorTag.size (); j++)
 						{
 							if (temp_Minus_Reads[i].Tag == VectorTag[j])
 								{
@@ -2530,9 +2526,9 @@ SortOutputLI (const string & CurrentChr, vector < SPLIT_READ > &Reads,
 								}
 						}
 				}
-			for (int i = 0; i < temp_Plus_Reads.size (); i++)
+			for (unsigned int i = 0; i < temp_Plus_Reads.size (); i++)
 				{
-					for (short j = 0; j < VectorTag.size (); j++)
+					for (unsigned short j = 0; j < VectorTag.size (); j++)
 						{
 							if (temp_Plus_Reads[i].Tag == VectorTag[j])
 								{
@@ -2542,7 +2538,7 @@ SortOutputLI (const string & CurrentChr, vector < SPLIT_READ > &Reads,
 						}
 				}
 			bool SupportedByOneSample = false;
-			for (short j = 0; j < VectorTag.size (); j++)
+			for (unsigned short j = 0; j < VectorTag.size (); j++)
 				{
 					//cout << NumSupportPerTagPlus[j] << "\t" << NumSupportPerTagMinus[j] << endl;
 					if (NumSupportPerTagPlus[j] > 0 && NumSupportPerTagMinus[j] > 0)
@@ -2584,7 +2580,7 @@ SortOutputLI (const string & CurrentChr, vector < SPLIT_READ > &Reads,
 							Cap2Low (CurrentChr.
 											 substr (LI_Positions[LI_index].Plus_Pos + 1,
 															 ReportLength)) << endl;
-						for (int i = 0; i < temp_Plus_Reads.size (); i++)
+						for (unsigned int i = 0; i < temp_Plus_Reads.size (); i++)
 							{
 								UP_Close_index = temp_Plus_Reads[i].UP_Close.size () - 1;
 								temp_LengthStr =
@@ -2609,7 +2605,7 @@ SortOutputLI (const string & CurrentChr, vector < SPLIT_READ > &Reads,
 							(CurrentChr.
 							 substr (LI_Positions[LI_index].Minus_Pos,
 											 ReportLength)) << endl;
-						for (int i = 0; i < temp_Minus_Reads.size (); i++)
+						for (unsigned int i = 0; i < temp_Minus_Reads.size (); i++)
 							{
 								UP_Close_index = temp_Minus_Reads[i].UP_Close.size () - 1;
 								temp_LengthStr =
@@ -2681,7 +2677,7 @@ SortOutputRest (const string & CurrentChr, vector < SPLIT_READ > &Reads,
 	//cout << "2" << endl;
 
 	bool SkipThisPos;
-	for (int Index = SpacerBeforeAfter;
+	for (unsigned int Index = SpacerBeforeAfter;
 			 Index < CurrentChr.size () - SpacerBeforeAfter; Index++)
 		{
 			SkipThisPos = false;
@@ -2739,7 +2735,7 @@ SortOutputRest (const string & CurrentChr, vector < SPLIT_READ > &Reads,
 			temp_Pos_Reads.clear ();
 			temp_BalancedPlus = false;
 			temp_BalancedMinus = false;
-			for (int i = 0; i < Rest_Positions[LI_index].Pos_Reads.size (); i++)
+			for (unsigned int i = 0; i < Rest_Positions[LI_index].Pos_Reads.size (); i++)
 				{
 					temp_Pos_Reads.
 						push_back (Reads[Rest_Positions[LI_index].Pos_Reads[i]]);
@@ -2782,7 +2778,7 @@ SortOutputRest (const string & CurrentChr, vector < SPLIT_READ > &Reads,
 								<< endl;
 							HalfMappedIndex = 0;
 							HalfUnmappedIndex = 0;
-							for (int i = 0; i < temp_Pos_Reads.size (); i++)
+							for (unsigned int i = 0; i < temp_Pos_Reads.size (); i++)
 								{
 									UP_Close_index = temp_Pos_Reads[i].UP_Close.size () - 1;
 									temp_LengthStr =
@@ -2833,7 +2829,7 @@ SortOutputRest (const string & CurrentChr, vector < SPLIT_READ > &Reads,
 																																Pos,
 																																ReportLength))
 								<< endl;
-							for (int i = 0; i < temp_Pos_Reads.size (); i++)
+							for (unsigned int i = 0; i < temp_Pos_Reads.size (); i++)
 								{
 									UP_Close_index = temp_Pos_Reads[i].UP_Close.size () - 1;
 									temp_LengthStr =
