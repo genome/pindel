@@ -1,4 +1,7 @@
 all: test
 
 test:
-	make -C smalltest test
+	true
+
+smalltest:
+	make -C SmallTest test
