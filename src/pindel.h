@@ -39,7 +39,7 @@ extern unsigned int
 	NumberOfDeletionsInstances;
 extern unsigned int
 	NumberOfInvInstances;
-extern int
+extern unsigned int
 	NumRead2ReportCutOff;
 extern unsigned int
 	BalanceCutoff;
@@ -164,7 +164,7 @@ struct SPLIT_READ
 	std::string HalfUnmapped;
 	char
 		MatchedD;
-	int
+	unsigned int
 		MatchedRelPos;
 	short
 		MS;
@@ -193,11 +193,11 @@ struct SPLIT_READ
 		Left;
 	int
 		Right;
-	int
+	unsigned int
 		BPLeft;
-	int
+	unsigned int
 		BPRight;
-	int
+	unsigned int
 		IndelSize;
 	bool
 		Unique;
@@ -251,7 +251,7 @@ struct Indel4output
 		BPLeft;
 	unsigned int
 		BPRight;
-	int
+	unsigned int
 		IndelSize;
 	unsigned int
 		Start;
@@ -266,7 +266,7 @@ struct Indel4output
 	bool
 		WhetherReport;
 	std::string IndelStr;
-	short
+	unsigned short
 		Support;
 };
 

@@ -31,7 +31,7 @@ OutputTDs (const vector < SPLIT_READ > &TDs,
 
 	SupportPerSample NumSupportPerTag[VectorTag.size ()];
 
-	for (short i = 0; i < VectorTag.size (); i++)
+	for (unsigned short i = 0; i < VectorTag.size (); i++)
 		{
 			NumSupportPerTag[i].NumPlus = 0;
 			NumSupportPerTag[i].NumMinus = 0;
@@ -41,7 +41,7 @@ OutputTDs (const vector < SPLIT_READ > &TDs,
 
 	for (unsigned int i = C_S; i <= C_E; i++)
 		{
-			for (short j = 0; j < VectorTag.size (); j++)
+			for (unsigned short j = 0; j < VectorTag.size (); j++)
 				{
 					if (TDs[i].Tag == VectorTag[j])
 						{
@@ -78,7 +78,7 @@ OutputTDs (const vector < SPLIT_READ > &TDs,
 	short NumberSupSamples = 0;
 	short NumU_SupSamples = 0;
 	int Num_U_Reads = 0;
-	for (short i = 0; i < VectorTag.size (); ++i)
+	for (unsigned short i = 0; i < VectorTag.size (); ++i)
 		{
 			if (NumSupportPerTag[i].NumPlus + NumSupportPerTag[i].NumMinus)
 				++NumberSupSamples;
@@ -91,7 +91,7 @@ OutputTDs (const vector < SPLIT_READ > &TDs,
 	//  << "\t" << NumU_SupSamples
 
 	unsigned int EasyScore = LeftS * RightS;
-	double PreciseScore = (LeftScore + RightScore) * (-1);
+	//double PreciseScore = (LeftScore + RightScore) * (-1);
 	short GapSize = 0;
 	if (TDs[C_S].IndelSize < 14)
 		GapSize = TDs[C_S].IndelSize;
@@ -114,7 +114,7 @@ OutputTDs (const vector < SPLIT_READ > &TDs,
 	TDOutf << "\t" << VectorTag.
 		size () << "\tNumSupSamples " << NumberSupSamples << "\t" <<
 		NumU_SupSamples;
-	for (short i = 0; i < VectorTag.size (); i++)
+	for (unsigned short i = 0; i < VectorTag.size (); i++)
 		TDOutf << "\t" << VectorTag[i] << " " << NumSupportPerTag[i].NumPlus
 			<< " " << NumSupportPerTag[i].NumUPlus
 			<< " " << NumSupportPerTag[i].NumMinus
@@ -140,9 +140,9 @@ OutputTDs (const vector < SPLIT_READ > &TDs,
 
 			for (int i = 0; i < SpaceBeforeReadSeq; i++)
 				TDOutf << " ";
-			short SpaceBeforeD =
-				ReportLength + ReportLength - SpacerBeforeAfter -
-				TDs[GoodIndex].ReadLength;
+			//short SpaceBeforeD =
+			//	ReportLength + ReportLength - SpacerBeforeAfter -
+			//	TDs[GoodIndex].ReadLength;
 			if (TDs[GoodIndex].MatchedD == Minus)
 				{
 					TDOutf << TDs[GoodIndex].UnmatchedSeq << endl;
@@ -188,7 +188,7 @@ OutputDeletions (const vector < SPLIT_READ > &Deletions,
 	//cout << "d_2" << endl;
 	SupportPerSample NumSupportPerTag[VectorTag.size ()];
 
-	for (short i = 0; i < VectorTag.size (); i++)
+	for (unsigned short i = 0; i < VectorTag.size (); i++)
 		{
 			NumSupportPerTag[i].NumPlus = 0;
 			NumSupportPerTag[i].NumMinus = 0;
@@ -198,7 +198,7 @@ OutputDeletions (const vector < SPLIT_READ > &Deletions,
 	//cout << "d_3" << endl;
 	for (unsigned int i = C_S; i <= C_E; i++)
 		{
-			for (short j = 0; j < VectorTag.size (); j++)
+			for (unsigned short j = 0; j < VectorTag.size (); j++)
 				{
 					if (Deletions[i].Tag == VectorTag[j])
 						{
@@ -235,7 +235,7 @@ OutputDeletions (const vector < SPLIT_READ > &Deletions,
 	short NumberSupSamples = 0;
 	short NumU_SupSamples = 0;
 	int Num_U_Reads = 0;
-	for (short i = 0; i < VectorTag.size (); ++i)
+	for (unsigned short i = 0; i < VectorTag.size (); ++i)
 		{
 			if (NumSupportPerTag[i].NumPlus + NumSupportPerTag[i].NumMinus)
 				++NumberSupSamples;
@@ -247,7 +247,7 @@ OutputDeletions (const vector < SPLIT_READ > &Deletions,
 	//  << "\t" << Num_U_Reads
 	//cout << "d_5" << endl;
 	unsigned int EasyScore = LeftS * RightS;
-	double PreciseScore = (LeftScore + RightScore) * (-1);
+	//double PreciseScore = (LeftScore + RightScore) * (-1);
 	short GapSize = 0;
 	if (Deletions[C_S].IndelSize < 14)
 		GapSize = Deletions[C_S].IndelSize;
@@ -276,7 +276,7 @@ OutputDeletions (const vector < SPLIT_READ > &Deletions,
 	DeletionOutf << "\t" << VectorTag.
 		size () << "\tNumSupSamples " << NumberSupSamples << "\t" <<
 		NumU_SupSamples;
-	for (short i = 0; i < VectorTag.size (); i++)
+	for (unsigned short i = 0; i < VectorTag.size (); i++)
 		DeletionOutf << "\t" << VectorTag[i] << " " << NumSupportPerTag[i].NumPlus
 			<< " " << NumSupportPerTag[i].NumUPlus
 			<< " " << NumSupportPerTag[i].NumMinus
@@ -390,7 +390,7 @@ OutputInversions (const vector < SPLIT_READ > &Inv,
 
 	SupportPerSample NumSupportPerTag[VectorTag.size ()];
 
-	for (short i = 0; i < VectorTag.size (); i++)
+	for (unsigned short i = 0; i < VectorTag.size (); i++)
 		{
 			NumSupportPerTag[i].NumPlus = 0;
 			NumSupportPerTag[i].NumMinus = 0;
@@ -400,7 +400,7 @@ OutputInversions (const vector < SPLIT_READ > &Inv,
 
 	for (unsigned int i = C_S; i <= C_E; i++)
 		{
-			for (short j = 0; j < VectorTag.size (); j++)
+			for (unsigned short j = 0; j < VectorTag.size (); j++)
 				{
 					if (Inv[i].Tag == VectorTag[j])
 						{
@@ -437,7 +437,7 @@ OutputInversions (const vector < SPLIT_READ > &Inv,
 	short NumberSupSamples = 0;
 	short NumU_SupSamples = 0;
 	int Num_U_Reads = 0;
-	for (short i = 0; i < VectorTag.size (); ++i)
+	for (unsigned short i = 0; i < VectorTag.size (); ++i)
 		{
 			if (NumSupportPerTag[i].NumPlus + NumSupportPerTag[i].NumMinus)
 				++NumberSupSamples;
@@ -472,7 +472,7 @@ OutputInversions (const vector < SPLIT_READ > &Inv,
 	InvOutf << "\t" << VectorTag.
 		size () << "\tNumSupSamples " << NumberSupSamples << "\t" <<
 		NumU_SupSamples;
-	for (short i = 0; i < VectorTag.size (); i++)
+	for (unsigned short i = 0; i < VectorTag.size (); i++)
 		InvOutf << "\t" << VectorTag[i] << " " << NumSupportPerTag[i].NumPlus
 			<< " " << NumSupportPerTag[i].NumUPlus
 			<< " " << NumSupportPerTag[i].NumMinus
@@ -610,7 +610,7 @@ OutputSIs (const vector < SPLIT_READ > &SIs,
 
 	SupportPerSample NumSupportPerTag[VectorTag.size ()];
 
-	for (short i = 0; i < VectorTag.size (); i++)
+	for (unsigned short i = 0; i < VectorTag.size (); i++)
 		{
 			NumSupportPerTag[i].NumPlus = 0;
 			NumSupportPerTag[i].NumMinus = 0;
@@ -620,7 +620,7 @@ OutputSIs (const vector < SPLIT_READ > &SIs,
 
 	for (unsigned int i = C_S; i <= C_E; i++)
 		{
-			for (short j = 0; j < VectorTag.size (); j++)
+			for (unsigned short j = 0; j < VectorTag.size (); j++)
 				{
 					if (SIs[i].Tag == VectorTag[j])
 						{
@@ -658,7 +658,7 @@ OutputSIs (const vector < SPLIT_READ > &SIs,
 	short NumberSupSamples = 0;
 	short NumU_SupSamples = 0;
 	int Num_U_Reads = 0;
-	for (short i = 0; i < VectorTag.size (); ++i)
+	for (unsigned short i = 0; i < VectorTag.size (); ++i)
 		{
 			if (NumSupportPerTag[i].NumPlus + NumSupportPerTag[i].NumMinus)
 				++NumberSupSamples;
@@ -692,7 +692,7 @@ OutputSIs (const vector < SPLIT_READ > &SIs,
 	SIsOutf << "\t" << VectorTag.
 		size () << "\tNumSupSamples " << NumberSupSamples << "\t" <<
 		NumU_SupSamples;
-	for (short i = 0; i < VectorTag.size (); i++)
+	for (unsigned short i = 0; i < VectorTag.size (); i++)
 		SIsOutf << "\t" << VectorTag[i] << " " << NumSupportPerTag[i].NumPlus
 			<< " " << NumSupportPerTag[i].NumUPlus
 			<< " " << NumSupportPerTag[i].NumMinus
@@ -700,7 +700,7 @@ OutputSIs (const vector < SPLIT_READ > &SIs,
 	SIsOutf << endl;
 
 	SIsOutf << TheInput.substr (SIs[C_S].Left - ReportLength + SIs[C_S].BP + 1, ReportLength);	// ReportLength
-	for (int i = 0; i < SIs[C_S].IndelSize; i++)
+	for (unsigned int i = 0; i < SIs[C_S].IndelSize; i++)
 		SIsOutf << " ";
 	SIsOutf << TheInput.substr (SIs[C_S].Left + SIs[C_S].BP + 1, ReportLength) << endl;	// ReportLength
 
@@ -747,7 +747,7 @@ OutputDI (const vector < SPLIT_READ > &DI,
 
 	SupportPerSample NumSupportPerTag[VectorTag.size ()];
 
-	for (short i = 0; i < VectorTag.size (); i++)
+	for (unsigned short i = 0; i < VectorTag.size (); i++)
 		{
 			NumSupportPerTag[i].NumPlus = 0;
 			NumSupportPerTag[i].NumMinus = 0;
@@ -757,7 +757,7 @@ OutputDI (const vector < SPLIT_READ > &DI,
 
 	for (unsigned int i = C_S; i <= C_E; i++)
 		{
-			for (short j = 0; j < VectorTag.size (); j++)
+			for (unsigned short j = 0; j < VectorTag.size (); j++)
 				{
 					if (DI[i].Tag == VectorTag[j])
 						{
@@ -794,7 +794,7 @@ OutputDI (const vector < SPLIT_READ > &DI,
 	short NumberSupSamples = 0;
 	short NumU_SupSamples = 0;
 	int Num_U_Reads = 0;
-	for (short i = 0; i < VectorTag.size (); ++i)
+	for (unsigned short i = 0; i < VectorTag.size (); ++i)
 		{
 			if (NumSupportPerTag[i].NumPlus + NumSupportPerTag[i].NumMinus)
 				++NumberSupSamples;
@@ -829,7 +829,7 @@ OutputDI (const vector < SPLIT_READ > &DI,
 	DeletionOutf << "\t" << VectorTag.
 		size () << "\tNumSupSamples " << NumberSupSamples << "\t" <<
 		NumU_SupSamples;
-	for (short i = 0; i < VectorTag.size (); i++)
+	for (unsigned short i = 0; i < VectorTag.size (); i++)
 		DeletionOutf << "\t" << VectorTag[i] << " " << NumSupportPerTag[i].NumPlus
 			<< " " << NumSupportPerTag[i].NumUPlus
 			<< " " << NumSupportPerTag[i].NumMinus
@@ -1022,7 +1022,6 @@ SortOutputSI (const unsigned &NumBoxes, const string & CurrentChr,
 					unsigned int RealStart;
 					unsigned int RealEnd;
 					//bool WhetherDeletion = true;
-					string IndelStr;
 					unsigned int Max_Support;
 					unsigned int Max_Support_Index;
 					unsigned int IndelSize;
@@ -1218,7 +1217,6 @@ SortOutputTD (const unsigned &NumBoxes, const string & CurrentChr,
 					unsigned int RealStart;
 					unsigned int RealEnd;
 					//bool WhetherDeletion = true;
-					string IndelStr;
 					unsigned int Max_Support;
 					unsigned int Max_Support_Index;
 
@@ -1444,7 +1442,6 @@ SortOutputTD_NT (const unsigned &NumBoxes, const string & CurrentChr,
 					unsigned int RealStart;
 					unsigned int RealEnd;
 					//bool WhetherDeletion = true;
-					string IndelStr;
 					unsigned int Max_Support;
 					unsigned int Max_Support_Index;
 
@@ -1671,7 +1668,6 @@ SortOutputD (const unsigned &NumBoxes, const string & CurrentChr,
 					unsigned int RealStart;
 					unsigned int RealEnd;
 					//bool WhetherDeletion = true;
-					string IndelStr;
 					unsigned int Max_Support;
 					unsigned int Max_Support_Index;
 
@@ -1899,7 +1895,6 @@ SortOutputInv (const unsigned &NumBoxes, const string & CurrentChr,
 					unsigned int RealStart;
 					unsigned int RealEnd;
 					//bool WhetherDeletion = true;
-					string IndelStr;
 
 					if (IndelEvents.size ())
 						{
@@ -2101,7 +2096,6 @@ SortOutputInv_NT (const unsigned &NumBoxes, const string & CurrentChr,
 					unsigned int RealStart;
 					unsigned int RealEnd;
 					//bool WhetherDeletion = true;
-					string IndelStr;
 
 					if (IndelEvents.size ())
 						{
