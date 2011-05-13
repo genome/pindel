@@ -1006,8 +1006,6 @@ main (int argc, char *argv[])
 	if (NumRead2ReportCutOff == 1)
 		BalanceCutoff = 3000000000;
 
-	//begin charris option parsing replacement
-	int c;
 	int options_set = 0;
 	ifstream inf_Seq;
 	ifstream inf_Pindel_Reads;
@@ -1295,8 +1293,6 @@ main (int argc, char *argv[])
 	string TempLie_BD;
 
 	string CurrentChr;
-	char TempStartChrChar;
-	//short FragID;
 
 	char FirstSharpChar;
 
@@ -1494,7 +1490,6 @@ main (int argc, char *argv[])
 
 /* Starting the loop to read the subfiles one by one (EWL070111) -> */
 			g_binIndex = -1;					// to start with 0...
-			char ch;
 			int lowerBinBorder = startOffSet - WINDOW_SIZE;
 			int upperBinBorder = lowerBinBorder + WINDOW_SIZE;
 			int displayedStartOfRegion =
