@@ -13,7 +13,7 @@ SAMTOOLS=/home/leon/Downloads/samtools-0.1.9
 # -I $(SAMTOOLS) add the samtools to the include path
 # -L $(SAMTOOLS) add the samtools to the linker path 
 # -lm -lz -lbam link statically with libm.a libz.a and libbam.a
-CXXFLAGS=-O3 -fopenmp -I $(realpath $(SAMTOOLS)) -lm -lz -L $(realpath $(SAMTOOLS)) -lbam
+CXXFLAGS=-O3 -fopenmp -I$(realpath $(SAMTOOLS)) -lm -lz -L$(realpath $(SAMTOOLS)) -lbam
 
 all:	pindel
 	

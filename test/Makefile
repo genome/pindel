@@ -1,7 +1,6 @@
 all: test
 
-test:
-	true
+.PHONY : test
 
-smalltest:
+test:
 	make -C SmallTest test
