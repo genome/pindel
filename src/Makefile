@@ -15,7 +15,7 @@ CXXFLAGS=
 all:	pindel
 	
 pindel:	pindel.cpp
-	$(CXX) -O3 -fopenmp -I $(realpath $(SAMTOOLS)) $< -o $@ -lm -lz -L$(realpath $(SAMTOOLS)) -lbam
+	$(CXX) $(CXXFLAGS) -O3 -fopenmp -I$(SAMTOOLS) $< -o $@ -lm -lz -L$(SAMTOOLS) -lbam
 
 clean:
 	rm -f pindel
