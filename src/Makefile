@@ -12,7 +12,7 @@ OBJECTS=pindel.o reader.o reporter.o searcher.o
 all:	pindel
 	
 .cpp.o:
-	$(CXX) $(CXXFLAGS) -c -O3 -fopenmp -I$(SAMTOOLS) $<
+	$(CXX) $(CXXFLAGS) -Wall -c -O3 -fopenmp -I$(SAMTOOLS) $<
 	
 cppcheck-result-%.xml: %.cpp
 	cppcheck --quiet --enable=all --xml -I$(SAMTOOLS) $< 2> $@
