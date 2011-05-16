@@ -16,12 +16,13 @@ using namespace std;
 int g_binIndex = -1;						// global variable for the bin index, as I cannot easily pass an extra parameter to the diverse functions
 int g_maxPos = -1;							// to calculate which is the last position in the chromosome, and hence to calculate the number of bins
 
-
+// TODO: Ask Kai whether this can be removed
 		//end charris add
 		//#include <omp.h>
 
 const string Pindel_Version_str = "Pindel version 0.2.2, April 8 2011.";
 
+// TODO: Ask Kai whether this can be removed
 		//unsigned int DSizeArray[15];
 
 short Before, After;
@@ -97,7 +98,7 @@ protected:
 	void set ()
 	{
 		d_isSet = true;
-	}															//cout << "setting " << d_shortName << endl; }
+	}															//cout << "setting " << d_shortName << endl; } // TODO: Ask Kai whether this can be removed
 
 
 private:
@@ -110,7 +111,7 @@ private:
 	static const int d_MAX_LINE_WIDTH = 80;
 	const string makeNiceLine (const string & rawDescription) const;
 	const string describeTab () const
-	{															//return string(' ',d_DESCRIBE_WIDTH); 
+	{															//return string(' ',d_DESCRIBE_WIDTH);  // TODO: Ask Kai whether this can be removed
 		string descriptionTab = "";
 		for (int i = 0; i < d_DESCRIBE_WIDTH; i++)
 			{
@@ -343,9 +344,9 @@ Parameter::describe () const
 	cout << d_shortName << "/";
 	cout << d_longName << endl;
 
-	//for (int i=0; i<d_DESCRIBE_WIDTH; i++)  { cout << " ";}
+	//for (int i=0; i<d_DESCRIBE_WIDTH; i++)  { cout << " ";} // TODO: Ask Kai whether this can be removed
 	cout << makeNiceLine (d_description);
-	//if ( d_required ) { cout << " required parameter" ; }
+	//if ( d_required ) { cout << " required parameter" ; } // TODO: Ask Kai whether this can be removed
 	cout << endl << endl;
 }
 
@@ -374,7 +375,7 @@ float ExtraDistanceRate = 0.1;
 double Const_Log_T = 0.0;
 double Const_S = 0.0;
 double LOG14 = log10 (0.25);
-//double Const_I = 0.0;
+//double Const_I = 0.0; // TODO: Ask Kai whether this can be removed
 unsigned int BoxSize = 10000;		// 10k is fine
 const double Min_Filter_Ratio = 0.5;
 unsigned int SPACERSIZE = 1;
@@ -408,6 +409,7 @@ unsigned int InChrMinus = 0;
 unsigned int GetPlus = 0;
 unsigned int GetMinus = 0;
 
+// TODO: Ask Kai whether this can be removed
 //short MAX_SNP_ERROR = 2;
 
 //short TOTAL_SNP_ERROR_CHECKED = MAX_SNP_ERROR + ADDITIONAL_MISMATCH + 1;
@@ -422,11 +424,13 @@ int ADDITIONAL_MISMATCH = 1;		// user
 int Min_Perfect_Match_Around_BP = 3;	// user                   //#
 int MIN_IndelSize_NT = 50;			//user            //#
 int MIN_IndelSize_Inversion = 50;	//user       //#
-double Seq_Error_Rate = 0.05;		// user            //# 
+double Seq_Error_Rate = 0.05;		// user            //#
+// TODO: Ask Kai whether this can be removed
 //float Seq_Error_Rate_1 = 0.05;                         //# 
 //float Seq_Error_Rate_2 = 0.02;                         //#
 //float Seq_Error_Rate_3 = 0.00;                         //#
 unsigned int BalanceCutoff = 100;	//                    //#
+// TODO: Ask Kai whether this can be removed
 //short RangeMaxSensivity = 9;       // 3                //#
 //short RangeMediumSensivity = 9;    // 5                //# 
 //short RangeLowSensivity = 7;                           //#
@@ -444,14 +448,17 @@ bool ReportCloseMappedRead = false;	// user
 const bool ReportSVReads = false;
 const bool ReportLargeInterChrSVReads = false;
 const unsigned short Indel_SV_cutoff = 50;
+// TODO: Ask Kai whether this can be removed
 //bool RemoveDuplicates = false;
 double FLOAT_WINDOW_SIZE = 10.0;
 int WINDOW_SIZE = 10000000;
 const int AROUND_REGION_BUFFER = 10000;	// how much earlier reads should be selected if only a region of the chromosome needs be specified.
 // #########################################################
 
+// TODO: Ask Kai whether this can be removed
 //const float Double_Seq_Error_Rate_Per_Side = Seq_Error_Rate_Per_Side * 2;
 unsigned int Distance = 300;
+// TODO: Ask Kai whether this can be removed
 //short MinClose = 8;//short(log((double)Distance)/log(4.0) + 0.8) + 3 + MAX_SNP_ERROR;//atoi(argv[1]);
 //short MinFar_I = MinClose + 1;//atoi(argv[2]);
 //cout << "For short insertion: " << MinClose << "\t" << MinFar_I << endl;
@@ -717,6 +724,7 @@ findParameter (string name)
 					return parameterCounter;
 				}
 		}
+	// TODO: Ask Kai whether this can be removed
 	//cout << "Result of FindParameter is -1\n";
 	return -1;
 }
@@ -725,6 +733,7 @@ findParameter (string name)
 void
 readParameters (int argc, char *argv[])
 {
+	// TODO: Ask Kai whether this can be removed
 	//for (int argumentIndex=1; argumentIndex<argc; argumentIndex++ ) { cout << argumentIndex  << ". " << argv[argumentIndex] << endl; }
 
 	for (int argumentIndex = 1; argumentIndex < argc; argumentIndex++)
@@ -768,6 +777,7 @@ readParameters (int argc, char *argv[])
 							return;
 						}
 					// but if everything is allright, 
+					// TODO: Ask Kai whether this can be removed
 					//cout << "Giving " << currentArgument << " the value " << argv[ argumentIndex ] << endl;
 					parameters[parameterIndex]->setValue (string (argv[argumentIndex]));
 				}
@@ -786,6 +796,7 @@ isReadsFileParam (Parameter * param)
 void
 printHelp ()
 {
+	// TODO: Ask Kai whether this can be removed
 	//cout << "Please specify input, either bam configure file and/or pindel input format" << endl;
 	//cout.width(0);  
 	cout <<
@@ -798,6 +809,7 @@ printHelp ()
 	cout << "           -c <chromosome_name> -o <prefix_for_output_file>\n\n";
 
 	cout << "Required parameters:\n";
+	// TODO: Ask Kai whether this can be removed
 	//parameters[1]->describe();
 	for (unsigned int i = 0; i < parameters.size (); i++)
 		{
@@ -851,6 +863,7 @@ checkParameters ()
 				"Bam and/or pindel input file required, use -p and/or -i to designate input file(s).\n";
 			return false;
 		}
+	// TODO: Ask Kai whether this can be removed
 	//cout << "chkP4\n";
 	return true;
 }
@@ -862,6 +875,7 @@ gatherChromosomeNames (const string & referenceFileName,
 {
 	chromosomeNames.clear ();
 
+	// TODO: Ask Kai whether this can be removed
 	/*string faiName = referenceFileName + ".fam";
 	   ifstream faiFile(faiName.c_str());
 	   if (faiFile.is_open()) { cout << "FAI file exists"; }
@@ -946,6 +960,7 @@ parseRegion (const string & region,	// in: region
 					endOfRegion = atoi (secondPositionStr.c_str ());
 				}
 			startOfRegion = atoi (coordinates.c_str ());
+// TODO: Ask Kai whether this can be removed
 //cout << "sor: " << startOfRegion << "eor: " << endOfRegion << endl;
 			if (startOfRegion < 0
 					|| (endOfRegion < startOfRegion && endOfRegion != -1))
@@ -1119,12 +1134,14 @@ main (int argc, char *argv[])
 				bam_file.substr (StartOfFileName + 1,
 												 bam_file.size () - 1 - StartOfFileName);
 		}
+	// TODO: Ask Kai whether this can be removed
 	//cout << bam_file << endl;
 
 
 
 
 	string SIOutputFilename = OutputFolder + "_SI";	// output file name
+	// TODO: Ask Kai whether this can be removed
 	//strcpy(SIOutputFilename, (OutputFolder + bam_file + "_SI").c_str());
 	ofstream SIoutputfile_test (SIOutputFilename.c_str ());
 	if (!SIoutputfile_test)
@@ -1134,8 +1151,10 @@ main (int argc, char *argv[])
 		}
 	SIoutputfile_test.close ();
 
+	// TODO: Ask Kai whether this can be removed
 	//char DeletionOutputFilename[10000];      // output file name
 	string DeletionOutputFilename = OutputFolder + "_D";
+	// TODO: Ask Kai whether this can be removed
 	//strcpy(DeletionOutputFilename, (OutputFolder + bam_file + "_D").c_str());
 	ofstream DeletionOutf_test (DeletionOutputFilename.c_str ());
 	if (!DeletionOutf_test)
@@ -1147,6 +1166,7 @@ main (int argc, char *argv[])
 	DeletionOutf_test.close ();
 
 	string TDOutputFilename = OutputFolder + "_TD";
+	// TODO: Ask Kai whether this can be removed
 	//strcpy(DeletionInsertinOutputFilename, (OutputFolder + bam_file + "_DI").c_str());
 	ofstream TDOutf_test (TDOutputFilename.c_str ());
 	if (!TDOutf_test)
@@ -1156,8 +1176,10 @@ main (int argc, char *argv[])
 		}
 	TDOutf_test.close ();
 
+	// TODO: Ask Kai whether this can be removed
 	//char InversionOutputFilename[10000];      // output file name
 	string InversionOutputFilename = OutputFolder + "_INV";
+	// TODO: Ask Kai whether this can be removed
 	//strcpy(InversionOutputFilename, (OutputFolder + bam_file + "_INV").c_str());
 	ofstream InversionOutf_test (InversionOutputFilename.c_str ());
 	if (!InversionOutf_test)
@@ -1168,8 +1190,10 @@ main (int argc, char *argv[])
 		}
 	InversionOutf_test.close ();
 
+	// TODO: Ask Kai whether this can be removed
 	//char LargeInsertionOutputFilename[10000];      // output file name
 	string LargeInsertionOutputFilename = OutputFolder + "_LI";
+	// TODO: Ask Kai whether this can be removed
 	//strcpy(LargeInsertionOutputFilename, (OutputFolder + bam_file + "_LI").c_str());
 	ofstream LargeInsertionOutf_test (LargeInsertionOutputFilename.c_str ());
 	if (!LargeInsertionOutf_test)
@@ -1180,8 +1204,10 @@ main (int argc, char *argv[])
 		}
 	LargeInsertionOutf_test.close ();
 
+	// TODO: Ask Kai whether this can be removed
 	//char RestOutputFilename[10000];      // output file name
 	string RestOutputFilename = OutputFolder + "_BP";
+	// TODO: Ask Kai whether this can be removed
 	//strcpy(RestOutputFilename, (OutputFolder + bam_file + "_BP").c_str());
 	ofstream RestOutf_test (RestOutputFilename.c_str ());
 	if (!RestOutf_test)
@@ -1192,7 +1218,7 @@ main (int argc, char *argv[])
 		}
 	RestOutf_test.close ();
 
-
+	// TODO: Ask Kai whether this can be removed
 	//WhetherRemoveDuplicates = atoi(argv[6]);
 	int Count_SI = 0;
 	int Count_D = 0;
@@ -1215,6 +1241,7 @@ main (int argc, char *argv[])
 	int Count_Inv_NT_Minus = 0;
 	int Count_SI_Plus = 0;
 	int Count_SI_Minus = 0;
+	// TODO: Ask Kai whether this can be removed
 	//int Entering_D_Plus = 0;
 	//int Entering_D_Minus = 0;
 	//int Plus_Sum_Left = 0;
@@ -1261,14 +1288,17 @@ main (int argc, char *argv[])
 	string Spacer = "";
 	for (unsigned int i = 0; i < SpacerBeforeAfter; i++)
 		Spacer += "N";
+	// TODO: Ask Kai whether this can be removed
 	//cout << Distance << endl;
 	Distance = 300;
+	// TODO: Ask Kai whether this can be removed
 	//MinClose = short(log((double)Distance)/log(4.0) + 0.8) + 3 + MAX_SNP_ERROR;//atoi(argv[1]);
 	//MinFar_I = MinClose + 1;//atoi(argv[2]);
 	//cout << "For short insertion: " << MinClose << "\t" << MinFar_I << endl;
 	//MinFar_D = 6;//atoi(argv[3]);
 
 	DSizeArray[0] = 0;
+	// TODO: Ask Kai whether this can be removed
 	//  DSizeArray[1]  =         25;
 	DSizeArray[1] = 128;
 	DSizeArray[2] = DSizeArray[1] * 4;	// 512
@@ -1286,6 +1316,7 @@ main (int argc, char *argv[])
 	DSizeArray[13] = DSizeArray[12] * 4;
 	DSizeArray[14] = DSizeArray[13] * 4;
 
+	// TODO: Ask Kai whether this can be removed
 	//unsigned int DSizeExtra = 100;   
 	//unsigned int D_SIZE = 100;
 
@@ -1298,6 +1329,7 @@ main (int argc, char *argv[])
 	unsigned int EndOfFragment;		// = CurrentChr.size() - Spacer;
 	unsigned int StartOfFragment;	// = CurrentChr.size() - Spacer;
 
+	// TODO: Ask Kai whether this can be removed
 	//short BP_Left_Start;
 	//short BP_Left_End;
 	//short BP_Right_Start;
@@ -1309,14 +1341,17 @@ main (int argc, char *argv[])
 	//short ReadLengthMinus;
 	//short ReadLength;
 
+	// TODO: Ask Kai whether this can be removed
 	//char LeftChar, RightChar;
 	unsigned int Num_Left;
+	// TODO: Ask Kai whether this can be removed
 	//short CurrentChrIndex = 0;
 
 
 
 	string TempLine_BD;
 
+	// TODO: Ask Kai whether this can be removed
 	//while (inf_Seq >> CurrentFragName) 
 
 
@@ -1327,6 +1362,7 @@ main (int argc, char *argv[])
 	BreakDancer Temp_BD_event;
 	All_BD_events_WG.push_back (Temp_BD_event);
 
+	// TODO: Ask Kai whether this can be removed
 	//short * BD_INDEX;// = new short[CurrentChr.size()];
 
 
@@ -1344,9 +1380,11 @@ main (int argc, char *argv[])
 					getline (inf_BP_test, TempLine_BD);
 					inf_BP >> Temp_BD_event.ChrName_A >> Temp_BD_event.S1 >> TempLine_BD
 						>> Temp_BD_event.ChrName_B >> Temp_BD_event.S3 >> TempLine_BD;
+					// TODO: Ask Kai whether this can be removed
 					//>> Temp_BD_event.Type >> Temp_BD_event.Size;
 					getline (inf_BP, TempLine_BD);
 
+					// TODO: Ask Kai whether this can be removed
 					//<< Temp_BD_event.Size << endl;
 					//if (Temp_BD_event.Type == "DEL" ) 
 					//if (WhichChr == Temp_BD_event.ChrName_A)
@@ -1359,6 +1397,7 @@ main (int argc, char *argv[])
 						else
 							Temp_BD_event.S1 = 1;
 					}
+					// TODO: Ask Kai whether this can be removed
 					//if (WhichChr == Temp_BD_event.ChrName_B)
 					{
 						//if (Temp_BD_event.S3 + 200 > CONS_Chr_Size) Temp_BD_event.S4 = CONS_Chr_Size - 1;
@@ -1373,6 +1412,7 @@ main (int argc, char *argv[])
 					Temp_BD_event.S2 += SpacerBeforeAfter;
 					Temp_BD_event.S3 += SpacerBeforeAfter;
 					Temp_BD_event.S4 += SpacerBeforeAfter;
+					// TODO: Ask Kai whether this can be removed
 					//if (WhichChr == Temp_BD_event.ChrName_A && WhichChr == Temp_BD_event.ChrName_B) {
 					//cout << WhichChr << " " << Temp_BD_event.S1 << " " << Temp_BD_event.S2 << " " << Temp_BD_event.S3 << " " << Temp_BD_event.S4 << endl;  
 					All_BD_events_WG.push_back (Temp_BD_event);
@@ -1381,7 +1421,7 @@ main (int argc, char *argv[])
 		}
 	cout << "BreakDancer events: " << All_BD_events_WG.size () - 1 << endl;
 
-	//}
+	//} // TODO: Ask Kai whether this can be removed
 
 
 	vector < string > chromosomes;
@@ -1433,16 +1473,19 @@ main (int argc, char *argv[])
 		{
 			cout << "Looping over ALL chromosomes.\n";
 			loopOverAllChromosomes = true;
+			// TODO: Ask Kai whether this can be removed
 			//gatherChromosomeNames(par.referenceFileName, chromosomes);
 			//WhichChr = chromosomes[ 0 ];
 		}
 
+// TODO: Ask Kai whether this can be removed
 //cout << "Chr: " << chrName << "region: " << startOfRegion << " till " << endOfRegion << endl;
 
 	while (SpecifiedChrVisited == false && inf_Seq >> CurrentChrName
 				 && !inf_Seq.eof ())
 		{														// loop over chromosomes
 			cout << "Processing chromosome: " << CurrentChrName << endl;
+// TODO: Ask Kai whether this can be removed
 //cout << "WhichChr is: '" << WhichChr << "', CurrentChrName is '" << CurrentChrName << "'" << endl;
 			getline (inf_Seq, emptystr);
 			if (loopOverAllChromosomes)
@@ -1472,8 +1515,10 @@ main (int argc, char *argv[])
 			unsigned NumBoxes = (unsigned) (CurrentChr.size () / BoxSize) + 1;	// box size 
 			cout << NumBoxes << "\t" << BoxSize << endl;
 
+			// TODO: Ask Kai whether this can be removed
 			// cout << "NumBoxes: " << NumBoxes << endl;
 			vector < unsigned >SIs[NumBoxes];
+			// TODO: Ask Kai whether this can be removed
 			//vector <SPLIT_READ> LIs[NumBoxes];
 			vector < unsigned >Deletions[NumBoxes];
 			vector < unsigned >TD[NumBoxes];
@@ -1524,15 +1569,16 @@ main (int argc, char *argv[])
 							cout <<
 								"Checking out reads near the borders of the specified regions for extra evidence.\n";
 						}
-
+					// TODO: Ask Kai whether this can be removed
 					//cout << "BinBorder " << lowerBinBorder << " " << upperBinBorder << endl; 
 
-
+// TODO: Ask Kai whether this can be removed
 //cout << "Step 2" << endl;
 //cin >> ch;
 					if (Time_Load_S == 0)
 						Time_Load_S = time (NULL);	// EWL070111
 					short ReturnFromReadingReads;
+					// TODO: Ask Kai whether this can be removed
 					//int GetPlus = 0;
 					//int GetMinus = 0;
 					//if (WhichChr == CurrentFragName) 
@@ -1546,6 +1592,7 @@ main (int argc, char *argv[])
 							ReturnFromReadingReads = 0;
 							for (unsigned int i = 0; i < bams_to_parse.size (); i++)
 								{
+									// TODO: Ask Kai whether this can be removed
 									//cout << i << "\t" << bams_to_parse[i].BamFile.c_str() << "\t" << Reads.size()  << endl;
 									ReturnFromReadingReads =
 										ReadInBamReads (bams_to_parse[i].BamFile.c_str (),
@@ -1573,6 +1620,7 @@ main (int argc, char *argv[])
 					if (PindelReadDefined)
 						{
 							ReturnFromReadingReads = 0;
+							// TODO: Ask Kai whether this can be removed
 							//ReturnFromReadingReads = ReadInRead(inf_Pindel_Reads, WhichChr, CurrentChr, Reads);
 							ReturnFromReadingReads =
 								ReadInRead (inf_Pindel_Reads, WhichChr, CurrentChr, Reads,
@@ -1587,11 +1635,13 @@ main (int argc, char *argv[])
 									cout << "No reads found!?\n";
 								}
 						}
+					// TODO: Ask Kai whether this can be removed
 					//cout << "There are " << Reads.size() << endl;
 //cout << "Step 3" << endl;
 //cin >> ch;
 					Time_Mine_E = time (NULL);
 
+					// TODO: Ask Kai whether this can be removed
 					//for (int i = 0; i < Reads.size(); i++) {
 					//  if (Reads[i].Tag == "normal") cout << "normal\t" << i << endl;
 					//}
@@ -1622,6 +1672,7 @@ main (int argc, char *argv[])
 									CurrentChrName)
 								All_BD_events.
 									push_back (All_BD_events_WG[All_BD_events_WG_index]);
+							// TODO: Ask Kai whether this can be removed
 							//CurrentChrName ChrName_A 
 						}
 					//All_BD_events_WG
@@ -1631,11 +1682,13 @@ main (int argc, char *argv[])
 								"Searching additional breakpoints by adding BreakDancer results"
 								<< endl;
 							int *BD_INDEX = new int[CurrentChr.size ()];
+							// TODO: Ask Kai whether this can be removed
 							//cout << "1" << endl;
 							for (unsigned i = 0; i < CurrentChr.size (); i++)
 								BD_INDEX[i] = 0;
 							for (unsigned i = 1; i < All_BD_events.size (); i++)
 								{
+									// TODO: Ask Kai whether this can be removed
 									//cout << i << endl;
 									for (unsigned j = All_BD_events[i].S1;
 											 j < All_BD_events[i].S2; j++)
@@ -1655,6 +1708,7 @@ main (int argc, char *argv[])
 								}
 							cout << BD_Plus << "\t" << BD_Minus << endl;
 
+							// TODO: Ask Kai whether this can be removed
 							//ADDITIONAL_MISMATCH = 2;
 							//Seq_Error_Rate = 0.05;
 							//int BD_event_Index = 0;
@@ -1667,6 +1721,7 @@ main (int argc, char *argv[])
 								{
 									if (!Reads[ReadIndex].UP_Far.empty ())
 										{
+											// TODO: Ask Kai whether this can be removed
 											//CountFarEnd++;
 											continue;
 										}
@@ -1674,6 +1729,7 @@ main (int argc, char *argv[])
 										BD_INDEX[Reads[ReadIndex].UP_Close[0].AbsLoc];
 									if (BD_event_Index == 0)
 										continue;
+									// TODO: Ask Kai whether this can be removed
 									//All_BD_events[i].S4; j++) BD_INDEX[j]
 									//MAX_SNP_ERROR = (short)(Reads[ReadIndex].UnmatchedSeq.size() * Seq_Error_Rate + 1.0);
 
@@ -1685,6 +1741,7 @@ main (int argc, char *argv[])
 									//MinFar_D = 8;//atoi(argv[3]); 
 									if (BD_event_Index > 0)
 										{
+											// TODO: Ask Kai whether this can be removed
 											//cout << ReadIndex << "\t" << BD_event_Index << "\t" << All_BD_events[BD_event_Index].S1 << "\t" << All_BD_events[BD_event_Index].S2 << "\t" << All_BD_events[BD_event_Index].S3 << "\t" << All_BD_events[BD_event_Index].S4 << endl;
 											Start_pos =
 												All_BD_events[BD_event_Index].S3 -
@@ -1692,12 +1749,14 @@ main (int argc, char *argv[])
 											End_pos =
 												All_BD_events[BD_event_Index].S4 +
 												Reads[ReadIndex].ReadLength;
+											// TODO: Ask Kai whether this can be removed
 											//cout << Start_pos << "\t" << End_pos << endl;
 											GetFarEnd (CurrentChr, Reads[ReadIndex], Start_pos,
 																 End_pos);
 										}
 									else
 										{						// < 0
+											// TODO: Ask Kai whether this can be removed
 											//cout << ReadIndex << "\t" << BD_event_Index << "\t" << All_BD_events[BD_event_Index * (-1)].S1 << "\t" << All_BD_events[BD_event_Index * (-1)].S2 << "\t" << All_BD_events[BD_event_Index * (-1)].S3 << "\t" << All_BD_events[BD_event_Index * (-1)].S4 << endl;
 											Start_pos =
 												All_BD_events[BD_event_Index * (-1)].S1 -
@@ -1705,6 +1764,7 @@ main (int argc, char *argv[])
 											End_pos =
 												All_BD_events[BD_event_Index * (-1)].S2 +
 												Reads[ReadIndex].ReadLength;
+											// TODO: Ask Kai whether this can be removed
 											//cout << Start_pos << "\t" << End_pos << endl;
 											GetFarEnd (CurrentChr, Reads[ReadIndex], Start_pos,
 																 End_pos);
@@ -1764,6 +1824,7 @@ main (int argc, char *argv[])
 								}
 							cout << "\tNumber of reads with far end mapped: " << CountFarEnd
 								<< "\t"
+								// TODO: Ask Kai whether this can be removed
 								//<< "\tTotal number of reads:" << Reads.size() << "\n" 
 								//<< CountFarEnd * 100.0 / Reads.size() << " %\n"
 								<< "Far+: " << CountFarEndPlus << "\tFar-: " << CountFarEndMinus << "\n\n";	//endl;
@@ -1774,6 +1835,7 @@ main (int argc, char *argv[])
 					//int SkippReads = 0;
 					for (short RangeIndex = 1; RangeIndex < MaxRangeIndex; RangeIndex++)
 						{
+							// TODO: Ask Kai whether this can be removed
 							//cout << "RangeIndex: " << RangeIndex << endl;
 							//SkippReads = 0;
 							CountFarEnd = 0;
@@ -1786,19 +1848,23 @@ main (int argc, char *argv[])
 								for (unsigned int ReadIndex = 0; ReadIndex < Reads.size ();
 										 ReadIndex++)
 									{
+										// TODO: Ask Kai whether this can be removed
 										//cout << ReadIndex << endl;
 										if (!Reads[ReadIndex].UP_Far.empty ())
 											{
+												// TODO: Ask Kai whether this can be removed
 												//SkippReads++;
 												//CountFarEnd++;
 												continue;
 											}
+										// TODO: Ask Kai whether this can be removed
 										//if (Reads[ReadIndex].MatchedRelPos > 160000) 
 										//if (RangeIndex == 4)
 										//cout << RangeIndex << "\t" << ReadIndex << "\t" << Reads[ReadIndex].UP_Far.size() << "\t";
 										GetFarEnd_SingleStrandDownStream (CurrentChr,
 																											Reads[ReadIndex],
 																											RangeIndex);
+										// TODO: Ask Kai whether this can be removed
 										//if (Reads[ReadIndex].MatchedRelPos > 160000) 
 										//if (RangeIndex == 4)
 										//cout << "after: " << Reads[ReadIndex].UP_Far.size() << "\t";
@@ -1846,15 +1912,18 @@ main (int argc, char *argv[])
 														}
 													}
 											}
+										// TODO: Ask Kai whether this can be removed
 										//if (Reads[ReadIndex].MatchedRelPos > 160000) 
 										//if (RangeIndex == 4)
 										//cout << "final: " << Reads[ReadIndex].UP_Far.size() << endl;
 									}
+								// TODO: Ask Kai whether this can be removed
 								//cout << "SkippReads " << SkippReads << endl;
 							}									// #pragma omp parallel default(shared)
 
 							cout << RangeIndex << "\tNumber of reads with far end mapped: "
 								<< CountFarEnd << "\t"
+								// TODO: Ask Kai whether this can be removed
 								//<< "\tTotal number of reads:" << Reads.size() << "\n" 
 								//<< CountFarEnd * 100.0 / Reads.size() << " %\n"
 								<< "Far+: " << CountFarEndPlus << "\tFar-: " <<
@@ -1876,6 +1945,7 @@ main (int argc, char *argv[])
 									{
 										if (!Reads[ReadIndex].UP_Far.empty ())
 											{
+												// TODO: Ask Kai whether this can be removed
 												//CountFarEnd++;
 												continue;
 											}
@@ -1900,6 +1970,7 @@ main (int argc, char *argv[])
 
 							cout << RangeIndex << "\tNumber of reads with far end mapped: "
 								<< CountFarEnd << "\t"
+								// TODO: Ask Kai whether this can be removed
 								//<< "\tTotal number of reads:" << Reads.size() << "\n" 
 								//<< CountFarEnd * 100.0 / Reads.size() << " %\n"
 								<< "Far+: " << CountFarEndPlus << "\tFar-: " <<
@@ -1912,6 +1983,7 @@ main (int argc, char *argv[])
 
 							cout << "Searching breakpoints of tandem duplication events" <<
 								endl;
+							// TODO: Ask Kai whether this can be removed
 							//int CountFarEnd, CountFarEndPlus, CountFarEndMinus;
 							for (short RangeIndex = 1; RangeIndex < MaxRangeIndex;
 									 RangeIndex++)
@@ -1928,10 +2000,12 @@ main (int argc, char *argv[])
 											{
 												if (!Reads[ReadIndex].UP_Far.empty ())
 													{
+														// TODO: Ask Kai whether this can be removed
 														//CountFarEnd++;
 														continue;
 													}
 
+												// TODO: Ask Kai whether this can be removed
 												//MinClose = short(log((double)(2 * Reads[ReadIndex].InsertSize + DSizeArray[RangeIndex]))/log(4.0) + 0.8) + 3;//atoi(argv[1]);
 												//MinFar_I = MinClose + 1;//atoi(argv[2]);
 												//cout << "For short insertion: " << MinClose << "\t" << MinFar_I << endl;
@@ -2006,6 +2080,7 @@ main (int argc, char *argv[])
 									cout << RangeIndex <<
 										"\tNumber of reads with far end mapped: " << CountFarEnd
 										<< "\t"
+										// TODO: Ask Kai whether this can be removed
 										//<< "\tTotal number of reads:" << Reads.size() << "\n" 
 										//<< CountFarEnd * 100.0 / Reads.size() << " %\n"
 										<< "Far+: " << CountFarEndPlus << "\tFar-: " <<
@@ -2015,6 +2090,7 @@ main (int argc, char *argv[])
 
 					if (Analyze_INV)
 						{
+							// TODO: Ask Kai whether this can be removed
 							//cout << "here" << endl;
 							cout << "Searching breakpoints of inversions" << endl;
 							for (short RangeIndex = 1; RangeIndex < MaxRangeIndex;
@@ -2036,6 +2112,7 @@ main (int argc, char *argv[])
 														continue;
 													}
 
+												// TODO: Ask Kai whether this can be removed
 												//MinClose = short(log((double)(2 * Reads[ReadIndex].InsertSize + DSizeArray[RangeIndex]))/log(4.0) + 0.8) + 3;//atoi(argv[1]);
 												//MinFar_I = MinClose + 1;//atoi(argv[2]);
 												//cout << "For short insertion: " << MinClose << "\t" << MinFar_I << endl;
@@ -2093,6 +2170,7 @@ main (int argc, char *argv[])
 									cout << RangeIndex <<
 										"\tNumber of reads with far end mapped: " << CountFarEnd
 										<< "\t"
+										// TODO: Ask Kai whether this can be removed
 										//<< "\tTotal number of reads:" << Reads.size() << "\n" 
 										//<< CountFarEnd * 100.0 / Reads.size() << " %\n"
 										<< "Far+: " << CountFarEndPlus << "\tFar-: " <<
@@ -2129,12 +2207,14 @@ main (int argc, char *argv[])
 
 					// ################### module 4: search variants and report #####################    
 
+					// TODO: Ask Kai whether this can be removed
 					//short MAX_MISMATCHES_Per_Read = 0;;
 					cout << "Searching deletion events ... " << endl;
 					for (unsigned ReadIndex = 0; ReadIndex < Reads.size (); ReadIndex++)
 						{
 							if (Reads[ReadIndex].UP_Far.empty ())
 								continue;
+							// TODO: Ask Kai whether this can be removed
 							//MAX_MISMATCHES_Per_Read = (short)(Seq_Error_Rate * Reads[ReadIndex].ReadLength + 1);
 							//if (Reads[ReadIndex].UP_Far.size()) 
 							{
@@ -2158,6 +2238,7 @@ main (int argc, char *argv[])
 																 Reads[ReadIndex].UP_Far.size () - 1;
 																 FarIndex >= 0; FarIndex--)
 															{
+																// TODO: Ask Kai whether this can be removed
 																//cout << "+" << FarIndex << endl;
 																if (Reads[ReadIndex].Used)
 																	break;
@@ -2172,6 +2253,7 @@ main (int argc, char *argv[])
 																if (Reads[ReadIndex].UP_Far[FarIndex].
 																		Direction == Minus)
 																	{
+																		// TODO: Ask Kai whether this can be removed
 																		//cout << "1" << endl;
 																		//cout << "+\t" << Reads[ReadIndex].UP_Far[FarIndex].LengthStr 
 																		//  << "\t" << Reads[ReadIndex].UP_Close[CloseIndex].LengthStr
@@ -2210,6 +2292,7 @@ main (int argc, char *argv[])
 																				Reads[ReadIndex].InsertedStr = "";
 																				Reads[ReadIndex].BPLeft = Reads[ReadIndex].UP_Close[CloseIndex].AbsLoc - SpacerBeforeAfter;	// - Fragments[LeftReads[Left_Index].MatchedSeqID].Start;
 																				Reads[ReadIndex].BPRight = Reads[ReadIndex].UP_Far[FarIndex].AbsLoc - SpacerBeforeAfter;	// - Fragments[LeftReads[Left_Index].MatchedSeqID].Start;
+																				// TODO: Ask Kai whether this can be removed
 																				//CurrentChrMask[Reads[ReadIndex].UP_Close[CloseIndex].AbsLoc] = 'B';
 																				//CurrentChrMask[Reads[ReadIndex].UP_Far[FarIndex].AbsLoc] = 'B';
 																				//EWL070111 Reads[ReadIndex].score = Const_I + Const_S + LOG14 * Reads[ReadIndex].ReadLength + Const_Log_T;
@@ -2226,6 +2309,7 @@ main (int argc, char *argv[])
 																						}
 																					else
 																						{
+																							// TODO: Ask Kai whether this can be removed
 																							/*
 																							   int (int)Reads[ReadIndex].BPLeft = (int)Reads[ReadIndex].BPLeft - lowerBinBorder;
 																							   //cout << Reads[ReadIndex].BPLeft << " " << lowerBinBorder << endl;
@@ -2322,6 +2406,7 @@ main (int argc, char *argv[])
 																				Reads[ReadIndex].InsertedStr = "";
 																				Reads[ReadIndex].BPLeft = Reads[ReadIndex].UP_Far[FarIndex].AbsLoc - SpacerBeforeAfter;	// - Fragments[LeftReads[Left_Index].MatchedSeqID].Start;
 																				Reads[ReadIndex].BPRight = Reads[ReadIndex].UP_Close[CloseIndex].AbsLoc - SpacerBeforeAfter;	// - Fragments[LeftReads[Left_Index].MatchedSeqID].Start;
+																				// TODO: Ask Kai whether this can be removed
 																				//CurrentChrMask[Reads[ReadIndex].UP_Close[CloseIndex].AbsLoc] = 'B';
 																				//CurrentChrMask[Reads[ReadIndex].UP_Far[FarIndex].AbsLoc] = 'B';
 																				//EWL070111 Reads[ReadIndex].score = Const_I + Const_S + LOG14 * Reads[ReadIndex].ReadLength + Const_Log_T;
@@ -2339,6 +2424,7 @@ main (int argc, char *argv[])
 																						}
 																					else
 																						{
+																							// TODO: Ask Kai whether this can be removed
 																							//int (int)Reads[ReadIndex].BPLeft = (int)Reads[ReadIndex].BPLeft - lowerBinBorder;
 																							//if ((int)Reads[ReadIndex].BPLeft < 0)
 																							//Deletions[0].push_back(ReadIndex);
@@ -2358,6 +2444,7 @@ main (int argc, char *argv[])
 																									Count_D++;
 																									Count_D_Minus++;
 																								}
+																							// TODO: Ask Kai whether this can be removed
 																							//cout << "- " << Count_D << endl; 
 																						}
 																				}
@@ -2373,6 +2460,7 @@ main (int argc, char *argv[])
 						Count_D_Minus << endl;
 					ofstream DeletionOutf (DeletionOutputFilename.c_str (), ios::app);
 					SortOutputD (NumBoxes, CurrentChr, Reads, Deletions, DeletionOutf);
+					// TODO: Ask Kai whether this can be removed
 					//DeletionOutf.close();  
 					for (unsigned int i = 0; i < NumBoxes; i++)
 						Deletions[i].clear ();
@@ -2384,6 +2472,7 @@ main (int argc, char *argv[])
 						{
 							if (Reads[ReadIndex].Used || Reads[ReadIndex].UP_Far.empty ())
 								continue;
+							// TODO: Ask Kai whether this can be removed
 							//if (Reads[ReadIndex].UP_Far.size()) 
 							{
 								CloseIndex = Reads[ReadIndex].UP_Close.size () - 1;
@@ -2398,6 +2487,7 @@ main (int argc, char *argv[])
 									continue;
 								if (Reads[ReadIndex].MatchedD == Plus)
 									{
+										// TODO: Ask Kai whether this can be removed
 										//for (unsigned CloseIndex = 0; CloseIndex < Reads[ReadIndex].UP_Close.size(); CloseIndex++) 
 										{
 											//for (unsigned FarIndex = 0; FarIndex < Reads[ReadIndex].UP_Far.size(); FarIndex++) 
@@ -2452,6 +2542,7 @@ main (int argc, char *argv[])
 
 																Reads[ReadIndex].BPLeft = Reads[ReadIndex].UP_Close[CloseIndex].AbsLoc - SpacerBeforeAfter;	// - Fragments[LeftReads[Left_Index].MatchedSeqID].Start;
 																Reads[ReadIndex].BPRight = Reads[ReadIndex].UP_Far[FarIndex].AbsLoc - SpacerBeforeAfter;	// - Fragments[LeftReads[Left_Index].MatchedSeqID].Start;
+																// TODO: Ask Kai whether this can be removed
 																//CurrentChrMask[Reads[ReadIndex].UP_Close[CloseIndex].AbsLoc] = 'B';
 																//CurrentChrMask[Reads[ReadIndex].UP_Far[FarIndex].AbsLoc] = 'B';
 																//EWL070111 Reads[ReadIndex].score = Const_I + Const_S + LOG14 * Reads[ReadIndex].ReadLength + Const_Log_T;
@@ -2461,6 +2552,7 @@ main (int argc, char *argv[])
 																			MIN_IndelSize_NT
 																			&& Reads[ReadIndex].NT_size <=
 																			Max_Length_NT
+																			// TODO: Ask Kai whether this can be removed
 																			/*Reads[ReadIndex].NT_size */ )
 																		{
 
@@ -2473,6 +2565,7 @@ main (int argc, char *argv[])
 																				}
 																			else
 																				{
+																					// TODO: Ask Kai whether this can be removed
 																					//int (int)Reads[ReadIndex].BPLeft = (int)Reads[ReadIndex].BPLeft - lowerBinBorder;
 																					//if ((int)Reads[ReadIndex].BPLeft < 0)
 																					//DI[0].push_back(ReadIndex);
@@ -2485,6 +2578,7 @@ main (int argc, char *argv[])
 																								 BPLeft /
 																								 BoxSize].
 																								push_back (ReadIndex);
+																							// TODO: Ask Kai whether this can be removed
 																							//DI[Reads[ReadIndex].BPLeft / BoxSize].push_back(ReadIndex);
 																							Reads[ReadIndex].Used = true;
 																							Count_DI++;
@@ -2504,6 +2598,7 @@ main (int argc, char *argv[])
 									}
 								else if (Reads[ReadIndex].MatchedD == Minus)
 									{
+										// TODO: Ask Kai whether this can be removed
 										//for (unsigned CloseIndex = 0; CloseIndex < Reads[ReadIndex].UP_Close.size(); CloseIndex++) 
 										{
 											//for (unsigned FarIndex = 0; FarIndex < Reads[ReadIndex].UP_Far.size(); FarIndex++) 
@@ -2523,6 +2618,7 @@ main (int argc, char *argv[])
 																AbsLoc >
 																Reads[ReadIndex].UP_Far[FarIndex].AbsLoc + 1)
 															{
+																// TODO: Ask Kai whether this can be removed
 																//DeletionUnique = true;
 																Reads[ReadIndex].Left =
 																	Reads[ReadIndex].UP_Far[FarIndex].AbsLoc -
@@ -2551,11 +2647,14 @@ main (int argc, char *argv[])
 																	 Reads[ReadIndex].Left) -
 																	Reads[ReadIndex].ReadLengthMinus +
 																	Reads[ReadIndex].NT_size;
+																// TODO: Ask Kai whether this can be removed
 																//                                 LeftReads[Left_Index].NT_str = "";
 																Reads[ReadIndex].InsertedStr = "";
+																// TODO: Ask Kai whether this can be removed
 																//cout << LeftReads[Left_Index].IndelSize << endl;
 																Reads[ReadIndex].BPLeft = Reads[ReadIndex].UP_Far[FarIndex].AbsLoc - SpacerBeforeAfter;	// - Fragments[LeftReads[Left_Index].MatchedSeqID].Start;
 																Reads[ReadIndex].BPRight = Reads[ReadIndex].UP_Close[CloseIndex].AbsLoc - SpacerBeforeAfter;	// - Fragments[LeftReads[Left_Index].MatchedSeqID].Start;
+																// TODO: Ask Kai whether this can be removed
 																//LeftReads[Left_Index].score = Const_I + Const_S + LOG14 * LeftReads[Left_Index].ReadLength + Const_Log_T;
 																//LeftReads[Left_Index].Unique = true;
 																//CurrentChrMask[Reads[ReadIndex].UP_Close[CloseIndex].AbsLoc] = 'B';
@@ -2577,6 +2676,7 @@ main (int argc, char *argv[])
 																				}
 																			else
 																				{
+																					// TODO: Ask Kai whether this can be removed
 																					//DI[Reads[ReadIndex].BPLeft / BoxSize].push_back(ReadIndex);
 																					//int (int)Reads[ReadIndex].BPLeft = (int)Reads[ReadIndex].BPLeft - lowerBinBorder;
 																					//if ((int)Reads[ReadIndex].BPLeft < 0)
@@ -2609,8 +2709,10 @@ main (int argc, char *argv[])
 						}
 					cout << "Total: " << Count_DI << "\t+" << Count_DI_Plus << "\t-" <<
 						Count_DI_Minus << endl;
+					// TODO: Ask Kai whether this can be removed
 					//ofstream DeletionInsertionOutf(DeletionInsertinOutputFilename.c_str());
 					SortOutputDI (NumBoxes, CurrentChr, Reads, DI, DeletionOutf);
+					// TODO: Ask Kai whether this can be removed
 					//DeletionInsertionOutf.close();
 					DeletionOutf.close ();
 					for (unsigned int i = 0; i < NumBoxes; i++)
@@ -2627,6 +2729,7 @@ main (int argc, char *argv[])
 									if (Reads[ReadIndex].Used
 											|| Reads[ReadIndex].UP_Far.empty ())
 										continue;
+									// TODO: Ask Kai whether this can be removed
 									//short MAX_MISMATCHES_Per_Read = (short)(Seq_Error_Rate * Reads[ReadIndex].ReadLength + 1);
 									//if (Reads[ReadIndex].UP_Far.size()) 
 									{
@@ -2701,12 +2804,14 @@ main (int argc, char *argv[])
 																						Reads[ReadIndex].InsertedStr = "";
 																						Reads[ReadIndex].BPRight = Reads[ReadIndex].UP_Close[CloseIndex].AbsLoc - SpacerBeforeAfter;	// - Fragments[LeftReads[Left_Index].MatchedSeqID].Start;
 																						Reads[ReadIndex].BPLeft = Reads[ReadIndex].UP_Far[FarIndex].AbsLoc - SpacerBeforeAfter;	// - Fragments[LeftReads[Left_Index].MatchedSeqID].Start;
+																						// TODO: Ask Kai whether this can be removed
 																						//CurrentChrMask[Reads[ReadIndex].UP_Close[CloseIndex].AbsLoc] = 'B';
 																						//CurrentChrMask[Reads[ReadIndex].UP_Far[FarIndex].AbsLoc] = 'B';
 																						//EWL070111 Reads[ReadIndex].score = Const_I + Const_S + LOG14 * Reads[ReadIndex].ReadLength + Const_Log_T;
 																						//LeftReads[Left_Index].Unique = true;
 
 																						{
+																							// TODO: Ask Kai whether this can be removed
 																							//if (LeftReads[Left_Index].IndelSize <= DSizeArray[RangeIndex] && LeftReads[Left_Index].IndelSize > DSizeArray[RangeIndex - 1]) 
 																							if (readTransgressesBinBoundaries (Reads[ReadIndex], upperBinBorder))
 																								{
@@ -2716,6 +2821,7 @@ main (int argc, char *argv[])
 																								}
 																							else
 																								{
+																									// TODO: Ask Kai whether this can be removed
 																									//TD[Reads[ReadIndex].BPLeft / BoxSize].push_back(ReadIndex);
 																									//int (int)Reads[ReadIndex].BPLeft = (int)Reads[ReadIndex].BPLeft - lowerBinBorder;
 																									//if ((int)Reads[ReadIndex].BPLeft < 0)
@@ -2816,6 +2922,7 @@ main (int argc, char *argv[])
 																						Reads[ReadIndex].InsertedStr = "";
 																						Reads[ReadIndex].BPRight = Reads[ReadIndex].UP_Far[FarIndex].AbsLoc - SpacerBeforeAfter;	// - Fragments[LeftReads[Left_Index].MatchedSeqID].Start;
 																						Reads[ReadIndex].BPLeft = Reads[ReadIndex].UP_Close[CloseIndex].AbsLoc - SpacerBeforeAfter;	// - Fragments[LeftReads[Left_Index].MatchedSeqID].Start;
+																						// TODO: Ask Kai whether this can be removed
 																						//CurrentChrMask[Reads[ReadIndex].UP_Close[CloseIndex].AbsLoc] = 'B';
 																						//CurrentChrMask[Reads[ReadIndex].UP_Far[FarIndex].AbsLoc] = 'B';
 																						//EWL070111 Reads[ReadIndex].score = Const_I + Const_S + LOG14 * Reads[ReadIndex].ReadLength + Const_Log_T;
@@ -2831,6 +2938,7 @@ main (int argc, char *argv[])
 																								}
 																							else
 																								{
+																									// TODO: Ask Kai whether this can be removed
 																									//TD[Reads[ReadIndex].BPLeft / BoxSize].push_back(ReadIndex);
 																									//int (int)Reads[ReadIndex].BPLeft = (int)Reads[ReadIndex].BPLeft - lowerBinBorder;
 																									//if ((int)Reads[ReadIndex].BPLeft < 0)
@@ -2852,6 +2960,7 @@ main (int argc, char *argv[])
 																											Count_TD++;
 																											Count_TD_Minus++;
 																										}
+																									// TODO: Ask Kai whether this can be removed
 																									//cout << "- " << Count_D << endl; 
 																								}
 																						}
@@ -2868,6 +2977,7 @@ main (int argc, char *argv[])
 								<< Count_TD_Minus << endl;
 							ofstream TDOutf (TDOutputFilename.c_str (), ios::app);
 							SortOutputTD (NumBoxes, CurrentChr, Reads, TD, TDOutf);
+							// TODO: Ask Kai whether this can be removed
 							//TDOutf.close();  
 							for (unsigned int i = 0; i < NumBoxes; i++)
 								TD[i].clear ();
@@ -2881,6 +2991,7 @@ main (int argc, char *argv[])
 									if (Reads[ReadIndex].Used
 											|| Reads[ReadIndex].UP_Far.empty ())
 										continue;
+									// TODO: Ask Kai whether this can be removed
 									//MAX_MISMATCHES_Per_Read = (short)(Seq_Error_Rate * Reads[ReadIndex].ReadLength + 1);
 									CloseIndex = Reads[ReadIndex].UP_Close.size () - 1;
 									FarIndex = Reads[ReadIndex].UP_Far.size () - 1;
@@ -2896,10 +3007,12 @@ main (int argc, char *argv[])
 																Reads[ReadIndex].UP_Close[CloseIndex].
 																LengthStr)))
 										continue;
+									// TODO: Ask Kai whether this can be removed
 									//if (Reads[ReadIndex].UP_Far.size()) 
 									{
 										if (Reads[ReadIndex].MatchedD == Plus)
 											{
+												// TODO: Ask Kai whether this can be removed
 												//for (int CloseIndex = 0; CloseIndex < Reads[ReadIndex].UP_Close.size(); CloseIndex++) 
 												{
 													//if (Reads[ReadIndex].Used) break;
@@ -2952,6 +3065,7 @@ main (int argc, char *argv[])
 																		Reads[ReadIndex].InsertedStr = "";
 																		Reads[ReadIndex].BPRight = Reads[ReadIndex].UP_Close[CloseIndex].AbsLoc - SpacerBeforeAfter;	// - Fragments[LeftReads[Left_Index].MatchedSeqID].Start;
 																		Reads[ReadIndex].BPLeft = Reads[ReadIndex].UP_Far[FarIndex].AbsLoc - SpacerBeforeAfter;	// - Fragments[LeftReads[Left_Index].MatchedSeqID].Start;
+																		// TODO: Ask Kai whether this can be removed
 																		//CurrentChrMask[Reads[ReadIndex].UP_Close[CloseIndex].AbsLoc] = 'B';
 																		//CurrentChrMask[Reads[ReadIndex].UP_Far[FarIndex].AbsLoc] = 'B';
 																		//EWL070111 Reads[ReadIndex].score = Const_I + Const_S + LOG14 * Reads[ReadIndex].ReadLength + Const_Log_T;
@@ -2976,6 +3090,7 @@ main (int argc, char *argv[])
 																																		 startOfRegion,
 																																		 endOfRegion))
 																						{
+																							// TODO: Ask Kai whether this can be removed
 																							//int (int)Reads[ReadIndex].BPLeft = (int)Reads[ReadIndex].BPLeft - lowerBinBorder;
 																							//if ((int)Reads[ReadIndex].BPLeft < 0)
 																							//  TD_NT[0].push_back(ReadIndex);
@@ -2984,6 +3099,7 @@ main (int argc, char *argv[])
 																										BPLeft /
 																										BoxSize].
 																								push_back (ReadIndex);
+																							// TODO: Ask Kai whether this can be removed
 																							//TD_NT[Reads[ReadIndex].BPLeft / BoxSize].push_back(ReadIndex);
 																							Reads[ReadIndex].Used = true;
 																							Count_TD_NT++;
@@ -2998,6 +3114,7 @@ main (int argc, char *argv[])
 											}
 										else if (Reads[ReadIndex].MatchedD == Minus)
 											{
+												// TODO: Ask Kai whether this can be removed
 												//for (int CloseIndex = Reads[ReadIndex].UP_Close.size() - 1; CloseIndex >= 0; CloseIndex--) 
 												{
 													//if (Reads[ReadIndex].Used) break;
@@ -3047,6 +3164,7 @@ main (int argc, char *argv[])
 																		Reads[ReadIndex].InsertedStr = "";
 																		Reads[ReadIndex].BPRight = Reads[ReadIndex].UP_Far[FarIndex].AbsLoc - SpacerBeforeAfter;	// - Fragments[LeftReads[Left_Index].MatchedSeqID].Start;
 																		Reads[ReadIndex].BPLeft = Reads[ReadIndex].UP_Close[CloseIndex].AbsLoc - SpacerBeforeAfter;	// - Fragments[LeftReads[Left_Index].MatchedSeqID].Start;
+																		// TODO: Ask Kai whether this can be removed
 																		//CurrentChrMask[Reads[ReadIndex].UP_Close[CloseIndex].AbsLoc] = 'B';
 																		//CurrentChrMask[Reads[ReadIndex].UP_Far[FarIndex].AbsLoc] = 'B';
 																		//EWL070111 Reads[ReadIndex].score = Const_I + Const_S + LOG14 * Reads[ReadIndex].ReadLength + Const_Log_T;
@@ -3071,6 +3189,7 @@ main (int argc, char *argv[])
 																																		 startOfRegion,
 																																		 endOfRegion))
 																						{
+																							// TODO: Ask Kai whether this can be removed
 																							//TD_NT[Reads[ReadIndex].BPLeft / BoxSize].push_back(ReadIndex);
 																							//int (int)Reads[ReadIndex].BPLeft = (int)Reads[ReadIndex].BPLeft - lowerBinBorder;
 																							//if ((int)Reads[ReadIndex].BPLeft < 0)
@@ -3084,6 +3203,7 @@ main (int argc, char *argv[])
 
 																							Count_TD_NT++;
 																							Count_TD_NT_Minus++;
+																							// TODO: Ask Kai whether this can be removed
 																							//cout << "- " << Count_D << endl;                         
 																						}
 																				}
@@ -3097,6 +3217,7 @@ main (int argc, char *argv[])
 								}
 							cout << "Total: " << Count_TD_NT << "\t+" << Count_TD_NT_Plus <<
 								"\t-" << Count_TD_NT_Minus << endl;
+							// TODO: Ask Kai whether this can be removed
 							//ofstream TDOutf(TDOutputFilename.c_str());
 							SortOutputTD_NT (NumBoxes, CurrentChr, Reads, TD_NT, TDOutf);
 							TDOutf.close ();
@@ -3176,6 +3297,7 @@ main (int argc, char *argv[])
 																									AbsLoc +
 																									MIN_IndelSize_Inversion)
 																								{
+																									// TODO: Ask Kai whether this can be removed
 																									//cout << "+\t" << Reads[ReadIndex].UP_Close[CloseIndex].AbsLoc 
 																									//<< "\t" << Reads[ReadIndex].UP_Far[FarIndex].AbsLoc << endl;
 																									Reads[ReadIndex].Left =
@@ -3212,6 +3334,7 @@ main (int argc, char *argv[])
 																										InsertedStr = "";
 																									Reads[ReadIndex].BPLeft = Reads[ReadIndex].UP_Close[CloseIndex].AbsLoc + 1 - SpacerBeforeAfter;	// - Fragments[LeftReads[Left_Index].MatchedSeqID].Start;
 																									Reads[ReadIndex].BPRight = Reads[ReadIndex].UP_Far[FarIndex].AbsLoc - SpacerBeforeAfter;	// - Fragments[LeftReads[Left_Index].MatchedSeqID].Start;
+																									// TODO: Ask Kai whether this can be removed
 																									//CurrentChrMask[Reads[ReadIndex].UP_Close[CloseIndex].AbsLoc] = 'B';
 																									//CurrentChrMask[Reads[ReadIndex].UP_Far[FarIndex].AbsLoc] = 'B';
 																									//EWL070111 Reads[ReadIndex].score = Const_I + Const_S + LOG14 * Reads[ReadIndex].ReadLength + Const_Log_T;
@@ -3227,6 +3350,7 @@ main (int argc, char *argv[])
 																											}
 																										else
 																											{
+																												// TODO: Ask Kai whether this can be removed
 																												//Inv[Reads[ReadIndex].BPLeft / BoxSize].push_back(ReadIndex);
 																												//int (int)Reads[ReadIndex].BPLeft = (int)Reads[ReadIndex].BPLeft - lowerBinBorder;
 																												//if ((int)Reads[ReadIndex].BPLeft < 0)
@@ -3310,6 +3434,7 @@ main (int argc, char *argv[])
 																									Reads[ReadIndex].
 																									UP_Close[CloseIndex].AbsLoc)
 																								{
+																									// TODO: Ask Kai whether this can be removed
 																									//cout << "+\t" << Reads[ReadIndex].UP_Close[CloseIndex].AbsLoc 
 																									//<< "\t" << Reads[ReadIndex].UP_Far[FarIndex].AbsLoc << endl;
 																									Reads[ReadIndex].Right =
@@ -3346,6 +3471,7 @@ main (int argc, char *argv[])
 																										InsertedStr = "";
 																									Reads[ReadIndex].BPRight = Reads[ReadIndex].UP_Close[CloseIndex].AbsLoc - SpacerBeforeAfter;	// - Fragments[LeftReads[Left_Index].MatchedSeqID].Start;
 																									Reads[ReadIndex].BPLeft = (Reads[ReadIndex].UP_Far[FarIndex].AbsLoc + 1) - SpacerBeforeAfter;	// - Fragments[LeftReads[Left_Index].MatchedSeqID].Start;
+																									// TODO: Ask Kai whether this can be removed
 																									// CurrentChrMask[Reads[ReadIndex].UP_Close[CloseIndex].AbsLoc] = 'B';
 																									// CurrentChrMask[Reads[ReadIndex].UP_Far[FarIndex].AbsLoc] = 'B';
 																									//EWL070111 Reads[ReadIndex].score = Const_I + Const_S + LOG14 * Reads[ReadIndex].ReadLength + Const_Log_T;
@@ -3361,6 +3487,7 @@ main (int argc, char *argv[])
 																											}
 																										else
 																											{
+																												// TODO: Ask Kai whether this can be removed
 																												//Inv[Reads[ReadIndex].BPLeft / BoxSize].push_back(ReadIndex);
 																												//int (int)Reads[ReadIndex].BPLeft = (int)Reads[ReadIndex].BPLeft - lowerBinBorder;
 																												//if ((int)Reads[ReadIndex].BPLeft < 0)
@@ -3434,6 +3561,7 @@ main (int argc, char *argv[])
 																							UP_Far[FarIndex].Direction ==
 																							Minus)
 																						{
+																							// TODO: Ask Kai whether this can be removed
 																							// ######################
 																							//cout << "-\t" << Reads[ReadIndex].UP_Close[CloseIndex].LengthStr + Reads[ReadIndex].UP_Far[FarIndex].LengthStr << "\t" << Reads[ReadIndex].ReadLength << "\t";
 																							//cout << Reads[ReadIndex].UP_Close[CloseIndex].AbsLoc << "\t>\t" << Reads[ReadIndex].UP_Far[FarIndex].AbsLoc + 1 << endl;
@@ -3452,6 +3580,7 @@ main (int argc, char *argv[])
 																									UP_Far[FarIndex].AbsLoc +
 																									MIN_IndelSize_Inversion)
 																								{
+																									// TODO: Ask Kai whether this can be removed
 																									//cout << "-\t" << Reads[ReadIndex].UP_Close[CloseIndex].AbsLoc 
 																									//<< "\t" << Reads[ReadIndex].UP_Far[FarIndex].AbsLoc << endl;
 																									Reads[ReadIndex].Left =
@@ -3487,9 +3616,11 @@ main (int argc, char *argv[])
 																									Reads[ReadIndex].
 																										InsertedStr = "";
 																									Reads[ReadIndex].BPLeft = Reads[ReadIndex].UP_Far[FarIndex].AbsLoc - SpacerBeforeAfter;	// - Fragments[LeftReads[Left_Index].MatchedSeqID].Start;
+																									// TODO: Ask Kai whether this can be removed
 																									//cout <<  "far\t" << Reads[ReadIndex].UP_Far[FarIndex].AbsLoc << "\tspacer\t" << SpacerBeforeAfter << endl;
 																									//cout <<  Reads[ReadIndex].UP_Far[FarIndex].AbsLoc - SpacerBeforeAfter - 1 << endl;
 																									Reads[ReadIndex].BPRight = Reads[ReadIndex].UP_Close[CloseIndex].AbsLoc - 1 - SpacerBeforeAfter;	// - Fragments[LeftReads[Left_Index].MatchedSeqID].Start;
+																									// TODO: Ask Kai whether this can be removed
 																									//CurrentChrMask[Reads[ReadIndex].UP_Close[CloseIndex].AbsLoc] = 'B';
 																									//CurrentChrMask[Reads[ReadIndex].UP_Far[FarIndex].AbsLoc] = 'B';
 																									//EWL070111 Reads[ReadIndex].score = Const_I + Const_S + LOG14 * Reads[ReadIndex].ReadLength + Const_Log_T;
@@ -3618,9 +3749,11 @@ main (int argc, char *argv[])
 																									Reads[ReadIndex].
 																										InsertedStr = "";
 																									Reads[ReadIndex].BPLeft = Reads[ReadIndex].UP_Close[CloseIndex].AbsLoc - SpacerBeforeAfter;	// - Fragments[LeftReads[Left_Index].MatchedSeqID].Start;
+																									// TODO: Ask Kai whether this can be removed
 																									//cout <<  "far\t" << Reads[ReadIndex].UP_Far[FarIndex].AbsLoc << "\tspacer\t" << SpacerBeforeAfter << endl;
 																									//cout <<  Reads[ReadIndex].UP_Far[FarIndex].AbsLoc - SpacerBeforeAfter - 1 << endl;
 																									Reads[ReadIndex].BPRight = Reads[ReadIndex].UP_Far[FarIndex].AbsLoc - 1 - SpacerBeforeAfter;	// - Fragments[LeftReads[Left_Index].MatchedSeqID].Start;
+																									// TODO: Ask Kai whether this can be removed
 																									//CurrentChrMask[Reads[ReadIndex].UP_Close[CloseIndex].AbsLoc] = 'B';
 																									//CurrentChrMask[Reads[ReadIndex].UP_Far[FarIndex].AbsLoc] = 'B';
 																									//EWL070111 Reads[ReadIndex].score = Const_I + Const_S + LOG14 * Reads[ReadIndex].ReadLength + Const_Log_T;
@@ -3666,6 +3799,7 @@ main (int argc, char *argv[])
 							ofstream InversionOutf (InversionOutputFilename.c_str (),
 																			ios::app);
 							SortOutputInv (NumBoxes, CurrentChr, Reads, Inv, InversionOutf);
+							// TODO: Ask Kai whether this can be removed
 							//InversionOutf.close();
 							for (unsigned int i = 0; i < NumBoxes; i++)
 								Inv[i].clear ();
@@ -3697,6 +3831,7 @@ main (int argc, char *argv[])
 												{
 													{
 														{
+															// TODO: Ask Kai whether this can be removed
 															//if (Reads[ReadIndex].Used) break;
 
 															if (Reads[ReadIndex].UP_Far[FarIndex].
@@ -3715,6 +3850,7 @@ main (int argc, char *argv[])
 																			Reads[ReadIndex].UP_Close[CloseIndex].
 																			LengthStr >= Min_Num_Matched_Bases)
 																		{
+																			// TODO: Ask Kai whether this can be removed
 																			//cout << "+\t" << Reads[ReadIndex].UP_Close[CloseIndex].AbsLoc 
 																			//<< "\t" << Reads[ReadIndex].UP_Far[FarIndex].AbsLoc << endl;
 																			Reads[ReadIndex].Left =
@@ -3739,6 +3875,7 @@ main (int argc, char *argv[])
 																				AbsLoc;
 
 																			Reads[ReadIndex].NT_size = Reads[ReadIndex].ReadLength - Reads[ReadIndex].UP_Far[FarIndex].LengthStr - Reads[ReadIndex].UP_Close[CloseIndex].LengthStr;	// NT_2str
+																			// TODO: Ask Kai whether this can be removed
 																			//cout << "Po " << Reads[ReadIndex].NT_size << "\t" <<  Reads[ReadIndex].ReadLength << "\t" << Reads[ReadIndex].UP_Close[CloseIndex].LengthStr << "\t" << Reads[ReadIndex].UP_Far[FarIndex].LengthStr << endl;
 																			Reads[ReadIndex].NT_str =
 																				ReverseComplement (Reads[ReadIndex].
@@ -3748,6 +3885,7 @@ main (int argc, char *argv[])
 																			Reads[ReadIndex].InsertedStr = "";
 																			Reads[ReadIndex].BPLeft = Reads[ReadIndex].UP_Close[CloseIndex].AbsLoc + 1 - SpacerBeforeAfter;	// - Fragments[LeftReads[Left_Index].MatchedSeqID].Start;
 																			Reads[ReadIndex].BPRight = Reads[ReadIndex].UP_Far[FarIndex].AbsLoc - SpacerBeforeAfter;	// - Fragments[LeftReads[Left_Index].MatchedSeqID].Start;
+																			// TODO: Ask Kai whether this can be removed
 																			//CurrentChrMask[Reads[ReadIndex].UP_Close[CloseIndex].AbsLoc] = 'B';
 																			//CurrentChrMask[Reads[ReadIndex].UP_Far[FarIndex].AbsLoc] = 'B';
 																			//EWL070111 Reads[ReadIndex].score = Const_I + Const_S + LOG14 * Reads[ReadIndex].ReadLength + Const_Log_T;
@@ -3768,6 +3906,7 @@ main (int argc, char *argv[])
 																						if (Reads[ReadIndex].NT_size <=
 																								Max_Length_NT)
 																							{
+																								// TODO: Ask Kai whether this can be removed
 																								//int (int)Reads[ReadIndex].BPLeft = (int)Reads[ReadIndex].BPLeft - lowerBinBorder;
 																								//if ((int)Reads[ReadIndex].BPLeft < 0)
 																								//Inv_NT[0].push_back(ReadIndex);
@@ -3782,6 +3921,7 @@ main (int argc, char *argv[])
 																													 BPLeft /
 																													 BoxSize].
 																											push_back (ReadIndex);
+																										// TODO: Ask Kai whether this can be removed
 																										//Inv_NT[Reads[ReadIndex].BPLeft / BoxSize].push_back(ReadIndex);
 																										Reads[ReadIndex].Used =
 																											true;
@@ -3806,6 +3946,7 @@ main (int argc, char *argv[])
 																			Reads[ReadIndex].UP_Close[CloseIndex].
 																			LengthStr >= Min_Num_Matched_Bases)
 																		{
+																			// TODO: Ask Kai whether this can be removed
 																			//cout << "+\t" << Reads[ReadIndex].UP_Close[CloseIndex].AbsLoc 
 																			//<< "\t" << Reads[ReadIndex].UP_Far[FarIndex].AbsLoc << endl;
 																			Reads[ReadIndex].Right =
@@ -3835,6 +3976,7 @@ main (int argc, char *argv[])
 																				LengthStr -
 																				Reads[ReadIndex].UP_Close[CloseIndex].
 																				LengthStr;
+																			// TODO: Ask Kai whether this can be removed
 																			//cout << "Pi " << Reads[ReadIndex].NT_size << "\t" <<  Reads[ReadIndex].ReadLength << "\t" << Reads[ReadIndex].UP_Close[CloseIndex].LengthStr << "\t" << Reads[ReadIndex].UP_Far[FarIndex].LengthStr << endl;
 																			Reads[ReadIndex].NT_str =
 																				Reads[ReadIndex].UnmatchedSeq.
@@ -3843,6 +3985,7 @@ main (int argc, char *argv[])
 																			Reads[ReadIndex].InsertedStr = "";
 																			Reads[ReadIndex].BPRight = Reads[ReadIndex].UP_Close[CloseIndex].AbsLoc - SpacerBeforeAfter;	// - Fragments[LeftReads[Left_Index].MatchedSeqID].Start;
 																			Reads[ReadIndex].BPLeft = (Reads[ReadIndex].UP_Far[FarIndex].AbsLoc + 1) - SpacerBeforeAfter;	// - Fragments[LeftReads[Left_Index].MatchedSeqID].Start;
+																			// TODO: Ask Kai whether this can be removed
 																			//CurrentChrMask[Reads[ReadIndex].UP_Close[CloseIndex].AbsLoc] = 'B';
 																			//CurrentChrMask[Reads[ReadIndex].UP_Far[FarIndex].AbsLoc] = 'B';
 																			//EWL070111 Reads[ReadIndex].score = Const_I + Const_S + LOG14 * Reads[ReadIndex].ReadLength + Const_Log_T;
@@ -3868,6 +4011,7 @@ main (int argc, char *argv[])
 																																			 startOfRegion,
 																																			 endOfRegion))
 																							{
+																								// TODO: Ask Kai whether this can be removed
 																								//Inv_NT[Reads[ReadIndex].BPLeft / BoxSize].push_back(ReadIndex);
 																								//int (int)Reads[ReadIndex].BPLeft = (int)Reads[ReadIndex].BPLeft - lowerBinBorder;
 																								//if ((int)Reads[ReadIndex].BPLeft < 0)
@@ -3890,6 +4034,7 @@ main (int argc, char *argv[])
 												}
 											else if (Reads[ReadIndex].MatchedD == Minus)
 												{
+													// TODO: Ask Kai whether this can be removed
 													//for (int CloseIndex = Reads[ReadIndex].UP_Close.size() - 1; CloseIndex >= 0; CloseIndex--) 
 													{
 														//if (Reads[ReadIndex].Used) break;
@@ -3916,6 +4061,7 @@ main (int argc, char *argv[])
 																			Reads[ReadIndex].UP_Close[CloseIndex].
 																			LengthStr >= Min_Num_Matched_Bases)
 																		{
+																			// TODO: Ask Kai whether this can be removed
 																			//cout << "-\t" << Reads[ReadIndex].UP_Close[CloseIndex].AbsLoc 
 																			//<< "\t" << Reads[ReadIndex].UP_Far[FarIndex].AbsLoc << endl;
 																			Reads[ReadIndex].Left =
@@ -3945,6 +4091,7 @@ main (int argc, char *argv[])
 																				LengthStr -
 																				Reads[ReadIndex].UP_Close[CloseIndex].
 																				LengthStr;
+																			// TODO: Ask Kai whether this can be removed
 																			//cout << "Mo " << Reads[ReadIndex].NT_2size << "\t" <<  Reads[ReadIndex].ReadLength << "\t" << Reads[ReadIndex].UP_Close[CloseIndex].LengthStr << "\t" << Reads[ReadIndex].UP_Far[FarIndex].LengthStr << endl;
 																			Reads[ReadIndex].NT_str =
 																				Reads[ReadIndex].UnmatchedSeq.
@@ -3952,6 +4099,7 @@ main (int argc, char *argv[])
 																								Reads[ReadIndex].NT_size);
 																			Reads[ReadIndex].InsertedStr = "";
 																			Reads[ReadIndex].BPLeft = Reads[ReadIndex].UP_Far[FarIndex].AbsLoc - SpacerBeforeAfter;	// - Fragments[LeftReads[Left_Index].MatchedSeqID].Start;
+																			// TODO: Ask Kai whether this can be removed
 																			//cout <<  "far\t" << Reads[ReadIndex].UP_Far[FarIndex].AbsLoc << "\tspacer\t" << SpacerBeforeAfter << endl;
 																			//cout <<  Reads[ReadIndex].UP_Far[FarIndex].AbsLoc - SpacerBeforeAfter - 1 << endl;
 																			Reads[ReadIndex].BPRight = Reads[ReadIndex].UP_Close[CloseIndex].AbsLoc - 1 - SpacerBeforeAfter;	// - Fragments[LeftReads[Left_Index].MatchedSeqID].Start;
@@ -3972,6 +4120,7 @@ main (int argc, char *argv[])
 																					}
 																				else
 																					{
+																						// TODO: Ask Kai whether this can be removed
 																						//cout << "Inv\t" << Reads[ReadIndex].BPLeft << "\t" << BoxSize << endl; 
 																						if (Reads[ReadIndex].NT_size <=
 																								Max_Length_NT
@@ -3981,6 +4130,7 @@ main (int argc, char *argv[])
 																																			 startOfRegion,
 																																			 endOfRegion))
 																							{
+																								// TODO: Ask Kai whether this can be removed
 																								//Inv_NT[Reads[ReadIndex].BPLeft / BoxSize].push_back(ReadIndex);
 																								//int (int)Reads[ReadIndex].BPLeft = (int)Reads[ReadIndex].BPLeft - lowerBinBorder;
 																								//if ((int)Reads[ReadIndex].BPLeft < 0)
@@ -4039,6 +4189,7 @@ main (int argc, char *argv[])
 																				LengthStr -
 																				Reads[ReadIndex].UP_Close[CloseIndex].
 																				LengthStr;
+																			// TODO: Ask Kai whether this can be removed
 																			//cout << "Mi " << Reads[ReadIndex].NT_2size << "\t" <<  Reads[ReadIndex].ReadLength << "\t" << Reads[ReadIndex].UP_Close[CloseIndex].LengthStr << "\t" << Reads[ReadIndex].UP_Far[FarIndex].LengthStr << endl;
 																			Reads[ReadIndex].NT_str =
 																				ReverseComplement (Reads[ReadIndex].
@@ -4047,6 +4198,7 @@ main (int argc, char *argv[])
 																								Reads[ReadIndex].NT_size);
 																			Reads[ReadIndex].InsertedStr = "";
 																			Reads[ReadIndex].BPLeft = Reads[ReadIndex].UP_Close[CloseIndex].AbsLoc - SpacerBeforeAfter;	// - Fragments[LeftReads[Left_Index].MatchedSeqID].Start;
+																			// TODO: Ask Kai whether this can be removed
 																			//cout <<  "far\t" << Reads[ReadIndex].UP_Far[FarIndex].AbsLoc << "\tspacer\t" << SpacerBeforeAfter << endl;
 																			//cout <<  Reads[ReadIndex].UP_Far[FarIndex].AbsLoc - SpacerBeforeAfter - 1 << endl;
 																			Reads[ReadIndex].BPRight = Reads[ReadIndex].UP_Far[FarIndex].AbsLoc - 1 - SpacerBeforeAfter;	// - Fragments[LeftReads[Left_Index].MatchedSeqID].Start;
@@ -4067,6 +4219,7 @@ main (int argc, char *argv[])
 																					}
 																				else
 																					{
+																						// TODO: Ask Kai whether this can be removed
 																						//cout << "Inv\t" << Reads[ReadIndex].BPLeft << "\t" << BoxSize << endl; 
 																						if (Reads[ReadIndex].NT_size <=
 																								Max_Length_NT
@@ -4076,6 +4229,7 @@ main (int argc, char *argv[])
 																																			 startOfRegion,
 																																			 endOfRegion))
 																							{
+																								// TODO: Ask Kai whether this can be removed
 																								//Inv_NT[Reads[ReadIndex].BPLeft / BoxSize].push_back(ReadIndex);
 																								//int (int)Reads[ReadIndex].BPLeft = (int)Reads[ReadIndex].BPLeft - lowerBinBorder;
 																								//if ((int)Reads[ReadIndex].BPLeft < 0)
@@ -4101,9 +4255,11 @@ main (int argc, char *argv[])
 								}
 							cout << "Total: " << Count_Inv_NT << "\t+" << Count_Inv_NT_Plus
 								<< "\t-" << Count_Inv_NT_Minus << endl;
+							// TODO: Ask Kai whether this can be removed
 							//ofstream InversionOutf(InversionOutputFilename.c_str());
 							SortOutputInv_NT (NumBoxes, CurrentChr, Reads, Inv_NT,
 																InversionOutf);
+							// TODO: Ask Kai whether this can be removed
 							//InversionOutf.close();
 							for (unsigned int i = 0; i < NumBoxes; i++)
 								Inv_NT[i].clear ();
@@ -4128,6 +4284,7 @@ main (int argc, char *argv[])
 															 CloseIndex < Reads[ReadIndex].UP_Close.size ();
 															 CloseIndex++)
 														{
+															// TODO: Ask Kai whether this can be removed
 															//cout << "+" << CloseIndex << endl;
 															if (Reads[ReadIndex].Used)
 																break;
@@ -4138,6 +4295,7 @@ main (int argc, char *argv[])
 																	 Reads[ReadIndex].UP_Far.size () - 1;
 																	 FarIndex >= 0; FarIndex--)
 																{
+																	// TODO: Ask Kai whether this can be removed
 																	//cout << "+" << FarIndex << endl;
 																	if (Reads[ReadIndex].Used)
 																		break;
@@ -4191,6 +4349,7 @@ main (int argc, char *argv[])
 																										Reads[ReadIndex].
 																										IndelSize);
 																					Reads[ReadIndex].NT_str = "";
+																					// TODO: Ask Kai whether this can be removed
 																					//                                 LeftReads[Left_Index].InsertedStr = "";
 																					Reads[ReadIndex].BPLeft =
 																						Reads[ReadIndex].
@@ -4199,6 +4358,7 @@ main (int argc, char *argv[])
 																					Reads[ReadIndex].BPRight =
 																						Reads[ReadIndex].UP_Far[FarIndex].
 																						AbsLoc - SpacerBeforeAfter;
+																					// TODO: Ask Kai whether this can be removed
 																					//CurrentChrMask[Reads[ReadIndex].UP_Close[CloseIndex].AbsLoc] = 'B';
 																					//CurrentChrMask[Reads[ReadIndex].UP_Far[FarIndex].AbsLoc] = 'B';
 																					//EWL070111 Reads[ReadIndex].score = Const_I + LOG14 * Reads[ReadIndex].ReadLength - LOG14 * Reads[ReadIndex].IndelSize + Const_Log_T;
@@ -4216,6 +4376,7 @@ main (int argc, char *argv[])
 																							}
 																						else
 																							{
+																								// TODO: Ask Kai whether this can be removed
 																								//SIs[Reads[ReadIndex].BPLeft / BoxSize].push_back(ReadIndex);
 																								//int (int)Reads[ReadIndex].BPLeft = (int)Reads[ReadIndex].BPLeft - lowerBinBorder;
 																								//if ((int)Reads[ReadIndex].BPLeft < 0)
@@ -4255,6 +4416,7 @@ main (int argc, char *argv[])
 															 Reads[ReadIndex].UP_Close.size () - 1;
 															 CloseIndex >= 0; CloseIndex--)
 														{
+															// TODO: Ask Kai whether this can be removed
 															//cout << "-: " << CloseIndex << endl;
 															if (Reads[ReadIndex].Used)
 																break;
@@ -4265,6 +4427,7 @@ main (int argc, char *argv[])
 																	 Reads[ReadIndex].UP_Far.size () - 1;
 																	 FarIndex >= 0; FarIndex--)
 																{
+																	// TODO: Ask Kai whether this can be removed
 																	//cout << "-: " << FarIndex << endl;
 																	if (Reads[ReadIndex].Used)
 																		break;
@@ -4315,9 +4478,11 @@ main (int argc, char *argv[])
 																										Reads[ReadIndex].
 																										IndelSize);
 																					Reads[ReadIndex].NT_str = "";
+																					// TODO: Ask Kai whether this can be removed
 																					//   LeftReads[Left_Index].InsertedStr = "";
 																					Reads[ReadIndex].BPLeft = Reads[ReadIndex].UP_Far[FarIndex].AbsLoc - SpacerBeforeAfter;	// - Fragments[LeftReads[Left_Index].MatchedSeqID].Start;
 																					Reads[ReadIndex].BPRight = Reads[ReadIndex].UP_Close[CloseIndex].AbsLoc - SpacerBeforeAfter;	// - Fragments[LeftReads[Left_Index].MatchedSeqID].Start;
+																					// TODO: Ask Kai whether this can be removed
 																					//CurrentChrMask[Reads[ReadIndex].UP_Close[CloseIndex].AbsLoc] = 'B';
 																					//CurrentChrMask[Reads[ReadIndex].UP_Far[FarIndex].AbsLoc] = 'B';
 																					//EWL070111 Reads[ReadIndex].score = Const_I + LOG14 * Reads[ReadIndex].ReadLength - LOG14 * Reads[ReadIndex].IndelSize + Const_Log_T;
@@ -4333,6 +4498,7 @@ main (int argc, char *argv[])
 																						}
 																					else
 																						{
+																							// TODO: Ask Kai whether this can be removed
 																							//SIs[Reads[ReadIndex].BPLeft / BoxSize].push_back(ReadIndex);
 																							//int (int)Reads[ReadIndex].BPLeft = (int)Reads[ReadIndex].BPLeft - lowerBinBorder;
 																							//if ((int)Reads[ReadIndex].BPLeft < 0)
@@ -4433,10 +4599,12 @@ main (int argc, char *argv[])
 					unsigned Count_Far = 0;
 					unsigned Count_Used = 0;
 					unsigned Count_Unused = 0;
+					// TODO: Ask Kai whether this can be removed
 					//vector <SPLIT_READ> UnusedClosedReads;
 
 					for (int Index = TotalNumReads - 1; Index >= 0; Index--)
 						{
+							// TODO: Ask Kai whether this can be removed
 							//cout << Index << endl;
 							//if (!Reads[Index].UP_Close.empty()) Count_Close++;
 							if (!Reads[Index].UP_Far.empty ())
@@ -4445,11 +4613,15 @@ main (int argc, char *argv[])
 								{
 
 								}
-							else
+							else {
+								// TODO: Ask Kai whether this can be removed
 								Count_Unused++;	//UnusedClosedReads.push_back(Reads[Index]);
+							}
+							// TODO: Ask Kai whether this can be removed
 							//cout << "1" << endl;
 							if (Reads[Index].Used)
 								Count_Used++;
+							// TODO: Ask Kai whether this can be removed
 							//cout << "2" << endl;
 							//Reads.pop_back();
 						}
@@ -4477,6 +4649,7 @@ main (int argc, char *argv[])
 					BP_Reads.clear ();
 					if (Analyze_BP)
 						{
+							// TODO: Ask Kai whether this can be removed
 							//cout << "BP" << endl;
 							time_t Time_BP_S, Time_BP_E;
 							Time_BP_S = time (NULL);
@@ -4491,6 +4664,7 @@ main (int argc, char *argv[])
 						}
 
 					Time_Sort_E = time (NULL);
+					// TODO: Ask Kai whether this can be removed
 					//Time_Load_E = time(NULL);
 					//cout << "SI: " << Count_SI_Plus << " " << Count_SI_Minus << "\n"
 					//<< "D: " << Count_D_Plus << " " << Count_D_Minus << endl;
@@ -4498,8 +4672,10 @@ main (int argc, char *argv[])
 					//cout << Plus_Sum_Left << " " << Plus_Sum_Right << "\n" << Minus_Sum_Right << " " << Minus_Sum_Left << endl;
 
 					AllLoadings += (unsigned int) difftime (Time_Load_E, Time_Load_S);
+					// TODO: Ask Kai whether this can be removed
 					//AllMinings += (unsigned int)difftime(Time_Mine_E, Time_Load_E);
 					AllSortReport += (unsigned int) difftime (Time_Sort_E, Time_Load_E);
+					// TODO: Ask Kai whether this can be removed
 					//Time_Load_S = time(NULL); 
 					Reads.clear ();
 					cout << "I have " << FutureReads.
@@ -4517,6 +4693,7 @@ main (int argc, char *argv[])
 		}														// while ( loopOverAllChromosomes && chromosomeIndex < chromosomes.size() );
 	cout << "Loading genome sequences and reads: " << AllLoadings << " seconds."
 		<< endl;
+	// TODO: Ask Kai whether this can be removed
 	//cout << "Mining indels: " << AllMinings << " seconds." << endl;
 	cout << "Mining, Sorting and output results: " << AllSortReport <<
 		" seconds." << endl;
@@ -4557,6 +4734,7 @@ ReverseComplement (const string & InputPattern)
 	return OutputPattern;
 }
 
+// TODO: Ask Kai whether this can be removed
 //const short MAX_SNP_ERROR = 2;
 //const short ADDITIONAL_MISMATCH = 2;
 //const short TOTAL_SNP_ERROR_CHECKED = MAX_SNP_ERROR + ADDITIONAL_MISMATCH + 1;
@@ -4603,24 +4781,24 @@ ReportEvent (const vector < SPLIT_READ > &Deletions, const unsigned int &S,
 			if (Deletions[i].BP <= Min_Length)
 				{
 					LeftMin = true;
-					//break;
+					//break; // TODO: Ask Kai whether this can be removed
 				}
 			if (Deletions[i].ReadLength - Deletions[i].BP - Deletions[i].NT_size <=
 					Min_Length)
 				{
 					RightMin = true;
-					//break;
+					//break; // TODO: Ask Kai whether this can be removed
 				}
 			if (Deletions[i].BP >= Max_Length)
 				{
 					LeftMax = true;
-					//break;
+					//break; // TODO: Ask Kai whether this can be removed
 				}
 			if (Deletions[i].ReadLength - Deletions[i].BP - Deletions[i].NT_size >=
 					Max_Length)
 				{
 					RightMax = true;
-					//break;
+					//break; // TODO: Ask Kai whether this can be removed
 				}
 		}
 
@@ -4658,6 +4836,7 @@ GetRealStart4Insertion (const string & TheInput, const string & InsertedStr,
 {
 	unsigned int IndelSize = InsertedStr.size ();
 	unsigned int PosIndex = RealStart + SpacerBeforeAfter;
+	// TODO: Ask Kai whether this can be removed
 	//unsigned int Start = PosIndex + 1;
 
 	//unsigned int End = RealEnd + SpacerBeforeAfter - 1;
@@ -4714,11 +4893,13 @@ GetCloseEnd (const string & CurrentChr, SPLIT_READ & Temp_One_Read)
 			PD[CheckIndex].reserve (3 * Temp_One_Read.InsertSize);
 		}
 	vector < UniquePoint > UP;
+	// TODO: Ask Kai whether this can be removed
 	//char Direction;
 	int Start, End;
 	short BP_Start;								// = MinClose;
 	short BP_End;									// = ReadLength - MinClose;
 
+	// TODO: Ask Kai whether this can be removed
 	//for (int i = 0; i < TOTAL_SNP_ERROR_CHECKED; i++) {
 	//  PD[i].clear();
 	//}
@@ -4727,6 +4908,7 @@ GetCloseEnd (const string & CurrentChr, SPLIT_READ & Temp_One_Read)
 	//MinClose = short(log((double)(Temp_One_Read.InsertSize * 3))/log(4.0) + 0.8) + 3;
 	BP_Start = Temp_One_Read.MinClose;
 	BP_End = Temp_One_Read.ReadLengthMinus;
+	// TODO: Ask Kai whether this can be removed
 	//Temp_One_Read.Unique = true;
 	if (Temp_One_Read.TOTAL_SNP_ERROR_CHECKED_Minus)
 		{
@@ -4738,6 +4920,7 @@ GetCloseEnd (const string & CurrentChr, SPLIT_READ & Temp_One_Read)
 					LeftChar = CurrentReadSeq[0];
 					if (LeftChar != 'N')
 						{
+							// TODO: Ask Kai whether this can be removed
 							//#pragma omp parallel default(shared)
 							{
 								// #pragma omp for
@@ -4754,6 +4937,7 @@ GetCloseEnd (const string & CurrentChr, SPLIT_READ & Temp_One_Read)
 						}
 					else
 						{										//Match2N[(short)'A'] = 'N';
+							// TODO: Ask Kai whether this can be removed
 							//#pragma omp parallel default(shared)
 							{
 								//#pragma omp for
@@ -4768,6 +4952,7 @@ GetCloseEnd (const string & CurrentChr, SPLIT_READ & Temp_One_Read)
 							}
 						}
 					CheckLeft_Close (Temp_One_Read, CurrentChr, CurrentReadSeq, PD, BP_Start, BP_End, FirstBase, UP);	// LengthStr
+					// TODO: Ask Kai whether this can be removed
 					//Direction = Minus;
 					if (UP.empty ())
 						{
@@ -4819,12 +5004,15 @@ GetCloseEnd (const string & CurrentChr, SPLIT_READ & Temp_One_Read)
 										{
 											PD[0].push_back (pos);
 										}
+									// TODO: Ask Kai whether this can be removed
 									//else Left_PD[1].push_back(pos);
 								}
 						}
+					// TODO: Ask Kai whether this can be removed
 					//cout << "1\t" << PD[0].size() << "\t" << PD[1].size() << endl;
 					CheckRight_Close (Temp_One_Read, CurrentChr, CurrentReadSeq, PD,
 														BP_Start, BP_End, FirstBase, UP);
+					// TODO: Ask Kai whether this can be removed
 					//cout << UP.size() << endl;
 					//Direction = '+';
 					if (UP.empty ())
@@ -4867,6 +5055,7 @@ GetCloseEnd (const string & CurrentChr, SPLIT_READ & Temp_One_Read)
 										{
 											PD[0].push_back (pos);
 										}
+									// TODO: Ask Kai whether this can be removed
 									//else PD[1].push_back(pos);
 								}
 						}
@@ -4878,11 +5067,13 @@ GetCloseEnd (const string & CurrentChr, SPLIT_READ & Temp_One_Read)
 										{
 											PD[0].push_back (pos);
 										}
+									// TODO: Ask Kai whether this can be removed
 									//else Left_PD[1].push_back(pos);
 								}
 						}
 					CheckLeft_Close (Temp_One_Read, CurrentChr, CurrentReadSeq, PD,
 													 BP_Start, BP_End, FirstBase, UP);
+					// TODO: Ask Kai whether this can be removed
 					//Direction = Minus;
 					if (UP.empty ())
 						{
@@ -4922,6 +5113,7 @@ GetCloseEnd (const string & CurrentChr, SPLIT_READ & Temp_One_Read)
 										{
 											PD[0].push_back (pos);
 										}
+									// TODO: Ask Kai whether this can be removed
 									//else PD[1].push_back(pos);
 								}
 						}
@@ -4933,12 +5125,15 @@ GetCloseEnd (const string & CurrentChr, SPLIT_READ & Temp_One_Read)
 										{
 											PD[0].push_back (pos);
 										}
+									// TODO: Ask Kai whether this can be removed
 									//else Left_PD[1].push_back(pos);
 								}
 						}
+					// TODO: Ask Kai whether this can be removed
 					//cout << "2" << PD[0].size() << "\t" << PD[1].size() << endl;
 					CheckRight_Close (Temp_One_Read, CurrentChr, CurrentReadSeq, PD,
 														BP_Start, BP_End, FirstBase, UP);
+					// TODO: Ask Kai whether this can be removed
 					//cout << UP.size() << endl;
 					//Direction = '+';
 					if (UP.empty ())
@@ -4965,6 +5160,7 @@ GetCloseEnd (const string & CurrentChr, SPLIT_READ & Temp_One_Read)
 					UP.clear ();
 				}
 		}
+	// TODO: Ask Kai whether this can be removed
 	//if (!Temp_One_Read.UP_Close.empty())
 	//   CleanUniquePoints(Temp_One_Read.UP_Close);
 	return;
@@ -4975,6 +5171,7 @@ GetFarEnd_SingleStrandDownStreamInsertions (const string & CurrentChr,
 																						SPLIT_READ & Temp_One_Read,
 																						const short &RangeIndex)
 {
+	// TODO: Ask Kai whether this can be removed
 	//Temp_One_Read.ReadLength = Temp_One_Read.UnmatchedSeq.size();
 	//Temp_One_Read.ReadLengthMinus = Temp_One_Read.ReadLength - 1;
 	//if (Temp_One_Read.MatchedRelPos > 160000)
@@ -4987,14 +5184,17 @@ GetFarEnd_SingleStrandDownStreamInsertions (const string & CurrentChr,
 		{
 			PD[CheckIndex].reserve (Temp_One_Read.InsertSize * 2 +
 															DSizeArray[RangeIndex]);
+			// TODO: Ask Kai whether this can be removed
 			//PD_Minus[CheckIndex].reserve(End - Start + 1);
 		}
 	vector < UniquePoint > UP;
+	// TODO: Ask Kai whether this can be removed
 	//char Direction;
 	unsigned int Start, End;
 	short BP_Start;								// = MinClose;
 	short BP_End;									// = ReadLength - MinClose;
 
+	// TODO: Ask Kai whether this can be removed
 	//for (int i = 0; i < TOTAL_SNP_ERROR_CHECKED; i++) {
 	//  PD[i].clear();
 	//}
@@ -5003,9 +5203,11 @@ GetFarEnd_SingleStrandDownStreamInsertions (const string & CurrentChr,
 	//MinClose = short(log((double)(Temp_One_Read.InsertSize * 2 + Range))/log(4.0) + 0.8) + 3;
 	BP_Start = Temp_One_Read.MinClose + RangeIndex;
 	BP_End = Temp_One_Read.ReadLengthMinus;
+	// TODO: Ask Kai whether this can be removed
 	//Temp_One_Read.Unique = true;
 	if (Temp_One_Read.MatchedD == Minus)
 		{
+			// TODO: Ask Kai whether this can be removed
 			//CurrentReadSeq = ReverseComplement(Temp_One_Read.UnmatchedSeq);
 			CurrentReadSeq = Temp_One_Read.UnmatchedSeq;
 
@@ -5045,6 +5247,7 @@ GetFarEnd_SingleStrandDownStreamInsertions (const string & CurrentChr,
 										{
 											PD[0].push_back (pos);
 										}
+									// TODO: Ask Kai whether this can be removed
 									//else Left_PD[1].push_back(pos);
 								}
 						}
@@ -5059,6 +5262,7 @@ GetFarEnd_SingleStrandDownStreamInsertions (const string & CurrentChr,
 										{
 											PD[0].push_back (pos);
 										}
+									// TODO: Ask Kai whether this can be removed
 									//else PD[1].push_back(pos);
 								}
 						}
@@ -5070,6 +5274,7 @@ GetFarEnd_SingleStrandDownStreamInsertions (const string & CurrentChr,
 										{
 											PD[0].push_back (pos);
 										}
+									// TODO: Ask Kai whether this can be removed
 									//else Left_PD[1].push_back(pos);
 								}
 						}
@@ -5105,6 +5310,7 @@ GetFarEnd_SingleStrandDownStreamInsertions (const string & CurrentChr,
 			Start =
 				Temp_One_Read.UP_Close[0].AbsLoc -
 				Temp_One_Read.UP_Close[0].LengthStr;
+			// TODO: Ask Kai whether this can be removed
 			//Start = Temp_One_Read.MatchedRelPos + SpacerBeforeAfter;
 			End = Start + DSizeArray[RangeIndex] + Temp_One_Read.InsertSize * 2;
 			if (End > CurrentChr.size () - SpacerBeforeAfter)
@@ -5133,6 +5339,7 @@ GetFarEnd_SingleStrandDownStreamInsertions (const string & CurrentChr,
 										{
 											PD[0].push_back (pos);
 										}
+									// TODO: Ask Kai whether this can be removed
 									//else Left_PD[1].push_back(pos);
 								}
 						}
@@ -5147,6 +5354,7 @@ GetFarEnd_SingleStrandDownStreamInsertions (const string & CurrentChr,
 										{
 											PD[0].push_back (pos);
 										}
+									// TODO: Ask Kai whether this can be removed
 									//else PD[1].push_back(pos);
 								}
 						}
@@ -5158,6 +5366,7 @@ GetFarEnd_SingleStrandDownStreamInsertions (const string & CurrentChr,
 										{
 											PD[0].push_back (pos);
 										}
+									// TODO: Ask Kai whether this can be removed
 									//else Left_PD[1].push_back(pos);
 								}
 						}
@@ -5165,6 +5374,7 @@ GetFarEnd_SingleStrandDownStreamInsertions (const string & CurrentChr,
 
 			CheckRight_Far (Temp_One_Read, CurrentChr, CurrentReadSeq, PD, BP_Start,
 											BP_End, FirstBase, UP);
+			// TODO: Ask Kai whether this can be removed
 			//Direction = '+';
 			if (UP.empty ())
 				{
@@ -5189,6 +5399,7 @@ GetFarEnd_SingleStrandDownStreamInsertions (const string & CurrentChr,
 
 			UP.clear ();
 		}
+	// TODO: Ask Kai whether this can be removed
 	//if (!Temp_One_Read.UP_Far.empty())
 	//   CleanUniquePoints(Temp_One_Read.UP_Far);
 	return;
@@ -5199,6 +5410,7 @@ GetFarEnd_SingleStrandDownStream (const string & CurrentChr,
 																	SPLIT_READ & Temp_One_Read,
 																	const short &RangeIndex)
 {
+	// TODO: Ask Kai whether this can be removed
 	//cout << "in GetFarEnd_SingleStrandDownStream" << endl;
 	//Temp_One_Read.ReadLength = Temp_One_Read.UnmatchedSeq.size();
 	//Temp_One_Read.ReadLengthMinus = Temp_One_Read.ReadLength - 1;
@@ -5217,11 +5429,13 @@ GetFarEnd_SingleStrandDownStream (const string & CurrentChr,
 			//PD_Minus[CheckIndex].reserve(End - Start + 1);
 		}
 	vector < UniquePoint > UP;
+	// TODO: Ask Kai whether this can be removed
 	//char Direction;
 	unsigned int Start, End;
 	short BP_Start;								// = MinClose;
 	short BP_End;									// = ReadLength - MinClose;
 
+	// TODO: Ask Kai whether this can be removed
 	//for (int i = 0; i < TOTAL_SNP_ERROR_CHECKED; i++) {
 	//  PD[i].clear();
 	//}
@@ -5231,6 +5445,7 @@ GetFarEnd_SingleStrandDownStream (const string & CurrentChr,
 	//cout << "Temp_One_Read.MinClose: " << Temp_One_Read.MinClose << endl;
 	BP_Start = Temp_One_Read.MinClose + RangeIndex;
 	BP_End = Temp_One_Read.ReadLengthMinus;
+	// TODO: Ask Kai whether this can be removed
 	//Temp_One_Read.Unique = true;
 	if (Temp_One_Read.MatchedD == Minus)
 		{
@@ -5273,6 +5488,7 @@ GetFarEnd_SingleStrandDownStream (const string & CurrentChr,
 										{
 											PD[0].push_back (pos);
 										}
+									// TODO: Ask Kai whether this can be removed
 									//else Left_PD[1].push_back(pos);
 								}
 						}
@@ -5287,6 +5503,7 @@ GetFarEnd_SingleStrandDownStream (const string & CurrentChr,
 										{
 											PD[0].push_back (pos);
 										}
+									// TODO: Ask Kai whether this can be removed
 									//else PD[1].push_back(pos);
 								}
 						}
@@ -5298,10 +5515,12 @@ GetFarEnd_SingleStrandDownStream (const string & CurrentChr,
 										{
 											PD[0].push_back (pos);
 										}
+									// TODO: Ask Kai whether this can be removed
 									//else Left_PD[1].push_back(pos);
 								}
 						}
 				}
+			// TODO: Ask Kai whether this can be removed
 			//if (Temp_One_Read.MatchedRelPos > 160000)
 			//if (RangeIndex == 4)
 			//cout << "- " << PD[0].size() << "\t" << PD[1].size() << endl;
@@ -5337,6 +5556,7 @@ GetFarEnd_SingleStrandDownStream (const string & CurrentChr,
 			Start =
 				Temp_One_Read.UP_Close[0].AbsLoc -
 				Temp_One_Read.UP_Close[0].LengthStr + Temp_One_Read.ReadLength;
+			// TODO: Ask Kai whether this can be removed
 			//Start = Temp_One_Read.MatchedRelPos + SpacerBeforeAfter;
 			End = Start + DSizeArray[RangeIndex] + Temp_One_Read.InsertSize * 2;
 			if (End > CurrentChr.size () - SpacerBeforeAfter)
@@ -5365,6 +5585,7 @@ GetFarEnd_SingleStrandDownStream (const string & CurrentChr,
 										{
 											PD[0].push_back (pos);
 										}
+									// TODO: Ask Kai whether this can be removed
 									//else Left_PD[1].push_back(pos);
 								}
 						}
@@ -5379,6 +5600,7 @@ GetFarEnd_SingleStrandDownStream (const string & CurrentChr,
 										{
 											PD[0].push_back (pos);
 										}
+									// TODO: Ask Kai whether this can be removed
 									//else PD[1].push_back(pos);
 								}
 						}
@@ -5390,10 +5612,12 @@ GetFarEnd_SingleStrandDownStream (const string & CurrentChr,
 										{
 											PD[0].push_back (pos);
 										}
+									// TODO: Ask Kai whether this can be removed
 									//else Left_PD[1].push_back(pos);
 								}
 						}
 				}
+			// TODO: Ask Kai whether this can be removed
 			//if (Temp_One_Read.MatchedRelPos > 160000)
 			//if (RangeIndex == 4)
 			//cout << "+ " << PD[0].size() << "\t" << PD[1].size() << endl;
@@ -5422,6 +5646,7 @@ GetFarEnd_SingleStrandDownStream (const string & CurrentChr,
 
 			UP.clear ();
 		}
+	// TODO: Ask Kai whether this can be removed
 	//if (!Temp_One_Read.UP_Far.empty())
 	//   CleanUniquePoints(Temp_One_Read.UP_Far);
 	return;
@@ -5442,14 +5667,17 @@ GetFarEnd_SingleStrandUpStream (const string & CurrentChr,
 		{
 			PD[CheckIndex].reserve (Temp_One_Read.InsertSize * 2 +
 															DSizeArray[RangeIndex]);
+			// TODO: Ask Kai whether this can be removed
 			//PD_Minus[CheckIndex].reserve(End - Start + 1);
 		}
 	vector < UniquePoint > UP;
+	// TODO: Ask Kai whether this can be removed
 	//char Direction;
 	int Start, End;
 	short BP_Start;								// = MinClose;
 	short BP_End;									// = ReadLength - MinClose;
 
+	// TODO: Ask Kai whether this can be removed
 	//for (int i = 0; i < TOTAL_SNP_ERROR_CHECKED; i++) {
 	//  PD[i].clear();
 	//}
@@ -5494,6 +5722,7 @@ GetFarEnd_SingleStrandUpStream (const string & CurrentChr,
 										{
 											PD[0].push_back (pos);
 										}
+									// TODO: Ask Kai whether this can be removed
 									//else Left_PD[1].push_back(pos);
 								}
 						}
@@ -5508,6 +5737,7 @@ GetFarEnd_SingleStrandUpStream (const string & CurrentChr,
 										{
 											PD[0].push_back (pos);
 										}
+									// TODO: Ask Kai whether this can be removed
 									//else PD[1].push_back(pos);
 								}
 						}
@@ -5519,12 +5749,14 @@ GetFarEnd_SingleStrandUpStream (const string & CurrentChr,
 										{
 											PD[0].push_back (pos);
 										}
+									// TODO: Ask Kai whether this can be removed
 									//else Left_PD[1].push_back(pos);
 								}
 						}
 				}
 			CheckLeft_Far (Temp_One_Read, CurrentChr, CurrentReadSeq, PD, BP_Start,
 										 BP_End, FirstBase, UP);
+			// TODO: Ask Kai whether this can be removed
 			//Direction = Minus;
 			if (UP.empty ())
 				{
@@ -5556,6 +5788,7 @@ GetFarEnd_SingleStrandUpStream (const string & CurrentChr,
 			End =
 				Temp_One_Read.UP_Close[0].AbsLoc -
 				Temp_One_Read.UP_Close[0].LengthStr;
+			// TODO: Ask Kai whether this can be removed
 			//Start = Temp_One_Read.MatchedRelPos + SpacerBeforeAfter;
 
 			if (End >
@@ -5588,6 +5821,7 @@ GetFarEnd_SingleStrandUpStream (const string & CurrentChr,
 										{
 											PD[0].push_back (pos);
 										}
+									// TODO: Ask Kai whether this can be removed
 									//else Left_PD[1].push_back(pos);
 								}
 						}
@@ -5602,6 +5836,7 @@ GetFarEnd_SingleStrandUpStream (const string & CurrentChr,
 										{
 											PD[0].push_back (pos);
 										}
+									// TODO: Ask Kai whether this can be removed
 									//else PD[1].push_back(pos);
 								}
 						}
@@ -5613,12 +5848,14 @@ GetFarEnd_SingleStrandUpStream (const string & CurrentChr,
 										{
 											PD[0].push_back (pos);
 										}
+									// TODO: Ask Kai whether this can be removed
 									//else Left_PD[1].push_back(pos);
 								}
 						}
 				}
 			CheckRight_Far (Temp_One_Read, CurrentChr, CurrentReadSeq, PD, BP_Start,
 											BP_End, FirstBase, UP);
+			// TODO: Ask Kai whether this can be removed
 			//Direction = '+';
 			if (UP.empty ())
 				{
@@ -5643,6 +5880,7 @@ GetFarEnd_SingleStrandUpStream (const string & CurrentChr,
 
 			UP.clear ();
 		}
+	// TODO: Ask Kai whether this can be removed
 	//if (!Temp_One_Read.UP_Far.empty())
 	//   CleanUniquePoints(Temp_One_Read.UP_Far);
 	return;
@@ -5652,12 +5890,14 @@ void
 GetFarEnd_OtherStrand (const string & CurrentChr, SPLIT_READ & Temp_One_Read,
 											 const short &RangeIndex)
 {
+	// TODO: Ask Kai whether this can be removed
 	//short ReadLength = Temp_One_Read.UnmatchedSeq.size();
 	//short ReadLengthMinus = ReadLength - 1;
 	//MinClose = short(log((double)(Temp_One_Read.InsertSize * 5 + Range * 2))/log(4.0) + 0.8) + 3;// + MAX_SNP_ERROR;
 	int Start, End;
 	short BP_Start = Temp_One_Read.MinClose + RangeIndex;
 	short BP_End = Temp_One_Read.ReadLengthMinus;
+	// TODO: Ask Kai whether this can be removed
 	//char Direction;
 
 	vector < UniquePoint > UP;
@@ -5708,6 +5948,7 @@ GetFarEnd_OtherStrand (const string & CurrentChr, SPLIT_READ & Temp_One_Read,
 										PD_Plus[0].push_back (pos);
 									else
 										PD_Plus[1].push_back (pos);
+									// TODO: Ask Kai whether this can be removed
 									//if (CurrentChr[pos] == CurrentBaseRC) PD_Minus[0].push_back(pos);
 									//else PD_Minus[1].push_back(pos);
 								}
@@ -5719,11 +5960,13 @@ GetFarEnd_OtherStrand (const string & CurrentChr, SPLIT_READ & Temp_One_Read,
 									if (Match2N[(short) CurrentChr[pos]] == 'N')
 										{
 											PD_Plus[0].push_back (pos);
+											// TODO: Ask Kai whether this can be removed
 											//PD_Minus[0].push_back(pos);
 										}
 									else
 										{
 											PD_Plus[1].push_back (pos);
+											// TODO: Ask Kai whether this can be removed
 											//PD_Minus[1].push_back(pos);
 										}
 								}
@@ -5735,6 +5978,7 @@ GetFarEnd_OtherStrand (const string & CurrentChr, SPLIT_READ & Temp_One_Read,
 						{
 							for (int pos = Start; pos < End; pos++)
 								{
+									// TODO: Ask Kai whether this can be removed
 									//if (CurrentChr[pos] == CurrentBase) PD_Plus[0].push_back(pos);
 									//else PD_Plus[1].push_back(pos);
 									if (CurrentChr[pos] == CurrentBaseRC)
@@ -5749,11 +5993,13 @@ GetFarEnd_OtherStrand (const string & CurrentChr, SPLIT_READ & Temp_One_Read,
 								{
 									if (Match2N[(short) CurrentChr[pos]] == 'N')
 										{
+											// TODO: Ask Kai whether this can be removed
 											//PD_Plus[0].push_back(pos);
 											PD_Minus[0].push_back (pos);
 										}
 									else
 										{
+											// TODO: Ask Kai whether this can be removed
 											//PD_Plus[1].push_back(pos);
 											PD_Minus[1].push_back (pos);
 										}
@@ -5771,6 +6017,7 @@ GetFarEnd_OtherStrand (const string & CurrentChr, SPLIT_READ & Temp_One_Read,
 								{
 									if (CurrentChr[pos] == CurrentBase)
 										PD_Plus[0].push_back (pos);
+									// TODO: Ask Kai whether this can be removed
 									//else PD_Plus[1].push_back(pos);
 									//if (CurrentChr[pos] == CurrentBaseRC) PD_Minus[0].push_back(pos);
 									//else PD_Minus[1].push_back(pos);
@@ -5783,8 +6030,10 @@ GetFarEnd_OtherStrand (const string & CurrentChr, SPLIT_READ & Temp_One_Read,
 									if (Match2N[(short) CurrentChr[pos]] == 'N')
 										{
 											PD_Plus[0].push_back (pos);
+											// TODO: Ask Kai whether this can be removed
 											//PD_Minus[0].push_back(pos);
 										}
+									// TODO: Ask Kai whether this can be removed
 									//else {
 									//  PD_Plus[1].push_back(pos);
 									//PD_Minus[1].push_back(pos);
@@ -5798,10 +6047,12 @@ GetFarEnd_OtherStrand (const string & CurrentChr, SPLIT_READ & Temp_One_Read,
 						{
 							for (int pos = Start; pos < End; pos++)
 								{
+									// TODO: Ask Kai whether this can be removed
 									//if (CurrentChr[pos] == CurrentBase) PD_Plus[0].push_back(pos);
 									//else PD_Plus[1].push_back(pos);
 									if (CurrentChr[pos] == CurrentBaseRC)
 										PD_Minus[0].push_back (pos);
+									// TODO: Ask Kai whether this can be removed
 									//else PD_Minus[1].push_back(pos);
 								}
 						}
@@ -5811,9 +6062,11 @@ GetFarEnd_OtherStrand (const string & CurrentChr, SPLIT_READ & Temp_One_Read,
 								{
 									if (Match2N[(short) CurrentChr[pos]] == 'N')
 										{
+											// TODO: Ask Kai whether this can be removed
 											//PD_Plus[0].push_back(pos);
 											PD_Minus[0].push_back (pos);
 										}
+									// TODO: Ask Kai whether this can be removed
 									//else {
 									//PD_Plus[1].push_back(pos);
 									//  PD_Minus[1].push_back(pos);
@@ -5838,6 +6091,7 @@ GetFarEnd_OtherStrand (const string & CurrentChr, SPLIT_READ & Temp_One_Read,
 				{
 					if (UP[UP_index].Direction == Plus)
 						{
+							// TODO: Ask Kai whether this can be removed
 							//Direction = Minus;
 							if (CheckMismatches
 									(CurrentChr, Temp_One_Read.UnmatchedSeq, UP[UP_index]))
@@ -5845,6 +6099,7 @@ GetFarEnd_OtherStrand (const string & CurrentChr, SPLIT_READ & Temp_One_Read,
 						}
 					else
 						{
+							// TODO: Ask Kai whether this can be removed
 							//Direction = '+';
 							if (CheckMismatches
 									(CurrentChr, Temp_One_Read.UnmatchedSeq, UP[UP_index]))
@@ -5854,6 +6109,7 @@ GetFarEnd_OtherStrand (const string & CurrentChr, SPLIT_READ & Temp_One_Read,
 		}
 
 	UP.clear ();
+	// TODO: Ask Kai whether this can be removed
 	//if (Temp_One_Read.UP_Far.size()) {
 	//Before = Temp_One_Read.UP_Far.size();
 	//cout << "1: " << Temp_One_Read.UP_Far.size() << "\tt\t";
@@ -5869,12 +6125,14 @@ void
 GetFarEnd_BothStrands (const string & CurrentChr, SPLIT_READ & Temp_One_Read,
 											 const short &RangeIndex)
 {
+	// TODO: Ask Kai whether this can be removed
 	//short ReadLength = Temp_One_Read.UnmatchedSeq.size();
 	//short ReadLengthMinus = ReadLength - 1;
 	//MinClose = short(log((double)(Temp_One_Read.InsertSize * 5 + DSizeArray[RangeIndex] * 2))/log(4.0) + 0.8) + 3;// + MAX_SNP_ERROR;
 	int Start, End;
 	short BP_Start = Temp_One_Read.MinClose + RangeIndex;
 	short BP_End = Temp_One_Read.ReadLengthMinus;
+	// TODO: Ask Kai whether this can be removed
 	//char Direction;
 
 	vector < UniquePoint > UP;
@@ -5956,9 +6214,11 @@ GetFarEnd_BothStrands (const string & CurrentChr, SPLIT_READ & Temp_One_Read,
 						{
 							if (CurrentChr[pos] == CurrentBase)
 								PD_Plus[0].push_back (pos);
+							// TODO: Ask Kai whether this can be removed
 							//else PD_Plus[1].push_back(pos);
 							if (CurrentChr[pos] == CurrentBaseRC)
 								PD_Minus[0].push_back (pos);
+							// TODO: Ask Kai whether this can be removed
 							//else PD_Minus[1].push_back(pos);
 						}
 				}
@@ -5971,6 +6231,7 @@ GetFarEnd_BothStrands (const string & CurrentChr, SPLIT_READ & Temp_One_Read,
 									PD_Plus[0].push_back (pos);
 									PD_Minus[0].push_back (pos);
 								}
+							// TODO: Ask Kai whether this can be removed
 							//else {
 							//  PD_Plus[1].push_back(pos);
 							//  PD_Minus[1].push_back(pos);
@@ -5994,6 +6255,7 @@ GetFarEnd_BothStrands (const string & CurrentChr, SPLIT_READ & Temp_One_Read,
 				{
 					if (UP[UP_index].Direction == Plus)
 						{
+							// TODO: Ask Kai whether this can be removed
 							//Direction = Minus;
 							if (CheckMismatches
 									(CurrentChr, Temp_One_Read.UnmatchedSeq, UP[UP_index]))
@@ -6001,6 +6263,7 @@ GetFarEnd_BothStrands (const string & CurrentChr, SPLIT_READ & Temp_One_Read,
 						}
 					else
 						{
+							// TODO: Ask Kai whether this can be removed
 							//Direction = '+';
 							if (CheckMismatches
 									(CurrentChr, Temp_One_Read.UnmatchedSeq, UP[UP_index]))
@@ -6010,6 +6273,7 @@ GetFarEnd_BothStrands (const string & CurrentChr, SPLIT_READ & Temp_One_Read,
 		}
 
 	UP.clear ();
+	// TODO: Ask Kai whether this can be removed
 	//if (Temp_One_Read.UP_Far.size()) {
 	//Before = Temp_One_Read.UP_Far.size();
 	//cout << "1: " << Temp_One_Read.UP_Far.size() << "\tt\t";
@@ -6026,12 +6290,14 @@ void
 GetFarEnd (const string & CurrentChr, SPLIT_READ & Temp_One_Read,
 					 const int &in_start, const int &in_end)
 {
+	// TODO: Ask Kai whether this can be removed
 	//short ReadLength = Temp_One_Read.UnmatchedSeq.size();
 	//short ReadLengthMinus = ReadLength - 1;
 	//MinClose = short(log((double)(in_end - in_start))/log(4.0) + 0.8) + 3 + MAX_SNP_ERROR;
 	int Start, End;
 	short BP_Start = Temp_One_Read.MinClose;
 	short BP_End = Temp_One_Read.ReadLengthMinus;
+	// TODO: Ask Kai whether this can be removed
 	//char Direction;
 	vector < UniquePoint > UP;
 	vector < unsigned int >PD_Plus[Temp_One_Read.TOTAL_SNP_ERROR_CHECKED];
@@ -6054,6 +6320,7 @@ GetFarEnd (const string & CurrentChr, SPLIT_READ & Temp_One_Read,
 				{
 					for (int pos = Start; pos < End; pos++)
 						{
+							// TODO: Ask Kai whether this can be removed
 							//if (BreakDancerMask[pos] == BD_char) {
 							if (CurrentChr[pos] == CurrentBase)
 								PD_Plus[0].push_back (pos);
@@ -6063,6 +6330,7 @@ GetFarEnd (const string & CurrentChr, SPLIT_READ & Temp_One_Read,
 								PD_Minus[0].push_back (pos);
 							else
 								PD_Minus[1].push_back (pos);
+							// TODO: Ask Kai whether this can be removed
 							//}
 						}
 				}
@@ -6070,6 +6338,7 @@ GetFarEnd (const string & CurrentChr, SPLIT_READ & Temp_One_Read,
 				{												//Match2N[(short)'A'] = 'N';
 					for (int pos = Start; pos < End; pos++)
 						{
+							// TODO: Ask Kai whether this can be removed
 							//if (BreakDancerMask[pos] == BD_char) {
 							if (Match2N[(short) CurrentChr[pos]] == 'N')
 								{
@@ -6081,6 +6350,7 @@ GetFarEnd (const string & CurrentChr, SPLIT_READ & Temp_One_Read,
 									PD_Plus[1].push_back (pos);
 									PD_Minus[1].push_back (pos);
 								}
+							// TODO: Ask Kai whether this can be removed
 							//}
 						}
 				}
@@ -6091,12 +6361,15 @@ GetFarEnd (const string & CurrentChr, SPLIT_READ & Temp_One_Read,
 				{
 					for (int pos = Start; pos < End; pos++)
 						{
+							// TODO: Ask Kai whether this can be removed
 							//if (BreakDancerMask[pos] == BD_char) {
 							if (CurrentChr[pos] == CurrentBase)
 								PD_Plus[0].push_back (pos);
+							// TODO: Ask Kai whether this can be removed
 							//else PD_Plus[1].push_back(pos);
 							if (CurrentChr[pos] == CurrentBaseRC)
 								PD_Minus[0].push_back (pos);
+							// TODO: Ask Kai whether this can be removed
 							//else PD_Minus[1].push_back(pos);
 							//}
 						}
@@ -6105,12 +6378,14 @@ GetFarEnd (const string & CurrentChr, SPLIT_READ & Temp_One_Read,
 				{												//Match2N[(short)'A'] = 'N';
 					for (int pos = Start; pos < End; pos++)
 						{
+							// TODO: Ask Kai whether this can be removed
 							//if (BreakDancerMask[pos] == BD_char) {
 							if (Match2N[(short) CurrentChr[pos]] == 'N')
 								{
 									PD_Plus[0].push_back (pos);
 									PD_Minus[0].push_back (pos);
 								}
+							// TODO: Ask Kai whether this can be removed
 							//else {
 							//  PD_Plus[1].push_back(pos);
 							//  PD_Minus[1].push_back(pos);
@@ -6119,10 +6394,12 @@ GetFarEnd (const string & CurrentChr, SPLIT_READ & Temp_One_Read,
 						}
 				}
 		}
+	// TODO: Ask Kai whether this can be removed
 	//cout << PD_Plus[0].size() << "\t" << PD_Plus[1].size() << endl;
 	//cout << PD_Minus[0].size() << "\t" << PD_Minus[1].size() << endl;
 	CheckBoth (Temp_One_Read, CurrentChr, Temp_One_Read.UnmatchedSeq, PD_Plus,
 						 PD_Minus, BP_Start, BP_End, FirstBase, UP);
+	// TODO: Ask Kai whether this can be removed
 	//cout << UP.size() << endl;
 	if (UP.empty ())
 		{
@@ -6137,6 +6414,7 @@ GetFarEnd (const string & CurrentChr, SPLIT_READ & Temp_One_Read,
 				{
 					if (UP[UP_index].Direction == Plus)
 						{
+							// TODO: Ask Kai whether this can be removed
 							//Direction = Minus;
 							if (CheckMismatches
 									(CurrentChr, Temp_One_Read.UnmatchedSeq, UP[UP_index]))
@@ -6144,6 +6422,7 @@ GetFarEnd (const string & CurrentChr, SPLIT_READ & Temp_One_Read,
 						}
 					else
 						{
+							// TODO: Ask Kai whether this can be removed
 							//Direction = '+';
 							if (CheckMismatches
 									(CurrentChr, Temp_One_Read.UnmatchedSeq, UP[UP_index]))
@@ -6153,7 +6432,7 @@ GetFarEnd (const string & CurrentChr, SPLIT_READ & Temp_One_Read,
 		}
 
 	UP.clear ();
-
+	// TODO: Ask Kai whether this can be removed
 	//if (Temp_One_Read.UP_Far.size()) {
 	//Before = Temp_One_Read.UP_Far.size();
 	//cout << "1: " << Temp_One_Read.UP_Far.size() << "\tt\t";
@@ -6227,9 +6506,11 @@ CheckBoth (const SPLIT_READ & OneRead,
 				}
 			const char CurrentChar = CurrentReadSeq[CurrentLength];
 			const char CurrentCharRC = Convert2RC4N[(short) CurrentChar];
+			// TODO: Ask Kai whether this can be removed
 			//const int SizeOfCurrent = Left_PD.size();
 			unsigned int pos;
 			int SizeOfCurrent;
+			// TODO: Ask Kai whether this can be removed
 			//if (TOTAL_SNP_ERROR_CHECKED_Minus) 
 			{
 				for (int i = 0; i < OneRead.TOTAL_SNP_ERROR_CHECKED_Minus; i++)
@@ -6354,6 +6635,7 @@ CleanUniquePoints (vector < UniquePoint > &Input_UP)
 {
 	vector < UniquePoint > TempUP;	//vector <UniquePoint> UP_Close; UP_Far
 	UniquePoint LastUP = Input_UP[Input_UP.size () - 1];
+	// TODO: Ask Kai whether this can be removed
 	//TempUP.push_back(LastUP);
 	char LastDirection = LastUP.Direction;
 	char LastStrand = LastUP.Strand;
