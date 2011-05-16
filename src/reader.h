@@ -17,7 +17,7 @@ bool ReadInBamReads (const char *bam_path, const std::string & FragName,
 short ReadInRead (std::ifstream & inf_Seq,
 									const std::string & CurrentFragName,
 									const std::string & CurrentFrag,
-									std::vector < SPLIT_READ > &Reads, const int lowerBinBorder,
-									const int upperBinBorder);
+									std::vector < SPLIT_READ > &Reads, const unsigned int lowerBinBorder,
+									const unsigned int upperBinBorder);
 
 #endif /* READER_H */
