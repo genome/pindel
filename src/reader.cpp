@@ -211,7 +211,7 @@ GetOneChrSeq (ifstream & inf_Seq, string & TheInput, bool WhetherBuildUp)
 short
 ReadInRead (ifstream & inf_ReadSeq, const string & FragName,
 						const string & CurrentChr, vector < SPLIT_READ > &Reads,
-						const int lowerBinBorder, const int upperBinBorder)
+						const unsigned int lowerBinBorder, const unsigned int upperBinBorder)
 {
 	cout << "Scanning and processing reads anchored in " << FragName << endl;
 	//short ADDITIONAL_MISMATCH = 1;
@@ -310,7 +310,7 @@ ReadInRead (ifstream & inf_ReadSeq, const string & FragName,
 #pragma omp parallel default(shared)
 							{
 #pragma omp for
-								for (int BufferReadsIndex = 0;
+								for (unsigned int BufferReadsIndex = 0;
 										 BufferReadsIndex < NumberOfReadsPerBuffer;
 										 BufferReadsIndex++)
 									{
@@ -374,7 +374,7 @@ ReadInRead (ifstream & inf_ReadSeq, const string & FragName,
 #pragma omp parallel default(shared)
 	{
 #pragma omp for
-		for (int BufferReadsIndex = 0; BufferReadsIndex < BufferReads.size ();
+		for (unsigned int BufferReadsIndex = 0; BufferReadsIndex < BufferReads.size ();
 				 BufferReadsIndex++)
 			{
 				GetCloseEnd (CurrentChr, BufferReads[BufferReadsIndex]);
