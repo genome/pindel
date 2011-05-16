@@ -20,4 +20,6 @@ short ReadInRead (std::ifstream & inf_Seq,
 									std::vector < SPLIT_READ > &Reads, const unsigned int lowerBinBorder,
 									const unsigned int upperBinBorder);
 
+static int fetch_func (const bam1_t * b1, void *data);
+
 #endif /* READER_H */

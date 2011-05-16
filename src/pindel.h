@@ -337,8 +337,6 @@ void
 parse_flags_and_tags (const bam1_t * b, flagshit * flags);
 int32_t
 bam_cigar2len (const bam1_core_t * c, const uint32_t * cigar);
-static int
-fetch_func (const bam1_t * b1, void *data);
 void
 build_record (const bam1_t * mapped_read, const bam1_t * unmapped_read,
 							void *data);

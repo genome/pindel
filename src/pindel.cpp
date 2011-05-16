@@ -420,7 +420,7 @@ vector < Parameter * >parameters;
 // #########################################################
 int ADDITIONAL_MISMATCH = 1;		// user
 int Min_Perfect_Match_Around_BP = 3;	// user                   //#
-int MIN_IndelSize_NT = 50;			//user            //#  
+int MIN_IndelSize_NT = 50;			//user            //#
 int MIN_IndelSize_Inversion = 50;	//user       //#
 double Seq_Error_Rate = 0.05;		// user            //# 
 //float Seq_Error_Rate_1 = 0.05;                         //# 
@@ -443,7 +443,7 @@ int Max_Length_NT = 30;					// user
 bool ReportCloseMappedRead = false;	// user
 const bool ReportSVReads = false;
 const bool ReportLargeInterChrSVReads = false;
-const short Indel_SV_cutoff = 50;
+const unsigned short Indel_SV_cutoff = 50;
 //bool RemoveDuplicates = false;
 double FLOAT_WINDOW_SIZE = 10.0;
 int WINDOW_SIZE = 10000000;
@@ -526,7 +526,7 @@ static struct option long_options[] = {
 };
 
 bool
-readTransgressesBinBoundaries (SPLIT_READ & read, const int &upperBinBorder)
+readTransgressesBinBoundaries (SPLIT_READ & read, const unsigned int &upperBinBorder)
 {
 	return (read.BPRight > upperBinBorder - 2 * read.InsertSize);
 }
@@ -541,13 +541,13 @@ readInSpecifiedRegion (const SPLIT_READ & read,	// in: the read
 	bool passesFilter = true;
 
 	// if a start position has been defined, and the breakpoint is before it
-	if ((startOfRegion != -1) && (read.BPLeft + 1 < startOfRegion))
+	if ((startOfRegion != -1) && (read.BPLeft + 1 < (unsigned int)startOfRegion))
 		{
 			passesFilter = false;
 		}
 
 	// if an end of the region has been specified
-	if ((endOfRegion != -1) && (read.BPLeft + 1 > endOfRegion))
+	if ((endOfRegion != -1) && (read.BPLeft + 1 > (unsigned int)endOfRegion))
 		{
 			passesFilter = false;
 
@@ -1488,8 +1488,8 @@ main (int argc, char *argv[])
 
 /* Starting the loop to read the subfiles one by one (EWL070111) -> */
 			g_binIndex = -1;					// to start with 0...
-			unsigned int lowerBinBorder = startOffSet - WINDOW_SIZE;
-			unsigned int upperBinBorder = lowerBinBorder + WINDOW_SIZE;
+			int lowerBinBorder = startOffSet - WINDOW_SIZE;
+			int upperBinBorder = lowerBinBorder + WINDOW_SIZE;
 			int displayedStartOfRegion =
 				((startOfRegion >=
 					0) ? (startOfRegion - WINDOW_SIZE) : lowerBinBorder);
