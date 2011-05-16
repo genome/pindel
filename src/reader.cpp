@@ -16,7 +16,6 @@
 #include "reporter.h"
 
 // Reader (BamReader and PindelReader)
-using namespace std;
 
 //init hash/maps for read pairing on the fly
 KSORT_INIT_GENERIC (uint32_t) KHASH_MAP_INIT_STR (read_name, bam1_t *)
@@ -43,29 +42,29 @@ KSORT_INIT_GENERIC (uint32_t) KHASH_MAP_INIT_STR (read_name, bam1_t *)
 		 };
 
 void
-ReadInOneChr (ifstream & inf_Seq, string & TheInput, const string & ChrName)
+ReadInOneChr (std::ifstream & inf_Seq, std::string & TheInput, const std::string & ChrName)
 {
 	TheInput.clear ();
 	char TempChar;
-	string TempLine, TempChrName;
+	std::string TempLine, TempChrName;
 	inf_Seq >> TempChar;
 	if (TempChar != '>')
 		{
-			cout << "Please use fasta format for the reference file." << endl;
+			std::cout << "Please use fasta format for the reference file." << std::endl;
 			TheInput.clear ();
 			return;
 		}
 	while (inf_Seq >> TempChrName)
 		{
-			cout << "Processing chromosome " << TempChrName << endl;
+			std::cout << "Processing chromosome " << TempChrName << std::endl;
 			if (!TheInput.empty ())
 				{
-					cout << "Skip the rest of chromosomes.\n";
+					std::cout << "Skip the rest of chromosomes.\n";
 					break;
 				}
 			if (TempChrName == ChrName)
 				{
-					getline (inf_Seq, TempLine);
+					std::getline (inf_Seq, TempLine);
 					while (inf_Seq >> TempChar)
 						{
 							if (TempChar != '\n' && TempChar != '\r')
@@ -101,7 +100,7 @@ ReadInOneChr (ifstream & inf_Seq, string & TheInput, const string & ChrName)
 				}
 			else
 				{
-					getline (inf_Seq, TempLine);
+					std::getline (inf_Seq, TempLine);
 					while (inf_Seq >> TempChar)
 						{
 							if (TempChar != '\n' && TempChar != '\r')
@@ -118,15 +117,15 @@ ReadInOneChr (ifstream & inf_Seq, string & TheInput, const string & ChrName)
 						}
 				}
 		}
-	cout << ChrName << "\t" << TheInput.size () << "\t";
+	std::cout << ChrName << "\t" << TheInput.size () << "\t";
 	if (!TheInput.empty ())
 		{
-			string Spacer = "";
+			std::string Spacer = "";
 			for (unsigned i = 0; i < SpacerBeforeAfter; i++)
 				Spacer += "N";
 			TheInput = Spacer + TheInput + Spacer;
 		}
-	cout << TheInput.size () << endl;
+	std::cout << TheInput.size () << std::endl;
 
 	// EWL280311: reset file for to allow re-reading for the next chromosome
 	inf_Seq.clear ();
@@ -136,11 +135,11 @@ ReadInOneChr (ifstream & inf_Seq, string & TheInput, const string & ChrName)
 }
 
 void
-GetOneChrSeq (ifstream & inf_Seq, string & TheInput, bool WhetherBuildUp)
+GetOneChrSeq (std::ifstream & inf_Seq, std::string & TheInput, bool WhetherBuildUp)
 {
 	TheInput.clear ();
 	char TempChar;
-	string TempLine, TempChrName;
+	std::string TempLine, TempChrName;
 
 	if (WhetherBuildUp)
 		{
@@ -199,7 +198,7 @@ GetOneChrSeq (ifstream & inf_Seq, string & TheInput, bool WhetherBuildUp)
 
 	if (!TheInput.empty ())
 		{
-			string Spacer = "";
+			std::string Spacer = "";
 			for (unsigned i = 0; i < SpacerBeforeAfter; i++)
 				Spacer += "N";
 			TheInput = Spacer + TheInput + Spacer;
@@ -209,11 +208,11 @@ GetOneChrSeq (ifstream & inf_Seq, string & TheInput, bool WhetherBuildUp)
 
 
 short
-ReadInRead (ifstream & inf_ReadSeq, const string & FragName,
-						const string & CurrentChr, vector < SPLIT_READ > &Reads,
+ReadInRead (std::ifstream & inf_ReadSeq, const std::string & FragName,
+						const std::string & CurrentChr, std::vector < SPLIT_READ > &Reads,
 						const unsigned int lowerBinBorder, const unsigned int upperBinBorder)
 {
-	cout << "Scanning and processing reads anchored in " << FragName << endl;
+	std::cout << "Scanning and processing reads anchored in " << FragName << std::endl;
 	//short ADDITIONAL_MISMATCH = 1;
 	SPLIT_READ Temp_One_Read;
 	unsigned int NumReadScanned = 0;
@@ -223,10 +222,10 @@ ReadInRead (ifstream & inf_ReadSeq, const string & FragName,
 	unsigned int GetPlus = 0;
 	unsigned int GetMinus = 0;
 	//NumberOfReadsPerBuffer;
-	vector < SPLIT_READ > BufferReads;
+	std::vector < SPLIT_READ > BufferReads;
 	ReportLength = 0;
 	//cout << LeftReads.size() << endl;
-	string TempQC, TempLine, TempStr, TempFragName;
+	std::string TempQC, TempLine, TempStr, TempFragName;
 	//int TempInt;
 
 	inf_ReadSeq.clear ();
@@ -239,31 +238,31 @@ ReadInRead (ifstream & inf_ReadSeq, const string & FragName,
 		{
 			if (Temp_One_Read.Name[0] != FirstCharReadName)
 				{												// !='@'
-					cout << "Something wrong with the read name: " << Temp_One_Read.
-						Name << endl;
+					std::cout << "Something wrong with the read name: " << Temp_One_Read.
+						Name << std::endl;
 					Reads.clear ();
 					return 1;
 				}
 			NumReadScanned++;
 			// get (useless) rest of first line
-			getline (inf_ReadSeq, TempLine);
+			std::getline (inf_ReadSeq, TempLine);
 			inf_ReadSeq >> Temp_One_Read.UnmatchedSeq;
-			getline (inf_ReadSeq, TempLine);
+			std::getline (inf_ReadSeq, TempLine);
 
 			inf_ReadSeq >> Temp_One_Read.MatchedD;
 			if (Temp_One_Read.MatchedD != Minus && Temp_One_Read.MatchedD != Plus)
 				{
-					cout << Temp_One_Read.Name << "\n"
+					std::cout << Temp_One_Read.Name << "\n"
 						<< Temp_One_Read.UnmatchedSeq << "\n"
 						<< Temp_One_Read.MatchedD << " ...\n";
-					cout << "+/-" << endl;
+					std::cout << "+/-" << std::endl;
 					return 1;
 				}
 			//   >> TempInt 
 			inf_ReadSeq >> Temp_One_Read.FragName
 				>> Temp_One_Read.MatchedRelPos
 				>> Temp_One_Read.MS >> Temp_One_Read.InsertSize >> Temp_One_Read.Tag;
-			getline (inf_ReadSeq, TempLine);
+			std::getline (inf_ReadSeq, TempLine);
 
 
 			if ((signed int)Temp_One_Read.MatchedRelPos > g_maxPos)
@@ -369,8 +368,8 @@ ReadInRead (ifstream & inf_ReadSeq, const string & FragName,
 						}										// if buffer-reads threatens to overflow
 				}												// if the read is in the correct bin
 		}														// while loop over each read
-	cout << "last one: " << BufferReads.
-		size () << " and UPCLOSE= " << UPCLOSE_COUNTER << endl;
+	std::cout << "last one: " << BufferReads.
+		size () << " and UPCLOSE= " << UPCLOSE_COUNTER << std::endl;
 #pragma omp parallel default(shared)
 	{
 #pragma omp for
@@ -425,8 +424,8 @@ ReadInRead (ifstream & inf_ReadSeq, const string & FragName,
 
 	if (FirstChr)
 		{
-			cout << "\nThe last read Pindel scanned: \n";
-			cout << Temp_One_Read.Name << "\n"
+			std::cout << "\nThe last read Pindel scanned: \n";
+			std::cout << Temp_One_Read.Name << "\n"
 				<< Temp_One_Read.UnmatchedSeq << "\n"
 				<< Temp_One_Read.MatchedD << "\t"
 				<< Temp_One_Read.FragName << "\t"
@@ -436,20 +435,20 @@ ReadInRead (ifstream & inf_ReadSeq, const string & FragName,
 			FirstChr = false;
 			//ReportLength = Temp_One_Read.UnmatchedSeq.size();
 		}
-	cout << "NumReadScanned:\t" << NumReadScanned << endl;
-	cout << "NumReadInChr:\t" << NumReadInChr << endl;
-	cout << "NumReadStored:\t" << Reads.size () << endl;
-	cout << "NumReadStored / NumReadInChr = " << Reads.size () * 100.0 /
+	std::cout << "NumReadScanned:\t" << NumReadScanned << std::endl;
+	std::cout << "NumReadInChr:\t" << NumReadInChr << std::endl;
+	std::cout << "NumReadStored:\t" << Reads.size () << std::endl;
+	std::cout << "NumReadStored / NumReadInChr = " << Reads.size () * 100.0 /
 		NumReadInChr << " %\n" << "InChrPlus \t" << InChrPlus << "\tGetPlus \t" <<
 		GetPlus << "\t" << GetPlus * 100.0 /
 		InChrPlus << " %\n" << "InChrMinus\t" << InChrMinus << "\tGetMinus\t" <<
-		GetMinus << "\t" << GetMinus * 100.0 / InChrMinus << " %\n" << endl;
+		GetMinus << "\t" << GetMinus * 100.0 / InChrMinus << " %\n" << std::endl;
 	//inf_ReadSeq.close();
 	if (Reads.size () == 0)
 		return 0;
 	//cout << LeftReads.size() << endl;
-	cout << "sorting tags ... ";
-	string Str4Exchange;
+	std::cout << "sorting tags ... ";
+	std::string Str4Exchange;
 	for (unsigned short i = 0; i < VectorTag.size () - 1; i++)
 		{
 			for (unsigned short j = 1; j < VectorTag.size (); j++)
@@ -475,7 +474,7 @@ ReadInRead (ifstream & inf_ReadSeq, const string & FragName,
 						}
 				}
 		}
-	cout << " finished!" << endl;
+	std::cout << " finished!" << std::endl;
 	return 0;
 }
 
@@ -485,9 +484,9 @@ ReadInRead (ifstream & inf_ReadSeq, const string & FragName,
 
 
 bool
-ReadInBamReads (const char *bam_path, const string & FragName,
-								string * CurrentChr, vector < SPLIT_READ > &LeftReads,
-								int InsertSize, string Tag, int binStart, int binEnd)
+ReadInBamReads (const char *bam_path, const std::string & FragName,
+								std::string * CurrentChr, std::vector < SPLIT_READ > &LeftReads,
+								int InsertSize, std::string Tag, int binStart, int binEnd)
 {
 	bamFile fp;
 	fp = bam_open (bam_path, "r");
@@ -519,15 +518,15 @@ ReadInBamReads (const char *bam_path, const string & FragName,
 	//ADDITIONAL_MISMATCH = 1;
 	//Seq_Error_Rate = 0.05;
 	bam_fetch (fp, idx, tid, binStart, binEnd, &data, fetch_func);
-	cout << "Bam:\t" << bam_path << "\tTag:\t" << Tag << endl;
-	cout << "NumReadScanned:\t" << NumReadScanned << endl;
-	cout << "NumReadInChr:\t" << NumReadInChr << endl;
-	cout << "NumReadStored:\t" << LeftReads.size () << endl;
-	cout << "NumReadStored / NumReadInChr = " << LeftReads.size () * 100.0 /
+	std::cout << "Bam:\t" << bam_path << "\tTag:\t" << Tag << std::endl;
+	std::cout << "NumReadScanned:\t" << NumReadScanned << std::endl;
+	std::cout << "NumReadInChr:\t" << NumReadInChr << std::endl;
+	std::cout << "NumReadStored:\t" << LeftReads.size () << std::endl;
+	std::cout << "NumReadStored / NumReadInChr = " << LeftReads.size () * 100.0 /
 		NumReadInChr << " %\n" << "InChrPlus \t" << InChrPlus << "\tGetPlus \t" <<
 		GetPlus << "\t" << GetPlus * 100.0 /
 		InChrPlus << " %\n" << "InChrMinus\t" << InChrMinus << "\tGetMinus\t" <<
-		GetMinus << "\t" << GetMinus * 100.0 / InChrMinus << " %\n" << endl;
+		GetMinus << "\t" << GetMinus * 100.0 / InChrMinus << " %\n" << std::endl;
 	khint_t key;
 	if (kh_size (data.read_to_map_qual) > 0)
 		{
@@ -553,7 +552,7 @@ ReadInBamReads (const char *bam_path, const string & FragName,
 
 
 	//kai does the below in read inreads dunno why yet
-	string Str4Exchange;
+	std::string Str4Exchange;
 	if (VectorTag.size () > 0)
 		{
 			for (unsigned short i = 0; i < VectorTag.size () - 1; i++)
@@ -599,14 +598,14 @@ fetch_func (const bam1_t * b1, void *data)
 		(khash_t (read_name) *) data_for_bam->read_to_map_qual;
 	flagshit *b1_flags = data_for_bam->b1_flags;
 	flagshit *b2_flags = data_for_bam->b2_flags;
-	const string CurrentChr = *(string *) data_for_bam->CurrentChr;
+	const std::string CurrentChr = *(std::string *) data_for_bam->CurrentChr;
 
 	SPLIT_READ Temp_One_Read;
 	const bam1_core_t *b1_core;
 	bam1_t *b2;
 	bam1_core_t *b2_core;
 	b1_core = &b1->core;
-	string read_name = bam1_qname (b1);
+	std::string read_name = bam1_qname (b1);
 	//    if(!(b1_core->flag & BAM_FPROPER_PAIR)) { 
 	//            return 0;
 	//NO BUENO!        }
@@ -627,7 +626,7 @@ fetch_func (const bam1_t * b1, void *data)
 			//this seems stupid, but in order to manage the read names, necessary
 			free ((char *) kh_key (read_to_map_qual, key));
 			kh_del (read_name, read_to_map_qual, key);
-			string c_sequence;
+			std::string c_sequence;
 		}
 
 	parse_flags_and_tags (b1, b1_flags);
@@ -741,11 +740,11 @@ build_record (const bam1_t * mapped_read, const bam1_t * unmapped_read,
 
 	SPLIT_READ Temp_One_Read;
 	fetch_func_data *data_for_bam = (fetch_func_data *) data;
-	vector < SPLIT_READ > *LeftReads =
-		(vector < SPLIT_READ > *)data_for_bam->LeftReads;
+	std::vector < SPLIT_READ > *LeftReads =
+		(std::vector < SPLIT_READ > *)data_for_bam->LeftReads;
 	bam_header_t *header = (bam_header_t *) data_for_bam->header;
-	string CurrentChr = *(string *) data_for_bam->CurrentChr;
-	string Tag = (string) data_for_bam->Tag;
+	std::string CurrentChr = *(std::string *) data_for_bam->CurrentChr;
+	std::string Tag = (std::string) data_for_bam->Tag;
 	int InsertSize = (int) data_for_bam->InsertSize;
 
 	const bam1_core_t *mapped_core;
@@ -762,7 +761,7 @@ build_record (const bam1_t * mapped_read, const bam1_t * unmapped_read,
 		{
 			Temp_One_Read.Name.append ("/2");
 		}
-	string c_sequence;
+	std::string c_sequence;
 	int i;
 	uint8_t *s = bam1_seq (unmapped_read);
 	for (i = 0; i < unmapped_core->l_qseq; ++i)
@@ -784,7 +783,7 @@ build_record (const bam1_t * mapped_read, const bam1_t * unmapped_read,
 		}
 	int n_count = 0, found = c_sequence.find ('N', 0);
 	int max_ns = length * .10;
-	while (found != string::npos)
+	while (found != std::string::npos)
 		{
 			n_count++;
 			found = c_sequence.find ('N', found + 1);
@@ -835,7 +834,7 @@ build_record (const bam1_t * mapped_read, const bam1_t * unmapped_read,
 				}
 		}
 
-	string FragName = header->target_name[mapped_core->tid];
+	std::string FragName = header->target_name[mapped_core->tid];
 	Temp_One_Read.FragName = FragName;
 	//cout << Temp_One_Read.Name << "\n" << Temp_One_Read.UnmatchedSeq << "\n";
 	//cout << Temp_One_Read.MatchedD << "\t" << Temp_One_Read.FragName << "\t" << Temp_One_Read.MatchedRelPos << "\t" << Temp_One_Read.MS << "\t" << Temp_One_Read.InsertSize << "\t" << Temp_One_Read.Tag << "\n";
@@ -897,7 +896,7 @@ build_record (const bam1_t * mapped_read, const bam1_t * unmapped_read,
 			//}
 			if (LeftReads->size () % 10000 == 0)
 				{
-					cout << LeftReads->size () << endl;
+					std::cout << LeftReads->size () << std::endl;
 				}
 		}
 	if (NotInVector (Temp_One_Read.Tag, VectorTag))
