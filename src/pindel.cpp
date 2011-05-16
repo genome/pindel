@@ -1010,7 +1010,6 @@ main (int argc, char *argv[])
 	if (NumRead2ReportCutOff == 1)
 		BalanceCutoff = 3000000000;
 
-	int options_set = 0;
 	ifstream inf_Seq;
 	ifstream inf_Pindel_Reads;
 	string bam_file;
@@ -1024,12 +1023,9 @@ main (int argc, char *argv[])
 	ifstream inf_ReadsSeq;				// input file name
 	ifstream inf_BP_test;					// input file name
 	ifstream inf_BP;							// input file name
-	bool RefDefined = false;
 	bool BAMDefined = false;
 	bool PindelReadDefined = false;
-	bool OutputDefined = false;
 	bool BreakDancerDefined = false;
-	bool ChrDefined = false;
 	// define all the parameters you have
 	defineParameters (WhichChr);
 
@@ -1259,7 +1255,6 @@ main (int argc, char *argv[])
 	time_t Time_Load_S, Time_Load_E, Time_Mine_E, Time_Sort_E;	//, Time_End;
 	Time_Load_S = time (NULL);
 	unsigned int AllLoadings = 0;
-	unsigned int AllMinings = 0;
 	unsigned int AllSortReport = 0;
 
 
@@ -1390,7 +1385,6 @@ main (int argc, char *argv[])
 
 
 	vector < string > chromosomes;
-	int chromosomeIndex = 0;
 
 
 	string CurrentChrName, emptystr;
@@ -1494,8 +1488,8 @@ main (int argc, char *argv[])
 
 /* Starting the loop to read the subfiles one by one (EWL070111) -> */
 			g_binIndex = -1;					// to start with 0...
-			int lowerBinBorder = startOffSet - WINDOW_SIZE;
-			int upperBinBorder = lowerBinBorder + WINDOW_SIZE;
+			unsigned int lowerBinBorder = startOffSet - WINDOW_SIZE;
+			unsigned int upperBinBorder = lowerBinBorder + WINDOW_SIZE;
 			int displayedStartOfRegion =
 				((startOfRegion >=
 					0) ? (startOfRegion - WINDOW_SIZE) : lowerBinBorder);
@@ -4436,8 +4430,6 @@ main (int argc, char *argv[])
 								}
 						}
 
-
-					unsigned Count_Close = 0;
 					unsigned Count_Far = 0;
 					unsigned Count_Used = 0;
 					unsigned Count_Unused = 0;
