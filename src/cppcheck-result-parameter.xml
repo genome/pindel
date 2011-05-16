@@ -1,0 +1,4 @@
+<?xml version="1.0"?>
+<results>
+<error file="parameter.cpp" line="1" id="unusedFunction" severity="style" msg="The function 'describe' is never used"/>
+</results>
