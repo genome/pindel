@@ -5218,7 +5218,7 @@ GetFarEnd_SingleStrandDownStream (const string & CurrentChr,
 		}
 	vector < UniquePoint > UP;
 	//char Direction;
-	int Start, End;
+	unsigned int Start, End;
 	short BP_Start;								// = MinClose;
 	short BP_End;									// = ReadLength - MinClose;
 
@@ -5255,7 +5255,7 @@ GetFarEnd_SingleStrandDownStream (const string & CurrentChr,
 				{
 					if (LeftChar != 'N')
 						{
-							for (int pos = Start; pos < End; pos++)
+							for (unsigned int pos = Start; pos < End; pos++)
 								{
 									if (CurrentChr[pos] == LeftChar)
 										{
@@ -5267,7 +5267,7 @@ GetFarEnd_SingleStrandDownStream (const string & CurrentChr,
 						}
 					else
 						{										//Match2N[(short)'A'] = 'N';
-							for (int pos = Start; pos < End; pos++)
+							for (unsigned int pos = Start; pos < End; pos++)
 								{
 									if (Match2N[(short) CurrentChr[pos]] == 'N')
 										{
@@ -5281,7 +5281,7 @@ GetFarEnd_SingleStrandDownStream (const string & CurrentChr,
 				{												// TOTAL_SNP_ERROR_CHECKED_Minus
 					if (LeftChar != 'N')
 						{
-							for (int pos = Start; pos < End; pos++)
+							for (unsigned int pos = Start; pos < End; pos++)
 								{
 									if (CurrentChr[pos] == LeftChar)
 										{
@@ -5292,7 +5292,7 @@ GetFarEnd_SingleStrandDownStream (const string & CurrentChr,
 						}
 					else
 						{										//Match2N[(short)'A'] = 'N';
-							for (int pos = Start; pos < End; pos++)
+							for (unsigned int pos = Start; pos < End; pos++)
 								{
 									if (Match2N[(short) CurrentChr[pos]] == 'N')
 										{
@@ -5347,7 +5347,7 @@ GetFarEnd_SingleStrandDownStream (const string & CurrentChr,
 				{
 					if (RightChar != 'N')
 						{
-							for (int pos = Start; pos < End; pos++)
+							for (unsigned int pos = Start; pos < End; pos++)
 								{
 									if (CurrentChr[pos] == RightChar)
 										{
@@ -5359,7 +5359,7 @@ GetFarEnd_SingleStrandDownStream (const string & CurrentChr,
 						}
 					else
 						{										//Match2N[(short)'A'] = 'N';
-							for (int pos = Start; pos < End; pos++)
+							for (unsigned int pos = Start; pos < End; pos++)
 								{
 									if (Match2N[(short) CurrentChr[pos]] == 'N')
 										{
@@ -5373,7 +5373,7 @@ GetFarEnd_SingleStrandDownStream (const string & CurrentChr,
 				{												// TOTAL_SNP_ERROR_CHECKED_Minus
 					if (RightChar != 'N')
 						{
-							for (int pos = Start; pos < End; pos++)
+							for (unsigned int pos = Start; pos < End; pos++)
 								{
 									if (CurrentChr[pos] == RightChar)
 										{
@@ -5384,7 +5384,7 @@ GetFarEnd_SingleStrandDownStream (const string & CurrentChr,
 						}
 					else
 						{										//Match2N[(short)'A'] = 'N';
-							for (int pos = Start; pos < End; pos++)
+							for (unsigned int pos = Start; pos < End; pos++)
 								{
 									if (Match2N[(short) CurrentChr[pos]] == 'N')
 										{
