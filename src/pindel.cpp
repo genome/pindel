@@ -9,8 +9,6 @@
 #include "searcher.h"
 #include "reporter.h"
 
-using namespace std;
-
 /*v EWL update 0.0.1, April 8th 2011; can use the -c option with specified regions, and produces LI output that can be read by vcfcreator */
 
 int g_binIndex = -1;						// global variable for the bin index, as I cannot easily pass an extra parameter to the diverse functions
@@ -20,7 +18,7 @@ int g_maxPos = -1;							// to calculate which is the last position in the chrom
 		//end charris add
 		//#include <omp.h>
 
-const string Pindel_Version_str = "Pindel version 0.2.2, April 8 2011.";
+const std::string Pindel_Version_str = "Pindel version 0.2.2, April 8 2011.";
 
 // TODO: Ask Kai whether this can be removed
 		//unsigned int DSizeArray[15];
@@ -36,19 +34,19 @@ public:
 		return d_required;
 	}
 	void describe () const;
-	string getDescription () const
+	std::string getDescription () const
 	{
 		return d_description;
 	}
-	string getShortName () const
+	std::string getShortName () const
 	{
 		return d_shortName;
 	}
-	string getLongName () const
+	std::string getLongName () const
 	{
 		return d_longName;
 	}
-	bool hasName (const string & name) const
+	bool hasName (const std::string & name) const
 	{
 		return (d_shortName.compare (name) == 0
 						|| d_longName.compare (name) == 0);
@@ -57,9 +55,9 @@ public:
 	{
 		return d_isSet;
 	}
-	virtual void setValue (const string & value)
+	virtual void setValue (const std::string & value)
 	{
-		cout << "WHAT!" << endl;
+		std::cout << "WHAT!" << std::endl;
 	};
 	virtual void setValue (const int value)
 	{
@@ -78,7 +76,7 @@ public:
 	{
 		return false;
 	};
-	virtual string getSValue () const
+	virtual std::string getSValue () const
 	{
 		return "";
 	};
@@ -92,8 +90,8 @@ public:
 		return false;
 	}
 
-	Parameter (const string & shortName, const string & longName,
-						 const string & description, const bool required);
+	Parameter (const std::string & shortName, const std::string & longName,
+						 const std::string & description, const bool required);
 protected:
 	void set ()
 	{
@@ -103,16 +101,16 @@ protected:
 
 private:
 	bool d_required;
-	string d_shortName;
-	string d_longName;
-	string d_description;
+	std::string d_shortName;
+	std::string d_longName;
+	std::string d_description;
 	bool d_isSet;
 	static const int d_DESCRIBE_WIDTH = 11;
 	static const int d_MAX_LINE_WIDTH = 80;
-	const string makeNiceLine (const string & rawDescription) const;
-	const string describeTab () const
+	const std::string makeNiceLine (const std::string & rawDescription) const;
+	const std::string describeTab () const
 	{															//return string(' ',d_DESCRIBE_WIDTH);  // TODO: Ask Kai whether this can be removed
-		string descriptionTab = "";
+		std::string descriptionTab = "";
 		for (int i = 0; i < d_DESCRIBE_WIDTH; i++)
 			{
 				descriptionTab += " ";
@@ -121,10 +119,10 @@ private:
 };
 
 /* 'getWord' removes the first word from the line, a bit like perl's unshift. */
-string
-getWord (string & line)
+std::string
+getWord (std::string & line)
 {
-	string head, tail;
+	std::string head, tail;
 	size_t endPos = line.find (" ");
 	if (endPos == line.npos)
 		{
@@ -143,16 +141,16 @@ getWord (string & line)
 
 /* 'makeNiceLine' adds \n's on the right position of the description to get it fitting nicely in a window. */
 
-const string
-Parameter::makeNiceLine (const string & rawDescription) const
+const std::string
+Parameter::makeNiceLine (const std::string & rawDescription) const
 {
-	string neatLine = describeTab ();
-	string words = rawDescription;
+	std::string neatLine = describeTab ();
+	std::string words = rawDescription;
 	const size_t LIMIT = d_MAX_LINE_WIDTH - d_DESCRIBE_WIDTH;
 	size_t lineSize = 0;
 	while (words.size () > 0)
 		{
-			string newWord = getWord (words);
+			std::string newWord = getWord (words);
 			if (newWord.size () + lineSize > LIMIT)
 				{
 					neatLine += '\n';
@@ -169,23 +167,23 @@ Parameter::makeNiceLine (const string & rawDescription) const
 class IntParameter:public Parameter
 {
 public:
-	IntParameter (int *par_ptr, const string & shortName,
-								const string & longName, const string & description,
+	IntParameter (int *par_ptr, const std::string & shortName,
+								const std::string & longName, const std::string & description,
 								const bool required, const int value);
 
 	virtual int getIValue () const
 	{
 		return *d_data_ptr;
 	}
-	virtual void setValue (const string & value);
+	virtual void setValue (const std::string & value);
 	virtual void setValue (const int value);
 private:
 	int *d_data_ptr;
 };
 
-IntParameter::IntParameter (int *par_ptr, const string & shortName,
-														const string & longName,
-														const string & description, const bool required,
+IntParameter::IntParameter (int *par_ptr, const std::string & shortName,
+														const std::string & longName,
+														const std::string & description, const bool required,
 														const int value):
 Parameter (shortName, longName, description, required),
 d_data_ptr (par_ptr)
@@ -194,7 +192,7 @@ d_data_ptr (par_ptr)
 }
 
 void
-IntParameter::setValue (const string & value)
+IntParameter::setValue (const std::string & value)
 {
 	setValue (atoi (value.c_str ()));
 }
@@ -209,15 +207,15 @@ IntParameter::setValue (const int value)
 class BoolParameter:public Parameter
 {
 public:
-	BoolParameter (bool * par_ptr, const string & shortName,
-								 const string & longName, const string & description,
+	BoolParameter (bool * par_ptr, const std::string & shortName,
+								 const std::string & longName, const std::string & description,
 								 const bool required, const bool value);
 
 	virtual bool getBValue () const
 	{
 		return *d_data_ptr;
 	}
-	virtual void setValue (const string & value);
+	virtual void setValue (const std::string & value);
 	virtual void setValue (const bool value);
 	virtual bool isUnary () const
 	{
@@ -227,7 +225,7 @@ private:
 	  bool * d_data_ptr;
 };
 
-BoolParameter::BoolParameter (bool * par_ptr, const string & shortName, const string & longName, const string & description, const bool required, const bool value):
+BoolParameter::BoolParameter (bool * par_ptr, const std::string & shortName, const std::string & longName, const std::string & description, const bool required, const bool value):
 Parameter (shortName, longName, description,
 					 required)
 {
@@ -236,7 +234,7 @@ Parameter (shortName, longName, description,
 }
 
 void
-BoolParameter::setValue (const string & value)
+BoolParameter::setValue (const std::string & value)
 {
 	char firstChar = tolower (value[0]);
 	setValue ((firstChar == 'f' || firstChar == '0') ? false : true);
@@ -252,23 +250,23 @@ BoolParameter::setValue (const bool value)
 class FloatParameter:public Parameter
 {
 public:
-	FloatParameter (double *par_ptr, const string & shortName,
-									const string & longName, const string & description,
+	FloatParameter (double *par_ptr, const std::string & shortName,
+									const std::string & longName, const std::string & description,
 									const bool required, const double value);
 
 	double getFValue () const
 	{
 		return *d_data_ptr;
 	}
-	void setValue (const string & value);
+	void setValue (const std::string & value);
 	void setValue (const double value);
 private:
 	double *d_data_ptr;
 };
 
-FloatParameter::FloatParameter (double *par_ptr, const string & shortName,
-																const string & longName,
-																const string & description,
+FloatParameter::FloatParameter (double *par_ptr, const std::string & shortName,
+																const std::string & longName,
+																const std::string & description,
 																const bool required, const double value):
 Parameter (shortName, longName, description, required)
 {
@@ -277,7 +275,7 @@ Parameter (shortName, longName, description, required)
 }
 
 void
-FloatParameter::setValue (const string & value)
+FloatParameter::setValue (const std::string & value)
 {
 	setValue (atof (value.c_str ()));
 }
@@ -292,23 +290,23 @@ FloatParameter::setValue (const double value)
 class StringParameter:public Parameter
 {
 public:
-	StringParameter (string * par_ptr, const string & shortName,
-									 const string & longName, const string & description,
-									 const bool required, const string & value);
+	StringParameter (std::string * par_ptr, const std::string & shortName,
+									 const std::string & longName, const std::string & description,
+									 const bool required, const std::string & value);
 
-	string getSValue () const
+	std::string getSValue () const
 	{
 		return *d_data_ptr;
 	}
-	void setValue (const string & value);
+	void setValue (const std::string & value);
 private:
-	  string * d_data_ptr;
+	  std::string * d_data_ptr;
 };
 
-StringParameter::StringParameter (string * par_ptr, const string & shortName,
-																	const string & longName,
-																	const string & description,
-																	const bool required, const string & value):
+StringParameter::StringParameter (std::string * par_ptr, const std::string & shortName,
+																	const std::string & longName,
+																	const std::string & description,
+																	const bool required, const std::string & value):
 Parameter (shortName, longName, description, required)
 {
 	d_data_ptr = par_ptr;
@@ -316,7 +314,7 @@ Parameter (shortName, longName, description, required)
 }
 
 void
-StringParameter::setValue (const string & value)
+StringParameter::setValue (const std::string & value)
 {
 	*d_data_ptr = value;
 	set ();
@@ -324,8 +322,8 @@ StringParameter::setValue (const string & value)
 
 
 
-Parameter::Parameter (const string & shortName, const string & longName,
-											const string & description, const bool required)
+Parameter::Parameter (const std::string & shortName, const std::string & longName,
+											const std::string & description, const bool required)
 {
 	d_required = required;
 	d_shortName = shortName;
@@ -339,25 +337,25 @@ Parameter::describe () const
 {
 	for (int i = 0; i < d_DESCRIBE_WIDTH; i++)
 		{
-			cout << " ";
+			std::cout << " ";
 		}
-	cout << d_shortName << "/";
-	cout << d_longName << endl;
+	std::cout << d_shortName << "/";
+	std::cout << d_longName << std::endl;
 
 	//for (int i=0; i<d_DESCRIBE_WIDTH; i++)  { cout << " ";} // TODO: Ask Kai whether this can be removed
-	cout << makeNiceLine (d_description);
+	std::cout << makeNiceLine (d_description);
 	//if ( d_required ) { cout << " required parameter" ; } // TODO: Ask Kai whether this can be removed
-	cout << endl << endl;
+	std::cout << std::endl << std::endl;
 }
 
 
 typedef struct
 {
-	string referenceFileName;
-	string pindelFileName;
-	string bamConfigFileName;
-	string outputFileName;
-	string breakdancerFileName;
+	std::string referenceFileName;
+	std::string pindelFileName;
+	std::string bamConfigFileName;
+	std::string outputFileName;
+	std::string breakdancerFileName;
 	int numThreads;
 	bool showHelp;
 } ParCollection;
@@ -380,7 +378,7 @@ unsigned int BoxSize = 10000;		// 10k is fine
 const double Min_Filter_Ratio = 0.5;
 unsigned int SPACERSIZE = 1;
 unsigned int OriginalNumRead = 0;
-const string NonACGT = "$";
+const std::string NonACGT = "$";
 short MIN_Len_Match = 4;
 unsigned int NumberOfSIsInstances = 0;
 unsigned int NumberOfDeletionsInstances = 0;
@@ -388,7 +386,7 @@ unsigned int NumberOfDIInstances = 0;
 unsigned int NumberOfInvInstances = 0;
 unsigned int NumberOfTDInstances = 0;
 short ReportLength = 80;
-vector < string > VectorTag;
+std::vector < std::string > VectorTag;
 char Match[256];
 char Match2N[256];
 char Convert2RC[256];
@@ -399,8 +397,8 @@ const double InsertSizeExtra = 2;
 unsigned int CONS_Chr_Size;
 unsigned int DSizeArray[15];
 
-string BreakDancerMask;
-string CurrentChrMask;
+std::string BreakDancerMask;
+std::string CurrentChrMask;
 
 unsigned int NumReadScanned = 0;
 unsigned int NumReadInChr = 0;
@@ -417,7 +415,7 @@ unsigned int GetMinus = 0;
 
 //short MAX_ALLOWED_MISMATCHES = TOTAL_SNP_ERROR_CHECKED_Minus + 5;
 
-vector < Parameter * >parameters;
+std::vector < Parameter * >parameters;
 
 // #########################################################
 int ADDITIONAL_MISMATCH = 1;		// user
@@ -474,9 +472,9 @@ struct bam_info
 		InsertSize = 0;
 		Tag = "";
 	}
-	string BamFile;
+	std::string BamFile;
 	int InsertSize;
-	string Tag;
+	std::string Tag;
 };
 
 struct BreakDancer
@@ -492,9 +490,9 @@ struct BreakDancer
 		S3 = 0;
 		S4 = 0;
 	}
-	string ChrName_A;
-	string ChrName_B;
-	string Type;
+	std::string ChrName_A;
+	std::string ChrName_B;
+	std::string Type;
 	int Size;
 	int Score;
 	unsigned S1;
@@ -517,11 +515,11 @@ struct Region
 
 short WhetherRemoveDuplicates;
 
-string TempLine_DB_Unique;
+std::string TempLine_DB_Unique;
 
-vector < Region > Merge (const vector < Region > &AllRegions);
+std::vector < Region > Merge (const std::vector < Region > &AllRegions);
 
-short CompareTwoString (const string & Str_A, const string & Str_B);
+short CompareTwoString (const std::string & Str_A, const std::string & Str_B);
 
 static struct option long_options[] = {
 	{"fasta", required_argument, 0, 'f'},
@@ -564,7 +562,7 @@ readInSpecifiedRegion (const SPLIT_READ & read,	// in: the read
 }
 
 void
-saveReadForNextCycle (SPLIT_READ & read, vector < SPLIT_READ > &futureReads)
+saveReadForNextCycle (SPLIT_READ & read, std::vector < SPLIT_READ > &futureReads)
 {
 	futureReads.push_back (read);
 	read.Used = true;							// as it cannot be used for this round of analyses anymore
@@ -573,7 +571,7 @@ saveReadForNextCycle (SPLIT_READ & read, vector < SPLIT_READ > &futureReads)
 /* 'defineParameters' defines the parameters to be used by Pindel. Takes the variables from the calling function as argument for those variables which
 	do not need to be stored in the par structure. */
 void
-defineParameters (string & WhichChr)
+defineParameters (std::string & WhichChr)
 {
 	parameters.
 		push_back (new
@@ -714,7 +712,7 @@ defineParameters (string & WhichChr)
 
 /* 'findParameter' returns the index of the parameter with name 'name'; -1 if not found.*/
 int
-findParameter (string name)
+findParameter (std::string name)
 {
 	for (unsigned int parameterCounter = 0; parameterCounter < parameters.size ();
 			 parameterCounter++)
@@ -738,13 +736,13 @@ readParameters (int argc, char *argv[])
 
 	for (int argumentIndex = 1; argumentIndex < argc; argumentIndex++)
 		{
-			string currentArgument = argv[argumentIndex];
+			std::string currentArgument = argv[argumentIndex];
 
 			//find argument in parameterlist
 			int parameterIndex = findParameter (currentArgument);
 			if (parameterIndex == -1)
 				{
-					cout << "unknown argument: " << currentArgument << endl;
+					std::cout << "unknown argument: " << currentArgument << std::endl;
 					return;
 				}
 
@@ -767,19 +765,19 @@ readParameters (int argc, char *argv[])
 					argumentIndex++;			// move on to next argument in the list
 					if (argumentIndex >= argc)
 						{
-							cout << "argument of " << currentArgument << " lacking.\n";
+							std::cout << "argument of " << currentArgument << " lacking.\n";
 							return;
 						}
 					if (argv[argumentIndex][0] == '-')
 						{
-							cout << "argument of " << currentArgument <<
+							std::cout << "argument of " << currentArgument <<
 								" seems erroneous.\n";
 							return;
 						}
 					// but if everything is allright, 
 					// TODO: Ask Kai whether this can be removed
 					//cout << "Giving " << currentArgument << " the value " << argv[ argumentIndex ] << endl;
-					parameters[parameterIndex]->setValue (string (argv[argumentIndex]));
+					parameters[parameterIndex]->setValue (std::string (argv[argumentIndex]));
 				}
 		}
 }
@@ -799,16 +797,16 @@ printHelp ()
 	// TODO: Ask Kai whether this can be removed
 	//cout << "Please specify input, either bam configure file and/or pindel input format" << endl;
 	//cout.width(0);  
-	cout <<
-		"\nProgram:   pindel (detection of indels and structural variations)\n";
-	cout << "Version:   0.2.2\n";
-	cout << "Contact:   Kai Ye <k.ye@lumc.nl>\n\n";
+	std::cout << std::endl <<
+		"Program:   pindel (detection of indels and structural variations)" << std::endl;
+	std::cout << "Version:   0.2.2" << std::endl;
+	std::cout << "Contact:   Kai Ye <k.ye@lumc.nl>" << std::endl << std::endl;
 
-	cout << "Usage:     pindel -f <reference.fa> -p <pindel_input>\n";
-	cout << "           [and/or -i bam_configuration_file]\n";
-	cout << "           -c <chromosome_name> -o <prefix_for_output_file>\n\n";
+	std::cout << "Usage:     pindel -f <reference.fa> -p <pindel_input>" << std::endl;
+	std::cout << "           [and/or -i bam_configuration_file]" << std::endl;
+	std::cout << "           -c <chromosome_name> -o <prefix_for_output_file>" << std::endl << std::endl;
 
-	cout << "Required parameters:\n";
+	std::cout << "Required parameters:" << std::endl;
 	// TODO: Ask Kai whether this can be removed
 	//parameters[1]->describe();
 	for (unsigned int i = 0; i < parameters.size (); i++)
@@ -818,7 +816,7 @@ printHelp ()
 					parameters[i]->describe ();
 				}
 		}
-	cout << "\nOptional parameters:\n";
+	std::cout << "\nOptional parameters:" << std::endl;
 
 	for (unsigned int parameterIndex = 0; parameterIndex < parameters.size ();
 			 parameterIndex++)
@@ -847,10 +845,10 @@ checkParameters ()
 			if (parameters[parameterIndex]->isRequired ()
 					&& !parameters[parameterIndex]->isSet ())
 				{
-					cout << "Required parameter " << parameters[parameterIndex]->
+					std::cout << "Required parameter " << parameters[parameterIndex]->
 						getShortName () << "/" << parameters[parameterIndex]->
 						getLongName () << " " << parameters[parameterIndex]->
-						getDescription () << " needs to be set.\n";
+						getDescription () << " needs to be set." << std::endl;
 					return false;
 				}												//if
 		}
@@ -859,8 +857,8 @@ checkParameters ()
 	bool hasPin = parameters[findParameter ("-p")]->isSet ();
 	if (!hasBam && !hasPin)
 		{
-			cout <<
-				"Bam and/or pindel input file required, use -p and/or -i to designate input file(s).\n";
+			std::cout <<
+				"Bam and/or pindel input file required, use -p and/or -i to designate input file(s)." << std::endl;
 			return false;
 		}
 	// TODO: Ask Kai whether this can be removed
@@ -870,8 +868,8 @@ checkParameters ()
 
 /* 'gatherChromosomeNames' gets the names of the chromosomes that occur in the file "referenceFile" and returns it in "chromosomeNames". */
 void
-gatherChromosomeNames (const string & referenceFileName,
-											 vector < string > &chromosomeNames)
+gatherChromosomeNames (const std::string & referenceFileName,
+											 std::vector < std::string > &chromosomeNames)
 {
 	chromosomeNames.clear ();
 
@@ -885,19 +883,19 @@ gatherChromosomeNames (const string & referenceFileName,
 
 	// copying Kai's ReadInOneChr-code here
 	char TempChar;
-	string TempChrName, tempLine;
-	ifstream referenceFile (referenceFileName.c_str ());
+	std::string TempChrName, tempLine;
+	std::ifstream referenceFile (referenceFileName.c_str ());
 	referenceFile >> TempChar;
 	if (TempChar != '>')
 		{
-			cout << "Please use fasta format for the reference file." << endl;
+			std::cout << "Please use fasta format for the reference file." << std::endl;
 			exit (EXIT_FAILURE);
 		}
 	while (referenceFile >> TempChrName)
 		{														// for every chromosome do
-			getline (referenceFile, tempLine);	// throws away rest of comments on reference line.
-			cout << "Adding chromosome " << TempChrName <<
-				" to the chromosome list.\n";
+			std::getline (referenceFile, tempLine);	// throws away rest of comments on reference line.
+			std::cout << "Adding chromosome " << TempChrName <<
+				" to the chromosome list." << std::endl;
 			chromosomeNames.push_back (TempChrName);
 			referenceFile >> TempChar;
 			while (!referenceFile.eof () && TempChar != '>')
@@ -918,11 +916,11 @@ gatherChromosomeNames (const string & referenceFileName,
 /** 'eliminate' eliminates a character from the input string. */
 void
 eliminate (const char ch,				// in: character to be eliminated from the string
-					 string & str					// modif: string that needs to be modified
+					 std::string & str					// modif: string that needs to be modified
 	)
 {
 	size_t eliminateCharPos = str.find (ch);
-	while (eliminateCharPos != string::npos)
+	while (eliminateCharPos != std::string::npos)
 		{
 			str.erase (eliminateCharPos, 1);
 			eliminateCharPos = str.find (ch);
@@ -932,10 +930,10 @@ eliminate (const char ch,				// in: character to be eliminated from the string
 
 /** 'parseRegion' interprets the region specified by the user in the -c option. */
 void
-parseRegion (const string & region,	// in: region
+parseRegion (const std::string & region,	// in: region
 						 int &startOfRegion,	// out: starting position of the region, -1 if not specified 
 						 int &endOfRegion,	// out: ending position of the region, -1 if not specified
-						 string & chromosomeName,	// out: name of the pure chromosome without region information
+						 std::string & chromosomeName,	// out: name of the pure chromosome without region information
 						 bool & correctParse	// out: whether parsing has succeeded.
 	)
 {
@@ -945,17 +943,17 @@ parseRegion (const string & region,	// in: region
 	correctParse = false;
 
 	// found a separator
-	if (separatorPos != string::npos)
+	if (separatorPos != std::string::npos)
 		{
 			chromosomeName = region.substr (0, separatorPos);
-			string coordinates = region.substr (separatorPos + 1);
+			std::string coordinates = region.substr (separatorPos + 1);
 			eliminate (',', coordinates);	// removes the ',' in 1,000 or 1,000,000 that users may add for readability but wreak havoc with atoi
 			size_t startEndSeparatorPos = coordinates.find ("-");
 
 			// there are two coordinates    
-			if (startEndSeparatorPos != string::npos)
+			if (startEndSeparatorPos != std::string::npos)
 				{
-					string secondPositionStr =
+					std::string secondPositionStr =
 						coordinates.substr (startEndSeparatorPos + 1);
 					endOfRegion = atoi (secondPositionStr.c_str ());
 				}
@@ -1020,24 +1018,24 @@ isFinishedBAM (const int upperBinBorder,	// in: last position analyzed so far
 int
 main (int argc, char *argv[])
 {
-	cout << Pindel_Version_str << endl;
+	std::cout << Pindel_Version_str << std::endl;
 
 	if (NumRead2ReportCutOff == 1)
 		BalanceCutoff = 3000000000;
 
-	ifstream inf_Seq;
-	ifstream inf_Pindel_Reads;
-	string bam_file;
-	string OutputFolder;
-	string WhichChr;
-	string line;
-	vector < bam_info > bams_to_parse;
-	ifstream config_file;
+	std::ifstream inf_Seq;
+	std::ifstream inf_Pindel_Reads;
+	std::string bam_file;
+	std::string OutputFolder;
+	std::string WhichChr;
+	std::string line;
+	std::vector < bam_info > bams_to_parse;
+	std::ifstream config_file;
 	bam_info info;
 
-	ifstream inf_ReadsSeq;				// input file name
-	ifstream inf_BP_test;					// input file name
-	ifstream inf_BP;							// input file name
+	std::ifstream inf_ReadsSeq;				// input file name
+	std::ifstream inf_BP_test;					// input file name
+	std::ifstream inf_BP;							// input file name
 	bool BAMDefined = false;
 	bool PindelReadDefined = false;
 	bool BreakDancerDefined = false;
@@ -1058,14 +1056,14 @@ main (int argc, char *argv[])
 		exit (EXIT_FAILURE);
 	if (FLOAT_WINDOW_SIZE > 5000.0)
 		{
-			cout << "Window size " << FLOAT_WINDOW_SIZE <<
-				" million bases is too large" << endl;
+			std::cout << "Window size " << FLOAT_WINDOW_SIZE <<
+				" million bases is too large" << std::endl;
 			return 1;
 		}
 	else if (FLOAT_WINDOW_SIZE > 500.0)
 		{
-			cout << "Window size " << FLOAT_WINDOW_SIZE <<
-				" million bases is rather large" << endl;
+			std::cout << "Window size " << FLOAT_WINDOW_SIZE <<
+				" million bases is rather large" << std::endl;
 		}
 	WINDOW_SIZE = 1000000 * FLOAT_WINDOW_SIZE;
 
@@ -1107,8 +1105,8 @@ main (int argc, char *argv[])
 
 	if (MaxRangeIndex > 9)
 		{
-			cout <<
-				"Maximal range index (-x) exceeds the allowed value (9) - resetting to 9.\n";
+			std::cout <<
+				"Maximal range index (-x) exceeds the allowed value (9) - resetting to 9." << std::endl;
 			MaxRangeIndex = 9;
 		}
 
@@ -1140,80 +1138,80 @@ main (int argc, char *argv[])
 
 
 
-	string SIOutputFilename = OutputFolder + "_SI";	// output file name
+	std::string SIOutputFilename = OutputFolder + "_SI";	// output file name
 	// TODO: Ask Kai whether this can be removed
 	//strcpy(SIOutputFilename, (OutputFolder + bam_file + "_SI").c_str());
-	ofstream SIoutputfile_test (SIOutputFilename.c_str ());
+	std::ofstream SIoutputfile_test (SIOutputFilename.c_str ());
 	if (!SIoutputfile_test)
 		{
-			cout << "Sorry, cannot write to the file: " << SIOutputFilename << endl;
+			std::cout << "Sorry, cannot write to the file: " << SIOutputFilename << std::endl;
 			return 1;
 		}
 	SIoutputfile_test.close ();
 
 	// TODO: Ask Kai whether this can be removed
 	//char DeletionOutputFilename[10000];      // output file name
-	string DeletionOutputFilename = OutputFolder + "_D";
+	std::string DeletionOutputFilename = OutputFolder + "_D";
 	// TODO: Ask Kai whether this can be removed
 	//strcpy(DeletionOutputFilename, (OutputFolder + bam_file + "_D").c_str());
-	ofstream DeletionOutf_test (DeletionOutputFilename.c_str ());
+	std::ofstream DeletionOutf_test (DeletionOutputFilename.c_str ());
 	if (!DeletionOutf_test)
 		{
-			cout << "Sorry, cannot write to the file: " << DeletionOutputFilename <<
-				endl;
+			std::cout << "Sorry, cannot write to the file: " << DeletionOutputFilename <<
+				std::endl;
 			return 1;
 		}
 	DeletionOutf_test.close ();
 
-	string TDOutputFilename = OutputFolder + "_TD";
+	std::string TDOutputFilename = OutputFolder + "_TD";
 	// TODO: Ask Kai whether this can be removed
 	//strcpy(DeletionInsertinOutputFilename, (OutputFolder + bam_file + "_DI").c_str());
-	ofstream TDOutf_test (TDOutputFilename.c_str ());
+	std::ofstream TDOutf_test (TDOutputFilename.c_str ());
 	if (!TDOutf_test)
 		{
-			cout << "Sorry, cannot write to the file: " << TDOutputFilename << endl;
+			std::cout << "Sorry, cannot write to the file: " << TDOutputFilename << std::endl;
 			return 1;
 		}
 	TDOutf_test.close ();
 
 	// TODO: Ask Kai whether this can be removed
 	//char InversionOutputFilename[10000];      // output file name
-	string InversionOutputFilename = OutputFolder + "_INV";
+	std::string InversionOutputFilename = OutputFolder + "_INV";
 	// TODO: Ask Kai whether this can be removed
 	//strcpy(InversionOutputFilename, (OutputFolder + bam_file + "_INV").c_str());
-	ofstream InversionOutf_test (InversionOutputFilename.c_str ());
+	std::ofstream InversionOutf_test (InversionOutputFilename.c_str ());
 	if (!InversionOutf_test)
 		{
-			cout << "Sorry, cannot write to the file: " << InversionOutputFilename
-				<< endl;
+			std::cout << "Sorry, cannot write to the file: " << InversionOutputFilename
+				<< std::endl;
 			return 1;
 		}
 	InversionOutf_test.close ();
 
 	// TODO: Ask Kai whether this can be removed
 	//char LargeInsertionOutputFilename[10000];      // output file name
-	string LargeInsertionOutputFilename = OutputFolder + "_LI";
+	std::string LargeInsertionOutputFilename = OutputFolder + "_LI";
 	// TODO: Ask Kai whether this can be removed
 	//strcpy(LargeInsertionOutputFilename, (OutputFolder + bam_file + "_LI").c_str());
-	ofstream LargeInsertionOutf_test (LargeInsertionOutputFilename.c_str ());
+	std::ofstream LargeInsertionOutf_test (LargeInsertionOutputFilename.c_str ());
 	if (!LargeInsertionOutf_test)
 		{
-			cout << "Sorry, cannot write to the file: " <<
-				LargeInsertionOutputFilename << endl;
+			std::cout << "Sorry, cannot write to the file: " <<
+				LargeInsertionOutputFilename << std::endl;
 			return 1;
 		}
 	LargeInsertionOutf_test.close ();
 
 	// TODO: Ask Kai whether this can be removed
 	//char RestOutputFilename[10000];      // output file name
-	string RestOutputFilename = OutputFolder + "_BP";
+	std::string RestOutputFilename = OutputFolder + "_BP";
 	// TODO: Ask Kai whether this can be removed
 	//strcpy(RestOutputFilename, (OutputFolder + bam_file + "_BP").c_str());
-	ofstream RestOutf_test (RestOutputFilename.c_str ());
+	std::ofstream RestOutf_test (RestOutputFilename.c_str ());
 	if (!RestOutf_test)
 		{
-			cout << "Sorry, cannot write to the file: " << RestOutputFilename <<
-				endl;
+			std::cout << "Sorry, cannot write to the file: " << RestOutputFilename <<
+				std::endl;
 			return 1;
 		}
 	RestOutf_test.close ();
@@ -1285,7 +1283,7 @@ main (int argc, char *argv[])
 	unsigned int AllSortReport = 0;
 
 
-	string Spacer = "";
+	std::string Spacer = "";
 	for (unsigned int i = 0; i < SpacerBeforeAfter; i++)
 		Spacer += "N";
 	// TODO: Ask Kai whether this can be removed
@@ -1320,9 +1318,9 @@ main (int argc, char *argv[])
 	//unsigned int DSizeExtra = 100;   
 	//unsigned int D_SIZE = 100;
 
-	string TempLie_BD;
+	std::string TempLie_BD;
 
-	string CurrentChr;
+	std::string CurrentChr;
 
 	char FirstSharpChar;
 
@@ -1349,16 +1347,16 @@ main (int argc, char *argv[])
 
 
 
-	string TempLine_BD;
+	std::string TempLine_BD;
 
 	// TODO: Ask Kai whether this can be removed
 	//while (inf_Seq >> CurrentFragName) 
 
 
 	//cout << StartOfFragment << "\t" << EndOfFragment << endl;
-	vector < SPLIT_READ > InputReads, Reads, BP_Reads, FutureReads;
+	std::vector < SPLIT_READ > InputReads, Reads, BP_Reads, FutureReads;
 
-	vector < BreakDancer > All_BD_events_WG, All_BD_events;
+	std::vector < BreakDancer > All_BD_events_WG, All_BD_events;
 	BreakDancer Temp_BD_event;
 	All_BD_events_WG.push_back (Temp_BD_event);
 
@@ -1419,20 +1417,20 @@ main (int argc, char *argv[])
 					//}
 				}
 		}
-	cout << "BreakDancer events: " << All_BD_events_WG.size () - 1 << endl;
+	std::cout << "BreakDancer events: " << All_BD_events_WG.size () - 1 << std::endl;
 
 	//} // TODO: Ask Kai whether this can be removed
 
 
-	vector < string > chromosomes;
+	std::vector < std::string > chromosomes;
 
 
-	string CurrentChrName, emptystr;
+	std::string CurrentChrName, emptystr;
 	char FirstCharOfFasta;
 	inf_Seq >> FirstCharOfFasta;
 	if (FirstCharOfFasta != '>')
 		{
-			cout << "The reference genome must be in fasta format!" << endl;
+			std::cout << "The reference genome must be in fasta format!" << std::endl;
 			return 1;
 		}
 
@@ -1441,14 +1439,14 @@ main (int argc, char *argv[])
 	int startOfRegion = -1;
 	int endOfRegion = -1;
 	bool correctParse = false;
-	string chrName;
+	std::string chrName;
 	parseRegion (WhichChr, startOfRegion, endOfRegion, chrName, correctParse);
 	if (!correctParse)
 		{
-			cout << "I cannot parse the region '" << WhichChr <<
+			std::cout << "I cannot parse the region '" << WhichChr <<
 				"'. Please give region in the format -c ALL, -c <chromosome_name> "
 				"(for example -c 20) or -c <chromosome_name>:<start_position>[-<end_position>], for example -c II:1,000 or "
-				"-c II:1,000-50,000. If an end position is specified, it must be larger than the start position.\n";
+				"-c II:1,000-50,000. If an end position is specified, it must be larger than the start position." << std::endl;
 			exit (EXIT_FAILURE);
 		}
 	WhichChr = chrName;						// removes the region from the 'pure' chromosome name
@@ -1471,7 +1469,7 @@ main (int argc, char *argv[])
 	bool loopOverAllChromosomes = false;
 	if (WhichChr.compare ("ALL") == 0)
 		{
-			cout << "Looping over ALL chromosomes.\n";
+			std::cout << "Looping over ALL chromosomes." << std::endl;
 			loopOverAllChromosomes = true;
 			// TODO: Ask Kai whether this can be removed
 			//gatherChromosomeNames(par.referenceFileName, chromosomes);
@@ -1484,7 +1482,7 @@ main (int argc, char *argv[])
 	while (SpecifiedChrVisited == false && inf_Seq >> CurrentChrName
 				 && !inf_Seq.eof ())
 		{														// loop over chromosomes
-			cout << "Processing chromosome: " << CurrentChrName << endl;
+			std::cout << "Processing chromosome: " << CurrentChrName << std::endl;
 // TODO: Ask Kai whether this can be removed
 //cout << "WhichChr is: '" << WhichChr << "', CurrentChrName is '" << CurrentChrName << "'" << endl;
 			getline (inf_Seq, emptystr);
@@ -1501,31 +1499,31 @@ main (int argc, char *argv[])
 			else
 				{												// not build up sequence
 					GetOneChrSeq (inf_Seq, CurrentChr, false);
-					cout << "Skipping chromosome: " << CurrentChrName << endl;
+					std::cout << "Skipping chromosome: " << CurrentChrName << std::endl;
 					continue;
 				}
 
 			CONS_Chr_Size = CurrentChr.size () - 2 * SpacerBeforeAfter;
-			cout << "Chromosome Size: " << CONS_Chr_Size << endl;
+			std::cout << "Chromosome Size: " << CONS_Chr_Size << std::endl;
 			CurrentChrMask.resize (CurrentChr.size ());
 			for (unsigned int i = 0; i < CurrentChr.size (); i++)
 				{
 					CurrentChrMask[i] = 'N';
 				}
 			unsigned NumBoxes = (unsigned) (CurrentChr.size () / BoxSize) + 1;	// box size 
-			cout << NumBoxes << "\t" << BoxSize << endl;
+			std::cout << NumBoxes << "\t" << BoxSize << std::endl;
 
 			// TODO: Ask Kai whether this can be removed
 			// cout << "NumBoxes: " << NumBoxes << endl;
-			vector < unsigned >SIs[NumBoxes];
+			std::vector < unsigned >SIs[NumBoxes];
 			// TODO: Ask Kai whether this can be removed
 			//vector <SPLIT_READ> LIs[NumBoxes];
-			vector < unsigned >Deletions[NumBoxes];
-			vector < unsigned >TD[NumBoxes];
-			vector < unsigned >TD_NT[NumBoxes];
-			vector < unsigned >DI[NumBoxes];
-			vector < unsigned >Inv[NumBoxes];
-			vector < unsigned >Inv_NT[NumBoxes];
+			std::vector < unsigned >Deletions[NumBoxes];
+			std::vector < unsigned >TD[NumBoxes];
+			std::vector < unsigned >TD_NT[NumBoxes];
+			std::vector < unsigned >DI[NumBoxes];
+			std::vector < unsigned >Inv[NumBoxes];
+			std::vector < unsigned >Inv_NT[NumBoxes];
 
 			EndOfFragment = CurrentChr.size () - SpacerBeforeAfter;
 			StartOfFragment = SpacerBeforeAfter;
@@ -1560,14 +1558,14 @@ main (int argc, char *argv[])
 
 					if (displayedStartOfRegion < displayedEndOfRegion)
 						{
-							cout << "Looking at chromosome " << WhichChr << " bases " <<
+							std::cout << "Looking at chromosome " << WhichChr << " bases " <<
 								displayedStartOfRegion << " to " << displayedEndOfRegion <<
-								".\n";
+								"." << std::endl;
 						}
 					else
 						{
-							cout <<
-								"Checking out reads near the borders of the specified regions for extra evidence.\n";
+							std::cout <<
+								"Checking out reads near the borders of the specified regions for extra evidence." << std::endl;
 						}
 					// TODO: Ask Kai whether this can be removed
 					//cout << "BinBorder " << lowerBinBorder << " " << upperBinBorder << endl; 
@@ -1602,17 +1600,17 @@ main (int argc, char *argv[])
 																		upperBinBorder);
 									if (ReturnFromReadingReads == 0)
 										{
-											cout << "Bam read failed: " << bams_to_parse[i].
-												BamFile << endl;
+											std::cout << "Bam read failed: " << bams_to_parse[i].
+												BamFile << std::endl;
 											return 1;
 										}
 									else if (Reads.size () == 0)
 										{
-											cout << "No Reads for " << WhichChr << " found in " <<
-												bams_to_parse[i].BamFile << endl;
+											std::cout << "No Reads for " << WhichChr << " found in " <<
+												bams_to_parse[i].BamFile << std::endl;
 										}
-									cout << "BAM file index\t" << i << "\t" << Reads.
-										size () << endl;
+									std::cout << "BAM file index\t" << i << "\t" << Reads.
+										size () << std::endl;
 								}
 
 						}
@@ -1627,12 +1625,12 @@ main (int argc, char *argv[])
 														lowerBinBorder, upperBinBorder);
 							if (ReturnFromReadingReads == 1)
 								{
-									cout << "malformed record detected!" << endl;
+									std::cout << "malformed record detected!" << std::endl;
 									return 1;
 								}
 							else if (Reads.size () == 0)
 								{
-									cout << "No reads found!?\n";
+									std::cout << "No reads found!?" << std::endl;
 								}
 						}
 					// TODO: Ask Kai whether this can be removed
@@ -1647,11 +1645,11 @@ main (int argc, char *argv[])
 					//}
 
 					if (Reads.size ())
-						cout << "There are " << Reads.
-							size () << " reads for this chromosome." << endl;
+						std::cout << "There are " << Reads.
+							size () << " reads for this chromosome." << std::endl;
 					else
 						{
-							cout << "There are no reads for this bin." << endl;
+							std::cout << "There are no reads for this bin." << std::endl;
 							continue;
 						}
 					Num_Left = Reads.size ();
@@ -1678,9 +1676,9 @@ main (int argc, char *argv[])
 					//All_BD_events_WG
 					if (All_BD_events.size () > 1)
 						{
-							cout <<
+							std::cout <<
 								"Searching additional breakpoints by adding BreakDancer results"
-								<< endl;
+								<< std::endl;
 							int *BD_INDEX = new int[CurrentChr.size ()];
 							// TODO: Ask Kai whether this can be removed
 							//cout << "1" << endl;
@@ -1706,7 +1704,7 @@ main (int argc, char *argv[])
 									else if (BD_INDEX[i] < 0)
 										BD_Minus++;
 								}
-							cout << BD_Plus << "\t" << BD_Minus << endl;
+							std::cout << BD_Plus << "\t" << BD_Minus << std::endl;
 
 							// TODO: Ask Kai whether this can be removed
 							//ADDITIONAL_MISMATCH = 2;
@@ -1822,16 +1820,16 @@ main (int argc, char *argv[])
 												}
 										}
 								}
-							cout << "\tNumber of reads with far end mapped: " << CountFarEnd
+							std::cout << "\tNumber of reads with far end mapped: " << CountFarEnd
 								<< "\t"
 								// TODO: Ask Kai whether this can be removed
 								//<< "\tTotal number of reads:" << Reads.size() << "\n" 
 								//<< CountFarEnd * 100.0 / Reads.size() << " %\n"
-								<< "Far+: " << CountFarEndPlus << "\tFar-: " << CountFarEndMinus << "\n\n";	//endl;
+								<< "Far+: " << CountFarEndPlus << "\tFar-: " << CountFarEndMinus << std::endl << std::endl;	//endl;
 							delete[]BD_INDEX;
 						}
 
-					cout << "Searching breakpoints of deletion events" << endl;
+					std::cout << "Searching breakpoints of deletion events" << std::endl;
 					//int SkippReads = 0;
 					for (short RangeIndex = 1; RangeIndex < MaxRangeIndex; RangeIndex++)
 						{
@@ -1921,16 +1919,16 @@ main (int argc, char *argv[])
 								//cout << "SkippReads " << SkippReads << endl;
 							}									// #pragma omp parallel default(shared)
 
-							cout << RangeIndex << "\tNumber of reads with far end mapped: "
+							std::cout << RangeIndex << "\tNumber of reads with far end mapped: "
 								<< CountFarEnd << "\t"
 								// TODO: Ask Kai whether this can be removed
 								//<< "\tTotal number of reads:" << Reads.size() << "\n" 
 								//<< CountFarEnd * 100.0 / Reads.size() << " %\n"
 								<< "Far+: " << CountFarEndPlus << "\tFar-: " <<
-								CountFarEndMinus << endl;
+								CountFarEndMinus << std::endl;
 						}
 
-					cout << "Searching breakpoints of SI events" << endl;
+					std::cout << "Searching breakpoints of SI events" << std::endl;
 					for (short RangeIndex = 1; RangeIndex < 2; RangeIndex++)
 						{
 							CountFarEnd = 0;
@@ -1968,21 +1966,21 @@ main (int argc, char *argv[])
 									}
 							}
 
-							cout << RangeIndex << "\tNumber of reads with far end mapped: "
+							std::cout << RangeIndex << "\tNumber of reads with far end mapped: "
 								<< CountFarEnd << "\t"
 								// TODO: Ask Kai whether this can be removed
 								//<< "\tTotal number of reads:" << Reads.size() << "\n" 
 								//<< CountFarEnd * 100.0 / Reads.size() << " %\n"
 								<< "Far+: " << CountFarEndPlus << "\tFar-: " <<
-								CountFarEndMinus << endl;
+								CountFarEndMinus << std::endl;
 						}
 
 					if (Analyze_TD)
 						{
 
 
-							cout << "Searching breakpoints of tandem duplication events" <<
-								endl;
+							std::cout << "Searching breakpoints of tandem duplication events" <<
+								std::endl;
 							// TODO: Ask Kai whether this can be removed
 							//int CountFarEnd, CountFarEndPlus, CountFarEndMinus;
 							for (short RangeIndex = 1; RangeIndex < MaxRangeIndex;
@@ -2077,14 +2075,14 @@ main (int argc, char *argv[])
 													}
 											}
 									}
-									cout << RangeIndex <<
+									std::cout << RangeIndex <<
 										"\tNumber of reads with far end mapped: " << CountFarEnd
 										<< "\t"
 										// TODO: Ask Kai whether this can be removed
 										//<< "\tTotal number of reads:" << Reads.size() << "\n" 
 										//<< CountFarEnd * 100.0 / Reads.size() << " %\n"
 										<< "Far+: " << CountFarEndPlus << "\tFar-: " <<
-										CountFarEndMinus << endl;
+										CountFarEndMinus << std::endl;
 								}
 						}										// if (Analyze_TD)
 
@@ -2092,7 +2090,7 @@ main (int argc, char *argv[])
 						{
 							// TODO: Ask Kai whether this can be removed
 							//cout << "here" << endl;
-							cout << "Searching breakpoints of inversions" << endl;
+							std::cout << "Searching breakpoints of inversions" << std::endl;
 							for (short RangeIndex = 1; RangeIndex < MaxRangeIndex;
 									 RangeIndex++)
 								{
@@ -2167,19 +2165,19 @@ main (int argc, char *argv[])
 													}
 											}
 									}
-									cout << RangeIndex <<
+									std::cout << RangeIndex <<
 										"\tNumber of reads with far end mapped: " << CountFarEnd
 										<< "\t"
 										// TODO: Ask Kai whether this can be removed
 										//<< "\tTotal number of reads:" << Reads.size() << "\n" 
 										//<< CountFarEnd * 100.0 / Reads.size() << " %\n"
 										<< "Far+: " << CountFarEndPlus << "\tFar-: " <<
-										CountFarEndMinus << endl;
+										CountFarEndMinus << std::endl;
 								}
 						}										// if (Analyze_INV)
 
 					// compare backup with current value
-					cout << "revisit all breakpoints identified ...";
+					std::cout << "revisit all breakpoints identified ...";
 					for (unsigned ReadIndex = 0; ReadIndex < Reads.size (); ReadIndex++)
 						{
 							if (Reads[ReadIndex].UP_Far.empty ())
@@ -2203,13 +2201,13 @@ main (int argc, char *argv[])
 										}
 								}
 						}
-					cout << " done." << endl;
+					std::cout << " done." << std::endl;
 
 					// ################### module 4: search variants and report #####################    
 
 					// TODO: Ask Kai whether this can be removed
 					//short MAX_MISMATCHES_Per_Read = 0;;
-					cout << "Searching deletion events ... " << endl;
+					std::cout << "Searching deletion events ... " << std::endl;
 					for (unsigned ReadIndex = 0; ReadIndex < Reads.size (); ReadIndex++)
 						{
 							if (Reads[ReadIndex].UP_Far.empty ())
@@ -2456,9 +2454,9 @@ main (int argc, char *argv[])
 									}
 							}
 						}
-					cout << "Total: " << Count_D << "\t+" << Count_D_Plus << "\t-" <<
-						Count_D_Minus << endl;
-					ofstream DeletionOutf (DeletionOutputFilename.c_str (), ios::app);
+					std::cout << "Total: " << Count_D << "\t+" << Count_D_Plus << "\t-" <<
+						Count_D_Minus << std::endl;
+					std::ofstream DeletionOutf (DeletionOutputFilename.c_str (), std::ios::app);
 					SortOutputD (NumBoxes, CurrentChr, Reads, Deletions, DeletionOutf);
 					// TODO: Ask Kai whether this can be removed
 					//DeletionOutf.close();  
@@ -2466,7 +2464,7 @@ main (int argc, char *argv[])
 						Deletions[i].clear ();
 
 
-					cout << "Searching deletion-insertions ... " << endl;
+					std::cout << "Searching deletion-insertions ... " << std::endl;
 					unsigned CloseIndex, FarIndex;
 					for (unsigned ReadIndex = 0; ReadIndex < Reads.size (); ReadIndex++)
 						{
@@ -2707,8 +2705,8 @@ main (int argc, char *argv[])
 									}
 							}
 						}
-					cout << "Total: " << Count_DI << "\t+" << Count_DI_Plus << "\t-" <<
-						Count_DI_Minus << endl;
+					std::cout << "Total: " << Count_DI << "\t+" << Count_DI_Plus << "\t-" <<
+						Count_DI_Minus << std::endl;
 					// TODO: Ask Kai whether this can be removed
 					//ofstream DeletionInsertionOutf(DeletionInsertinOutputFilename.c_str());
 					SortOutputDI (NumBoxes, CurrentChr, Reads, DI, DeletionOutf);
@@ -2722,7 +2720,7 @@ main (int argc, char *argv[])
 						{
 
 
-							cout << "Searching tandem duplication events ... " << endl;
+							std::cout << "Searching tandem duplication events ... " << std::endl;
 							for (unsigned ReadIndex = 0; ReadIndex < Reads.size ();
 									 ReadIndex++)
 								{
@@ -2973,18 +2971,18 @@ main (int argc, char *argv[])
 											}
 									}
 								}
-							cout << "Total: " << Count_TD << "\t+" << Count_TD_Plus << "\t-"
-								<< Count_TD_Minus << endl;
-							ofstream TDOutf (TDOutputFilename.c_str (), ios::app);
+							std::cout << "Total: " << Count_TD << "\t+" << Count_TD_Plus << "\t-"
+								<< Count_TD_Minus << std::endl;
+							std::ofstream TDOutf (TDOutputFilename.c_str (), std::ios::app);
 							SortOutputTD (NumBoxes, CurrentChr, Reads, TD, TDOutf);
 							// TODO: Ask Kai whether this can be removed
 							//TDOutf.close();  
 							for (unsigned int i = 0; i < NumBoxes; i++)
 								TD[i].clear ();
 
-							cout <<
+							std::cout <<
 								"Searching tandem dupliation events with non-template sequence ... "
-								<< endl;
+								<< std::endl;
 							for (unsigned ReadIndex = 0; ReadIndex < Reads.size ();
 									 ReadIndex++)
 								{
@@ -3215,8 +3213,8 @@ main (int argc, char *argv[])
 											}
 									}
 								}
-							cout << "Total: " << Count_TD_NT << "\t+" << Count_TD_NT_Plus <<
-								"\t-" << Count_TD_NT_Minus << endl;
+							std::cout << "Total: " << Count_TD_NT << "\t+" << Count_TD_NT_Plus <<
+								"\t-" << Count_TD_NT_Minus << std::endl;
 							// TODO: Ask Kai whether this can be removed
 							//ofstream TDOutf(TDOutputFilename.c_str());
 							SortOutputTD_NT (NumBoxes, CurrentChr, Reads, TD_NT, TDOutf);
@@ -3226,7 +3224,7 @@ main (int argc, char *argv[])
 						}										// if (Analyze_TD_INV)
 					if (Analyze_INV)
 						{
-							cout << "Searching inversions ... " << endl;
+							std::cout << "Searching inversions ... " << std::endl;
 							for (unsigned ReadIndex = 0; ReadIndex < Reads.size ();
 									 ReadIndex++)
 								{
@@ -3794,18 +3792,18 @@ main (int argc, char *argv[])
 												}
 										}
 								}
-							cout << "Total: " << Count_Inv << "\t+" << Count_Inv_Plus <<
-								"\t-" << Count_Inv_Minus << endl;
-							ofstream InversionOutf (InversionOutputFilename.c_str (),
-																			ios::app);
+							std::cout << "Total: " << Count_Inv << "\t+" << Count_Inv_Plus <<
+								"\t-" << Count_Inv_Minus << std::endl;
+							std::ofstream InversionOutf (InversionOutputFilename.c_str (),
+																			std::ios::app);
 							SortOutputInv (NumBoxes, CurrentChr, Reads, Inv, InversionOutf);
 							// TODO: Ask Kai whether this can be removed
 							//InversionOutf.close();
 							for (unsigned int i = 0; i < NumBoxes; i++)
 								Inv[i].clear ();
 
-							cout << "Searching inversions with non-template sequence ... "
-								<< endl;
+							std::cout << "Searching inversions with non-template sequence ... "
+								<< std::endl;
 							for (unsigned ReadIndex = 0; ReadIndex < Reads.size ();
 									 ReadIndex++)
 								{
@@ -4253,8 +4251,8 @@ main (int argc, char *argv[])
 												}
 										}
 								}
-							cout << "Total: " << Count_Inv_NT << "\t+" << Count_Inv_NT_Plus
-								<< "\t-" << Count_Inv_NT_Minus << endl;
+							std::cout << "Total: " << Count_Inv_NT << "\t+" << Count_Inv_NT_Plus
+								<< "\t-" << Count_Inv_NT_Minus << std::endl;
 							// TODO: Ask Kai whether this can be removed
 							//ofstream InversionOutf(InversionOutputFilename.c_str());
 							SortOutputInv_NT (NumBoxes, CurrentChr, Reads, Inv_NT,
@@ -4266,7 +4264,7 @@ main (int argc, char *argv[])
 
 						}										// Analyze_INV
 
-					cout << "Searching short insertions ... " << endl;
+					std::cout << "Searching short insertions ... " << std::endl;
 					for (unsigned ReadIndex = 0; ReadIndex < Reads.size (); ReadIndex++)
 						{
 							if (Reads[ReadIndex].Used || Reads[ReadIndex].UP_Far.empty ())
@@ -4527,9 +4525,9 @@ main (int argc, char *argv[])
 										}
 								}
 						}
-					cout << "Total: " << Count_SI << "\t+" << Count_SI_Plus << "\t-" <<
-						Count_SI_Minus << endl;
-					ofstream SIoutputfile (SIOutputFilename.c_str (), ios::app);
+					std::cout << "Total: " << Count_SI << "\t+" << Count_SI_Plus << "\t-" <<
+						Count_SI_Minus << std::endl;
+					std::ofstream SIoutputfile (SIOutputFilename.c_str (), std::ios::app);
 					SortOutputSI (NumBoxes, CurrentChr, Reads, SIs, SIoutputfile);
 					SIoutputfile.close ();
 					for (unsigned int i = 0; i < NumBoxes; i++)
@@ -4540,10 +4538,10 @@ main (int argc, char *argv[])
 					int TotalNumReads = Reads.size ();
 					if (ReportCloseMappedRead)
 						{
-							string CloseEndMappedOutputFilename =
+							std::string CloseEndMappedOutputFilename =
 								OutputFolder + "_CloseEndMapped";
-							ofstream CloseEndMappedOutput (CloseEndMappedOutputFilename.
-																						 c_str (), ios::app);
+							std::ofstream CloseEndMappedOutput (CloseEndMappedOutputFilename.
+																						 c_str (), std::ios::app);
 							for (int Index = 0; Index < TotalNumReads; Index++)
 								{
 									CloseEndMappedOutput << Reads[Index].Name << "\n"
@@ -4559,8 +4557,8 @@ main (int argc, char *argv[])
 
 					if (ReportSVReads)
 						{
-							string SVReadOutputFilename = OutputFolder + "_SVReads";
-							ofstream SVReadOutput (SVReadOutputFilename.c_str (), ios::app);
+							std::string SVReadOutputFilename = OutputFolder + "_SVReads";
+							std::ofstream SVReadOutput (SVReadOutputFilename.c_str (), std::ios::app);
 							for (int Index = 0; Index < TotalNumReads; Index++)
 								{
 									if (Reads[Index].IndelSize > Indel_SV_cutoff
@@ -4577,11 +4575,11 @@ main (int argc, char *argv[])
 
 					if (ReportLargeInterChrSVReads)
 						{
-							string LargeInterChrSVReadsOutputFilename =
+							std::string LargeInterChrSVReadsOutputFilename =
 								OutputFolder + "_LargeORInterChrReads";
-							ofstream
+							std::ofstream
 								LargeInterChrSVReadsOutput
-								(LargeInterChrSVReadsOutputFilename.c_str (), ios::app);
+								(LargeInterChrSVReadsOutputFilename.c_str (), std::ios::app);
 							for (int Index = 0; Index < TotalNumReads; Index++)
 								{
 									if (Reads[Index].IndelSize == 0)
@@ -4626,24 +4624,24 @@ main (int argc, char *argv[])
 							//Reads.pop_back();
 						}
 
-					cout << "Total: " << TotalNumReads << ";\tClose_end_found " <<
+					std::cout << "Total: " << TotalNumReads << ";\tClose_end_found " <<
 						TotalNumReads << ";\tFar_end_found " << Count_Far << ";\tUsed\t"
-						<< Count_Used << ".\n\n";
-					cout << "For LI and BP: " << Count_Unused << endl << endl;
+						<< Count_Used << "." << std::endl << std::endl;
+					std::cout << "For LI and BP: " << Count_Unused << std::endl << std::endl;
 
 					if (Analyze_LI)
 						{
 							time_t Time_LI_S, Time_LI_E;
 							Time_LI_S = time (NULL);
-							ofstream LargeInsertionOutf (LargeInsertionOutputFilename.
-																					 c_str (), ios::app);
+							std::ofstream LargeInsertionOutf (LargeInsertionOutputFilename.
+																					 c_str (), std::ios::app);
 							SortOutputLI (CurrentChr, Reads, LargeInsertionOutf);
 							LargeInsertionOutf.close ();
 							Time_LI_E = time (NULL);
-							cout << "Mining, Sorting and output LI results: " << (unsigned
+							std::cout << "Mining, Sorting and output LI results: " << (unsigned
 																																		int)
 								difftime (Time_LI_E,
-													Time_LI_S) << " seconds." << endl << endl;;
+													Time_LI_S) << " seconds." << std::endl << std::endl;;
 						}
 
 					BP_Reads.clear ();
@@ -4653,14 +4651,14 @@ main (int argc, char *argv[])
 							//cout << "BP" << endl;
 							time_t Time_BP_S, Time_BP_E;
 							Time_BP_S = time (NULL);
-							ofstream RestOutf (RestOutputFilename.c_str (), ios::app);
+							std::ofstream RestOutf (RestOutputFilename.c_str (), std::ios::app);
 							SortOutputRest (CurrentChr, Reads, BP_Reads, RestOutf);
 							RestOutf.close ();
 							Time_BP_E = time (NULL);
-							cout << "Mining, Sorting and output BP results: " << (unsigned
+							std::cout << "Mining, Sorting and output BP results: " << (unsigned
 																																		int)
 								difftime (Time_BP_E,
-													Time_BP_S) << " seconds." << endl << endl;
+													Time_BP_S) << " seconds." << std::endl << std::endl;
 						}
 
 					Time_Sort_E = time (NULL);
@@ -4678,8 +4676,8 @@ main (int argc, char *argv[])
 					// TODO: Ask Kai whether this can be removed
 					//Time_Load_S = time(NULL); 
 					Reads.clear ();
-					cout << "I have " << FutureReads.
-						size () << " reads saved for the next cycle.\n";
+					std::cout << "I have " << FutureReads.
+						size () << " reads saved for the next cycle." << std::endl;
 					Reads.swap (FutureReads);
 					Time_Load_S = 0;
 
@@ -4691,18 +4689,18 @@ main (int argc, char *argv[])
 																		CurrentChr.size ())));
 
 		}														// while ( loopOverAllChromosomes && chromosomeIndex < chromosomes.size() );
-	cout << "Loading genome sequences and reads: " << AllLoadings << " seconds."
-		<< endl;
+	std::cout << "Loading genome sequences and reads: " << AllLoadings << " seconds."
+		<< std::endl;
 	// TODO: Ask Kai whether this can be removed
 	//cout << "Mining indels: " << AllMinings << " seconds." << endl;
-	cout << "Mining, Sorting and output results: " << AllSortReport <<
-		" seconds." << endl;
+	std::cout << "Mining, Sorting and output results: " << AllSortReport <<
+		" seconds." << std::endl;
 	return 0;
 }																//main
 
-vector < string > ReverseComplement (const vector < string > &InputPatterns)
+std::vector < std::string > ReverseComplement (const std::vector < std::string > &InputPatterns)
 {
-	vector < string > OutputPatterns;	// = InputPatterns;
+	std::vector < std::string > OutputPatterns;	// = InputPatterns;
 	unsigned int NumPattern = InputPatterns.size ();
 	OutputPatterns.resize (NumPattern);
 	for (unsigned int i = 0; i < NumPattern; i++)
@@ -4713,20 +4711,20 @@ vector < string > ReverseComplement (const vector < string > &InputPatterns)
 }
 
 
-string
-Reverse (const string & InputPattern)
+std::string
+Reverse (const std::string & InputPattern)
 {
-	string OutputPattern = InputPattern;
+	std::string OutputPattern = InputPattern;
 	unsigned int LenPattern = InputPattern.size ();
 	for (unsigned int j = 0; j < LenPattern; j++)
 		OutputPattern[j] = InputPattern[j];
 	return OutputPattern;
 }
 
-string
-ReverseComplement (const string & InputPattern)
+std::string
+ReverseComplement (const std::string & InputPattern)
 {
-	string OutputPattern = InputPattern;
+	std::string OutputPattern = InputPattern;
 	unsigned int LenPattern = InputPattern.size ();
 	for (unsigned int j = 0; j < LenPattern; j++)
 		OutputPattern[j] =
@@ -4740,10 +4738,10 @@ ReverseComplement (const string & InputPattern)
 //const short TOTAL_SNP_ERROR_CHECKED = MAX_SNP_ERROR + ADDITIONAL_MISMATCH + 1;
 
 
-string
-Cap2Low (const string & input)
+std::string
+Cap2Low (const std::string & input)
 {
-	string output = input;
+	std::string output = input;
 	for (unsigned int i = 0; i < output.size (); i++)
 		{
 			output[i] = Cap2LowArray[(short) input[i]];
@@ -4752,7 +4750,7 @@ Cap2Low (const string & input)
 }
 
 bool
-NotInVector (const string & OneTag, const vector < string > &VectorTag)
+NotInVector (const std::string & OneTag, const std::vector < std::string > &VectorTag)
 {
 	for (unsigned i = 0; i < VectorTag.size (); i++)
 		{
@@ -4763,7 +4761,7 @@ NotInVector (const string & OneTag, const vector < string > &VectorTag)
 }
 
 bool
-ReportEvent (const vector < SPLIT_READ > &Deletions, const unsigned int &S,
+ReportEvent (const std::vector < SPLIT_READ > &Deletions, const unsigned int &S,
 						 const unsigned int &E)
 {
 	short ReadLength = Deletions[S].ReadLength - Deletions[S].NT_size;
@@ -4809,7 +4807,7 @@ ReportEvent (const vector < SPLIT_READ > &Deletions, const unsigned int &S,
 }
 
 void
-GetRealStart4Deletion (const string & TheInput, unsigned int &RealStart,
+GetRealStart4Deletion (const std::string & TheInput, unsigned int &RealStart,
 											 unsigned int &RealEnd)
 {
 	unsigned int PosIndex = RealStart + SpacerBeforeAfter;
@@ -4831,7 +4829,7 @@ GetRealStart4Deletion (const string & TheInput, unsigned int &RealStart,
 }
 
 void
-GetRealStart4Insertion (const string & TheInput, const string & InsertedStr,
+GetRealStart4Insertion (const std::string & TheInput, const std::string & InsertedStr,
 												unsigned int &RealStart, unsigned int &RealEnd)
 {
 	unsigned int IndelSize = InsertedStr.size ();
@@ -4873,26 +4871,26 @@ GetRealStart4Insertion (const string & TheInput, const string & InsertedStr,
 	RealEnd = PosIndex - SpacerBeforeAfter;
 }
 
-vector < Region > Merge (const vector < Region > &AllRegions)
+std::vector < Region > Merge (const std::vector < Region > &AllRegions)
 {
 	return AllRegions;
 }
 
 void
-GetCloseEnd (const string & CurrentChr, SPLIT_READ & Temp_One_Read)
+GetCloseEnd (const std::string & CurrentChr, SPLIT_READ & Temp_One_Read)
 {
 
 	Temp_One_Read.ReadLength = Temp_One_Read.UnmatchedSeq.size ();
 	Temp_One_Read.ReadLengthMinus = Temp_One_Read.ReadLength - 1;
 	char LeftChar, RightChar;
-	string CurrentReadSeq;
-	vector < unsigned int >PD[Temp_One_Read.TOTAL_SNP_ERROR_CHECKED];
+	std::string CurrentReadSeq;
+	std::vector < unsigned int >PD[Temp_One_Read.TOTAL_SNP_ERROR_CHECKED];
 	for (int CheckIndex = 0; CheckIndex < Temp_One_Read.TOTAL_SNP_ERROR_CHECKED;
 			 CheckIndex++)
 		{
 			PD[CheckIndex].reserve (3 * Temp_One_Read.InsertSize);
 		}
-	vector < UniquePoint > UP;
+	std::vector < UniquePoint > UP;
 	// TODO: Ask Kai whether this can be removed
 	//char Direction;
 	int Start, End;
@@ -5167,7 +5165,7 @@ GetCloseEnd (const string & CurrentChr, SPLIT_READ & Temp_One_Read)
 }
 
 void
-GetFarEnd_SingleStrandDownStreamInsertions (const string & CurrentChr,
+GetFarEnd_SingleStrandDownStreamInsertions (const std::string & CurrentChr,
 																						SPLIT_READ & Temp_One_Read,
 																						const short &RangeIndex)
 {
@@ -5177,8 +5175,8 @@ GetFarEnd_SingleStrandDownStreamInsertions (const string & CurrentChr,
 	//if (Temp_One_Read.MatchedRelPos > 160000)
 	//cout << Temp_One_Read.UnmatchedSeq << Temp_One_Read.UnmatchedSeq.size() << endl;
 	char LeftChar, RightChar;
-	string CurrentReadSeq;
-	vector < unsigned int >PD[Temp_One_Read.TOTAL_SNP_ERROR_CHECKED];
+	std::string CurrentReadSeq;
+	std::vector < unsigned int >PD[Temp_One_Read.TOTAL_SNP_ERROR_CHECKED];
 	for (int CheckIndex = 0; CheckIndex < Temp_One_Read.TOTAL_SNP_ERROR_CHECKED;
 			 CheckIndex++)
 		{
@@ -5187,7 +5185,7 @@ GetFarEnd_SingleStrandDownStreamInsertions (const string & CurrentChr,
 			// TODO: Ask Kai whether this can be removed
 			//PD_Minus[CheckIndex].reserve(End - Start + 1);
 		}
-	vector < UniquePoint > UP;
+	std::vector < UniquePoint > UP;
 	// TODO: Ask Kai whether this can be removed
 	//char Direction;
 	unsigned int Start, End;
@@ -5406,7 +5404,7 @@ GetFarEnd_SingleStrandDownStreamInsertions (const string & CurrentChr,
 }
 
 void
-GetFarEnd_SingleStrandDownStream (const string & CurrentChr,
+GetFarEnd_SingleStrandDownStream (const std::string & CurrentChr,
 																	SPLIT_READ & Temp_One_Read,
 																	const short &RangeIndex)
 {
@@ -5419,8 +5417,8 @@ GetFarEnd_SingleStrandDownStream (const string & CurrentChr,
 	//if (RangeIndex == 4)
 	//  cout << "\nin\t" << DSizeArray[RangeIndex] << "\t" << Temp_One_Read.UnmatchedSeq << "\t" << Temp_One_Read.UnmatchedSeq.size() << endl;
 	char LeftChar, RightChar;
-	string CurrentReadSeq;
-	vector < unsigned int >PD[Temp_One_Read.TOTAL_SNP_ERROR_CHECKED];
+	std::string CurrentReadSeq;
+	std::vector < unsigned int >PD[Temp_One_Read.TOTAL_SNP_ERROR_CHECKED];
 	for (int CheckIndex = 0; CheckIndex < Temp_One_Read.TOTAL_SNP_ERROR_CHECKED;
 			 CheckIndex++)
 		{
@@ -5428,7 +5426,7 @@ GetFarEnd_SingleStrandDownStream (const string & CurrentChr,
 															DSizeArray[RangeIndex]);
 			//PD_Minus[CheckIndex].reserve(End - Start + 1);
 		}
-	vector < UniquePoint > UP;
+	std::vector < UniquePoint > UP;
 	// TODO: Ask Kai whether this can be removed
 	//char Direction;
 	unsigned int Start, End;
@@ -5653,15 +5651,15 @@ GetFarEnd_SingleStrandDownStream (const string & CurrentChr,
 }
 
 void
-GetFarEnd_SingleStrandUpStream (const string & CurrentChr,
+GetFarEnd_SingleStrandUpStream (const std::string & CurrentChr,
 																SPLIT_READ & Temp_One_Read,
 																const short &RangeIndex)
 {
 	Temp_One_Read.ReadLength = Temp_One_Read.UnmatchedSeq.size ();
 	Temp_One_Read.ReadLengthMinus = Temp_One_Read.ReadLength - 1;
 	char LeftChar, RightChar;
-	string CurrentReadSeq;
-	vector < unsigned int >PD[Temp_One_Read.TOTAL_SNP_ERROR_CHECKED];
+	std::string CurrentReadSeq;
+	std::vector < unsigned int >PD[Temp_One_Read.TOTAL_SNP_ERROR_CHECKED];
 	for (int CheckIndex = 0; CheckIndex < Temp_One_Read.TOTAL_SNP_ERROR_CHECKED;
 			 CheckIndex++)
 		{
@@ -5670,7 +5668,7 @@ GetFarEnd_SingleStrandUpStream (const string & CurrentChr,
 			// TODO: Ask Kai whether this can be removed
 			//PD_Minus[CheckIndex].reserve(End - Start + 1);
 		}
-	vector < UniquePoint > UP;
+	std::vector < UniquePoint > UP;
 	// TODO: Ask Kai whether this can be removed
 	//char Direction;
 	int Start, End;
@@ -5887,7 +5885,7 @@ GetFarEnd_SingleStrandUpStream (const string & CurrentChr,
 }
 
 void
-GetFarEnd_OtherStrand (const string & CurrentChr, SPLIT_READ & Temp_One_Read,
+GetFarEnd_OtherStrand (const std::string & CurrentChr, SPLIT_READ & Temp_One_Read,
 											 const short &RangeIndex)
 {
 	// TODO: Ask Kai whether this can be removed
@@ -5900,9 +5898,9 @@ GetFarEnd_OtherStrand (const string & CurrentChr, SPLIT_READ & Temp_One_Read,
 	// TODO: Ask Kai whether this can be removed
 	//char Direction;
 
-	vector < UniquePoint > UP;
-	vector < unsigned int >PD_Plus[Temp_One_Read.TOTAL_SNP_ERROR_CHECKED];
-	vector < unsigned int >PD_Minus[Temp_One_Read.TOTAL_SNP_ERROR_CHECKED];
+	std::vector < UniquePoint > UP;
+	std::vector < unsigned int >PD_Plus[Temp_One_Read.TOTAL_SNP_ERROR_CHECKED];
+	std::vector < unsigned int >PD_Minus[Temp_One_Read.TOTAL_SNP_ERROR_CHECKED];
 
 	if (Temp_One_Read.MatchedD == Plus)
 		{
@@ -6122,7 +6120,7 @@ GetFarEnd_OtherStrand (const string & CurrentChr, SPLIT_READ & Temp_One_Read,
 }
 
 void
-GetFarEnd_BothStrands (const string & CurrentChr, SPLIT_READ & Temp_One_Read,
+GetFarEnd_BothStrands (const std::string & CurrentChr, SPLIT_READ & Temp_One_Read,
 											 const short &RangeIndex)
 {
 	// TODO: Ask Kai whether this can be removed
@@ -6135,9 +6133,9 @@ GetFarEnd_BothStrands (const string & CurrentChr, SPLIT_READ & Temp_One_Read,
 	// TODO: Ask Kai whether this can be removed
 	//char Direction;
 
-	vector < UniquePoint > UP;
-	vector < unsigned int >PD_Plus[Temp_One_Read.TOTAL_SNP_ERROR_CHECKED];
-	vector < unsigned int >PD_Minus[Temp_One_Read.TOTAL_SNP_ERROR_CHECKED];
+	std::vector < UniquePoint > UP;
+	std::vector < unsigned int >PD_Plus[Temp_One_Read.TOTAL_SNP_ERROR_CHECKED];
+	std::vector < unsigned int >PD_Minus[Temp_One_Read.TOTAL_SNP_ERROR_CHECKED];
 
 
 
@@ -6287,7 +6285,7 @@ GetFarEnd_BothStrands (const string & CurrentChr, SPLIT_READ & Temp_One_Read,
 }
 
 void
-GetFarEnd (const string & CurrentChr, SPLIT_READ & Temp_One_Read,
+GetFarEnd (const std::string & CurrentChr, SPLIT_READ & Temp_One_Read,
 					 const int &in_start, const int &in_end)
 {
 	// TODO: Ask Kai whether this can be removed
@@ -6299,9 +6297,9 @@ GetFarEnd (const string & CurrentChr, SPLIT_READ & Temp_One_Read,
 	short BP_End = Temp_One_Read.ReadLengthMinus;
 	// TODO: Ask Kai whether this can be removed
 	//char Direction;
-	vector < UniquePoint > UP;
-	vector < unsigned int >PD_Plus[Temp_One_Read.TOTAL_SNP_ERROR_CHECKED];
-	vector < unsigned int >PD_Minus[Temp_One_Read.TOTAL_SNP_ERROR_CHECKED];
+	std::vector < UniquePoint > UP;
+	std::vector < unsigned int >PD_Plus[Temp_One_Read.TOTAL_SNP_ERROR_CHECKED];
+	std::vector < unsigned int >PD_Minus[Temp_One_Read.TOTAL_SNP_ERROR_CHECKED];
 
 	for (int CheckIndex = 0; CheckIndex < Temp_One_Read.TOTAL_SNP_ERROR_CHECKED;
 			 CheckIndex++)
@@ -6446,13 +6444,13 @@ GetFarEnd (const string & CurrentChr, SPLIT_READ & Temp_One_Read,
 
 void
 CheckBoth (const SPLIT_READ & OneRead,
-					 const string & TheInput,
-					 const string & CurrentReadSeq,
-					 const vector < unsigned int >PD_Plus[],
-					 const vector < unsigned int >PD_Minus[],
+					 const std::string & TheInput,
+					 const std::string & CurrentReadSeq,
+					 const std::vector < unsigned int >PD_Plus[],
+					 const std::vector < unsigned int >PD_Minus[],
 					 const short &BP_Start,
 					 const short &BP_End,
-					 const short &CurrentLength, vector < UniquePoint > &UP)
+					 const short &CurrentLength, std::vector < UniquePoint > &UP)
 {
 	int Sum;
 	if (CurrentLength >= BP_Start && CurrentLength <= BP_End)
@@ -6494,8 +6492,8 @@ CheckBoth (const SPLIT_READ & OneRead,
 		}
 	if (CurrentLength < BP_End)
 		{
-			vector < unsigned int >PD_Plus_Output[OneRead.TOTAL_SNP_ERROR_CHECKED];
-			vector < unsigned int >PD_Minus_Output[OneRead.TOTAL_SNP_ERROR_CHECKED];
+			std::vector < unsigned int >PD_Plus_Output[OneRead.TOTAL_SNP_ERROR_CHECKED];
+			std::vector < unsigned int >PD_Minus_Output[OneRead.TOTAL_SNP_ERROR_CHECKED];
 			for (int CheckedIndex = 0;
 					 CheckedIndex < OneRead.TOTAL_SNP_ERROR_CHECKED; CheckedIndex++)
 				{
@@ -6631,9 +6629,9 @@ CheckBoth (const SPLIT_READ & OneRead,
 }
 
 void
-CleanUniquePoints (vector < UniquePoint > &Input_UP)
+CleanUniquePoints (std::vector < UniquePoint > &Input_UP)
 {
-	vector < UniquePoint > TempUP;	//vector <UniquePoint> UP_Close; UP_Far
+	std::vector < UniquePoint > TempUP;	//vector <UniquePoint> UP_Close; UP_Far
 	UniquePoint LastUP = Input_UP[Input_UP.size () - 1];
 	// TODO: Ask Kai whether this can be removed
 	//TempUP.push_back(LastUP);
@@ -6672,7 +6670,7 @@ CleanUniquePoints (vector < UniquePoint > &Input_UP)
 }
 
 short
-CompareTwoString (const string & Str_A, const string & Str_B)
+CompareTwoString (const std::string & Str_A, const std::string & Str_B)
 {
 	short Str_Len = Str_A.size ();
 	short CompareResult;
