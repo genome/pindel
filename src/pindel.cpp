@@ -71,15 +71,19 @@ public:
 	};
 	virtual int getIValue () const
 	{
+		return 0;
 	};
 	virtual bool getBValue () const
 	{
+		return false;
 	};
 	virtual string getSValue () const
 	{
+		return "";
 	};
 	virtual double getFValue () const
 	{
+		return 0.0f;
 	};
 
 	virtual bool isUnary () const
@@ -120,7 +124,7 @@ string
 getWord (string & line)
 {
 	string head, tail;
-	int endPos = line.find (" ");
+	size_t endPos = line.find (" ");
 	if (endPos == line.npos)
 		{
 			head = line;
@@ -143,8 +147,8 @@ Parameter::makeNiceLine (const string & rawDescription) const
 {
 	string neatLine = describeTab ();
 	string words = rawDescription;
-	const int LIMIT = d_MAX_LINE_WIDTH - d_DESCRIBE_WIDTH;
-	int lineSize = 0;
+	const size_t LIMIT = d_MAX_LINE_WIDTH - d_DESCRIBE_WIDTH;
+	size_t lineSize = 0;
 	while (words.size () > 0)
 		{
 			string newWord = getWord (words);
@@ -705,7 +709,7 @@ defineParameters (string & WhichChr)
 int
 findParameter (string name)
 {
-	for (int parameterCounter = 0; parameterCounter < parameters.size ();
+	for (unsigned int parameterCounter = 0; parameterCounter < parameters.size ();
 			 parameterCounter++)
 		{
 			if (parameters[parameterCounter]->hasName (name))
@@ -795,7 +799,7 @@ printHelp ()
 
 	cout << "Required parameters:\n";
 	//parameters[1]->describe();
-	for (int i = 0; i < parameters.size (); i++)
+	for (unsigned int i = 0; i < parameters.size (); i++)
 		{
 			if (parameters[i]->isRequired () || isReadsFileParam (parameters[i]))
 				{
@@ -804,7 +808,7 @@ printHelp ()
 		}
 	cout << "\nOptional parameters:\n";
 
-	for (int parameterIndex = 0; parameterIndex < parameters.size ();
+	for (unsigned int parameterIndex = 0; parameterIndex < parameters.size ();
 			 parameterIndex++)
 		{
 			if (!parameters[parameterIndex]->isRequired ()
@@ -825,7 +829,7 @@ checkParameters ()
 			return false;
 		}
 
-	for (int parameterIndex = 0; parameterIndex < parameters.size ();
+	for (unsigned int parameterIndex = 0; parameterIndex < parameters.size ();
 			 parameterIndex++)
 		{
 			if (parameters[parameterIndex]->isRequired ()
@@ -903,7 +907,7 @@ eliminate (const char ch,				// in: character to be eliminated from the string
 					 string & str					// modif: string that needs to be modified
 	)
 {
-	int eliminateCharPos = str.find (ch);
+	size_t eliminateCharPos = str.find (ch);
 	while (eliminateCharPos != string::npos)
 		{
 			str.erase (eliminateCharPos, 1);
@@ -921,7 +925,7 @@ parseRegion (const string & region,	// in: region
 						 bool & correctParse	// out: whether parsing has succeeded.
 	)
 {
-	int separatorPos = region.find (":");
+	size_t separatorPos = region.find (":");
 	startOfRegion = -1;
 	endOfRegion = -1;
 	correctParse = false;
@@ -932,7 +936,7 @@ parseRegion (const string & region,	// in: region
 			chromosomeName = region.substr (0, separatorPos);
 			string coordinates = region.substr (separatorPos + 1);
 			eliminate (',', coordinates);	// removes the ',' in 1,000 or 1,000,000 that users may add for readability but wreak havoc with atoi
-			int startEndSeparatorPos = coordinates.find ("-");
+			size_t startEndSeparatorPos = coordinates.find ("-");
 
 			// there are two coordinates    
 			if (startEndSeparatorPos != string::npos)
@@ -1260,7 +1264,7 @@ main (int argc, char *argv[])
 
 
 	string Spacer = "";
-	for (int i = 0; i < SpacerBeforeAfter; i++)
+	for (unsigned int i = 0; i < SpacerBeforeAfter; i++)
 		Spacer += "N";
 	//cout << Distance << endl;
 	Distance = 300;
@@ -1467,7 +1471,7 @@ main (int argc, char *argv[])
 			CONS_Chr_Size = CurrentChr.size () - 2 * SpacerBeforeAfter;
 			cout << "Chromosome Size: " << CONS_Chr_Size << endl;
 			CurrentChrMask.resize (CurrentChr.size ());
-			for (int i = 0; i < CurrentChr.size (); i++)
+			for (unsigned int i = 0; i < CurrentChr.size (); i++)
 				{
 					CurrentChrMask[i] = 'N';
 				}
@@ -1535,8 +1539,8 @@ main (int argc, char *argv[])
 					if (Time_Load_S == 0)
 						Time_Load_S = time (NULL);	// EWL070111
 					short ReturnFromReadingReads;
-					int GetPlus = 0;
-					int GetMinus = 0;
+					//int GetPlus = 0;
+					//int GetMinus = 0;
 					//if (WhichChr == CurrentFragName) 
 					// read Pindel format reads
 
@@ -1546,7 +1550,7 @@ main (int argc, char *argv[])
 					if (BAMDefined)
 						{
 							ReturnFromReadingReads = 0;
-							for (int i = 0; i < bams_to_parse.size (); i++)
+							for (unsigned int i = 0; i < bams_to_parse.size (); i++)
 								{
 									//cout << i << "\t" << bams_to_parse[i].BamFile.c_str() << "\t" << Reads.size()  << endl;
 									ReturnFromReadingReads =
@@ -1614,7 +1618,7 @@ main (int argc, char *argv[])
 
 					// ################### module 3: search breakpoints #####################
 					All_BD_events.clear ();
-					for (int All_BD_events_WG_index = 0;
+					for (unsigned int All_BD_events_WG_index = 0;
 							 All_BD_events_WG_index < All_BD_events_WG.size ();
 							 All_BD_events_WG_index++)
 						{
@@ -1785,7 +1789,7 @@ main (int argc, char *argv[])
 #pragma omp parallel default(shared)
 							{
 #pragma omp for
-								for (int ReadIndex = 0; ReadIndex < Reads.size ();
+								for (unsigned int ReadIndex = 0; ReadIndex < Reads.size ();
 										 ReadIndex++)
 									{
 										//cout << ReadIndex << endl;
@@ -1873,7 +1877,7 @@ main (int argc, char *argv[])
 #pragma omp parallel default(shared)
 							{
 #pragma omp for
-								for (int ReadIndex = 0; ReadIndex < Reads.size ();
+								for (unsigned int ReadIndex = 0; ReadIndex < Reads.size ();
 										 ReadIndex++)
 									{
 										if (!Reads[ReadIndex].UP_Far.empty ())
@@ -1925,7 +1929,7 @@ main (int argc, char *argv[])
 #pragma omp parallel default(shared)
 									{
 #pragma omp for
-										for (int ReadIndex = 0; ReadIndex < Reads.size ();
+										for (unsigned int ReadIndex = 0; ReadIndex < Reads.size ();
 												 ReadIndex++)
 											{
 												if (!Reads[ReadIndex].UP_Far.empty ())
@@ -2019,8 +2023,6 @@ main (int argc, char *argv[])
 						{
 							//cout << "here" << endl;
 							cout << "Searching breakpoints of inversions" << endl;
-							unsigned ReadsUsedForD = 0;
-							unsigned ReadsUsedForDI = 0;
 							for (short RangeIndex = 1; RangeIndex < MaxRangeIndex;
 									 RangeIndex++)
 								{
@@ -2031,7 +2033,7 @@ main (int argc, char *argv[])
 #pragma omp parallel default(shared)
 									{
 #pragma omp for
-										for (int ReadIndex = 0; ReadIndex < Reads.size ();
+										for (unsigned int ReadIndex = 0; ReadIndex < Reads.size ();
 												 ReadIndex++)
 											{
 												if (Reads[ReadIndex].Used
@@ -2149,7 +2151,7 @@ main (int argc, char *argv[])
 												 Reads[ReadIndex].MAX_SNP_ERROR;
 												 MAX_SNP_ERROR_index++)
 											{
-												for (int CloseIndex = 0;
+												for (unsigned int CloseIndex = 0;
 														 CloseIndex < Reads[ReadIndex].UP_Close.size ();
 														 CloseIndex++)
 													{
@@ -2275,7 +2277,7 @@ main (int argc, char *argv[])
 														if (Reads[ReadIndex].UP_Close[CloseIndex].
 																Mismatches > MAX_SNP_ERROR_index)
 															continue;
-														for (int FarIndex = 0;
+														for (unsigned int FarIndex = 0;
 																 FarIndex < Reads[ReadIndex].UP_Far.size ();
 																 FarIndex++)
 															{
@@ -2641,7 +2643,7 @@ main (int argc, char *argv[])
 														 Reads[ReadIndex].MAX_SNP_ERROR;
 														 MAX_SNP_ERROR_index++)
 													{
-														for (int CloseIndex = 0;
+														for (unsigned int CloseIndex = 0;
 																 CloseIndex <
 																 Reads[ReadIndex].UP_Close.size ();
 																 CloseIndex++)
@@ -2765,7 +2767,7 @@ main (int argc, char *argv[])
 																if (Reads[ReadIndex].UP_Close[CloseIndex].
 																		Mismatches > MAX_SNP_ERROR_index)
 																	continue;
-																for (int FarIndex = 0;
+																for (unsigned int FarIndex = 0;
 																		 FarIndex <
 																		 Reads[ReadIndex].UP_Far.size ();
 																		 FarIndex++)
@@ -3145,7 +3147,7 @@ main (int argc, char *argv[])
 																					UP_Close[CloseIndex].Mismatches >
 																					MAX_SNP_ERROR_index)
 																				continue;
-																			for (int FarIndex = 0;
+																			for (unsigned int FarIndex = 0;
 																					 FarIndex <
 																					 Reads[ReadIndex].UP_Far.size ();
 																					 FarIndex++)
@@ -3269,7 +3271,7 @@ main (int argc, char *argv[])
 																	 Reads[ReadIndex].MAX_SNP_ERROR;
 																	 MAX_SNP_ERROR_index++)
 																{
-																	for (int CloseIndex = 0;
+																	for (unsigned int CloseIndex = 0;
 																			 CloseIndex <
 																			 Reads[ReadIndex].UP_Close.size ();
 																			 CloseIndex++)
@@ -3416,7 +3418,7 @@ main (int argc, char *argv[])
 																					UP_Close[CloseIndex].Mismatches >
 																					MAX_SNP_ERROR_index)
 																				continue;
-																			for (int FarIndex = 0;
+																			for (unsigned int FarIndex = 0;
 																					 FarIndex <
 																					 Reads[ReadIndex].UP_Far.size ();
 																					 FarIndex++)
@@ -3542,7 +3544,7 @@ main (int argc, char *argv[])
 																	 Reads[ReadIndex].MAX_SNP_ERROR;
 																	 MAX_SNP_ERROR_index++)
 																{
-																	for (int CloseIndex = 0;
+																	for (unsigned int CloseIndex = 0;
 																			 CloseIndex <
 																			 Reads[ReadIndex].UP_Close.size ();
 																			 CloseIndex++)
@@ -4128,7 +4130,7 @@ main (int argc, char *argv[])
 													 Reads[ReadIndex].MAX_SNP_ERROR;
 													 MAX_SNP_ERROR_index++)
 												{
-													for (int CloseIndex = 0;
+													for (unsigned int CloseIndex = 0;
 															 CloseIndex < Reads[ReadIndex].UP_Close.size ();
 															 CloseIndex++)
 														{
