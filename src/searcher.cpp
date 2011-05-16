@@ -2,17 +2,16 @@
 #include "pindel.h"
 #include "searcher.h"
 
-using namespace std;
 // Searcher.cpp
 
 void
 CheckLeft_Close (const SPLIT_READ & OneRead,
-								 const string & TheInput,
-								 const string & CurrentReadSeq,
-								 const vector < unsigned int >Left_PD[],
+								 const std::string & TheInput,
+								 const std::string & CurrentReadSeq,
+								 const std::vector < unsigned int >Left_PD[],
 								 const short &BP_Left_Start,
 								 const short &BP_Left_End,
-								 const short &CurrentLength, vector < UniquePoint > &LeftUP)
+								 const short &CurrentLength, std::vector < UniquePoint > &LeftUP)
 {
 	int Sum;
 	if (CurrentLength >= BP_Left_Start && CurrentLength <= BP_Left_End)
@@ -44,7 +43,7 @@ CheckLeft_Close (const SPLIT_READ & OneRead,
 		}
 	if (CurrentLength < BP_Left_End)
 		{
-			vector < unsigned int >Left_PD_Output[OneRead.TOTAL_SNP_ERROR_CHECKED];
+			std::vector < unsigned int >Left_PD_Output[OneRead.TOTAL_SNP_ERROR_CHECKED];
 			for (int CheckedIndex = 0;
 					 CheckedIndex < OneRead.TOTAL_SNP_ERROR_CHECKED; CheckedIndex++)
 				{
@@ -139,12 +138,12 @@ CheckLeft_Close (const SPLIT_READ & OneRead,
 
 void
 CheckRight_Close (const SPLIT_READ & OneRead,
-									const string & TheInput,
-									const string & CurrentReadSeq,
-									const vector < unsigned int >Right_PD[],
+									const std::string & TheInput,
+									const std::string & CurrentReadSeq,
+									const std::vector < unsigned int >Right_PD[],
 									const short &BP_Right_Start,
 									const short &BP_Right_End,
-									const short &CurrentLength, vector < UniquePoint > &RightUP)
+									const short &CurrentLength, std::vector < UniquePoint > &RightUP)
 {
 	//cout << CurrentLength << "\t" << RightUP.size() << "\t" << Right_PD[0].size() << "\t" << Right_PD[1].size() << endl;
 	short ReadLengthMinus = CurrentReadSeq.size () - 1;
@@ -178,7 +177,7 @@ CheckRight_Close (const SPLIT_READ & OneRead,
 
 	if (CurrentLength < BP_Right_End)
 		{
-			vector < unsigned int >Right_PD_Output[OneRead.TOTAL_SNP_ERROR_CHECKED];
+			std::vector < unsigned int >Right_PD_Output[OneRead.TOTAL_SNP_ERROR_CHECKED];
 			for (int CheckedIndex = 0;
 					 CheckedIndex < OneRead.TOTAL_SNP_ERROR_CHECKED; CheckedIndex++)
 				{
@@ -267,12 +266,12 @@ CheckRight_Close (const SPLIT_READ & OneRead,
 
 void
 CheckLeft_Far (SPLIT_READ & OneRead,
-							 const string & TheInput,
-							 const string & CurrentReadSeq,
-							 const vector < unsigned int >Left_PD[],
+							 const std::string & TheInput,
+							 const std::string & CurrentReadSeq,
+							 const std::vector < unsigned int >Left_PD[],
 							 const short &BP_Left_Start,
 							 const short &BP_Left_End,
-							 const short &CurrentLength, vector < UniquePoint > &LeftUP)
+							 const short &CurrentLength, std::vector < UniquePoint > &LeftUP)
 {
 	//if (OneRead.MatchedRelPos > 160000 && LeftUP.size())
 	//cout << "+ " << TheInput.size() << "\t" << CurrentLength << "\t" << CurrentReadSeq << "\t" << Left_PD[0].size() << "\t" << Left_PD[1].size() << "\t" << Left_PD[2].size() << "\t" << BP_Left_Start << "\t" << BP_Left_End << "\t" << LeftUP.size() << endl;
@@ -311,7 +310,7 @@ CheckLeft_Far (SPLIT_READ & OneRead,
 	//cout << "2" << endl;
 	if (CurrentLength < BP_Left_End)
 		{
-			vector < unsigned int >Left_PD_Output[OneRead.TOTAL_SNP_ERROR_CHECKED];
+			std::vector < unsigned int >Left_PD_Output[OneRead.TOTAL_SNP_ERROR_CHECKED];
 			for (int CheckedIndex = 0;
 					 CheckedIndex < OneRead.TOTAL_SNP_ERROR_CHECKED; CheckedIndex++)
 				{
@@ -405,12 +404,12 @@ CheckLeft_Far (SPLIT_READ & OneRead,
 
 void
 CheckRight_Far (SPLIT_READ & OneRead,
-								const string & TheInput,
-								const string & CurrentReadSeq,
-								const vector < unsigned int >Right_PD[],
+								const std::string & TheInput,
+								const std::string & CurrentReadSeq,
+								const std::vector < unsigned int >Right_PD[],
 								const short &BP_Right_Start,
 								const short &BP_Right_End,
-								const short &CurrentLength, vector < UniquePoint > &RightUP)
+								const short &CurrentLength, std::vector < UniquePoint > &RightUP)
 {
 	//if (OneRead.MatchedRelPos > 160000 && RightUP.size())
 	//cout << "- " << TheInput.size() << "\t" << CurrentLength << "\t" << CurrentReadSeq << "\t" << Right_PD[0].size() << "\t" << Right_PD[1].size() << "\t" << Right_PD[2].size() << "\t" << BP_Right_Start << "\t" << BP_Right_End << "\t" << RightUP.size() << endl;
@@ -447,7 +446,7 @@ CheckRight_Far (SPLIT_READ & OneRead,
 
 	if (CurrentLength < BP_Right_End)
 		{
-			vector < unsigned int >Right_PD_Output[OneRead.TOTAL_SNP_ERROR_CHECKED];
+			std::vector < unsigned int >Right_PD_Output[OneRead.TOTAL_SNP_ERROR_CHECKED];
 			for (int CheckedIndex = 0;
 					 CheckedIndex < OneRead.TOTAL_SNP_ERROR_CHECKED; CheckedIndex++)
 				{
@@ -647,14 +646,14 @@ CompareTwoReads (const SPLIT_READ & First, const SPLIT_READ & Second)
 }
 
 bool
-CheckMismatches (const string & TheInput, const string & InputReadSeq,
+CheckMismatches (const std::string & TheInput, const std::string & InputReadSeq,
 								 //const unsigned int & Start,
 								 const UniquePoint & UP)
 {
 	//return true;  short LengthStr;
 	//unsigned int AbsLoc; 
 	//cout << "CheckMismatches1" << endl;
-	string CurrentReadSeq;
+	std::string CurrentReadSeq;
 	if (UP.Strand == SENSE)
 		CurrentReadSeq = InputReadSeq;
 	else
@@ -662,7 +661,7 @@ CheckMismatches (const string & TheInput, const string & InputReadSeq,
 	short CurrentReadLength = CurrentReadSeq.size ();
 	unsigned int Start = 0;
 	//cout << "CheckMismatches2" << endl;
-	string BP_On_Read, BP_On_Ref;
+	std::string BP_On_Read, BP_On_Ref;
 	if (UP.Direction == FORWARD)
 		{
 			//cout << "+s" << endl;
