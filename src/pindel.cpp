@@ -646,6 +646,8 @@ isFinishedBAM(const int upperBinBorder, // in: last position analyzed so far
 int
 main(int argc, char *argv[])
 {
+
+  /* init start */
   std::cout << Pindel_Version_str << std::endl;
 
   if (NumRead2ReportCutOff == 1)
@@ -1020,26 +1022,19 @@ main(int argc, char *argv[])
               else
                 Temp_BD_event.S1 = 1;
             }
-          // TODO: Ask Kai whether this can be removed
-          //if (WhichChr == Temp_BD_event.ChrName_B)
-            {
-              //if (Temp_BD_event.S3 + 200 > CONS_Chr_Size) Temp_BD_event.S4 = CONS_Chr_Size - 1;
-              //else
-              Temp_BD_event.S4 = Temp_BD_event.S3 + 200;
-              if (Temp_BD_event.S3 > 200)
-                Temp_BD_event.S3 = Temp_BD_event.S3 - 200;
-              else
-                Temp_BD_event.S3 = 1;
-            }
+
+          Temp_BD_event.S4 = Temp_BD_event.S3 + 200;
+          if (Temp_BD_event.S3 > 200)
+            Temp_BD_event.S3 = Temp_BD_event.S3 - 200;
+          else
+            Temp_BD_event.S3 = 1;
+
           Temp_BD_event.S1 += SpacerBeforeAfter;
           Temp_BD_event.S2 += SpacerBeforeAfter;
           Temp_BD_event.S3 += SpacerBeforeAfter;
           Temp_BD_event.S4 += SpacerBeforeAfter;
-          // TODO: Ask Kai whether this can be removed
-          //if (WhichChr == Temp_BD_event.ChrName_A && WhichChr == Temp_BD_event.ChrName_B) {
-          //cout << WhichChr << " " << Temp_BD_event.S1 << " " << Temp_BD_event.S2 << " " << Temp_BD_event.S3 << " " << Temp_BD_event.S4 << endl;
+
           All_BD_events_WG.push_back(Temp_BD_event);
-          //}
         }
     }
   std::cout << "BreakDancer events: " << All_BD_events_WG.size() - 1

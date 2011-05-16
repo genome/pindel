@@ -4,7 +4,7 @@
 #include <cmath>
 #include <getopt.h>
 #include <omp.h>
-
+#include <stdlib.h>
 #include "parameter.h"
 
 Parameter::Parameter (const std::string & shortName, const std::string & longName,
