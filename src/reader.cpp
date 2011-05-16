@@ -1008,16 +1008,3 @@ bam_cigar2len (const bam1_core_t * c, const uint32_t * cigar)
 		}
 	return l;
 }
-
-static void
-show_flag_info (flagshit * flags1, flagshit * flags2)
-{
-	printf
-		("Read One flags: Mapped:%d Unique:%d sw:%d edits:%d suboptimal:%d\n",
-		 flags1->mapped, flags1->unique, flags1->sw, flags1->edits,
-		 flags1->suboptimal);
-	printf
-		("Read Two flags: Mapped:%d Unique:%d sw:%d edits:%d suboptimal:%d\n",
-		 flags2->mapped, flags2->unique, flags2->sw, flags2->edits,
-		 flags2->suboptimal);
-}
