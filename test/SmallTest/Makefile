@@ -1,11 +1,12 @@
 PINDEL=../../src/pindel
 PINDEL_DBG=../../src/pindel-debug
 SRCDIR=$(realpath ../../src)
+GCOVR=$(realpath gcovr)
 DST=ActualOutput
 COVFILES=$(SRCDIR)/pindel.cpp.gcov $(SRCDIR)/searcher.cpp.gcov \
 	 $(SRCDIR)/reader.cpp.gcov $(SRCDIR)/reporter.cpp.gcov \
 	 $(SRCDIR)/parameter.cpp.gcov
-COVDIR=cover
+COVERAGE=$(abspath ./coverage.xml)
 COVDST=tmp
 .PHONY: all test coverage coverage-test assemble-coverage
 
@@ -19,10 +20,10 @@ test:
 	$(PINDEL) -p COLO-829_20-p_ok.txt -f hs_ref_chr20.fa -b COLO-829.20.BreakDancer.sv -c 20:0-1,500,000  -o $(DST)/colousingbd15
 	./compare.sh
 
-coverage: coverage.xml
+coverage: $(COVERAGE)
 
-coverage.xml: coverage-test
-	cd $(COVDIR) ; ../gcovr --xml > $@
+$(COVERAGE): coverage-test
+	cd $(SRCDIR) ; $(GCOVR) -r . --xml > $@
 	
 coverage-test:
 	-/bin/rm -r $(COVDST)
@@ -30,15 +31,6 @@ coverage-test:
 	$(PINDEL_DBG) -i sim1chrVs2.conf -f sim1chrVs2.fa -c ALL -o $(COVDST)/sim1chrVs20305
 	$(PINDEL_DBG) -p COLO-829_20-p_ok.txt -f hs_ref_chr20.fa -c 20:0-1,500,000 -o $(COVDST)/colowobd15
 	$(PINDEL_DBG) -p COLO-829_20-p_ok.txt -f hs_ref_chr20.fa -b COLO-829.20.BreakDancer.sv -c 20:0-1,500,000  -o $(COVDST)/colousingbd15
-	make assemble-coverage
-
-$(COVFILES): %.cpp.gcov: %-debug.gcda
-	cd $(dir $@) ; gcov $<
-	
-assemble-coverage: $(COVFILES)
-	-/bin/rm -r $(COVDIR)
-	mkdir -p $(COVDIR)
-	mv $(COVFILES) $(COVDIR)
 	
 clean:
-	-/bin/rm -r $(DST) $(COVDIR) $(COVDST) coverage.xml gmon.out
+	-/bin/rm -r $(DST) $(COVDST) $(COVERAGE) gmon.out
