@@ -191,11 +191,11 @@ Merge(const std::vector<Region> &AllRegions);
 short
 CompareTwoString(const std::string & Str_A, const std::string & Str_B);
 
-static struct option long_options[] = { { "fasta", required_argument, 0, 'f' },
-		{ "config-file", required_argument, 0, 'i' }, { "pindel-file",
-				required_argument, 0, 'p' }, { "output-prefix",
-				required_argument, 0, 'o' }, { "chromosome", required_argument,
-				0, 'c' }, { "breakdancer", required_argument, 0, 'b' }, };
+//static struct option long_options[] = { { "fasta", required_argument, 0, 'f' },
+//		{ "config-file", required_argument, 0, 'i' }, { "pindel-file",
+//				required_argument, 0, 'p' }, { "output-prefix",
+//				required_argument, 0, 'o' }, { "chromosome", required_argument,
+//				0, 'c' }, { "breakdancer", required_argument, 0, 'b' }, };
 
 bool readTransgressesBinBoundaries(SPLIT_READ & read,
 		const unsigned int &upperBinBorder) {
@@ -642,7 +642,7 @@ int main(int argc, char *argv[]) {
 		while (config_file.good()) {
 			config_file >> info.BamFile >> info.InsertSize >> info.Tag;
 			//copy kai and throw crap into useless variable
-			getline(config_file, line);
+			std::getline(config_file, line);
 			if (config_file.good()) {
 				bams_to_parse.push_back(info);
 			}
@@ -836,14 +836,14 @@ int main(int argc, char *argv[]) {
 
 	while (inf_BP_test >> FirstSharpChar) {
 		if (FirstSharpChar == '#') {
-			getline(inf_BP_test, TempLine_BD);
-			getline(inf_BP, TempLine_BD);
+			std::getline(inf_BP_test, TempLine_BD);
+			std::getline(inf_BP, TempLine_BD);
 		} else {
-			getline(inf_BP_test, TempLine_BD);
+			std::getline(inf_BP_test, TempLine_BD);
 			inf_BP >> Temp_BD_event.ChrName_A >> Temp_BD_event.S1
 					>> TempLine_BD >> Temp_BD_event.ChrName_B
 					>> Temp_BD_event.S3 >> TempLine_BD;
-			getline(inf_BP, TempLine_BD);
+			std::getline(inf_BP, TempLine_BD);
 
 			Temp_BD_event.S2 = Temp_BD_event.S1 + 200;
 			if (Temp_BD_event.S1 > 200)
@@ -923,7 +923,7 @@ int main(int argc, char *argv[]) {
 
 		/* 3.1 preparation starts */
 		std::cout << "Processing chromosome: " << CurrentChrName << std::endl;
-		getline(inf_Seq, emptystr);
+		std::getline(inf_Seq, emptystr);
 		if (loopOverAllChromosomes) {
 			GetOneChrSeq(inf_Seq, CurrentChr, true);
 			WhichChr = CurrentChrName;
