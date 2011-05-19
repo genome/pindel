@@ -3,7 +3,7 @@
 SAMTOOLS=samtools-0.1.16
 .PHONY : test all test coverage
 
-all: pindel functional-tests coverage-tests acceptance-tests
+all: pindel cppcheck functional-tests coverage-tests acceptance-tests
 test: pindel cppcheck functional-tests
 
 pindel:
