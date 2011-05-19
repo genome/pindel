@@ -305,6 +305,17 @@ struct Rest_Pos
 		Pos_Reads;									// put index here
 };
 
+struct bam_info {
+	bam_info() {
+		BamFile = "";
+		InsertSize = 0;
+		Tag = "";
+	}
+	std::string BamFile;
+	int InsertSize;
+	std::string Tag;
+};
+
 struct flagshit
 {
 	flagshit ()
