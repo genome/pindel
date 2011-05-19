@@ -10,7 +10,7 @@ CPPCHECKS=cppcheck-result-pindel.xml cppcheck-result-reader.xml \
 	  cppcheck-result-parameter.xml cppcheck-result-ControlState.xml
 OBJECTS=pindel.o reader.o reporter.o searcher.o parameter.o ControlState.o
 OBJECTS_DEBUG=pindel-debug.o reader-debug.o reporter-debug.o \
-	      searcher-debug.o parameter-debug.o ControlState.o
+	      searcher-debug.o parameter-debug.o ControlState-debug.o
 
 all:	pindel pindel-debug
 	

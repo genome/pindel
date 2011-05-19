@@ -833,7 +833,7 @@ int Init(int argc, char *argv[], ControlState& currentState) {
 		std::cout << "Looping over ALL chromosomes." << std::endl;
 		currentState.loopOverAllChromosomes = true;
 	}
-
+	return EXIT_SUCCESS;
 }
 
 int main(int argc, char *argv[]) {
