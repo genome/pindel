@@ -1,12 +1,17 @@
-all: test
-
+all: functional-tests coverage-tests acceptance-tests
+test: functional-tests
+	
 .PHONY : test clean
-
-test:
-	make -C SmallTest test
 
 clean:
 	make -C SmallTest clean
+
+acceptance-tests:
+	make -C SmallTest acceptance-tests
+
+coverage-tests:
+	make -C SmallTest coverage-tests
+
+functional-tests:
+	make -C SmallTest functional-tests
 	
-coverage:
-	make -C SmallTest coverage

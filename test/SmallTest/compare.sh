@@ -10,7 +10,6 @@ do
   for f in ${t}_{BP,D,INV,LI,SI,TD}
   do
 	  diff -c TargetOutput/$f ActualOutput/$f || exitWithMessage 'Not identical'
-		echo "$f OK"
   done || exitWithMessage 'Inner for loop failed'
 done || exitWithMessage 'Outer for loop failed'
 echo Results identical to expected output. OK.
