@@ -1,10 +1,7 @@
-# Make file for pindel
-#
-.PHONY: all clean test
-	
-# Define the location of the samtools, you can override on the commandline
-# e.g. make SAMTOOLS=../samtools-0.1.16
-SAMTOOLS=../samtools-0.1.16
+# Makefile for pindel and pindel-debug
+# Include the Makefile.local from the main project for configuration
+include ../Makefile.local
+
 CPPCHECKS=cppcheck-result-pindel.xml cppcheck-result-reader.xml \
 	  cppcheck-result-searcher.xml cppcheck-result-reporter.xml \
 	  cppcheck-result-parameter.xml cppcheck-result-ControlState.xml
@@ -16,18 +13,20 @@ all:	pindel pindel-debug
 test:	pindel $(CPPCHECKS)
 
 # Dependencies for the normal .o files	
-reader.o: reader.cpp pindel.h
-reporter.o: reporter.cpp pindel.h
-searcher.o: searcher.cpp pindel.h
-pindel.o: pindel.cpp pindel.h
+reader.o: reader.cpp reader.h pindel.h
+reporter.o: reporter.cpp reporter.h pindel.h
+searcher.o: searcher.cpp searcher.h pindel.h
+pindel.o: pindel.cpp pindel.h \
+	reader.h reporter.h searcher.h parameter.h ControlState.h
 parameter.o: parameter.cpp parameter.h
 ControlState.o: ControlState.cpp ControlState.h
 
 # Dependencies for the debug version of the .o files
-reader-debug.o: reader.cpp pindel.h
-reporter-debug.o: reporter.cpp pindel.h
-searcher-debug.o: searcher.cpp pindel.h
-pindel-debug.o: pindel.cpp pindel.h
+reader-debug.o: reader.cpp reader.h pindel.h
+reporter-debug.o: reporter.cpp reporter.h pindel.h
+searcher-debug.o: searcher.cpp searcher.h pindel.h
+pindel-debug.o: pindel.cpp pindel.h \
+	reader.h reporter.h searcher.h parameter.h ControlState.h
 parameter-debug.o: parameter.cpp parameter.h
 ControlState-debug.o: ControlState.cpp ControlState.h
 
@@ -58,3 +57,7 @@ clean:
 # Pattern rule to create cppcheck files	
 cppcheck-result-%.xml: %.cpp
 	cppcheck --quiet --enable=all --xml -I$(SAMTOOLS) $< 2> $@
+
+# Pseudo targets for configuration
+.PHONY: all clean test
+.IGNORE: clean

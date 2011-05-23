@@ -1,8 +1,10 @@
+# Makefile for the test suites
+# Include the local configuration
+include ../Makefile.local
+
 all: functional-tests coverage-tests acceptance-tests
 test: functional-tests
 	
-.PHONY : test clean
-
 clean:
 	make -C SmallTest clean
 
@@ -14,4 +16,10 @@ coverage-tests:
 
 functional-tests:
 	make -C SmallTest functional-tests
-	
+
+regression-tests:
+	echo 'No tests to run.'
+
+# Pseudo targets for configuration
+.PHONY: clean acceptance-tests coverage-tests functional-tests regression-tests
+.IGNORE: clean
