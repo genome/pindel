@@ -345,6 +345,7 @@ void defineParameters(std::string & WhichChr) {
 			new IntParameter(&MIN_IndelSize_NT, "-n", "--min_NT_size",
 					"only report inserted (NT) sequences in deletions greater than this size "
 						"(default 50)", false, 50));
+	// TODO: Make sure MIN_IndelSize_NT is > 0, make into unsigned.
 	parameters. push_back(
 			new IntParameter(&MIN_IndelSize_Inversion, "-v",
 					"--min_inversion_size",
@@ -984,8 +985,8 @@ int searchBreakPoints(ControlState& currentState) {
 #pragma omp parallel default(shared)
 		{
 #pragma omp for
-			for (unsigned int ReadIndex = 0; ReadIndex
-					< currentState.Reads.size(); ReadIndex++) {
+			for (int ReadIndex = 0; ReadIndex
+			       < (int)currentState.Reads.size(); ReadIndex++) { // openMP 2.5 requires signed loop
 				if (!currentState.Reads[ReadIndex].UP_Far.empty()) {
 					continue;
 				}
@@ -1041,8 +1042,8 @@ int searchBreakPoints(ControlState& currentState) {
 #pragma omp parallel default(shared)
 		{
 #pragma omp for
-			for (unsigned int ReadIndex = 0; ReadIndex
-					< currentState.Reads.size(); ReadIndex++) {
+			for (int ReadIndex = 0; ReadIndex
+			       < (int)currentState.Reads.size(); ReadIndex++) { // OpenMP 2.5 requires signed looop
 				if (!currentState.Reads[ReadIndex].UP_Far.empty()) {
 					continue;
 				}
@@ -1082,8 +1083,8 @@ int searchBreakPoints(ControlState& currentState) {
 #pragma omp parallel default(shared)
 			{
 #pragma omp for
-				for (unsigned int ReadIndex = 0; ReadIndex
-						< currentState.Reads.size(); ReadIndex++) {
+				for (int ReadIndex = 0; ReadIndex
+				       < (int)currentState.Reads.size(); ReadIndex++) { // OpenMP 2.5 requires signed loop
 					if (!currentState.Reads[ReadIndex].UP_Far.empty()) {
 						continue;
 					}
@@ -1157,8 +1158,8 @@ int searchBreakPoints(ControlState& currentState) {
 #pragma omp parallel default(shared)
 			{
 #pragma omp for
-				for (unsigned int ReadIndex = 0; ReadIndex
-						< currentState.Reads.size(); ReadIndex++) {
+				for (int ReadIndex = 0; ReadIndex
+				       < (int)currentState.Reads.size(); ReadIndex++) { // OpenMP 2.5 requires signed loop
 					if (currentState.Reads[ReadIndex].Used
 							|| currentState.Reads[ReadIndex].UP_Far.size()) {
 						continue;
@@ -1510,7 +1511,7 @@ int searchIndels(ControlState& currentState, unsigned NumBoxes) {
 												- SpacerBeforeAfter;
 
 								if (currentState.Reads[ReadIndex].IndelSize
-										>= MIN_IndelSize_NT
+										>= (unsigned)MIN_IndelSize_NT
 										&& currentState.Reads[ReadIndex].NT_size
 												<= Max_Length_NT) {
 
@@ -1588,7 +1589,7 @@ int searchIndels(ControlState& currentState, unsigned NumBoxes) {
 												- SpacerBeforeAfter;
 								{
 									if (currentState.Reads[ReadIndex].IndelSize
-											>= MIN_IndelSize_NT
+											>= (unsigned)MIN_IndelSize_NT
 											&& currentState.Reads[ReadIndex].NT_size
 													<= Max_Length_NT) {
 
@@ -1648,8 +1649,8 @@ int searchTandemDuplications(ControlState& currentState, unsigned NumBoxes) {
 	std::vector<unsigned> TD[NumBoxes];
 	std::vector<unsigned> TD_NT[NumBoxes];
 
-	int CloseIndex = 0;
-	int FarIndex = 0;
+	unsigned int CloseIndex = 0;
+	unsigned int FarIndex = 0;
 
 	/* 3.2.5 search tandem duplications starts */
 
@@ -2008,8 +2009,8 @@ int searchInversions(ControlState& currentState, unsigned NumBoxes) {
 	std::vector<unsigned> Inv[NumBoxes];
 	std::vector<unsigned> Inv_NT[NumBoxes];
 
-	int CloseIndex = 0;
-	int FarIndex = 0;
+	unsigned int CloseIndex = 0;
+	unsigned int FarIndex = 0;
 
 	/* 3.2.6 search inversions starts */
 
@@ -3946,8 +3947,8 @@ void GetFarEnd_SingleStrandUpStream(const std::string & CurrentChr,
 		Start = Temp_One_Read.UP_Close[0].AbsLoc
 				+ Temp_One_Read.UP_Close[0].LengthStr;
 		End = Start + DSizeArray[RangeIndex] + Temp_One_Read.InsertSize * 2;
-		if (End > CurrentChr.size() - SpacerBeforeAfter)
-			End = CurrentChr.size() - SpacerBeforeAfter;
+		if (End > (int)CurrentChr.size() - (int)SpacerBeforeAfter)
+			End = (int)CurrentChr.size() - (int)SpacerBeforeAfter;
 
 		LeftChar = CurrentReadSeq[0];
 		if (Temp_One_Read.TOTAL_SNP_ERROR_CHECKED_Minus) {
@@ -4013,8 +4014,8 @@ void GetFarEnd_SingleStrandUpStream(const std::string & CurrentChr,
 		// TODO: Ask Kai whether this can be removed
 		//Start = Temp_One_Read.MatchedRelPos + SpacerBeforeAfter;
 
-		if (End > DSizeArray[RangeIndex] + Temp_One_Read.InsertSize * 2
-				+ SpacerBeforeAfter)
+		if (End > (int)DSizeArray[RangeIndex] + (int)Temp_One_Read.InsertSize * 2
+				+ (int)SpacerBeforeAfter)
 			Start = End - DSizeArray[RangeIndex] - Temp_One_Read.InsertSize * 2;
 		else
 			Start = SpacerBeforeAfter;
