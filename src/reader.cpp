@@ -13,6 +13,10 @@
 #include "pindel.h"
 #include "reader.h"
 
+// Static function declaration
+
+static int fetch_func (const bam1_t * b1, void *data);
+
 // Reader (BamReader and PindelReader)
 
 //init hash/maps for read pairing on the fly
