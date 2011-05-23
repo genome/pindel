@@ -1649,8 +1649,8 @@ int searchTandemDuplications(ControlState& currentState, unsigned NumBoxes) {
 	std::vector<unsigned> TD[NumBoxes];
 	std::vector<unsigned> TD_NT[NumBoxes];
 
-	unsigned int CloseIndex = 0;
-	unsigned int FarIndex = 0;
+	int CloseIndex = 0;
+	int FarIndex = 0;
 
 	/* 3.2.5 search tandem duplications starts */
 
@@ -1664,15 +1664,14 @@ int searchTandemDuplications(ControlState& currentState, unsigned NumBoxes) {
 				for (short MAX_SNP_ERROR_index = 0; MAX_SNP_ERROR_index
 						<= currentState.Reads[ReadIndex].MAX_SNP_ERROR; MAX_SNP_ERROR_index++) {
 					for (CloseIndex = 0; CloseIndex
-							< currentState.Reads[ReadIndex].UP_Close.size(); CloseIndex++) {
+							< (int)currentState.Reads[ReadIndex].UP_Close.size(); CloseIndex++) {
 						if (currentState.Reads[ReadIndex].Used)
 							break;
 						if (currentState.Reads[ReadIndex].UP_Close[CloseIndex]. Mismatches
 								> MAX_SNP_ERROR_index)
 							continue;
-						for (FarIndex
-								= currentState.Reads[ReadIndex].UP_Far.size()
-										- 1; FarIndex >= 0; FarIndex--) {
+						for (FarIndex = (int)currentState.Reads[ReadIndex].UP_Far.size() - 1;
+								FarIndex >= 0; FarIndex--) {
 							if (currentState.Reads[ReadIndex].Used)
 								break;
 							if (currentState.Reads[ReadIndex].UP_Far[FarIndex]. Mismatches
@@ -1755,7 +1754,7 @@ int searchTandemDuplications(ControlState& currentState, unsigned NumBoxes) {
 								> MAX_SNP_ERROR_index)
 							continue;
 						for (FarIndex = 0; FarIndex
-								< currentState.Reads[ReadIndex].UP_Far.size(); FarIndex++) {
+								< (int)currentState.Reads[ReadIndex].UP_Far.size(); FarIndex++) {
 							if (currentState.Reads[ReadIndex].Used)
 								break;
 							if (currentState.Reads[ReadIndex].UP_Far[FarIndex]. Mismatches
@@ -2009,8 +2008,8 @@ int searchInversions(ControlState& currentState, unsigned NumBoxes) {
 	std::vector<unsigned> Inv[NumBoxes];
 	std::vector<unsigned> Inv_NT[NumBoxes];
 
-	unsigned int CloseIndex = 0;
-	unsigned int FarIndex = 0;
+	int CloseIndex = 0;
+	int FarIndex = 0;
 
 	/* 3.2.6 search inversions starts */
 
@@ -2030,16 +2029,15 @@ int searchInversions(ControlState& currentState, unsigned NumBoxes) {
 								- 1].AbsLoc + MIN_IndelSize_Inversion) { // normal situation
 					for (short MAX_SNP_ERROR_index = 0; MAX_SNP_ERROR_index
 							<= currentState.Reads[ReadIndex].MAX_SNP_ERROR; MAX_SNP_ERROR_index++) {
-						for (CloseIndex
-								= currentState.Reads[ReadIndex].UP_Close.size()
-										- 1; CloseIndex >= 0; CloseIndex--) {
+						for (CloseIndex = (int)currentState.Reads[ReadIndex].UP_Close.size() - 1; 
+									CloseIndex >= 0; CloseIndex--) {
 							if (currentState.Reads[ReadIndex].Used)
 								break;
 							if (currentState.Reads[ReadIndex]. UP_Close[CloseIndex].Mismatches
 									> MAX_SNP_ERROR_index)
 								continue;
 							for (FarIndex = 0; FarIndex
-									< currentState.Reads[ReadIndex].UP_Far.size(); FarIndex++) {
+									< (int)currentState.Reads[ReadIndex].UP_Far.size(); FarIndex++) {
 								if (currentState.Reads[ReadIndex].Used)
 									break;
 								if (currentState.Reads[ReadIndex]. UP_Far[FarIndex].Mismatches
@@ -2115,15 +2113,14 @@ int searchInversions(ControlState& currentState, unsigned NumBoxes) {
 					for (short MAX_SNP_ERROR_index = 0; MAX_SNP_ERROR_index
 							<= currentState.Reads[ReadIndex].MAX_SNP_ERROR; MAX_SNP_ERROR_index++) {
 						for (CloseIndex = 0; CloseIndex
-								< currentState.Reads[ReadIndex].UP_Close.size(); CloseIndex++) {
+								< (int)currentState.Reads[ReadIndex].UP_Close.size(); CloseIndex++) {
 							if (currentState.Reads[ReadIndex].Used)
 								break;
 							if (currentState.Reads[ReadIndex]. UP_Close[CloseIndex].Mismatches
 									> MAX_SNP_ERROR_index)
 								continue;
-							for (FarIndex
-									= currentState.Reads[ReadIndex].UP_Far.size()
-											- 1; FarIndex >= 0; FarIndex--) {
+							for (FarIndex	= (int)currentState.Reads[ReadIndex].UP_Far.size() - 1;
+										FarIndex >= 0; FarIndex--) {
 								if (currentState.Reads[ReadIndex].Used)
 									break;
 								if (currentState.Reads[ReadIndex]. UP_Far[FarIndex].Mismatches
@@ -2203,16 +2200,15 @@ int searchInversions(ControlState& currentState, unsigned NumBoxes) {
 								+ MIN_IndelSize_Inversion) {
 					for (short MAX_SNP_ERROR_index = 0; MAX_SNP_ERROR_index
 							<= currentState.Reads[ReadIndex].MAX_SNP_ERROR; MAX_SNP_ERROR_index++) {
-						for (CloseIndex
-								= currentState.Reads[ReadIndex].UP_Close.size()
-										- 1; CloseIndex >= 0; CloseIndex--) {
+						for (CloseIndex	= (int)currentState.Reads[ReadIndex].UP_Close.size()	- 1;
+									CloseIndex >= 0; CloseIndex--) {
 							if (currentState.Reads[ReadIndex].Used)
 								break;
 							if (currentState.Reads[ReadIndex]. UP_Close[CloseIndex].Mismatches
 									> MAX_SNP_ERROR_index)
 								continue;
 							for (FarIndex = 0; FarIndex
-									< currentState.Reads[ReadIndex].UP_Far.size(); FarIndex++) {
+									< (int)currentState.Reads[ReadIndex].UP_Far.size(); FarIndex++) {
 								if (currentState.Reads[ReadIndex].Used)
 									break;
 								if (currentState.Reads[ReadIndex]. UP_Far[FarIndex].Mismatches
