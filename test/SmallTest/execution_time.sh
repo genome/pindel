@@ -6,7 +6,7 @@
 ### Functions ###
 function exitWithMessage() {
 	echo "$*"
-	exit
+	exit 1
 }
 
 function onExit() {
@@ -33,4 +33,3 @@ test ${actual_time} -le ${maximum_time} || exitWithMessage " was longer than max
 
 echo "." >&2
 exit 0
-
