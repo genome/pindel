@@ -2393,8 +2393,10 @@ SortOutputLI (const std::string & CurrentChr, std::vector < SPLIT_READ > &Reads,
 								{
 									temp_LI_pos.Plus_Pos = Index_Plus;
 									temp_LI_pos.Minus_Pos = Index_Minus;
-									CurrentChrMask[Index_Plus] == 'B';
-									CurrentChrMask[Index_Minus] == 'B';
+									// The following two were changed to assignents from comparisons
+									// IS THAT CORRECT? (RWWH 20110523)
+									CurrentChrMask[Index_Plus] = 'B';
+									CurrentChrMask[Index_Minus] = 'B';
 									//cout << Index_Plus << "\t" << (short)plus_LI_Pos[Index_Plus] << "\t" 
 									//     << Index_Minus << "\t" << (short)minus_LI_Pos[Index_Minus] << endl;
 									temp_LI_pos.WhetherReport = false;
