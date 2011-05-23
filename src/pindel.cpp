@@ -3554,7 +3554,6 @@ void GetFarEnd_SingleStrandDownStreamInsertions(const std::string & CurrentChr,
 	//Temp_One_Read.ReadLengthMinus = Temp_One_Read.ReadLength - 1;
 	//if (Temp_One_Read.MatchedRelPos > 160000)
 	//cout << Temp_One_Read.UnmatchedSeq << Temp_One_Read.UnmatchedSeq.size() << endl;
-	char LeftChar, RightChar;
 	std::string CurrentReadSeq;
 	std::vector<unsigned int> PD[Temp_One_Read.TOTAL_SNP_ERROR_CHECKED];
 	for (int CheckIndex = 0; CheckIndex < Temp_One_Read.TOTAL_SNP_ERROR_CHECKED; CheckIndex++) {
@@ -3582,6 +3581,7 @@ void GetFarEnd_SingleStrandDownStreamInsertions(const std::string & CurrentChr,
 	// TODO: Ask Kai whether this can be removed
 	//Temp_One_Read.Unique = true;
 	if (Temp_One_Read.MatchedD == Minus) {
+		char LeftChar;
 		// TODO: Ask Kai whether this can be removed
 		//CurrentReadSeq = ReverseComplement(Temp_One_Read.UnmatchedSeq);
 		CurrentReadSeq = Temp_One_Read.UnmatchedSeq;
@@ -3649,6 +3649,7 @@ void GetFarEnd_SingleStrandDownStreamInsertions(const std::string & CurrentChr,
 		}
 		UP.clear();
 	} else if (Temp_One_Read.MatchedD == Plus) {
+		char RightChar;
 		CurrentReadSeq = ReverseComplement(Temp_One_Read.UnmatchedSeq);
 
 		Start = Temp_One_Read.UP_Close[0].AbsLoc
@@ -3732,7 +3733,6 @@ void GetFarEnd_SingleStrandDownStream(const std::string & CurrentChr,
 	//cout << "RangeIndex: " << RangeIndex << "\t" << DSizeArray[RangeIndex] << endl;
 	//if (RangeIndex == 4)
 	//  cout << "\nin\t" << DSizeArray[RangeIndex] << "\t" << Temp_One_Read.UnmatchedSeq << "\t" << Temp_One_Read.UnmatchedSeq.size() << endl;
-	char LeftChar, RightChar;
 	std::string CurrentReadSeq;
 	std::vector<unsigned int> PD[Temp_One_Read.TOTAL_SNP_ERROR_CHECKED];
 	for (int CheckIndex = 0; CheckIndex < Temp_One_Read.TOTAL_SNP_ERROR_CHECKED; CheckIndex++) {
@@ -3760,6 +3760,7 @@ void GetFarEnd_SingleStrandDownStream(const std::string & CurrentChr,
 	// TODO: Ask Kai whether this can be removed
 	//Temp_One_Read.Unique = true;
 	if (Temp_One_Read.MatchedD == Minus) {
+		char LeftChar;
 		//CurrentReadSeq = ReverseComplement(Temp_One_Read.UnmatchedSeq);
 		CurrentReadSeq = Temp_One_Read.UnmatchedSeq;
 
@@ -3832,6 +3833,7 @@ void GetFarEnd_SingleStrandDownStream(const std::string & CurrentChr,
 
 		UP.clear();
 	} else if (Temp_One_Read.MatchedD == Plus) {
+		char RightChar;
 		CurrentReadSeq = ReverseComplement(Temp_One_Read.UnmatchedSeq);
 
 		Start = Temp_One_Read.UP_Close[0].AbsLoc
@@ -3911,7 +3913,6 @@ void GetFarEnd_SingleStrandUpStream(const std::string & CurrentChr,
 		SPLIT_READ & Temp_One_Read, const short &RangeIndex) {
 	Temp_One_Read.ReadLength = Temp_One_Read.UnmatchedSeq.size();
 	Temp_One_Read.ReadLengthMinus = Temp_One_Read.ReadLength - 1;
-	char LeftChar, RightChar;
 	std::string CurrentReadSeq;
 	std::vector<unsigned int> PD[Temp_One_Read.TOTAL_SNP_ERROR_CHECKED];
 	for (int CheckIndex = 0; CheckIndex < Temp_One_Read.TOTAL_SNP_ERROR_CHECKED; CheckIndex++) {
@@ -3938,6 +3939,7 @@ void GetFarEnd_SingleStrandUpStream(const std::string & CurrentChr,
 	BP_End = Temp_One_Read.ReadLengthMinus;
 	//Temp_One_Read.Unique = true;
 	if (Temp_One_Read.MatchedD == Minus) {
+		char LeftChar;
 		//CurrentReadSeq = ReverseComplement(Temp_One_Read.UnmatchedSeq);
 		CurrentReadSeq = Temp_One_Read.UnmatchedSeq;
 
@@ -4003,6 +4005,7 @@ void GetFarEnd_SingleStrandUpStream(const std::string & CurrentChr,
 
 		UP.clear();
 	} else if (Temp_One_Read.MatchedD == Plus) {
+		char RightChar;
 		CurrentReadSeq = ReverseComplement(Temp_One_Read.UnmatchedSeq);
 
 		End = Temp_One_Read.UP_Close[0].AbsLoc
@@ -4562,11 +4565,11 @@ void CheckBoth(const SPLIT_READ & OneRead, const std::string & TheInput,
 		const char CurrentCharRC = Convert2RC4N[(short) CurrentChar];
 		// TODO: Ask Kai whether this can be removed
 		//const int SizeOfCurrent = Left_PD.size();
-		unsigned int pos;
-		int SizeOfCurrent;
 		// TODO: Ask Kai whether this can be removed
 		//if (TOTAL_SNP_ERROR_CHECKED_Minus)
 		{
+			unsigned int pos;
+			int SizeOfCurrent;
 			for (int i = 0; i < OneRead.TOTAL_SNP_ERROR_CHECKED_Minus; i++) {
 				SizeOfCurrent = PD_Plus[i].size();
 				if (CurrentChar == 'N') {
