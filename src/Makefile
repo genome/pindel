@@ -47,16 +47,16 @@ clean:
 
 # Pattern rule to create normal .o files	
 %.o: %.cpp
-	$(CXX) $(CXXFLAGS) -Wall -c -O3 -fopenmp -I$(SAMTOOLS) $< -o $@
+	$(CXX) $(CXXFLAGS) -Wall -g -c -O3 -fopenmp -I$(SAMTOOLS) $< -o $@
 
 # Pattern rule to create debug version of .o files
 %-debug.o: %.cpp
-	$(CXX) $(CXXFLAGS) -Wall -c -fopenmp -g -pg \
+	$(CXX) $(CXXFLAGS) -Wall -g -c -fopenmp -g -pg \
 	-fprofile-arcs -ftest-coverage -I$(SAMTOOLS) $< -o $@
 	
 # Pattern rule to create cppcheck files	
 cppcheck-result-%.xml: %.cpp
-	cppcheck --quiet --enable=all --xml -I$(SAMTOOLS) $< 2> $@
+	cppcheck --quiet --enable=all --xml -I$(SAMTOOLS) $(realpath $<) 2> $@
 
 # Pseudo targets for configuration
 .PHONY: all clean test
