@@ -334,15 +334,15 @@ ReadInRead (std::ifstream & inf_ReadSeq, const std::string & FragName,
 #pragma omp parallel default(shared)
 							{
 #pragma omp for
-								for (unsigned int BufferReadsIndex = 0;
-										 BufferReadsIndex < NumberOfReadsPerBuffer;
+							  for (int BufferReadsIndex = 0; // openMP 2.5 requires signed
+									 BufferReadsIndex < (int)NumberOfReadsPerBuffer;
 										 BufferReadsIndex++)
 									{
 										GetCloseEnd (CurrentChr, BufferReads[BufferReadsIndex]);
 									}
 							}
-							for (int BufferReadsIndex = 0;
-									 BufferReadsIndex < NumberOfReadsPerBuffer;
+							for (unsigned int BufferReadsIndex = 0;
+								 BufferReadsIndex < NumberOfReadsPerBuffer;
 									 BufferReadsIndex++)
 								{
 									if (BufferReads[BufferReadsIndex].UP_Close.size ())
@@ -398,8 +398,8 @@ ReadInRead (std::ifstream & inf_ReadSeq, const std::string & FragName,
 #pragma omp parallel default(shared)
 	{
 #pragma omp for
-		for (unsigned int BufferReadsIndex = 0; BufferReadsIndex < BufferReads.size ();
-				 BufferReadsIndex++)
+	  for (int BufferReadsIndex = 0; BufferReadsIndex < (int)BufferReads.size ();
+		   BufferReadsIndex++) // signed type required by OpenMP 2.5
 			{
 				GetCloseEnd (CurrentChr, BufferReads[BufferReadsIndex]);
 			}
@@ -750,12 +750,12 @@ fetch_func (const bam1_t * b1, void *data)
 bool
 isInBin (const SPLIT_READ & read)
 {
-	if (read.MatchedRelPos > g_maxPos)
+  if ((int)read.MatchedRelPos > g_maxPos)
 		{
-			g_maxPos = read.MatchedRelPos;
+		  g_maxPos = (int)read.MatchedRelPos;
 		}
-	return ((read.MatchedRelPos >= (g_binIndex * WINDOW_SIZE)) &&
-					(read.MatchedRelPos < ((g_binIndex + 1) * WINDOW_SIZE)));
+  return (((int)read.MatchedRelPos >= (g_binIndex * WINDOW_SIZE)) &&
+		  ((int)read.MatchedRelPos < ((g_binIndex + 1) * WINDOW_SIZE)));
 }
 
 void
@@ -806,7 +806,8 @@ build_record (const bam1_t * mapped_read, const bam1_t * unmapped_read,
 					length--;
 				}
 		}
-	int n_count = 0, found = c_sequence.find ('N', 0);
+	int n_count = 0;
+	size_t found = c_sequence.find ('N', 0);
 	int max_ns = length * .10;
 	while (found != std::string::npos)
 		{
