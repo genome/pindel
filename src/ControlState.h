@@ -93,6 +93,8 @@ public:
 	int endOfRegion;
 	int endRegionPlusBuffer;
 
+	int CountFarEnd, CountFarEndPlus, CountFarEndMinus;
+
 	//TODO: explain what are stored in these two vectors.
 	std::vector<BreakDancer> All_BD_events_WG, All_BD_events;
 };
