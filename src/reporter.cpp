@@ -3,8 +3,6 @@
 #include <cmath>
 // Pindel
 #include "pindel.h"
-#include "reader.h"
-#include "searcher.h"
 #include "reporter.h"
 
 void

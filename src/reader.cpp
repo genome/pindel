@@ -12,8 +12,6 @@
 // Pindel
 #include "pindel.h"
 #include "reader.h"
-#include "searcher.h"
-#include "reporter.h"
 
 // Reader (BamReader and PindelReader)
 
