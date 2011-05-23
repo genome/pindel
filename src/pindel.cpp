@@ -1625,7 +1625,7 @@ int searchIndels(ControlState& currentState, unsigned NumBoxes) {
 	std::cout << "Total: " << Count_DI << "\t+" << Count_DI_Plus << "\t-"
 			<< Count_DI_Minus << std::endl;
 	std::ofstream DeletionOutf(currentState.DeletionOutputFilename.c_str(),
-				std::ios::app);
+			std::ios::app);
 	SortOutputDI(NumBoxes, currentState.CurrentChr, currentState.Reads, DI,
 			DeletionOutf);
 	DeletionOutf.close();
@@ -1648,8 +1648,8 @@ int searchTandemDuplications(ControlState& currentState, unsigned NumBoxes) {
 	std::vector<unsigned> TD[NumBoxes];
 	std::vector<unsigned> TD_NT[NumBoxes];
 
-	unsigned int CloseIndex = 0;
-	unsigned int FarIndex = 0;
+	int CloseIndex = 0;
+	int FarIndex = 0;
 
 	/* 3.2.5 search tandem duplications starts */
 
@@ -1669,9 +1669,9 @@ int searchTandemDuplications(ControlState& currentState, unsigned NumBoxes) {
 						if (currentState.Reads[ReadIndex].UP_Close[CloseIndex]. Mismatches
 								> MAX_SNP_ERROR_index)
 							continue;
-						for (FarIndex =
-								currentState.Reads[ReadIndex].UP_Far.size() - 1; FarIndex
-								>= 0; FarIndex--) {
+						for (FarIndex
+								= currentState.Reads[ReadIndex].UP_Far.size()
+										- 1; FarIndex >= 0; FarIndex--) {
 							if (currentState.Reads[ReadIndex].Used)
 								break;
 							if (currentState.Reads[ReadIndex].UP_Far[FarIndex]. Mismatches
@@ -2011,7 +2011,6 @@ int searchInversions(ControlState& currentState, unsigned NumBoxes) {
 	int CloseIndex = 0;
 	int FarIndex = 0;
 
-
 	/* 3.2.6 search inversions starts */
 
 	std::cout << "Searching inversions ... " << std::endl;
@@ -2030,8 +2029,8 @@ int searchInversions(ControlState& currentState, unsigned NumBoxes) {
 								- 1].AbsLoc + MIN_IndelSize_Inversion) { // normal situation
 					for (short MAX_SNP_ERROR_index = 0; MAX_SNP_ERROR_index
 							<= currentState.Reads[ReadIndex].MAX_SNP_ERROR; MAX_SNP_ERROR_index++) {
-						for (CloseIndex =
-								currentState.Reads[ReadIndex].UP_Close.size()
+						for (CloseIndex
+								= currentState.Reads[ReadIndex].UP_Close.size()
 										- 1; CloseIndex >= 0; CloseIndex--) {
 							if (currentState.Reads[ReadIndex].Used)
 								break;
@@ -2121,8 +2120,8 @@ int searchInversions(ControlState& currentState, unsigned NumBoxes) {
 							if (currentState.Reads[ReadIndex]. UP_Close[CloseIndex].Mismatches
 									> MAX_SNP_ERROR_index)
 								continue;
-							for (FarIndex =
-									currentState.Reads[ReadIndex].UP_Far.size()
+							for (FarIndex
+									= currentState.Reads[ReadIndex].UP_Far.size()
 											- 1; FarIndex >= 0; FarIndex--) {
 								if (currentState.Reads[ReadIndex].Used)
 									break;
@@ -2203,8 +2202,8 @@ int searchInversions(ControlState& currentState, unsigned NumBoxes) {
 								+ MIN_IndelSize_Inversion) {
 					for (short MAX_SNP_ERROR_index = 0; MAX_SNP_ERROR_index
 							<= currentState.Reads[ReadIndex].MAX_SNP_ERROR; MAX_SNP_ERROR_index++) {
-						for (CloseIndex =
-								currentState.Reads[ReadIndex].UP_Close.size()
+						for (CloseIndex
+								= currentState.Reads[ReadIndex].UP_Close.size()
 										- 1; CloseIndex >= 0; CloseIndex--) {
 							if (currentState.Reads[ReadIndex].Used)
 								break;
@@ -3027,7 +3026,7 @@ int main(int argc, char *argv[]) {
 
 			returnValue = searchBreakPoints(currentState);
 
-			returnValue = searchDeletions(currentState,NumBoxes);
+			returnValue = searchDeletions(currentState, NumBoxes);
 
 			returnValue = searchIndels(currentState, NumBoxes);
 

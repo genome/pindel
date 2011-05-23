@@ -26,6 +26,16 @@ ControlState::ControlState() {
 	PindelReadDefined = false;
 	BreakDancerDefined = false;
 	loopOverAllChromosomes = false;
+	SpecifiedChrVisited = false;
+
+	lowerBinBorder = 0;
+	upperBinBorder = 0;
+	startOfRegion = 0;
+	endOfRegion = 0;
+	endRegionPlusBuffer = 0;
+	CountFarEnd = 0;
+	CountFarEndPlus = 0;
+	CountFarEndMinus = 0;
 
 }
 

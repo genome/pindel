@@ -92,7 +92,6 @@ public:
 	int startOfRegion;
 	int endOfRegion;
 	int endRegionPlusBuffer;
-
 	int CountFarEnd, CountFarEndPlus, CountFarEndMinus;
 
 	//TODO: explain what are stored in these two vectors.
