@@ -18,8 +18,8 @@ OutputTDs (const std::vector < SPLIT_READ > &TDs,
 	//short ReadLength = Deletions[C_S].ReadLength;
 	//short ReadLengthMinus = ReadLength - 1;
 	unsigned int NumberOfReads = C_E - C_S + 1;
-	float LeftScore = 0;
-	float RightScore = 0;
+	//float LeftScore = 0;
+	//float RightScore = 0;
 	unsigned int LeftS = 1;
 	unsigned int RightS = 1;
 	//int LeftNum = 0;
@@ -59,14 +59,14 @@ OutputTDs (const std::vector < SPLIT_READ > &TDs,
 				}
 			if (TDs[i].MatchedD == Plus)
 				{
-					LeftScore += TDs[i].score;
+				  //LeftScore += TDs[i].score;
 					LeftS++;
 					if (TDs[i].Unique)
 						LeftUNum++;
 				}
 			else
 				{
-					RightScore += TDs[i].score;
+				  //RightScore += TDs[i].score;
 					RightS++;
 					if (TDs[i].Unique)
 						RightUNum++;
@@ -90,11 +90,11 @@ OutputTDs (const std::vector < SPLIT_READ > &TDs,
 
 	unsigned int EasyScore = LeftS * RightS;
 	//double PreciseScore = (LeftScore + RightScore) * (-1);
-	short GapSize = 0;
-	if (TDs[C_S].IndelSize < 14)
-		GapSize = TDs[C_S].IndelSize;
-	else
-		GapSize = 13 + (int) log10 (TDs[C_S].IndelSize - 10);
+	//short GapSize = 0;
+	//if (TDs[C_S].IndelSize < 14)
+	//	GapSize = TDs[C_S].IndelSize;
+	//else
+	//	GapSize = 13 + (int) log10 (TDs[C_S].IndelSize - 10);
 	CurrentChrMask[TDs[C_S].BPLeft + SpacerBeforeAfter] = 'B';
 	CurrentChrMask[TDs[C_S].BPRight + SpacerBeforeAfter] = 'B';
 
@@ -175,8 +175,8 @@ OutputDeletions (const std::vector < SPLIT_READ > &Deletions,
 	//short ReadLengthMinus = ReadLength - 1;
 	//cout << "d_1" << endl;
 	unsigned int NumberOfReads = C_E - C_S + 1;
-	float LeftScore = 0;
-	float RightScore = 0;
+	//float LeftScore = 0;
+	//float RightScore = 0;
 	unsigned int LeftS = 1;
 	unsigned int RightS = 1;
 	//int LeftNum = 0;
@@ -216,14 +216,14 @@ OutputDeletions (const std::vector < SPLIT_READ > &Deletions,
 				}
 			if (Deletions[i].MatchedD == Plus)
 				{
-					LeftScore += Deletions[i].score;
+				  //LeftScore += Deletions[i].score;
 					LeftS++;
 					if (Deletions[i].Unique)
 						LeftUNum++;
 				}
 			else
 				{
-					RightScore += Deletions[i].score;
+				  //RightScore += Deletions[i].score;
 					RightS++;
 					if (Deletions[i].Unique)
 						RightUNum++;
@@ -377,8 +377,8 @@ OutputInversions (const std::vector < SPLIT_READ > &Inv,
 			RightNT_str = Inv[RightNT_index].NT_str;
 		}
 	unsigned int NumberOfReads = C_E - C_S + 1;
-	float LeftScore = 0;
-	float RightScore = 0;
+	//float LeftScore = 0;
+	//float RightScore = 0;
 	unsigned int LeftS = 1;
 	unsigned int RightS = 1;
 	//int LeftNum = 0;
@@ -418,14 +418,14 @@ OutputInversions (const std::vector < SPLIT_READ > &Inv,
 				}
 			if (Inv[i].MatchedD == Plus)
 				{
-					LeftScore += Inv[i].score;
+				  //LeftScore += Inv[i].score;
 					LeftS++;
 					if (Inv[i].Unique)
 						LeftUNum++;
 				}
 			else
 				{
-					RightScore += Inv[i].score;
+				  //RightScore += Inv[i].score;
 					RightS++;
 					if (Inv[i].Unique)
 						RightUNum++;
@@ -449,11 +449,11 @@ OutputInversions (const std::vector < SPLIT_READ > &Inv,
 
 	unsigned int EasyScore = LeftS * RightS;
 	//double PreciseScore = (LeftScore + RightScore) * (-1);
-	short GapSize = 0;
-	if (Inv[C_S].IndelSize < 14)
-		GapSize = Inv[C_S].IndelSize;
-	else
-		GapSize = 13 + (int) log10 (Inv[C_S].IndelSize - 10);
+	//short GapSize = 0;
+	//if (Inv[C_S].IndelSize < 14)
+	//	GapSize = Inv[C_S].IndelSize;
+	//else
+	//	GapSize = 13 + (int) log10 (Inv[C_S].IndelSize - 10);
 	CurrentChrMask[Inv[C_S].BPLeft + SpacerBeforeAfter] = 'B';
 	CurrentChrMask[Inv[C_S].BPRight + SpacerBeforeAfter] = 'B';
 	InvOutf <<
@@ -597,8 +597,8 @@ OutputSIs (const std::vector < SPLIT_READ > &SIs,
 	//short ReadLength = SIs[C_S].ReadLength;
 	//short ReadLengthMinus = ReadLength - 1;               
 	unsigned int NumberOfReads = C_E - C_S + 1;
-	float LeftScore = 0;
-	float RightScore = 0;
+	//float LeftScore = 0;
+	//float RightScore = 0;
 	unsigned int LeftS = 1;
 	unsigned int RightS = 1;
 	//int LeftNum = 0;
@@ -638,14 +638,14 @@ OutputSIs (const std::vector < SPLIT_READ > &SIs,
 				}
 			if (SIs[i].MatchedD == Plus)
 				{
-					LeftScore += SIs[i].score;
+				  //LeftScore += SIs[i].score;
 					LeftS++;
 					if (SIs[i].Unique)
 						LeftUNum++;
 				}
 			else
 				{
-					RightScore += SIs[i].score;
+				  //RightScore += SIs[i].score;
 					RightS++;
 					if (SIs[i].Unique)
 						RightUNum++;
@@ -734,8 +734,8 @@ OutputDI (const std::vector < SPLIT_READ > &DI,
 	//short ReadLength = DI[C_S].ReadLength;
 	//short ReadLengthMinus = ReadLength - 1;
 	unsigned int NumberOfReads = C_E - C_S + 1;
-	float LeftScore = 0;
-	float RightScore = 0;
+	//float LeftScore = 0;
+	//float RightScore = 0;
 	unsigned int LeftS = 1;
 	unsigned int RightS = 1;
 	//int LeftNum = 0;
@@ -775,14 +775,14 @@ OutputDI (const std::vector < SPLIT_READ > &DI,
 				}
 			if (DI[i].MatchedD == Plus)
 				{
-					LeftScore += DI[i].score;
+				  //LeftScore += DI[i].score;
 					LeftS++;
 					if (DI[i].Unique)
 						LeftUNum++;
 				}
 			else
 				{
-					RightScore += DI[i].score;
+				  //RightScore += DI[i].score;
 					RightS++;
 					if (DI[i].Unique)
 						RightUNum++;
@@ -1016,13 +1016,6 @@ SortOutputSI (const unsigned &NumBoxes, const std::string & CurrentChr,
 																	OneIndelEvent.RealEnd);
 					IndelEvents.push_back (OneIndelEvent);
 
-					//string IndelType;
-					unsigned int RealStart;
-					unsigned int RealEnd;
-					//bool WhetherDeletion = true;
-					unsigned int Max_Support;
-					unsigned int Max_Support_Index;
-					unsigned int IndelSize;
 					if (IndelEvents.size ())
 						{
 							for (unsigned EventIndex = 0; EventIndex < IndelEvents.size ();
@@ -1030,11 +1023,11 @@ SortOutputSI (const unsigned &NumBoxes, const std::string & CurrentChr,
 								{
 									if (IndelEvents[EventIndex].WhetherReport)
 										{
-											RealStart = IndelEvents[EventIndex].RealStart;
-											RealEnd = IndelEvents[EventIndex].RealEnd;
-											IndelSize = IndelEvents[EventIndex].IndelSize;
-											Max_Support = IndelEvents[EventIndex].Support;
-											Max_Support_Index = EventIndex;
+											unsigned int RealStart = IndelEvents[EventIndex].RealStart;
+											unsigned int RealEnd = IndelEvents[EventIndex].RealEnd;
+											unsigned int IndelSize = IndelEvents[EventIndex].IndelSize;
+											unsigned int Max_Support = IndelEvents[EventIndex].Support;
+											unsigned int Max_Support_Index = EventIndex;
 
 											for (unsigned EventIndex_left = 0;
 													 EventIndex_left < IndelEvents.size ();
@@ -1211,12 +1204,6 @@ SortOutputTD (const unsigned &NumBoxes, const std::string & CurrentChr,
 																 OneIndelEvent.RealEnd);
 					IndelEvents.push_back (OneIndelEvent);
 					//       cout << "IndelEvent: " << IndelEvents.size() << endl;
-					//string IndelType;
-					unsigned int RealStart;
-					unsigned int RealEnd;
-					//bool WhetherDeletion = true;
-					unsigned int Max_Support;
-					unsigned int Max_Support_Index;
 
 					if (IndelEvents.size ())
 						{
@@ -1225,10 +1212,10 @@ SortOutputTD (const unsigned &NumBoxes, const std::string & CurrentChr,
 								{
 									if (IndelEvents[EventIndex].WhetherReport)
 										{
-											RealStart = IndelEvents[EventIndex].RealStart;
-											RealEnd = IndelEvents[EventIndex].RealEnd;
-											Max_Support = IndelEvents[EventIndex].Support;
-											Max_Support_Index = EventIndex;
+											unsigned int RealStart = IndelEvents[EventIndex].RealStart;
+											unsigned int RealEnd = IndelEvents[EventIndex].RealEnd;
+											unsigned int Max_Support = IndelEvents[EventIndex].Support;
+											unsigned int Max_Support_Index = EventIndex;
 											for (unsigned EventIndex_left = 0;
 													 EventIndex_left < IndelEvents.size ();
 													 EventIndex_left++)
@@ -1436,12 +1423,6 @@ SortOutputTD_NT (const unsigned &NumBoxes, const std::string & CurrentChr,
 																 OneIndelEvent.RealEnd);
 					IndelEvents.push_back (OneIndelEvent);
 					//       cout << "IndelEvent: " << IndelEvents.size() << endl;
-					//string IndelType;
-					unsigned int RealStart;
-					unsigned int RealEnd;
-					//bool WhetherDeletion = true;
-					unsigned int Max_Support;
-					unsigned int Max_Support_Index;
 
 					if (IndelEvents.size ())
 						{
@@ -1450,10 +1431,10 @@ SortOutputTD_NT (const unsigned &NumBoxes, const std::string & CurrentChr,
 								{
 									if (IndelEvents[EventIndex].WhetherReport)
 										{
-											RealStart = IndelEvents[EventIndex].RealStart;
-											RealEnd = IndelEvents[EventIndex].RealEnd;
-											Max_Support = IndelEvents[EventIndex].Support;
-											Max_Support_Index = EventIndex;
+											unsigned int RealStart = IndelEvents[EventIndex].RealStart;
+											unsigned int RealEnd = IndelEvents[EventIndex].RealEnd;
+											unsigned int Max_Support = IndelEvents[EventIndex].Support;
+											unsigned int Max_Support_Index = EventIndex;
 											for (unsigned EventIndex_left = 0;
 													 EventIndex_left < IndelEvents.size ();
 													 EventIndex_left++)
@@ -1662,12 +1643,6 @@ SortOutputD (const unsigned &NumBoxes, const std::string & CurrentChr,
 																 OneIndelEvent.RealEnd);
 					IndelEvents.push_back (OneIndelEvent);
 					//cout << "IndelEvent: " << IndelEvents.size() << endl;
-					//string IndelType;
-					unsigned int RealStart;
-					unsigned int RealEnd;
-					//bool WhetherDeletion = true;
-					unsigned int Max_Support;
-					unsigned int Max_Support_Index;
 
 					if (IndelEvents.size ())
 						{
@@ -1677,10 +1652,10 @@ SortOutputD (const unsigned &NumBoxes, const std::string & CurrentChr,
 									//cout << EventIndex << " EventIndex" << endl;
 									if (IndelEvents[EventIndex].WhetherReport)
 										{
-											RealStart = IndelEvents[EventIndex].RealStart;
-											RealEnd = IndelEvents[EventIndex].RealEnd;
-											Max_Support = IndelEvents[EventIndex].Support;
-											Max_Support_Index = EventIndex;
+											unsigned int RealStart = IndelEvents[EventIndex].RealStart;
+											unsigned int RealEnd = IndelEvents[EventIndex].RealEnd;
+											unsigned int Max_Support = IndelEvents[EventIndex].Support;
+											unsigned int Max_Support_Index = EventIndex;
 											for (unsigned EventIndex_left = 0;
 													 EventIndex_left < IndelEvents.size ();
 													 EventIndex_left++)
@@ -1889,18 +1864,14 @@ SortOutputInv (const unsigned &NumBoxes, const std::string & CurrentChr,
 					//GetRealStart4Deletion(CurrentChr, OneIndelEvent.RealStart, OneIndelEvent.RealEnd);
 					IndelEvents.push_back (OneIndelEvent);
 					//       cout << "IndelEvent: " << IndelEvents.size() << endl;
-					//string IndelType;
-					unsigned int RealStart;
-					unsigned int RealEnd;
-					//bool WhetherDeletion = true;
 
 					if (IndelEvents.size ())
 						{
 							for (unsigned EventIndex = 0; EventIndex < IndelEvents.size ();
 									 EventIndex++)
 								{
-									RealStart = IndelEvents[EventIndex].RealStart;
-									RealEnd = IndelEvents[EventIndex].RealEnd;
+									unsigned int RealStart = IndelEvents[EventIndex].RealStart;
+									unsigned int RealEnd = IndelEvents[EventIndex].RealEnd;
 									if (IndelEvents[EventIndex].Support < NumRead2ReportCutOff)
 										continue;
 									// report max one
@@ -2090,10 +2061,6 @@ SortOutputInv_NT (const unsigned &NumBoxes, const std::string & CurrentChr,
 					//GetRealStart4Deletion(CurrentChr, OneIndelEvent.RealStart, OneIndelEvent.RealEnd);
 					IndelEvents.push_back (OneIndelEvent);
 					//cout << "IndelEvent: " << IndelEvents.size() << endl;
-					//string IndelType;
-					unsigned int RealStart;
-					unsigned int RealEnd;
-					//bool WhetherDeletion = true;
 
 					if (IndelEvents.size ())
 						{
@@ -2101,8 +2068,8 @@ SortOutputInv_NT (const unsigned &NumBoxes, const std::string & CurrentChr,
 									 EventIndex++)
 								{
 									//cout << IndelEvents[EventIndex].Start << "\t" << IndelEvents[EventIndex].End << "\t" << IndelEvents[EventIndex].Support << endl;
-									RealStart = IndelEvents[EventIndex].RealStart;
-									RealEnd = IndelEvents[EventIndex].RealEnd;
+									unsigned int RealStart = IndelEvents[EventIndex].RealStart;
+									unsigned int RealEnd = IndelEvents[EventIndex].RealEnd;
 									if (IndelEvents[EventIndex].Support < NumRead2ReportCutOff)
 										continue;
 									// report max one
