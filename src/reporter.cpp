@@ -1096,427 +1096,218 @@ SortOutputSI (const unsigned &NumBoxes, const std::string & CurrentChr,
 }
 
 void
-SortOutputTD (const unsigned &NumBoxes, const std::string & CurrentChr,
-							std::vector < SPLIT_READ > &AllReads, std::vector < unsigned >TDs[],
-							std::ofstream & TDOutf)
-{
-	std::cout << "Sorting and outputing tandem duplications ..." << std::endl;
-	unsigned int TDNum;
-	short CompareResult;
-	unsigned Temp4Exchange;
-
-	unsigned int GoodNum;
-	//vector <SPLIT_READ> InputIndels;
-	std::vector < SPLIT_READ > GoodIndels;
-	std::vector < Indel4output > IndelEvents;
-
-	for (unsigned Box_index = 0; Box_index < NumBoxes; Box_index++)
-		{
-			if (TDs[Box_index].size () >= NumRead2ReportCutOff)
-				{
-					//InputIndels.clear();
-					TDNum = TDs[Box_index].size ();
-					//for (int i = 0 ; i < TDNum; i ++) {
-					//  InputIndels.push_back(AllReads[TDs[Box_index][i]]);
-					//}
-
-					for (unsigned int First = 0; First < TDNum - 1; First++)
-						{
-							//if (InputIndels[First].Unique) 
-							{
-								for (unsigned int Second = First + 1; Second < TDNum;
-										 Second++)
-									{
-										//if (InputIndels[Second].Unique) 
-										{
-											if (AllReads[TDs[Box_index][First]].ReadLength ==
-													AllReads[TDs[Box_index][Second]].ReadLength)
-												{
-													if (AllReads[TDs[Box_index][First]].LeftMostPos ==
-															AllReads[TDs[Box_index][Second]].LeftMostPos)
-														AllReads[TDs[Box_index][Second]].Unique = false;
-												}
-											if (AllReads[TDs[Box_index][First]].BPLeft <
-													AllReads[TDs[Box_index][Second]].BPLeft)
-												continue;
-											else if (AllReads[TDs[Box_index][First]].BPLeft >
-															 AllReads[TDs[Box_index][Second]].BPLeft)
-												{
-													CompareResult = 1;
-												}
-											else if (AllReads[TDs[Box_index][First]].BPLeft ==
-															 AllReads[TDs[Box_index][Second]].BPLeft)
-												{
-													if (AllReads[TDs[Box_index][First]].BPRight <
-															AllReads[TDs[Box_index][Second]].BPRight)
-														continue;
-													else if (AllReads[TDs[Box_index][First]].BPRight >
-																	 AllReads[TDs[Box_index][Second]].BPRight)
-														{
-															CompareResult = 1;
-														}
-													//else {
-													//  if (InputIndels[First].MatchedRelPos == InputIndels[Second].MatchedRelPos) {
-													//    if (InputIndels[First].UnmatchedSeq == InputIndels[Second].UnmatchedSeq) {
-													//      InputIndels[Second].Unique = false;
-													//    }
-													//    
-													//  }
-													//}
-												}
-											if (CompareResult == 1)
-												{
-													Temp4Exchange = TDs[Box_index][First];
-													TDs[Box_index][First] = TDs[Box_index][Second];
-													TDs[Box_index][Second] = Temp4Exchange;
-												}
-										}
-									}
-							}
-						}
-					GoodIndels.clear ();
-					IndelEvents.clear ();
-
-					for (unsigned int First = 0; First < TDNum; First++)
-						{
-							//if (InputIndels[First].Unique) 
-							GoodIndels.push_back (AllReads[TDs[Box_index][First]]);
-						}
-
-					GoodNum = GoodIndels.size ();
-					//cout << Box_index << " " << GoodNum << endl;
-					if (GoodNum == 0)
-						continue;
-					//    cout << GoodNum << endl;
-					Indel4output OneIndelEvent;
-					OneIndelEvent.Start = 0;
-					OneIndelEvent.End = 0;
-					OneIndelEvent.Support = OneIndelEvent.End - OneIndelEvent.Start + 1;
-					OneIndelEvent.BPLeft = GoodIndels[0].BPLeft;
-					OneIndelEvent.BPRight = GoodIndels[0].BPRight;
-					OneIndelEvent.WhetherReport = true;
-					for (unsigned int GoodIndex = 1; GoodIndex < GoodNum; GoodIndex++)
-						{
-							if (GoodIndels[GoodIndex].BPLeft == OneIndelEvent.BPLeft
-									&& GoodIndels[GoodIndex].BPRight == OneIndelEvent.BPRight)
-								OneIndelEvent.End = GoodIndex;
-							else
-								{
-									OneIndelEvent.RealStart = OneIndelEvent.BPLeft;
-									OneIndelEvent.RealEnd = OneIndelEvent.BPRight;
-									OneIndelEvent.Support =
-										OneIndelEvent.End - OneIndelEvent.Start + 1;
-									GetRealStart4Deletion (CurrentChr, OneIndelEvent.RealStart,
-																				 OneIndelEvent.RealEnd);
-									IndelEvents.push_back (OneIndelEvent);
-									OneIndelEvent.Start = GoodIndex;
-									OneIndelEvent.End = GoodIndex;
-									OneIndelEvent.BPLeft = GoodIndels[GoodIndex].BPLeft;
-									OneIndelEvent.BPRight = GoodIndels[GoodIndex].BPRight;
-								}
-						}
-
-					OneIndelEvent.RealStart = OneIndelEvent.BPLeft;
-					OneIndelEvent.RealEnd = OneIndelEvent.BPRight;
-					OneIndelEvent.Support = OneIndelEvent.End - OneIndelEvent.Start + 1;
-					GetRealStart4Deletion (CurrentChr, OneIndelEvent.RealStart,
-																 OneIndelEvent.RealEnd);
-					IndelEvents.push_back (OneIndelEvent);
-					//       cout << "IndelEvent: " << IndelEvents.size() << endl;
-
-					if (IndelEvents.size ())
-						{
-							for (unsigned EventIndex = 0; EventIndex < IndelEvents.size ();
-									 EventIndex++)
-								{
-									if (IndelEvents[EventIndex].WhetherReport)
-										{
-											unsigned int RealStart = IndelEvents[EventIndex].RealStart;
-											unsigned int RealEnd = IndelEvents[EventIndex].RealEnd;
-											unsigned int Max_Support = IndelEvents[EventIndex].Support;
-											unsigned int Max_Support_Index = EventIndex;
-											for (unsigned EventIndex_left = 0;
-													 EventIndex_left < IndelEvents.size ();
-													 EventIndex_left++)
-												{
-													if (IndelEvents[EventIndex_left].WhetherReport ==
-															false)
-														continue;
-													else if (IndelEvents[EventIndex_left].RealStart !=
-																	 RealStart)
-														continue;
-													else if (IndelEvents[EventIndex_left].RealEnd !=
-																	 RealEnd)
-														continue;
-													else
-														{
-															IndelEvents[EventIndex_left].WhetherReport =
-																false;
-															if (IndelEvents[EventIndex_left].Support >
-																	Max_Support)
-																{
-																	Max_Support =
-																		IndelEvents[EventIndex_left].Support;
-																	Max_Support_Index = EventIndex_left;
-																}
-														}
-												}
-											// report max one
-											if (IndelEvents[Max_Support_Index].Support >=
-													NumRead2ReportCutOff)
-												{
-													if (GoodIndels
-															[IndelEvents[Max_Support_Index].Start].
-															IndelSize < BalanceCutoff)
-														{
-															OutputTDs (GoodIndels, CurrentChr,
-																				 IndelEvents[Max_Support_Index].Start,
-																				 IndelEvents[Max_Support_Index].End,
-																				 RealStart, RealEnd, TDOutf);
-															NumberOfTDInstances++;
-														}
-													else
-														if (ReportEvent
-																(GoodIndels,
-																 IndelEvents[Max_Support_Index].Start,
-																 IndelEvents[Max_Support_Index].End))
-														{
-															OutputTDs (GoodIndels, CurrentChr,
-																				 IndelEvents[Max_Support_Index].Start,
-																				 IndelEvents[Max_Support_Index].End,
-																				 RealStart, RealEnd, TDOutf);
-															NumberOfTDInstances++;
-														}
-												}
-										}
-								}
-						}
-				}												// if (!Deletions[Box_index].empty())
-		}														// for (unsigned Box_index = 0; Box_index < NumBoxes; Box_index++)
-	std::cout << "Tandem duplications: " << NumberOfTDInstances << std::endl << std::endl;
-}
-
-void
-SortOutputTD_NT (const unsigned &NumBoxes, const std::string & CurrentChr,
+SortAndOutputTandemDuplications (const unsigned &NumBoxes, const std::string & CurrentChr,
 								 std::vector < SPLIT_READ > &AllReads, std::vector < unsigned >TDs[],
-								 std::ofstream & TDOutf)
+								 std::ofstream & TDOutf, const bool nonTemplate)
 {
-	std::cout <<
-		"Sorting and outputing tandem duplications with non-template sequence ..."
-		<< std::endl;
-	unsigned int TDNum;
-	short CompareResult;
-	unsigned Temp4Exchange;
 
-	int Count_TD_NT_output = 0;
+  if (nonTemplate)
+	{
+	  std::cout << "Sorting and outputing tandem duplications with non-template sequence ..." << std::endl;
+	}
+  else
+	{
+	  std::cout << "Sorting and outputing tandem duplications ..." << std::endl;
+	}
+  unsigned int TDNum;
+  short CompareResult;
+  unsigned Temp4Exchange;
+  int countTandemDuplications = 0;
+  unsigned int GoodNum;
+  std::vector < SPLIT_READ > GoodIndels;
+  std::vector < Indel4output > IndelEvents;
 
-	unsigned int GoodNum;
-	//vector <SPLIT_READ> InputIndels;
-	std::vector < SPLIT_READ > GoodIndels;
-	std::vector < Indel4output > IndelEvents;
-
-	for (unsigned Box_index = 0; Box_index < NumBoxes; Box_index++)
+  for (unsigned Box_index = 0; Box_index < NumBoxes; Box_index++)
+	{
+	  if (TDs[Box_index].size () >= NumRead2ReportCutOff)
 		{
-			if (TDs[Box_index].size () >= NumRead2ReportCutOff)
-				{
-					//InputIndels.clear();
-					TDNum = TDs[Box_index].size ();
-					//for (int i = 0 ; i < TDNum; i ++) {
-					//  InputIndels.push_back(AllReads[TDs[Box_index][i]]);
-					//}
+		  TDNum = TDs[Box_index].size ();
 
-					for (unsigned int First = 0; First < TDNum - 1; First++)
+		  for (unsigned int First = 0; First < TDNum - 1; First++)
+			{
+			  {
+				for (unsigned int Second = First + 1; Second < TDNum;
+					Second++)
+				  {
+					{
+					  if (AllReads[TDs[Box_index][First]].ReadLength ==
+						  AllReads[TDs[Box_index][Second]].ReadLength)
 						{
-							//if (InputIndels[First].Unique) 
+						  if (AllReads[TDs[Box_index][First]].LeftMostPos ==
+							  AllReads[TDs[Box_index][Second]].LeftMostPos)
+							AllReads[TDs[Box_index][Second]].Unique = false;
+						}
+					  if (AllReads[TDs[Box_index][First]].BPLeft <
+						  AllReads[TDs[Box_index][Second]].BPLeft)
+						continue;
+					  else if (AllReads[TDs[Box_index][First]].BPLeft >
+							   AllReads[TDs[Box_index][Second]].BPLeft)
+						{
+						  CompareResult = 1;
+						}
+					  else if (AllReads[TDs[Box_index][First]].BPLeft ==
+		 AllReads[TDs[Box_index][Second]].BPLeft)
+						{
+						  if (AllReads[TDs[Box_index][First]].BPRight <
+							  AllReads[TDs[Box_index][Second]].BPRight)
+							continue;
+						  else if (AllReads[TDs[Box_index][First]].BPRight >
+								   AllReads[TDs[Box_index][Second]].BPRight)
 							{
-								for (unsigned int Second = First + 1; Second < TDNum;
-										 Second++)
-									{
-										//if (InputIndels[Second].Unique) 
-										{
-											if (AllReads[TDs[Box_index][First]].ReadLength ==
-													AllReads[TDs[Box_index][Second]].ReadLength)
-												{
-													if (AllReads[TDs[Box_index][First]].LeftMostPos ==
-															AllReads[TDs[Box_index][Second]].LeftMostPos)
-														AllReads[TDs[Box_index][Second]].Unique = false;
-												}
-											if (AllReads[TDs[Box_index][First]].BPLeft <
-													AllReads[TDs[Box_index][Second]].BPLeft)
-												continue;
-											else if (AllReads[TDs[Box_index][First]].BPLeft >
-															 AllReads[TDs[Box_index][Second]].BPLeft)
-												{
-													CompareResult = 1;
-												}
-											else if (AllReads[TDs[Box_index][First]].BPLeft ==
-															 AllReads[TDs[Box_index][Second]].BPLeft)
-												{
-													if (AllReads[TDs[Box_index][First]].BPRight <
-															AllReads[TDs[Box_index][Second]].BPRight)
-														continue;
-													else if (AllReads[TDs[Box_index][First]].BPRight >
-																	 AllReads[TDs[Box_index][Second]].BPRight)
-														{
-															CompareResult = 1;
-														}
-													else
-														{		// InputIndels[First].BPRight == InputIndels[Second].BPRight
-															if (AllReads[TDs[Box_index][First]].NT_size <
-																	AllReads[TDs[Box_index][Second]].NT_size)
-																continue;
-															else if (AllReads[TDs[Box_index][First]].
-																			 NT_size >
-																			 AllReads[TDs[Box_index][Second]].
-																			 NT_size)
-																CompareResult = 1;
-															//else { // InputIndels[First].NT_size == InputIndels[Second].NT_size
-															//  short Compare2Str = CompareTwoString(InputIndels[First].NT_str, InputIndels[Second].NT_str );
-															//  if (Compare2Str > 0) CompareResult = 1;
-															//  else if (Compare2Str == 0) CompareResult = 2;
-															//  else continue;
-															//}
-														}
-												}
-											if (CompareResult == 1)
-												{
-													Temp4Exchange = TDs[Box_index][First];
-													TDs[Box_index][First] = TDs[Box_index][Second];
-													TDs[Box_index][Second] = Temp4Exchange;
-												}
-											//else if (CompareResult == 2) {
-											//  Temp4Exchange = InputIndels[First + 1];
-											//  InputIndels[First + 1] = InputIndels[Second];
-											// InputIndels[Second] = Temp4Exchange;
-											//}
-										}
-									}
+							  CompareResult = 1;
+							}
+						  else if (nonTemplate)
+							{ // InputIndels[First].BPRight == InputIndels[Second].BPRight
+							  if (AllReads[TDs[Box_index][First]].NT_size <
+								  AllReads[TDs[Box_index][Second]].NT_size)
+								continue;
+							  else if (AllReads[TDs[Box_index][First]].
+									   NT_size >
+									   AllReads[TDs[Box_index][Second]].
+									   NT_size)
+								CompareResult = 1;
 							}
 						}
-					GoodIndels.clear ();
-					IndelEvents.clear ();
-
-					for (unsigned int First = 0; First < TDNum; First++)
+					  if (CompareResult == 1)
 						{
-							//if (InputIndels[First].Unique) 
-							GoodIndels.push_back (AllReads[TDs[Box_index][First]]);
+						  Temp4Exchange = TDs[Box_index][First];
+						  TDs[Box_index][First] = TDs[Box_index][Second];
+						  TDs[Box_index][Second] = Temp4Exchange;
 						}
+					}
+				  }
+			  }
+			}
+		  GoodIndels.clear ();
+		  IndelEvents.clear ();
 
-					GoodNum = GoodIndels.size ();
-					//cout << Box_index << " " << GoodNum << endl;
-					if (GoodNum == 0)
-						continue;
-					//    cout << GoodNum << endl;
-					Indel4output OneIndelEvent;
-					OneIndelEvent.Start = 0;
-					OneIndelEvent.End = 0;
-					OneIndelEvent.Support = OneIndelEvent.End - OneIndelEvent.Start + 1;
-					OneIndelEvent.BPLeft = GoodIndels[0].BPLeft;
-					OneIndelEvent.BPRight = GoodIndels[0].BPRight;
-					OneIndelEvent.WhetherReport = true;
-					for (unsigned int GoodIndex = 1; GoodIndex < GoodNum; GoodIndex++)
+		  for (unsigned int First = 0; First < TDNum; First++)
+			{
+			  GoodIndels.push_back (AllReads[TDs[Box_index][First]]);
+			}
+
+		  GoodNum = GoodIndels.size ();
+		  if (GoodNum == 0)
+			continue;
+		  Indel4output OneIndelEvent;
+		  OneIndelEvent.Start = 0;
+		  OneIndelEvent.End = 0;
+		  OneIndelEvent.Support = OneIndelEvent.End - OneIndelEvent.Start + 1;
+		  OneIndelEvent.BPLeft = GoodIndels[0].BPLeft;
+		  OneIndelEvent.BPRight = GoodIndels[0].BPRight;
+		  OneIndelEvent.WhetherReport = true;
+		  for (unsigned int GoodIndex = 1; GoodIndex < GoodNum; GoodIndex++)
+			{
+			  if (GoodIndels[GoodIndex].BPLeft == OneIndelEvent.BPLeft
+				  && GoodIndels[GoodIndex].BPRight == OneIndelEvent.BPRight)
+				OneIndelEvent.End = GoodIndex;
+			  else
+				{
+				  OneIndelEvent.RealStart = OneIndelEvent.BPLeft;
+				  OneIndelEvent.RealEnd = OneIndelEvent.BPRight;
+				  OneIndelEvent.Support =
+					  OneIndelEvent.End - OneIndelEvent.Start + 1;
+				  GetRealStart4Deletion (CurrentChr, OneIndelEvent.RealStart,
+										 OneIndelEvent.RealEnd);
+				  IndelEvents.push_back (OneIndelEvent);
+				  OneIndelEvent.Start = GoodIndex;
+				  OneIndelEvent.End = GoodIndex;
+				  OneIndelEvent.BPLeft = GoodIndels[GoodIndex].BPLeft;
+				  OneIndelEvent.BPRight = GoodIndels[GoodIndex].BPRight;
+				}
+			}
+
+		  OneIndelEvent.RealStart = OneIndelEvent.BPLeft;
+		  OneIndelEvent.RealEnd = OneIndelEvent.BPRight;
+		  OneIndelEvent.Support = OneIndelEvent.End - OneIndelEvent.Start + 1;
+		  GetRealStart4Deletion (CurrentChr, OneIndelEvent.RealStart,
+								 OneIndelEvent.RealEnd);
+		  IndelEvents.push_back (OneIndelEvent);
+
+		  if (IndelEvents.size ())
+			{
+			  for (unsigned EventIndex = 0; EventIndex < IndelEvents.size ();
+				  EventIndex++)
+				{
+				  if (IndelEvents[EventIndex].WhetherReport)
+					{
+					  unsigned int RealStart = IndelEvents[EventIndex].RealStart;
+					  unsigned int RealEnd = IndelEvents[EventIndex].RealEnd;
+					  unsigned int Max_Support = IndelEvents[EventIndex].Support;
+					  unsigned int Max_Support_Index = EventIndex;
+					  for (unsigned EventIndex_left = 0;
+						  EventIndex_left < IndelEvents.size ();
+						  EventIndex_left++)
 						{
-							if (GoodIndels[GoodIndex].BPLeft == OneIndelEvent.BPLeft
-									&& GoodIndels[GoodIndex].BPRight == OneIndelEvent.BPRight)
-								OneIndelEvent.End = GoodIndex;
-							else
+						  if (IndelEvents[EventIndex_left].WhetherReport ==
+							  false)
+							continue;
+						  else if (IndelEvents[EventIndex_left].RealStart !=
+								   RealStart)
+							continue;
+						  else if (IndelEvents[EventIndex_left].RealEnd !=
+								   RealEnd)
+							continue;
+						  else
+							{
+							  IndelEvents[EventIndex_left].WhetherReport =
+								  false;
+							  if (IndelEvents[EventIndex_left].Support >
+								  Max_Support)
 								{
-									OneIndelEvent.RealStart = OneIndelEvent.BPLeft;
-									OneIndelEvent.RealEnd = OneIndelEvent.BPRight;
-									OneIndelEvent.Support =
-										OneIndelEvent.End - OneIndelEvent.Start + 1;
-									GetRealStart4Deletion (CurrentChr, OneIndelEvent.RealStart,
-																				 OneIndelEvent.RealEnd);
-									IndelEvents.push_back (OneIndelEvent);
-									OneIndelEvent.Start = GoodIndex;
-									OneIndelEvent.End = GoodIndex;
-									OneIndelEvent.BPLeft = GoodIndels[GoodIndex].BPLeft;
-									OneIndelEvent.BPRight = GoodIndels[GoodIndex].BPRight;
+								  Max_Support =
+									  IndelEvents[EventIndex_left].Support;
+								  Max_Support_Index = EventIndex_left;
 								}
+							}
 						}
-
-					OneIndelEvent.RealStart = OneIndelEvent.BPLeft;
-					OneIndelEvent.RealEnd = OneIndelEvent.BPRight;
-					OneIndelEvent.Support = OneIndelEvent.End - OneIndelEvent.Start + 1;
-					GetRealStart4Deletion (CurrentChr, OneIndelEvent.RealStart,
-																 OneIndelEvent.RealEnd);
-					IndelEvents.push_back (OneIndelEvent);
-					//       cout << "IndelEvent: " << IndelEvents.size() << endl;
-
-					if (IndelEvents.size ())
+					  // report max one
+					  if (IndelEvents[Max_Support_Index].Support >=
+						  NumRead2ReportCutOff)
 						{
-							for (unsigned EventIndex = 0; EventIndex < IndelEvents.size ();
-									 EventIndex++)
-								{
-									if (IndelEvents[EventIndex].WhetherReport)
-										{
-											unsigned int RealStart = IndelEvents[EventIndex].RealStart;
-											unsigned int RealEnd = IndelEvents[EventIndex].RealEnd;
-											unsigned int Max_Support = IndelEvents[EventIndex].Support;
-											unsigned int Max_Support_Index = EventIndex;
-											for (unsigned EventIndex_left = 0;
-													 EventIndex_left < IndelEvents.size ();
-													 EventIndex_left++)
-												{
-													if (IndelEvents[EventIndex_left].WhetherReport ==
-															false)
-														continue;
-													else if (IndelEvents[EventIndex_left].RealStart !=
-																	 RealStart)
-														continue;
-													else if (IndelEvents[EventIndex_left].RealEnd !=
-																	 RealEnd)
-														continue;
-													else
-														{
-															IndelEvents[EventIndex_left].WhetherReport =
-																false;
-															if (IndelEvents[EventIndex_left].Support >
-																	Max_Support)
-																{
-																	Max_Support =
-																		IndelEvents[EventIndex_left].Support;
-																	Max_Support_Index = EventIndex_left;
-																}
-														}
-												}
-											// report max one
-											if (IndelEvents[Max_Support_Index].Support >=
-													NumRead2ReportCutOff)
-												{
-													if (GoodIndels
-															[IndelEvents[Max_Support_Index].Start].
-															IndelSize < BalanceCutoff)
-														{
-															OutputTDs (GoodIndels, CurrentChr,
-																				 IndelEvents[Max_Support_Index].Start,
-																				 IndelEvents[Max_Support_Index].End,
-																				 RealStart, RealEnd, TDOutf);
-															NumberOfTDInstances++;
-															Count_TD_NT_output++;
-														}
-													else
-														if (ReportEvent
-																(GoodIndels,
-																 IndelEvents[Max_Support_Index].Start,
-																 IndelEvents[Max_Support_Index].End))
-														{
-															OutputTDs (GoodIndels, CurrentChr,
-																				 IndelEvents[Max_Support_Index].Start,
-																				 IndelEvents[Max_Support_Index].End,
-																				 RealStart, RealEnd, TDOutf);
-															NumberOfTDInstances++;
-															Count_TD_NT_output++;
-														}
-												}
-										}
-								}
+						  if (GoodIndels
+							  [IndelEvents[Max_Support_Index].Start].
+							  IndelSize < BalanceCutoff)
+							{
+							  OutputTDs (GoodIndels, CurrentChr,
+										 IndelEvents[Max_Support_Index].Start,
+										 IndelEvents[Max_Support_Index].End,
+										 RealStart, RealEnd, TDOutf);
+							  NumberOfTDInstances++;
+							  countTandemDuplications++;
+							}
+						  else
+							if (ReportEvent
+								(GoodIndels,
+								IndelEvents[Max_Support_Index].Start,
+								IndelEvents[Max_Support_Index].End))
+							{
+							  OutputTDs (GoodIndels, CurrentChr,
+										 IndelEvents[Max_Support_Index].Start,
+										 IndelEvents[Max_Support_Index].End,
+										 RealStart, RealEnd, TDOutf);
+							  NumberOfTDInstances++;
+							  countTandemDuplications++;
+							}
 						}
-				}												// if (!Deletions[Box_index].empty())
-		}														// for (unsigned Box_index = 0; Box_index < NumBoxes; Box_index++)
-	std::cout << "Tandem duplications with non-template sequence (TD_NT): " <<
-		Count_TD_NT_output << "\n\n";
+					}
+				}
+			}
+		} // if (!Deletions[Box_index].empty())
+	} // for (unsigned Box_index = 0; Box_index < NumBoxes; Box_index++)
+  if (nonTemplate)
+	{
+	  std::cout << "Tandem duplications with non-template sequence (TD_NT): " <<
+		  countTandemDuplications << std::endl
+		  << std::endl;
+	}
+  else
+	{
+	  std::cout << "Tandem duplications: " << NumberOfTDInstances << std::endl
+		  << std::endl;
+	}
 }
+
 
 void
 SortOutputD (const unsigned &NumBoxes, const std::string & CurrentChr,

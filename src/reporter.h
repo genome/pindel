@@ -28,13 +28,9 @@ void SortOutputD (const unsigned &NumBoxes, const std::string & CurrentChr,
 void SortOutputSI (const unsigned &NumBoxes, const std::string & CurrentChr,
 									 std::vector < SPLIT_READ > &AllReads,
 									 std::vector < unsigned >SIs[], std::ofstream & SIsOutf);
-void SortOutputTD (const unsigned &NumBoxes, const std::string & CurrentChr,
-									 std::vector < SPLIT_READ > &AllReads,
-									 std::vector < unsigned >TDs[], std::ofstream & TDOutf);
-void SortOutputTD_NT (const unsigned &NumBoxes,
-											const std::string & CurrentChr,
-											std::vector < SPLIT_READ > &AllReads,
-											std::vector < unsigned >TDs[], std::ofstream & TDOutf);
+void SortAndOutputTandemDuplications (const unsigned &NumBoxes, const std::string & CurrentChr,
+									  std::vector < SPLIT_READ > &AllReads, std::vector < unsigned >TDs[],
+									  std::ofstream & TDOutf, const bool nonTemplate);
 void SortOutputInv (const unsigned &NumBoxes, const std::string & CurrentChr,
 										std::vector < SPLIT_READ > &AllReads,
 										std::vector < unsigned >Inv[], std::ofstream & InvOutf);
