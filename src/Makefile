@@ -47,11 +47,11 @@ clean:
 
 # Pattern rule to create normal .o files	
 %.o: %.cpp
-	$(CXX) $(CXXFLAGS) -Wall -g -c -O3 -fopenmp -I$(SAMTOOLS) $< -o $@
+	$(CXX) $(CXXFLAGS) -Wall -Werror -g -c -O3 -fopenmp -I$(SAMTOOLS) $< -o $@
 
 # Pattern rule to create debug version of .o files
 %-debug.o: %.cpp
-	$(CXX) $(CXXFLAGS) -Wall -g -c -fopenmp -g -pg \
+	$(CXX) $(CXXFLAGS) -Wall -Werror -g -c -fopenmp -g -pg \
 	-fprofile-arcs -ftest-coverage -I$(SAMTOOLS) $< -o $@
 	
 # Pattern rule to create cppcheck files	
