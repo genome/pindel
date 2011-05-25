@@ -61,8 +61,12 @@ assemble-coverage:
 clean:
 	-rm -rf $(DST) $(COVDST) $(COVERAGE) gmon.out *.log
 
-
+gmon.sum:
+	make -C ../../src CXXFLAGS=-pg pindel
+	$(PINDEL) -T $(THREADS) $(SIM1CHRVS20305_ARGS) > cover-sim1chrVs20305.log
+	gprof -b -s $(PINDEL) gmon.out
+	
 # Pseudo targets for configuration
 .PHONY: all clean test pindel pindel-debug cppcheck acceptance-tests \
-	coverage-tests functional-tests
+	coverage-tests functional-tests gmon.sum
 .IGNORE: clean
