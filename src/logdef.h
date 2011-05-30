@@ -8,29 +8,28 @@
 	s;
 
 #ifndef LOG_LEVEL
-#warning "No log level found; logging is disabled"
-#define LOG_LEVEL LOG_DISABLED
+#define LOG_LEVEL LOGLEVEL_DEBUG
 #endif
 
-#if defined(LOG_LEVEL) && (LOG_LEVEL >= LOG_ERROR)
+#if defined(LOG_LEVEL) && (LOG_LEVEL >= LOGLEVEL_ERROR)
 #define LOG_ERR(s) __LOG(s, "error")
 #else
 #define LOG_ERR(s) // empty
 #endif // LOG_LEVEL
 
-#if defined(LOG_LEVEL) && (LOG_LEVEL >= LOG_WARN)
+#if defined(LOG_LEVEL) && (LOG_LEVEL >= LOGLEVEL_WARN)
 #define LOG_WARN(s) __LOG(s, "warning")
 #else
 #define LOG_WARN(s) // empty
 #endif // LOG_LEVEL
 
-#if defined(LOG_LEVEL) && (LOG_LEVEL >= LOG_INFO)
+#if defined(LOG_LEVEL) && (LOG_LEVEL >= LOGLEVEL_INFO)
 #define LOG_INFO(s) __LOG(s, "info")
 #else
 #define LOG_INFO(s) // empty
 #endif // LOG_LEVEL
 
-#if defined(LOG_LEVEL) && (LOG_LEVEL >= LOG_DEBUG)
+#if defined(LOG_LEVEL) && (LOG_LEVEL >= LOGLEVEL_DEBUG)
 #define LOG_DBG(s) __LOG(s, "debug")
 #else
 #define LOG_DBG(s) // empty

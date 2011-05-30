@@ -22,7 +22,7 @@ parameter.o: parameter.cpp parameter.h
 ControlState.o: ControlState.cpp ControlState.h
 
 # Dependencies for the debug version of the .o files
-reader-debug.o: reader.cpp reader.h pindel.h
+reader-debug.o: reader.cpp reader.h pindel.h logdef.h
 reporter-debug.o: reporter.cpp reporter.h pindel.h
 searcher-debug.o: searcher.cpp searcher.h pindel.h
 pindel-debug.o: pindel.cpp pindel.h \
@@ -53,7 +53,7 @@ clean:
 %-debug.o: %.cpp
 	$(CXX) $(CXXFLAGS) -Wall -Werror -g -c -fopenmp -g -pg \
 	-fprofile-arcs -ftest-coverage -I$(SAMTOOLS) $< -o $@
-	
+
 # Pattern rule to create cppcheck files	
 cppcheck-result-%.xml: %.cpp
 	cppcheck --quiet --enable=all --xml -I$(SAMTOOLS) $(realpath $<) 2> $@

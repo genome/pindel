@@ -35,6 +35,7 @@
 // Pindel header files
 #include "pindel.h"
 #include "reader.h"
+#include "logdef.h"
 
 // Static function declaration
 
@@ -75,13 +76,13 @@ ReadInOneChr (std::ifstream & inf_Seq, std::string & TheInput, const std::string
 	inf_Seq >> TempChar;
 	if (TempChar != '>')
 		{
-			std::cout << "Please use fasta format for the reference file." << std::endl;
+			LOG_WARN(std::cout << "Please use fasta format for the reference file." << std::endl);
 			TheInput.clear ();
 			return;
 		}
 	while (inf_Seq >> TempChrName)
 		{
-			std::cout << "Processing chromosome " << TempChrName << std::endl;
+			LOG_INFO(std::cout << "Processing chromosome " << TempChrName << std::endl);
 			if (!TheInput.empty ())
 				{
 					std::cout << "Skip the rest of chromosomes.\n";
@@ -334,7 +335,7 @@ ReadInRead (std::ifstream & inf_ReadSeq, const std::string & FragName,
 #pragma omp parallel default(shared)
 							{
 #pragma omp for
-							  for (int BufferReadsIndex = 0; // openMP 2.5 requires signed
+								for (int BufferReadsIndex = 0; // openMP 2.5 requires signed
 									 BufferReadsIndex < (int)NumberOfReadsPerBuffer;
 										 BufferReadsIndex++)
 									{
@@ -398,8 +399,8 @@ ReadInRead (std::ifstream & inf_ReadSeq, const std::string & FragName,
 #pragma omp parallel default(shared)
 	{
 #pragma omp for
-	  for (int BufferReadsIndex = 0; BufferReadsIndex < (int)BufferReads.size ();
-		   BufferReadsIndex++) // signed type required by OpenMP 2.5
+		for (int BufferReadsIndex = 0; BufferReadsIndex < (int)BufferReads.size ();
+				 BufferReadsIndex++) // signed type required by OpenMP 2.5
 			{
 				GetCloseEnd (CurrentChr, BufferReads[BufferReadsIndex]);
 			}
@@ -750,12 +751,12 @@ fetch_func (const bam1_t * b1, void *data)
 bool
 isInBin (const SPLIT_READ & read)
 {
-  if ((int)read.MatchedRelPos > g_maxPos)
+	if ((int)read.MatchedRelPos > g_maxPos)
 		{
-		  g_maxPos = (int)read.MatchedRelPos;
+			g_maxPos = (int)read.MatchedRelPos;
 		}
-  return (((int)read.MatchedRelPos >= (g_binIndex * WINDOW_SIZE)) &&
-		  ((int)read.MatchedRelPos < ((g_binIndex + 1) * WINDOW_SIZE)));
+	return (((int)read.MatchedRelPos >= (g_binIndex * WINDOW_SIZE)) &&
+					((int)read.MatchedRelPos < ((g_binIndex + 1) * WINDOW_SIZE)));
 }
 
 void
