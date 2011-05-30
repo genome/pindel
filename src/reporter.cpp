@@ -25,6 +25,7 @@
 // Pindel header files
 #include "pindel.h"
 #include "reporter.h"
+#include "logdef.h"
 
 void
 OutputTDs (const std::vector < SPLIT_READ > &TDs,
@@ -192,7 +193,7 @@ OutputDeletions (const std::vector < SPLIT_READ > &Deletions,
 {
 	//short ReadLength = Deletions[C_S].ReadLength;
 	//short ReadLengthMinus = ReadLength - 1;
-	//cout << "d_1" << endl;
+	LOG_DEBUG(std::cout << "d_1" << std::endl);
 	unsigned int NumberOfReads = C_E - C_S + 1;
 	//float LeftScore = 0;
 	//float RightScore = 0;
@@ -202,7 +203,7 @@ OutputDeletions (const std::vector < SPLIT_READ > &Deletions,
 	int LeftUNum = 0;
 	//int RightNum = 0;
 	int RightUNum = 0;
-	//cout << "d_2" << endl;
+	LOG_DEBUG(std::cout << "d_2" << std::endl);
 	SupportPerSample NumSupportPerTag[VectorTag.size ()];
 
 	for (unsigned short i = 0; i < VectorTag.size (); i++)
@@ -212,7 +213,7 @@ OutputDeletions (const std::vector < SPLIT_READ > &Deletions,
 			NumSupportPerTag[i].NumUPlus = 0;
 			NumSupportPerTag[i].NumUMinus = 0;
 		}
-	//cout << "d_3" << endl;
+	LOG_DEBUG(std::cout << "d_3" << std::endl);
 	for (unsigned int i = C_S; i <= C_E; i++)
 		{
 			for (unsigned short j = 0; j < VectorTag.size (); j++)
@@ -248,7 +249,7 @@ OutputDeletions (const std::vector < SPLIT_READ > &Deletions,
 						RightUNum++;
 				}
 		}
-	//cout << "d_4" << endl;
+	LOG_DEBUG(std::cout << "d_4" << std::endl);
 	short NumberSupSamples = 0;
 	short NumU_SupSamples = 0;
 	int Num_U_Reads = 0;
@@ -262,7 +263,7 @@ OutputDeletions (const std::vector < SPLIT_READ > &Deletions,
 				NumSupportPerTag[i].NumUPlus + NumSupportPerTag[i].NumUMinus;
 		}
 	//  << "\t" << Num_U_Reads
-	//cout << "d_5" << endl;
+	LOG_DEBUG(std::cout << "d_5" << std::endl);
 	unsigned int EasyScore = LeftS * RightS;
 	//double PreciseScore = (LeftScore + RightScore) * (-1);
 	short GapSize = 0;
@@ -270,21 +271,21 @@ OutputDeletions (const std::vector < SPLIT_READ > &Deletions,
 		GapSize = Deletions[C_S].IndelSize;
 	else
 		GapSize = 13 + (int) log10 (Deletions[C_S].IndelSize - 10);
-	//cout << "d_5a" << endl;
+	LOG_DEBUG(std::cout << "d_5a" << std::endl);
 	CurrentChrMask[Deletions[C_S].BPLeft + SpacerBeforeAfter] = 'B';
-	//cout << "d_5b" << endl;
+	LOG_DEBUG(std::cout << "d_5b" << std::endl);
 	CurrentChrMask[Deletions[C_S].BPRight + SpacerBeforeAfter] = 'B';
-	//cout << "d_5c" << endl;
+	LOG_DEBUG(std::cout << "d_5c" << std::endl);
 	CurrentChrMask[RealStart + SpacerBeforeAfter] = 'B';
-	//cout << "d_5d" << endl;
+	LOG_DEBUG(std::cout << "d_5d" << std::endl);
 	CurrentChrMask[RealEnd + SpacerBeforeAfter] = 'B';
-	//cout << "d_5e" << endl;
+	LOG_DEBUG(std::cout << "d_5e" << std::endl);
 	DeletionOutf <<
 		"####################################################################################################"
 		<< std::endl;
 	DeletionOutf << NumberOfDeletionsInstances << "\tD " << Deletions[C_S].IndelSize	// << " bases " 
 		<< "\tNT " << Deletions[C_S].NT_size << " \"" << Deletions[C_S].NT_str << "\"" << "\tChrID " << Deletions[C_S].FragName << "\tBP " << Deletions[C_S].BPLeft + 1 << "\t" << Deletions[C_S].BPRight + 1 << "\tBP_range " << RealStart + 1 << "\t" << RealEnd + 1 << "\tSupports " << NumberOfReads << "\t" << Num_U_Reads << "\t+ " << LeftS - 1 << "\t" << LeftUNum << "\t- " << RightS - 1 << "\t" << RightUNum << "\tS1 " << EasyScore;	//EWL070111  << "\tS2 " << PreciseScore; 
-	//cout << "d_6" << endl;
+	LOG_DEBUG(std::cout << "d_6" << std::endl);
 	int SUM_MS = 0;
 	for (unsigned int i = C_S; i <= C_E; i++)
 		SUM_MS += Deletions[i].MS;
@@ -299,7 +300,7 @@ OutputDeletions (const std::vector < SPLIT_READ > &Deletions,
 			<< " " << NumSupportPerTag[i].NumMinus
 			<< " " << NumSupportPerTag[i].NumUMinus;
 	DeletionOutf << std::endl;
-	//cout << "d_7" << endl;
+	LOG_DEBUG(std::cout << "d_7" << std::endl);
 	//DeletionOutf << TheInput.substr(Deletions[C_S].Left - ReportLength + Deletions[C_S].BP + 1, ReportLength * 2) << endl;// << endl;// ReportLength                 
 	DeletionOutf << TheInput.substr (Deletions[C_S].Left - ReportLength + Deletions[C_S].BP + 1, ReportLength);	// << endl;// ReportLength    
 	if (Deletions[C_S].IndelSize >= 14)
@@ -499,7 +500,7 @@ OutputInversions (const std::vector < SPLIT_READ > &Inv,
 	short SpaceBeforeReadSeq;
 	//DeletionOutf << TheInput.substr(Deletions[C_S].Left - ReportLength + Deletions[C_S].BP + 1, ReportLength * 2) << endl;// << endl;// ReportLength                 
 	InvOutf << TheInput.substr (Inv[C_S].BPLeft + SpacerBeforeAfter - ReportLength, ReportLength);	//;// << endl;// ReportLength  
-	//cout << Inv[C_S].NT_size << "\t" << Inv[C_S].NT_2size << endl;
+	LOG_DEBUG(std::cout << Inv[C_S].NT_size << "\t" << Inv[C_S].NT_2size << std::endl);
 	if (LeftNT_size)
 		{
 			for (int i = 0; i < LeftNT_size; i++)
@@ -892,7 +893,7 @@ SortOutputSI (const unsigned &NumBoxes, const std::string & CurrentChr,
 							std::vector < SPLIT_READ > &Reads, std::vector < unsigned >SIs[],
 							std::ofstream & SIsOutf)
 {
-	std::cout << "Sorting and outputing short insertions ..." << std::endl;
+	LOG_INFO(std::cout << "Sorting and outputing short insertions ..." << std::endl);
 	unsigned int SIsNum;
 	short CompareResult;
 	unsigned Temp4Exchange;
@@ -908,7 +909,7 @@ SortOutputSI (const unsigned &NumBoxes, const std::string & CurrentChr,
 				{
 					//InputIndels.clear();
 					SIsNum = SIs[Box_index].size ();
-					//cout << "SIsNum " << SIsNum << endl;
+					LOG_DEBUG(std::cout << "SIsNum " << SIsNum << std::endl);
 					//for (int i = 0; i < SIsNum; i++) {
 					//  InputIndels.push_back(Reads[SIs[Box_index][i]]);
 					//}
@@ -974,7 +975,7 @@ SortOutputSI (const unsigned &NumBoxes, const std::string & CurrentChr,
 						}
 					GoodIndels.clear ();
 					IndelEvents.clear ();
-					//cout << GoodIndels.size() << endl;
+					LOG_DEBUG(std::cout << GoodIndels.size() << std::endl);
 
 					for (unsigned int First = 0; First < SIsNum; First++)
 						{
@@ -983,7 +984,7 @@ SortOutputSI (const unsigned &NumBoxes, const std::string & CurrentChr,
 						}
 
 					GoodNum = GoodIndels.size ();
-					//cout << Box_index << " " << GoodNum << endl;
+					LOG_DEBUG(std::cout << Box_index << " " << GoodNum << std::endl);
 					if (GoodNum == 0)
 						continue;
 					Indel4output OneIndelEvent;
@@ -1078,7 +1079,7 @@ SortOutputSI (const unsigned &NumBoxes, const std::string & CurrentChr,
 														}
 												}
 											// report max one
-											//cout << Max_Support << endl;
+											LOG_DEBUG(std::cout << Max_Support << std::endl);
 											if (Max_Support >= NumRead2ReportCutOff)
 												{
 													OutputSIs (GoodIndels, CurrentChr,
@@ -1092,7 +1093,7 @@ SortOutputSI (const unsigned &NumBoxes, const std::string & CurrentChr,
 						}
 				}												// if (!insertion[Box_index].empty())
 		}
-	std::cout << "Short insertions: " << NumberOfSIsInstances << std::endl << std::endl;
+	LOG_INFO(std::cout << "Short insertions: " << NumberOfSIsInstances << std::endl << std::endl);
 }
 
 void
@@ -1103,11 +1104,11 @@ SortAndOutputTandemDuplications (const unsigned &NumBoxes, const std::string & C
 
   if (nonTemplate)
 	{
-	  std::cout << "Sorting and outputing tandem duplications with non-template sequence ..." << std::endl;
+	  LOG_INFO(std::cout << "Sorting and outputing tandem duplications with non-template sequence ..." << std::endl);
 	}
   else
 	{
-	  std::cout << "Sorting and outputing tandem duplications ..." << std::endl;
+	  LOG_INFO(std::cout << "Sorting and outputing tandem duplications ..." << std::endl);
 	}
   unsigned int TDNum;
   short CompareResult;
@@ -1297,14 +1298,14 @@ SortAndOutputTandemDuplications (const unsigned &NumBoxes, const std::string & C
 	} // for (unsigned Box_index = 0; Box_index < NumBoxes; Box_index++)
   if (nonTemplate)
 	{
-	  std::cout << "Tandem duplications with non-template sequence (TD_NT): " <<
-		  countTandemDuplications << std::endl
-		  << std::endl;
+	  LOG_INFO(std::cout << "Tandem duplications with non-template sequence (TD_NT): " <<
+						 countTandemDuplications << std::endl
+						 << std::endl);
 	}
   else
 	{
-	  std::cout << "Tandem duplications: " << NumberOfTDInstances << std::endl
-		  << std::endl;
+	  LOG_INFO(std::cout << "Tandem duplications: " << NumberOfTDInstances << std::endl
+						 << std::endl);
 	}
 }
 
@@ -1314,7 +1315,7 @@ SortOutputD (const unsigned &NumBoxes, const std::string & CurrentChr,
 						 std::vector < SPLIT_READ > &Reads, std::vector < unsigned >Deletions[],
 						 std::ofstream & DeletionOutf)
 {
-	std::cout << "Sorting and outputing deletions ..." << std::endl;
+	LOG_INFO(std::cout << "Sorting and outputing deletions ..." << std::endl);
 	unsigned int DeletionsNum;
 	short CompareResult;
 	unsigned Temp4Exchange;
@@ -1326,7 +1327,7 @@ SortOutputD (const unsigned &NumBoxes, const std::string & CurrentChr,
 
 	for (unsigned Box_index = 0; Box_index < NumBoxes; Box_index++)
 		{
-			//cout << Box_index << "\t" << NumBoxes << "\t" << Deletions[Box_index].size() << endl;
+			LOG_DEBUG(std::cout << Box_index << "\t" << NumBoxes << "\t" << Deletions[Box_index].size() << std::endl);
 			//if (Deletions[Box_index].size() >= NumRead2ReportCutOff)
 			//   cout << Box_index << "\t" << Deletions[Box_index].size() << endl;
 			if (Deletions[Box_index].size () >= NumRead2ReportCutOff)
@@ -1413,9 +1414,8 @@ SortOutputD (const unsigned &NumBoxes, const std::string & CurrentChr,
 						}
 
 					GoodNum = GoodIndels.size ();
-					//cout << Box_index << " box read size " << GoodNum << endl;
-					if (GoodNum == 0)
-						continue;
+					LOG_DEBUG(std::cout << Box_index << " box read size " << GoodNum << std::endl);
+					if (GoodNum == 0) continue;
 					//    cout << GoodNum << endl;
 					Indel4output OneIndelEvent;
 					OneIndelEvent.Start = 0;
@@ -1424,7 +1424,7 @@ SortOutputD (const unsigned &NumBoxes, const std::string & CurrentChr,
 					OneIndelEvent.BPLeft = GoodIndels[0].BPLeft;
 					OneIndelEvent.BPRight = GoodIndels[0].BPRight;
 					OneIndelEvent.WhetherReport = true;
-					//cout << "here" << endl;
+					LOG_DEBUG(std::cout << "here" << std::endl);
 					for (unsigned int GoodIndex = 1; GoodIndex < GoodNum; GoodIndex++)
 						{
 							if (GoodIndels[GoodIndex].BPLeft == OneIndelEvent.BPLeft
@@ -1452,14 +1452,14 @@ SortOutputD (const unsigned &NumBoxes, const std::string & CurrentChr,
 					GetRealStart4Deletion (CurrentChr, OneIndelEvent.RealStart,
 																 OneIndelEvent.RealEnd);
 					IndelEvents.push_back (OneIndelEvent);
-					//cout << "IndelEvent: " << IndelEvents.size() << endl;
+					LOG_DEBUG(std::cout << "IndelEvent: " << IndelEvents.size() << std::endl);
 
 					if (IndelEvents.size ())
 						{
 							for (unsigned EventIndex = 0; EventIndex < IndelEvents.size ();
 									 EventIndex++)
 								{
-									//cout << EventIndex << " EventIndex" << endl;
+									LOG_DEBUG(std::cout << EventIndex << " EventIndex" << std::endl);
 									if (IndelEvents[EventIndex].WhetherReport)
 										{
 											unsigned int RealStart = IndelEvents[EventIndex].RealStart;
@@ -1493,16 +1493,16 @@ SortOutputD (const unsigned &NumBoxes, const std::string & CurrentChr,
 														}
 												}
 											// report max one
-											//cout << "max" << endl;
+											LOG_DEBUG(std::cout << "max" << std::endl);
 											if (IndelEvents[Max_Support_Index].Support >=
 													NumRead2ReportCutOff)
 												{
-													//cout << "aa" << endl;
+													LOG_DEBUG(std::cout << "aa" << std::endl);
 													if (GoodIndels
 															[IndelEvents[Max_Support_Index].Start].
 															IndelSize < BalanceCutoff)
 														{
-															//cout << "ba" << endl;
+															LOG_DEBUG(std::cout << "ba" << std::endl);
 															OutputDeletions (GoodIndels, CurrentChr,
 																							 IndelEvents[Max_Support_Index].
 																							 Start,
@@ -1510,7 +1510,7 @@ SortOutputD (const unsigned &NumBoxes, const std::string & CurrentChr,
 																							 End, RealStart, RealEnd,
 																							 DeletionOutf);
 															NumberOfDeletionsInstances++;
-															//cout << "bb" << endl;
+															LOG_DEBUG(std::cout << "bb" << std::endl);
 														}
 													else
 														if (ReportEvent
@@ -1518,7 +1518,7 @@ SortOutputD (const unsigned &NumBoxes, const std::string & CurrentChr,
 																 IndelEvents[Max_Support_Index].Start,
 																 IndelEvents[Max_Support_Index].End))
 														{
-															//cout << "ca" << endl;
+															LOG_DEBUG(std::cout << "ca" << std::endl);
 															OutputDeletions (GoodIndels, CurrentChr,
 																							 IndelEvents[Max_Support_Index].
 																							 Start,
@@ -1526,7 +1526,7 @@ SortOutputD (const unsigned &NumBoxes, const std::string & CurrentChr,
 																							 End, RealStart, RealEnd,
 																							 DeletionOutf);
 															NumberOfDeletionsInstances++;
-															//cout << "cb" << endl;
+															LOG_DEBUG(std::cout << "cb" << std::endl);
 														}
 												}
 										}
@@ -1534,7 +1534,7 @@ SortOutputD (const unsigned &NumBoxes, const std::string & CurrentChr,
 						}
 				}												// if (!Deletions[Box_index].empty())
 		}														// for (unsigned Box_index = 0; Box_index < NumBoxes; Box_index++)
-	std::cout << "Deletions: " << NumberOfDeletionsInstances << std::endl << std::endl;
+	LOG_INFO(std::cout << "Deletions: " << NumberOfDeletionsInstances << std::endl << std::endl);
 }
 
 void
@@ -1542,7 +1542,7 @@ SortOutputInv (const unsigned &NumBoxes, const std::string & CurrentChr,
 							 std::vector < SPLIT_READ > &Reads, std::vector < unsigned >Inv[],
 							 std::ofstream & InvOutf)
 {
-	std::cout << "Sorting and outputing Inversions ..." << std::endl;
+	LOG_INFO(std::cout << "Sorting and outputing Inversions ..." << std::endl);
 	unsigned int InversionsNum;
 	short CompareResult;
 	unsigned Temp4Exchange;
@@ -1563,7 +1563,7 @@ SortOutputInv (const unsigned &NumBoxes, const std::string & CurrentChr,
 
 			if (Inv[Box_index].size () >= NumRead2ReportCutOff)
 				{
-					//cout << Box_index << "\t" << Inv[Box_index].size() << endl;
+					LOG_DEBUG(std::cout << Box_index << "\t" << Inv[Box_index].size() << std::endl);
 					InversionsNum = Inv[Box_index].size ();
 					//InputIndels.clear();
 					//for (int i = 0; i < InversionsNum; i++) InputIndels.push_back(Reads[Inv[Box_index][i]]);
@@ -1637,10 +1637,10 @@ SortOutputInv (const unsigned &NumBoxes, const std::string & CurrentChr,
 						}
 
 					GoodNum = GoodIndels.size ();
-					//cout << Box_index << " " << GoodNum << endl;
+					LOG_DEBUG(std::cout << Box_index << " " << GoodNum << std::endl);
 					if (GoodNum == 0)
 						continue;
-					//    cout << GoodNum << endl;
+					LOG_DEBUG(std::cout << GoodNum << std::endl);
 					Indel4output OneIndelEvent;
 					OneIndelEvent.Start = 0;
 					OneIndelEvent.End = 0;
@@ -1673,7 +1673,7 @@ SortOutputInv (const unsigned &NumBoxes, const std::string & CurrentChr,
 					OneIndelEvent.Support = OneIndelEvent.End - OneIndelEvent.Start + 1;
 					//GetRealStart4Deletion(CurrentChr, OneIndelEvent.RealStart, OneIndelEvent.RealEnd);
 					IndelEvents.push_back (OneIndelEvent);
-					//       cout << "IndelEvent: " << IndelEvents.size() << endl;
+					LOG_DEBUG(std::cout << "IndelEvent: " << IndelEvents.size() << std::endl);
 
 					if (IndelEvents.size ())
 						{
@@ -1709,7 +1709,7 @@ SortOutputInv (const unsigned &NumBoxes, const std::string & CurrentChr,
 						}
 				}												// if (!Deletions[Box_index].empty())
 		}														// for (unsigned Box_index = 0; Box_index < NumBoxes; Box_index++)
-	std::cout << "Inversions (INV): " << NumberOfInvInstances << std::endl << std::endl;
+	LOG_INFO(std::cout << "Inversions (INV): " << NumberOfInvInstances << std::endl << std::endl);
 }
 
 void
@@ -1717,8 +1717,8 @@ SortOutputInv_NT (const unsigned &NumBoxes, const std::string & CurrentChr,
 									std::vector < SPLIT_READ > &Reads, std::vector < unsigned >Inv[],
 									std::ofstream & InvOutf)
 {
-	std::cout << "Sorting and outputing Inversions with non-template sequence ..." <<
-		std::endl;
+	LOG_INFO(std::cout << "Sorting and outputing Inversions with non-template sequence ..." <<
+					 std::endl);
 	unsigned int InversionsNum;
 	short CompareResult;
 	unsigned Temp4Exchange;
@@ -1742,7 +1742,7 @@ SortOutputInv_NT (const unsigned &NumBoxes, const std::string & CurrentChr,
 			if (Inv[Box_index].size () >= NumRead2ReportCutOff)
 				{
 					InversionsNum = Inv[Box_index].size ();
-					//cout << Box_index << "\t" << Inv[Box_index].size() << endl;
+					LOG_DEBUG(std::cout << Box_index << "\t" << Inv[Box_index].size() << std::endl);
 					//InputIndels.clear();
 					//for (int i = 0; i < InversionsNum; i++) InputIndels.push_back(Reads[Inv[Box_index][i]]);
 					for (unsigned int First = 0; First < InversionsNum - 1; First++)
@@ -1753,8 +1753,8 @@ SortOutputInv_NT (const unsigned &NumBoxes, const std::string & CurrentChr,
 								for (unsigned int Second = First + 1; Second < InversionsNum;
 										 Second++)
 									{
-										//cout << InputIndels[First].BPLeft << "\t" << InputIndels[First].BPRight << "\t" 
-										//     << InputIndels[Second].BPLeft << "\t" << InputIndels[Second].BPRight<< endl;
+										LOG_DEBUG(std::cout << InputIndels[First].BPLeft << "\t" << InputIndels[First].BPRight << "\t" 
+															InputIndels[Second].BPLeft << "\t" << InputIndels[Second].BPRight<< std::endl);
 										//if (InputIndels[Second].Unique) 
 										{
 											if (Reads[Inv[Box_index][First]].ReadLength ==
@@ -1832,10 +1832,10 @@ SortOutputInv_NT (const unsigned &NumBoxes, const std::string & CurrentChr,
 						}
 
 					GoodNum = GoodIndels.size ();
-					//cout << "GoodNum " << Box_index << " " << GoodNum << endl;
+					LOG_DEBUG(std::cout << "GoodNum " << Box_index << " " << GoodNum << std::endl);
 					if (GoodNum == 0)
 						continue;
-					//    cout << GoodNum << endl;
+					LOG_DEBUG(std::cout << GoodNum << std::endl);
 					Indel4output OneIndelEvent;
 					OneIndelEvent.Start = 0;
 					OneIndelEvent.End = 0;
@@ -1845,7 +1845,11 @@ SortOutputInv_NT (const unsigned &NumBoxes, const std::string & CurrentChr,
 					OneIndelEvent.WhetherReport = true;
 					for (unsigned int GoodIndex = 1; GoodIndex < GoodNum; GoodIndex++)
 						{
-							//cout << GoodIndex << "\t" << GoodIndels[GoodIndex].BPLeft << "\t" << GoodIndels[GoodIndex].BPRight << "\t" << OneIndelEvent.BPLeft << "\t" << OneIndelEvent.BPRight << endl;
+							LOG_DEBUG(std::cout << GoodIndex << 
+												"\t" << GoodIndels[GoodIndex].BPLeft << 
+												"\t" << GoodIndels[GoodIndex].BPRight << 
+												"\t" << OneIndelEvent.BPLeft << 
+												"\t" << OneIndelEvent.BPRight << std::endl);
 							if (GoodIndels[GoodIndex].BPLeft == OneIndelEvent.BPLeft
 									&& GoodIndels[GoodIndex].BPRight == OneIndelEvent.BPRight)
 								OneIndelEvent.End = GoodIndex;
@@ -1867,17 +1871,21 @@ SortOutputInv_NT (const unsigned &NumBoxes, const std::string & CurrentChr,
 					OneIndelEvent.RealStart = OneIndelEvent.BPLeft;
 					OneIndelEvent.RealEnd = OneIndelEvent.BPRight;
 					OneIndelEvent.Support = OneIndelEvent.End - OneIndelEvent.Start + 1;
-					//cout << OneIndelEvent.Support << "\t" << OneIndelEvent.Start << "\t" << OneIndelEvent.End << endl;
+					LOG_DEBUG(std::cout << OneIndelEvent.Support 
+										<< "\t" << OneIndelEvent.Start 
+										<< "\t" << OneIndelEvent.End << std::endl);
 					//GetRealStart4Deletion(CurrentChr, OneIndelEvent.RealStart, OneIndelEvent.RealEnd);
 					IndelEvents.push_back (OneIndelEvent);
-					//cout << "IndelEvent: " << IndelEvents.size() << endl;
+					LOG_DEBUG(std::cout << "IndelEvent: " << IndelEvents.size() << std::endl);
 
 					if (IndelEvents.size ())
 						{
 							for (unsigned EventIndex = 0; EventIndex < IndelEvents.size ();
 									 EventIndex++)
 								{
-									//cout << IndelEvents[EventIndex].Start << "\t" << IndelEvents[EventIndex].End << "\t" << IndelEvents[EventIndex].Support << endl;
+									LOG_DEBUG(std::cout << IndelEvents[EventIndex].Start << 
+														"\t" << IndelEvents[EventIndex].End << 
+														"\t" << IndelEvents[EventIndex].Support << std::endl);
 									unsigned int RealStart = IndelEvents[EventIndex].RealStart;
 									unsigned int RealEnd = IndelEvents[EventIndex].RealEnd;
 									if (IndelEvents[EventIndex].Support < NumRead2ReportCutOff)
@@ -1909,8 +1917,8 @@ SortOutputInv_NT (const unsigned &NumBoxes, const std::string & CurrentChr,
 						}
 				}												// if (!Deletions[Box_index].empty())
 		}														// for (unsigned Box_index = 0; Box_index < NumBoxes; Box_index++)
-	std::cout << "Inversions with non-template sequence (INV_NT): " <<
-		Count_INV_NT_output << std::endl << std::endl;
+	LOG_INFO(std::cout << "Inversions with non-template sequence (INV_NT): " <<
+					 Count_INV_NT_output << std::endl << std::endl);
 }
 
 void
@@ -1918,8 +1926,8 @@ SortOutputDI (const unsigned &NumBoxes, const std::string & CurrentChr,
 							std::vector < SPLIT_READ > &Reads, std::vector < unsigned >DI[],
 							std::ofstream & DIOutf)
 {
-	std::cout << "Sorting and outputing deletions with non-template sequences ..." <<
-		std::endl;
+	LOG_INFO(std::cout << "Sorting and outputing deletions with non-template sequences ..." <<
+					 std::endl);
 	unsigned int DINum;
 	short CompareResult;
 	unsigned Temp4Exchange;
@@ -1937,7 +1945,7 @@ SortOutputDI (const unsigned &NumBoxes, const std::string & CurrentChr,
 
 	for (unsigned Box_index = 0; Box_index < NumBoxes; Box_index++)
 		{
-			//cout << "Box_index: "   << Box_index << endl;
+			LOG_DEBUG(std::cout << "Box_index: "   << Box_index << std::endl);
 			if (DI[Box_index].size () >= NumRead2ReportCutOff)
 				{
 					DINum = DI[Box_index].size ();
@@ -2022,10 +2030,13 @@ SortOutputDI (const unsigned &NumBoxes, const std::string & CurrentChr,
 						}
 
 					GoodNum = GoodIndels.size ();
-					//cout << Box_index << " " << GoodNum << endl;
+					LOG_DEBUG(std::cout << Box_index << " " << GoodNum << std::endl);
 					if (GoodNum == 0)
 						continue;
-					//cout << "GoodNum: " << GoodNum << endl;   string InsertedStr;   string NT_str;  short NT_size;
+					LOG_DEBUG(std::cout << "GoodNum: " << GoodNum << std::endl);   
+					//string InsertedStr;   
+					//string NT_str;  
+					//short NT_size;
 					Indel4output OneIndelEvent;
 					OneIndelEvent.Start = 0;
 					OneIndelEvent.End = 0;
@@ -2100,8 +2111,8 @@ SortOutputDI (const unsigned &NumBoxes, const std::string & CurrentChr,
 						}
 				}												// if (!Deletions[Box_index].empty())
 		}														// for (unsigned Box_index = 0; Box_index < NumBoxes; Box_index++)
-	std::cout << "deletions with non-template sequences: " << NumberOfDIInstances <<
-		std::endl << std::endl;
+	LOG_INFO(std::cout << "deletions with non-template sequences: " << NumberOfDIInstances <<
+					 std::endl << std::endl);
 }
 
 void
@@ -2202,7 +2213,7 @@ SortOutputLI (const std::string & CurrentChr, std::vector < SPLIT_READ > &Reads,
 						}
 				}
 		}
-	//cout << "LI: " << LI_Positions.size() << endl;
+	LOG_DEBUG(std::cout << "LI: " << LI_Positions.size() << std::endl);
 	static int Count_LI = 0;
 	// find LI supporting reads
 
@@ -2245,7 +2256,9 @@ SortOutputLI (const std::string & CurrentChr, std::vector < SPLIT_READ > &Reads,
 			temp_BalancedMinus_Minus = false;
 			temp_Plus_Reads.clear ();
 			temp_Minus_Reads.clear ();
-			//cout << "Here: " << LI_index << "\t" << LI_Positions[LI_index].Minus_Reads.size() << "\t" << LI_Positions[LI_index].Plus_Reads.size() << endl;
+			LOG_DEBUG(std::cout << "Here: " << LI_index << 
+								"\t" << LI_Positions[LI_index].Minus_Reads.size() << 
+								"\t" << LI_Positions[LI_index].Plus_Reads.size() << std::endl);
 			for (unsigned int i = 0; i < LI_Positions[LI_index].Minus_Reads.size (); i++)
 				{
 					temp_Minus_Reads.
@@ -2313,7 +2326,7 @@ SortOutputLI (const std::string & CurrentChr, std::vector < SPLIT_READ > &Reads,
 			bool SupportedByOneSample = false;
 			for (unsigned short j = 0; j < VectorTag.size (); j++)
 				{
-					//cout << NumSupportPerTagPlus[j] << "\t" << NumSupportPerTagMinus[j] << endl;
+					LOG_DEBUG(std::cout << NumSupportPerTagPlus[j] << "\t" << NumSupportPerTagMinus[j] << std::endl);
 					if (NumSupportPerTagPlus[j] > 0 && NumSupportPerTagMinus[j] > 0)
 						{
 							SupportedByOneSample = true;
@@ -2404,7 +2417,7 @@ SortOutputLI (const std::string & CurrentChr, std::vector < SPLIT_READ > &Reads,
 	delete[]minus_LI_Pos;
 	delete[]EventIndex_Pos;
 
-	std::cout << "Breakpoints for large insertions (LI): " << Count_LI << std::endl << std::endl;
+	LOG_INFO(std::cout << "Breakpoints for large insertions (LI): " << Count_LI << std::endl << std::endl);
 }
 
 
@@ -2417,7 +2430,7 @@ SortOutputRest (const std::string & CurrentChr, std::vector < SPLIT_READ > &Read
 	int HalfMappedIndex, HalfUnmappedIndex;
 	unsigned UP_Close_index;
 	unsigned temp_AbsLoc;
-	//cout << "1" << endl;
+	LOG_DEBUG(std::cout << "1" << std::endl);
 	// find LI combinations
 	uint8_t *plus_LI_Pos = new uint8_t[CurrentChr.size () + 1];
 	uint8_t *minus_LI_Pos = new uint8_t[CurrentChr.size () + 1];
@@ -2447,7 +2460,7 @@ SortOutputRest (const std::string & CurrentChr, std::vector < SPLIT_READ > &Read
 	std::vector < Rest_Pos > Rest_Positions;
 	Rest_Pos temp_Rest_pos;
 
-	//cout << "2" << endl;
+	LOG_DEBUG(std::cout << "2" << std::endl);
 
 	bool SkipThisPos;
 	for (unsigned int Index = SpacerBeforeAfter;
@@ -2498,7 +2511,7 @@ SortOutputRest (const std::string & CurrentChr, std::vector < SPLIT_READ > &Read
 				}
 		}
 
-	//cout << "Other unassigned breakpoints (BP): " << Rest_Positions.size() << "\n\n";
+	LOG_DEBUG(std::cout << "Other unassigned breakpoints (BP): " << Rest_Positions.size() << std::endl << std::endl);
 	int Count_BP = 0;
 	bool temp_BalancedPlus, temp_BalancedMinus;
 	short temp_LengthStr;
@@ -2626,5 +2639,5 @@ SortOutputRest (const std::string & CurrentChr, std::vector < SPLIT_READ > &Read
 		}
 	delete[]plus_LI_Pos;
 	delete[]minus_LI_Pos;
-	std::cout << "Other unassigned breakpoints (BP): " << Count_BP << std::endl << std::endl;
+	LOG_INFO(std::cout << "Other unassigned breakpoints (BP): " << Count_BP << std::endl << std::endl);
 }
