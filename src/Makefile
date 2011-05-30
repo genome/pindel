@@ -2,38 +2,27 @@
 # Include the Makefile.local from the main project for configuration
 include ../Makefile.local
 
-CPPCHECKS=cppcheck-result-pindel.xml cppcheck-result-reader.xml \
-	  cppcheck-result-searcher.xml cppcheck-result-reporter.xml \
-	  cppcheck-result-parameter.xml cppcheck-result-ControlState.xml \
-	  cppcheck-result-search_deletions.xml cppcheck-result-search_indels.xml \
-	  cppcheck-result-search_tandem_duplications.xml cppcheck-result-search_short_insertions.xml \
-	  cppcheck-result-search_inversions.xml
-OBJECTS=pindel.o reader.o reporter.o searcher.o parameter.o ControlState.o refreader.o \
-	search_inversions.o search_short_insertions.o search_deletions.o search_indels.o search_tandem_duplications.o
-OBJECTS_DEBUG=pindel-debug.o reader-debug.o reporter-debug.o \
-	      searcher-debug.o parameter-debug.o ControlState-debug.o refreader-debug.o \
-	      search_inversions-debug.o search_short_insertions-debug.o search_tandem_duplications-debug.o \
-	      search_indels-debug.o search_tandem_duplications-debug.o
 SOURCES=pindel.cpp reader.cpp reporter.cpp searcher.cpp parameter.cpp \
-    refreader.cpp ControlState.cpp
+    refreader.cpp ControlState.cpp search_deletions.cpp search_indels.cpp \
+    search_inversions.cpp search_short_insertions.cpp search_tandem_duplications.cpp
  
 all:	pindel pindel-debug
 include $(SOURCES:.cpp=.d)
 include $(SOURCES:.cpp=-debug.d)
-test:	pindel $(CPPCHECKS)
+test:	pindel $(addprefix cppcheck-result-,$(SOURCES:.cpp=.xml))
 
 # Debug version of pindel
-pindel-debug: $(OBJECTS_DEBUG)
+pindel-debug: $(SOURCES:.cpp=-debug.o)
 	$(CXX) $(LDFLAGS) $^ -fopenmp -g -pg -fprofile-arcs -ftest-coverage \
 	  -lm -lz -L$(SAMTOOLS) -lbam -o $@
 
 # Normal version of pindel	
-pindel:	$(OBJECTS)
+pindel:	$(SOURCES:.cpp=.o)
 	$(CXX) $(LDFLAGS) $^ -O3 -fopenmp -lm -lz -L$(SAMTOOLS) -lbam -o $@
 
 clean:
 	$(RM) pindel pindel-debug $(OBJECTS) $(OBJECTS_DEBUG) $(CPPCHECKS) \
-	    *.gcov *.gcda *.gcno gmon.out *.d
+	    *.gcov *.gcda *.gcno gmon.out *.d *.o
 
 # Pattern rule to create normal .o files	
 %.o: %.cpp
