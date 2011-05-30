@@ -30,11 +30,15 @@
 #include "sam.h"
 
 /*
- * Global variables defined in pindel.c
+ * Global variables defined in pindel.cpp
  */
 extern int ADDITIONAL_MISMATCH;
 extern double Seq_Error_Rate;
+extern char Match[256];
 extern char Match2N[256];
+extern char Convert2RC[256];
+extern char Convert2RC4N[256];
+extern char Cap2LowArray[256];
 extern int Min_Perfect_Match_Around_BP;
 extern double MaximumAllowedMismatchRate;
 extern short ReportLength;
@@ -87,7 +91,7 @@ const char Minus = '-';
 const char FirstCharReadName = '@';
 const short Max_short = 128;
 const unsigned int NumberOfReadsPerBuffer = 1000; // estimate later
-
+const short FirstBase = 1;
 
 /*
  * Data structures
