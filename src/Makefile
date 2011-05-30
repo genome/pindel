@@ -5,30 +5,32 @@ include ../Makefile.local
 CPPCHECKS=cppcheck-result-pindel.xml cppcheck-result-reader.xml \
 	  cppcheck-result-searcher.xml cppcheck-result-reporter.xml \
 	  cppcheck-result-parameter.xml cppcheck-result-ControlState.xml
-OBJECTS=pindel.o reader.o reporter.o searcher.o parameter.o ControlState.o
+OBJECTS=pindel.o reader.o reporter.o searcher.o parameter.o ControlState.o refreader.o
 OBJECTS_DEBUG=pindel-debug.o reader-debug.o reporter-debug.o \
-	      searcher-debug.o parameter-debug.o ControlState-debug.o
+	      searcher-debug.o parameter-debug.o ControlState-debug.o refreader-debug.o
 
 all:	pindel pindel-debug
 test:	pindel $(CPPCHECKS)
 
 # Dependencies for the normal .o files	
-reader.o: reader.cpp reader.h pindel.h
+reader.o: reader.cpp reader.h pindel.h logdef.h refreader.h
 reporter.o: reporter.cpp reporter.h pindel.h
 searcher.o: searcher.cpp searcher.h pindel.h
 pindel.o: pindel.cpp pindel.h \
 	reader.h reporter.h searcher.h parameter.h ControlState.h
 parameter.o: parameter.cpp parameter.h
 ControlState.o: ControlState.cpp ControlState.h
+refreader.o: refreader.cpp refreader.h pindel.h logdef.h
 
 # Dependencies for the debug version of the .o files
-reader-debug.o: reader.cpp reader.h pindel.h logdef.h
+reader-debug.o: reader.cpp reader.h pindel.h logdef.h refreader.h
 reporter-debug.o: reporter.cpp reporter.h pindel.h
 searcher-debug.o: searcher.cpp searcher.h pindel.h
 pindel-debug.o: pindel.cpp pindel.h \
 	reader.h reporter.h searcher.h parameter.h ControlState.h
 parameter-debug.o: parameter.cpp parameter.h
 ControlState-debug.o: ControlState.cpp ControlState.h
+refreader-debug.o: refreader.cpp refreader.h pindel.h logdef.h
 
 # Debug version of pindel
 pindel-debug: $(OBJECTS_DEBUG)

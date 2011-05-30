@@ -7,7 +7,7 @@ default: pindel
 all: pindel cppcheck functional-tests coverage-tests acceptance-tests \
 	regression-tests
 test: pindel cppcheck functional-tests
-	
+
 pindel: Makefile.local
 	make -C src pindel
 
@@ -25,7 +25,7 @@ coverage-tests: Makefile.local pindel-debug
 
 functional-tests: Makefile.local pindel
 	make -C test functional-tests
-	
+
 regression-tests: Makefile.local pindel
 	make -C test regression-tests
 
