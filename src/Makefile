@@ -5,7 +5,7 @@ include ../Makefile.local
 SOURCES=pindel.cpp reader.cpp reporter.cpp searcher.cpp parameter.cpp \
     refreader.cpp ControlState.cpp search_deletions.cpp search_indels.cpp \
     search_inversions.cpp search_short_insertions.cpp \
-    search_tandem_duplications.cpp outputsorter.cpp
+    search_tandem_duplications.cpp outputsorter.cpp FarEndSearcher.cpp
  
 all:	pindel pindel-debug
 include $(SOURCES:.cpp=.d)
