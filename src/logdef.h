@@ -13,27 +13,27 @@
 #endif
 
 #if defined(LOG_LEVEL) && (LOG_LEVEL >= LOG_ERROR)
-#define ERR(s) __LOG(s, "error")
+#define LOG_ERR(s) __LOG(s, "error")
 #else
-#define ERR(s) // empty
+#define LOG_ERR(s) // empty
 #endif // LOG_LEVEL
 
 #if defined(LOG_LEVEL) && (LOG_LEVEL >= LOG_WARN)
-#define WARN(s) __LOG(s, "warning")
+#define LOG_WARN(s) __LOG(s, "warning")
 #else
-#define WARN(s) // empty
+#define LOG_WARN(s) // empty
 #endif // LOG_LEVEL
 
 #if defined(LOG_LEVEL) && (LOG_LEVEL >= LOG_INFO)
-#define INFO(s) __LOG(s, "info")
+#define LOG_INFO(s) __LOG(s, "info")
 #else
-#define INFO(s) // empty
+#define LOG_INFO(s) // empty
 #endif // LOG_LEVEL
 
 #if defined(LOG_LEVEL) && (LOG_LEVEL >= LOG_DEBUG)
-#define DBG(s) __LOG(s, "debug")
+#define LOG_DBG(s) __LOG(s, "debug")
 #else
-#define DBG(s) // empty
+#define LOG_DBG(s) // empty
 #endif // LOG_LEVEL
 
 #endif // __LOGDEF_H__
