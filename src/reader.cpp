@@ -90,7 +90,7 @@ ReadInRead (std::ifstream & inf_ReadSeq, const std::string & FragName,
 						const std::string & CurrentChr, std::vector < SPLIT_READ > &Reads,
 						const unsigned int lowerBinBorder, const unsigned int upperBinBorder)
 {
-	std::cout << "Scanning and processing reads anchored in " << FragName << std::endl;
+	LOG_INFO(std::cout << "Scanning and processing reads anchored in " << FragName << std::endl);
 	//short ADDITIONAL_MISMATCH = 1;
 	SPLIT_READ Temp_One_Read;
 	unsigned int NumReadScanned = 0;
@@ -102,22 +102,22 @@ ReadInRead (std::ifstream & inf_ReadSeq, const std::string & FragName,
 	//NumberOfReadsPerBuffer;
 	std::vector < SPLIT_READ > BufferReads;
 	ReportLength = 0;
-	//cout << LeftReads.size() << endl;
+	LOG_DEBUG(std::cout << LeftReads.size() << std::endl);
 	std::string TempQC, TempLine, TempStr, TempFragName;
 	//int TempInt;
 
 	inf_ReadSeq.clear ();
 	inf_ReadSeq.seekg (0);
 	VectorTag.clear ();
-//cout << "MINUSEXTRA!\n";
+	LOG_DEBUG(std::cout << "MINUSEXTRA!" << std::endl);
 	int UPCLOSE_COUNTER = 0;
 	//loop over all reads in the file
 	while (inf_ReadSeq >> Temp_One_Read.Name)
 		{
 			if (Temp_One_Read.Name[0] != FirstCharReadName)
 				{												// !='@'
-					std::cout << "Something wrong with the read name: " << Temp_One_Read.
-						Name << std::endl;
+					LOG_WARN(std::cout << "Something wrong with the read name: " << Temp_One_Read.
+									 Name << std::endl);
 					Reads.clear ();
 					return 1;
 				}
@@ -130,10 +130,10 @@ ReadInRead (std::ifstream & inf_ReadSeq, const std::string & FragName,
 			inf_ReadSeq >> Temp_One_Read.MatchedD;
 			if (Temp_One_Read.MatchedD != Minus && Temp_One_Read.MatchedD != Plus)
 				{
-					std::cout << Temp_One_Read.Name << "\n"
-						<< Temp_One_Read.UnmatchedSeq << "\n"
-						<< Temp_One_Read.MatchedD << " ...\n";
-					std::cout << "+/-" << std::endl;
+					LOG_INFO(std::cout << Temp_One_Read.Name << std::endl
+									 << Temp_One_Read.UnmatchedSeq << std::endl
+									 << Temp_One_Read.MatchedD << " ..." << std::endl);
+					LOG_INFO(std::cout << "+/-" << std::endl);
 					return 1;
 				}
 			//   >> TempInt 
@@ -183,7 +183,7 @@ ReadInRead (std::ifstream & inf_ReadSeq, const std::string & FragName,
 					BufferReads.push_back (Temp_One_Read);
 					if (BufferReads.size () >= NumberOfReadsPerBuffer)
 						{
-							//cout << "here" << endl;
+							LOG_DEBUG(std::cout << "here" << std::endl);
 #pragma omp parallel default(shared)
 							{
 #pragma omp for
@@ -207,10 +207,12 @@ ReadInRead (std::ifstream & inf_ReadSeq, const std::string & FragName,
 													BufferReads[BufferReadsIndex].ReadLength;
 											BufferReads[BufferReadsIndex].Used = false;
 											BufferReads[BufferReadsIndex].Unique = true;
-											//cout << Temp_One_Read.MatchedD << "\t" << Temp_One_Read.UP_Close.size() << "\t";
+											LOG_DEBUG(std::cout << Temp_One_Read.MatchedD << "\t" 
+																<< Temp_One_Read.UP_Close.size() << "\t");
 											CleanUniquePoints (BufferReads[BufferReadsIndex].
 																				 UP_Close);
-											//cout << Temp_One_Read.UP_Close.size() << "\t" << Temp_One_Read.UP_Close[0].Direction << endl;
+											LOG_DEBUG(std::cout << Temp_One_Read.UP_Close.size() << "\t" 
+																<< Temp_One_Read.UP_Close[0].Direction << std::endl);
 											BufferReads[BufferReadsIndex].CloseEndLength =
 												BufferReads[BufferReadsIndex].
 												UP_Close[BufferReads[BufferReadsIndex].UP_Close.
@@ -228,7 +230,7 @@ ReadInRead (std::ifstream & inf_ReadSeq, const std::string & FragName,
 																	 size () - 1].AbsLoc +
 													BufferReads[BufferReadsIndex].CloseEndLength -
 													BufferReads[BufferReadsIndex].ReadLength;
-											//cout << "Pushing back!\n";
+											LOG_DEBUG(std::cout << "Pushing back!" << std::endl);
 											Reads.push_back (BufferReads[BufferReadsIndex]);
 											if (BufferReads[BufferReadsIndex].MatchedD == Plus)
 												GetPlus++;
@@ -246,8 +248,8 @@ ReadInRead (std::ifstream & inf_ReadSeq, const std::string & FragName,
 						}										// if buffer-reads threatens to overflow
 				}												// if the read is in the correct bin
 		}														// while loop over each read
-	std::cout << "last one: " << BufferReads.
-		size () << " and UPCLOSE= " << UPCLOSE_COUNTER << std::endl;
+	LOG_INFO(std::cout << "last one: " << BufferReads.
+					 size () << " and UPCLOSE= " << UPCLOSE_COUNTER << std::endl);
 #pragma omp parallel default(shared)
 	{
 #pragma omp for
@@ -267,9 +269,15 @@ ReadInRead (std::ifstream & inf_ReadSeq, const std::string & FragName,
 						ReportLength = BufferReads[BufferReadsIndex].ReadLength;
 					BufferReads[BufferReadsIndex].Used = false;
 					BufferReads[BufferReadsIndex].Unique = true;
-					//cout << Temp_One_Read.MatchedD << "\t" << Temp_One_Read.UP_Close.size() << "\t";
+
+					LOG_DEBUG(std::cout << Temp_One_Read.MatchedD 
+										<< "\t" << Temp_One_Read.UP_Close.size() << "\t");
+
 					CleanUniquePoints (BufferReads[BufferReadsIndex].UP_Close);
-					//cout << Temp_One_Read.UP_Close.size() << "\t" << Temp_One_Read.UP_Close[0].Direction << endl;
+
+					LOG_DEBUG(std::cout << Temp_One_Read.UP_Close.size()
+										<< "\t" << Temp_One_Read.UP_Close[0].Direction << std::endl);
+
 					BufferReads[BufferReadsIndex].CloseEndLength =
 						BufferReads[BufferReadsIndex].
 						UP_Close[BufferReads[BufferReadsIndex].UP_Close.size () -
@@ -302,30 +310,30 @@ ReadInRead (std::ifstream & inf_ReadSeq, const std::string & FragName,
 
 	if (FirstChr)
 		{
-			std::cout << "\nThe last read Pindel scanned: \n";
-			std::cout << Temp_One_Read.Name << "\n"
-				<< Temp_One_Read.UnmatchedSeq << "\n"
+			LOG_INFO(std::cout << std::endl << "The last read Pindel scanned: " << std::endl);
+			LOG_INFO(std::cout << Temp_One_Read.Name << std::endl
+							 << Temp_One_Read.UnmatchedSeq << std::endl
 				<< Temp_One_Read.MatchedD << "\t"
 				<< Temp_One_Read.FragName << "\t"
 				<< Temp_One_Read.MatchedRelPos << "\t"
 				<< Temp_One_Read.MS << "\t"
-				<< Temp_One_Read.InsertSize << "\t" << Temp_One_Read.Tag << "\n\n";
+							 << Temp_One_Read.InsertSize << "\t" << Temp_One_Read.Tag << std::endl << std::endl);
 			FirstChr = false;
 			//ReportLength = Temp_One_Read.UnmatchedSeq.size();
 		}
-	std::cout << "NumReadScanned:\t" << NumReadScanned << std::endl;
-	std::cout << "NumReadInChr:\t" << NumReadInChr << std::endl;
-	std::cout << "NumReadStored:\t" << Reads.size () << std::endl;
-	std::cout << "NumReadStored / NumReadInChr = " << Reads.size () * 100.0 /
-		NumReadInChr << " %\n" << "InChrPlus \t" << InChrPlus << "\tGetPlus \t" <<
-		GetPlus << "\t" << GetPlus * 100.0 /
-		InChrPlus << " %\n" << "InChrMinus\t" << InChrMinus << "\tGetMinus\t" <<
-		GetMinus << "\t" << GetMinus * 100.0 / InChrMinus << " %\n" << std::endl;
+	LOG_INFO(std::cout << "NumReadScanned:\t" << NumReadScanned << std::endl);
+	LOG_INFO(std::cout << "NumReadInChr:\t" << NumReadInChr << std::endl);
+	LOG_INFO(std::cout << "NumReadStored:\t" << Reads.size () << std::endl);
+	LOG_INFO(std::cout << "NumReadStored / NumReadInChr = " << Reads.size () * 100.0 /
+					 NumReadInChr << " %" << std::endl << "InChrPlus \t" << InChrPlus << "\tGetPlus \t" <<
+					 GetPlus << "\t" << GetPlus * 100.0 /
+					 InChrPlus << " %" << std::endl << "InChrMinus\t" << InChrMinus << "\tGetMinus\t" <<
+					 GetMinus << "\t" << GetMinus * 100.0 / InChrMinus << " %" << std::endl << std::endl);
 	//inf_ReadSeq.close();
 	if (Reads.size () == 0)
 		return 0;
-	//cout << LeftReads.size() << endl;
-	std::cout << "sorting tags ... ";
+	LOG_DEBUG(std::cout << LeftReads.size() << std::endl);
+	LOG_INFO(std::cout << "sorting tags ... ");
 	std::string Str4Exchange;
 	for (unsigned short i = 0; i < VectorTag.size () - 1; i++)
 		{
@@ -352,7 +360,7 @@ ReadInRead (std::ifstream & inf_ReadSeq, const std::string & FragName,
 						}
 				}
 		}
-	std::cout << " finished!" << std::endl;
+	LOG_INFO(std::cout << " finished!" << std::endl);
 	return 0;
 }
 
@@ -396,15 +404,15 @@ ReadInBamReads (const char *bam_path, const std::string & FragName,
 	//ADDITIONAL_MISMATCH = 1;
 	//Seq_Error_Rate = 0.05;
 	bam_fetch (fp, idx, tid, binStart, binEnd, &data, fetch_func);
-	std::cout << "Bam:\t" << bam_path << "\tTag:\t" << Tag << std::endl;
-	std::cout << "NumReadScanned:\t" << NumReadScanned << std::endl;
-	std::cout << "NumReadInChr:\t" << NumReadInChr << std::endl;
-	std::cout << "NumReadStored:\t" << LeftReads.size () << std::endl;
-	std::cout << "NumReadStored / NumReadInChr = " << LeftReads.size () * 100.0 /
-		NumReadInChr << " %\n" << "InChrPlus \t" << InChrPlus << "\tGetPlus \t" <<
-		GetPlus << "\t" << GetPlus * 100.0 /
-		InChrPlus << " %\n" << "InChrMinus\t" << InChrMinus << "\tGetMinus\t" <<
-		GetMinus << "\t" << GetMinus * 100.0 / InChrMinus << " %\n" << std::endl;
+	LOG_INFO(std::cout << "Bam:\t" << bam_path << "\tTag:\t" << Tag << std::endl);
+	LOG_INFO(std::cout << "NumReadScanned:\t" << NumReadScanned << std::endl);
+	LOG_INFO(std::cout << "NumReadInChr:\t" << NumReadInChr << std::endl);
+	LOG_INFO(std::cout << "NumReadStored:\t" << LeftReads.size () << std::endl);
+	LOG_INFO(std::cout << "NumReadStored / NumReadInChr = " << LeftReads.size () * 100.0 /
+					 NumReadInChr << " %" << std::endl << "InChrPlus \t" << InChrPlus << "\tGetPlus \t" <<
+					 GetPlus << "\t" << GetPlus * 100.0 /
+					 InChrPlus << " %" << std::endl << "InChrMinus\t" << InChrMinus << "\tGetMinus\t" <<
+					 GetMinus << "\t" << GetMinus * 100.0 / InChrMinus << " %" << std::endl << std::endl);
 	khint_t key;
 	if (kh_size (data.read_to_map_qual) > 0)
 		{
@@ -592,7 +600,7 @@ fetch_func (const bam1_t * b1, void *data)
 		}
 	else
 		{
-			printf ("Should not get here\n");
+			LOG_ERROR(std::cerr << "Should not get here" << std::endl);
 			exit (1);
 		}
 	bam_destroy1 (b2);
@@ -715,8 +723,14 @@ build_record (const bam1_t * mapped_read, const bam1_t * unmapped_read,
 
 	std::string FragName = header->target_name[mapped_core->tid];
 	Temp_One_Read.FragName = FragName;
-	//cout << Temp_One_Read.Name << "\n" << Temp_One_Read.UnmatchedSeq << "\n";
-	//cout << Temp_One_Read.MatchedD << "\t" << Temp_One_Read.FragName << "\t" << Temp_One_Read.MatchedRelPos << "\t" << Temp_One_Read.MS << "\t" << Temp_One_Read.InsertSize << "\t" << Temp_One_Read.Tag << "\n";
+	LOG_DEBUG(cout << Temp_One_Read.Name << std::endl 
+						<< Temp_One_Read.UnmatchedSeq << std::endl);
+	LOG_DEBUG(cout << Temp_One_Read.MatchedD << 
+						"\t" << Temp_One_Read.FragName << 
+						"\t" << Temp_One_Read.MatchedRelPos << 
+						"\t" << Temp_One_Read.MS << 
+						"\t" << Temp_One_Read.InsertSize << 
+						"\t" << Temp_One_Read.Tag << std.endl);
 	NumReadInChr++;
 	Temp_One_Read.MAX_SNP_ERROR =
 		(short) (Temp_One_Read.UnmatchedSeq.size () * Seq_Error_Rate);
@@ -747,9 +761,10 @@ build_record (const bam1_t * mapped_read, const bam1_t * unmapped_read,
 				ReportLength = Temp_One_Read.ReadLength;
 			Temp_One_Read.Used = false;
 			Temp_One_Read.Unique = true;
-			//cout << Temp_One_Read.MatchedD << "\t" << Temp_One_Read.UP_Close.size() << "\t";
+			LOG_DEBUG(cout << Temp_One_Read.MatchedD << "\t" << Temp_One_Read.UP_Close.size() << "\t");
 			CleanUniquePoints (Temp_One_Read.UP_Close);
-			//cout << Temp_One_Read.UP_Close.size() << "\t" << Temp_One_Read.UP_Close[0].Direction << endl;
+			LOG_DEBUG(cout << Temp_One_Read.UP_Close.size() << 
+								"\t" << Temp_One_Read.UP_Close[0].Direction << endl);
 			Temp_One_Read.CloseEndLength =
 				Temp_One_Read.UP_Close[Temp_One_Read.UP_Close.size () - 1].LengthStr;
 
@@ -775,7 +790,7 @@ build_record (const bam1_t * mapped_read, const bam1_t * unmapped_read,
 			//}
 			if (LeftReads->size () % 10000 == 0)
 				{
-					std::cout << LeftReads->size () << std::endl;
+					LOG_INFO(std::cout << LeftReads->size () << std::endl);
 				}
 		}
 	if (NotInVector (Temp_One_Read.Tag, VectorTag))

@@ -8,13 +8,13 @@
 	s;
 
 #ifndef LOG_LEVEL
-#define LOG_LEVEL LOGLEVEL_DEBUG
+#define LOG_LEVEL LOGLEVEL_INFO
 #endif
 
 #if defined(LOG_LEVEL) && (LOG_LEVEL >= LOGLEVEL_ERROR)
-#define LOG_ERR(s) __LOG(s, "error")
+#define LOG_ERROR(s) __LOG(s, "error")
 #else
-#define LOG_ERR(s) // empty
+#define LOG_ERROR(s) // empty
 #endif // LOG_LEVEL
 
 #if defined(LOG_LEVEL) && (LOG_LEVEL >= LOGLEVEL_WARN)
@@ -30,9 +30,9 @@
 #endif // LOG_LEVEL
 
 #if defined(LOG_LEVEL) && (LOG_LEVEL >= LOGLEVEL_DEBUG)
-#define LOG_DBG(s) __LOG(s, "debug")
+#define LOG_DEBUG(s) __LOG(s, "debug")
 #else
-#define LOG_DBG(s) // empty
+#define LOG_DEBUG(s) // empty
 #endif // LOG_LEVEL
 
 #endif // __LOGDEF_H__
