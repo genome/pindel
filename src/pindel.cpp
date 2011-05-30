@@ -37,6 +37,7 @@
 #include "search_short_insertions.h"
 #include "search_tandem_duplications.h"
 #include "search_deletions.h"
+#include "FarEndSearcher.h"
 
 /*v EWL update 0.0.1, April 8th 2011; can use the -c option with specified regions, and produces LI output that can be read by vcfcreator */
 
@@ -165,7 +166,6 @@ unsigned int Distance = 300;
 //cout << "For short insertion: " << MinClose << "\t" << MinFar_I << endl;
 short MinFar_D = 8; //atoi(argv[3]);
 const short MaxDI = 30;
-const short FirstBase = 1;
 
 struct Region {
 	Region() {
@@ -577,7 +577,7 @@ int init(int argc, char *argv[], ControlState& currentState) {
 	std::cout << Pindel_Version_str << std::endl;
 
 	if (NumRead2ReportCutOff == 1)
-		BalanceCutoff = 3000000000;
+		BalanceCutoff = 3000000000u;
 
 	// define all the parameters you have
 	defineParameters(currentState.WhichChr);
@@ -2766,130 +2766,8 @@ void GetFarEnd_BothStrands(const std::string & CurrentChr,
 
 void GetFarEnd(const std::string & CurrentChr, SPLIT_READ & Temp_One_Read,
 		const int &in_start, const int &in_end) {
-	// TODO: Ask Kai whether this can be removed
-	//short ReadLength = Temp_One_Read.UnmatchedSeq.size();
-	//short ReadLengthMinus = ReadLength - 1;
-	//MinClose = short(log((double)(in_end - in_start))/log(4.0) + 0.8) + 3 + MAX_SNP_ERROR;
-	int Start, End;
-	short BP_Start = Temp_One_Read.MinClose;
-	short BP_End = Temp_One_Read.ReadLengthMinus;
-	// TODO: Ask Kai whether this can be removed
-	//char Direction;
-	std::vector<UniquePoint> UP;
-	std::vector<unsigned int> PD_Plus[Temp_One_Read.TOTAL_SNP_ERROR_CHECKED];
-	std::vector<unsigned int> PD_Minus[Temp_One_Read.TOTAL_SNP_ERROR_CHECKED];
-
-	for (int CheckIndex = 0; CheckIndex < Temp_One_Read.TOTAL_SNP_ERROR_CHECKED; CheckIndex++) {
-		PD_Plus[CheckIndex].reserve(in_end - in_start + 1);
-		PD_Minus[CheckIndex].reserve(in_end - in_start + 1);
-	}
-	Start = in_start;
-	End = in_end;
-
-	char CurrentBase = Temp_One_Read.UnmatchedSeq[0];
-	char CurrentBaseRC = Convert2RC4N[(short) CurrentBase];
-	if (Temp_One_Read.TOTAL_SNP_ERROR_CHECKED_Minus) {
-		if (CurrentBase != 'N') {
-			for (int pos = Start; pos < End; pos++) {
-				// TODO: Ask Kai whether this can be removed
-				//if (BreakDancerMask[pos] == BD_char) {
-				if (CurrentChr[pos] == CurrentBase)
-					PD_Plus[0].push_back(pos);
-				else
-					PD_Plus[1].push_back(pos);
-				if (CurrentChr[pos] == CurrentBaseRC)
-					PD_Minus[0].push_back(pos);
-				else
-					PD_Minus[1].push_back(pos);
-				// TODO: Ask Kai whether this can be removed
-				//}
-			}
-		} else { //Match2N[(short)'A'] = 'N';
-			for (int pos = Start; pos < End; pos++) {
-				// TODO: Ask Kai whether this can be removed
-				//if (BreakDancerMask[pos] == BD_char) {
-				if (Match2N[(short) CurrentChr[pos]] == 'N') {
-					PD_Plus[0].push_back(pos);
-					PD_Minus[0].push_back(pos);
-				} else {
-					PD_Plus[1].push_back(pos);
-					PD_Minus[1].push_back(pos);
-				}
-				// TODO: Ask Kai whether this can be removed
-				//}
-			}
-		}
-	} else {
-		if (CurrentBase != 'N') {
-			for (int pos = Start; pos < End; pos++) {
-				// TODO: Ask Kai whether this can be removed
-				//if (BreakDancerMask[pos] == BD_char) {
-				if (CurrentChr[pos] == CurrentBase)
-					PD_Plus[0].push_back(pos);
-				// TODO: Ask Kai whether this can be removed
-				//else PD_Plus[1].push_back(pos);
-				if (CurrentChr[pos] == CurrentBaseRC)
-					PD_Minus[0].push_back(pos);
-				// TODO: Ask Kai whether this can be removed
-				//else PD_Minus[1].push_back(pos);
-				//}
-			}
-		} else { //Match2N[(short)'A'] = 'N';
-			for (int pos = Start; pos < End; pos++) {
-				// TODO: Ask Kai whether this can be removed
-				//if (BreakDancerMask[pos] == BD_char) {
-				if (Match2N[(short) CurrentChr[pos]] == 'N') {
-					PD_Plus[0].push_back(pos);
-					PD_Minus[0].push_back(pos);
-				}
-				// TODO: Ask Kai whether this can be removed
-				//else {
-				//  PD_Plus[1].push_back(pos);
-				//  PD_Minus[1].push_back(pos);
-				//}
-				//}
-			}
-		}
-	}
-	// TODO: Ask Kai whether this can be removed
-	//cout << PD_Plus[0].size() << "\t" << PD_Plus[1].size() << endl;
-	//cout << PD_Minus[0].size() << "\t" << PD_Minus[1].size() << endl;
-	CheckBoth(Temp_One_Read, CurrentChr, Temp_One_Read.UnmatchedSeq, PD_Plus,
-			PD_Minus, BP_Start, BP_End, FirstBase, UP);
-	// TODO: Ask Kai whether this can be removed
-	//cout << UP.size() << endl;
-	if (UP.empty()) {
-	} else if (UP[UP.size() - 1].LengthStr + Temp_One_Read.MinClose
-			>= Temp_One_Read.ReadLength) {
-	} else {
-		for (unsigned UP_index = 0; UP_index < UP.size(); UP_index++) {
-			if (UP[UP_index].Direction == Plus) {
-				// TODO: Ask Kai whether this can be removed
-				//Direction = Minus;
-				if (CheckMismatches(CurrentChr, Temp_One_Read.UnmatchedSeq,
-						UP[UP_index]))
-					Temp_One_Read.UP_Far.push_back(UP[UP_index]);
-			} else {
-				// TODO: Ask Kai whether this can be removed
-				//Direction = '+';
-				if (CheckMismatches(CurrentChr, Temp_One_Read.UnmatchedSeq,
-						UP[UP_index]))
-					Temp_One_Read.UP_Far.push_back(UP[UP_index]);
-			}
-		}
-	}
-
-	UP.clear();
-	// TODO: Ask Kai whether this can be removed
-	//if (Temp_One_Read.UP_Far.size()) {
-	//Before = Temp_One_Read.UP_Far.size();
-	//cout << "1: " << Temp_One_Read.UP_Far.size() << "\tt\t";
-	//CleanUniquePoints(Temp_One_Read.UP_Far);
-	//After = Temp_One_Read.UP_Far.size();
-	//if (Before != After)
-	//   cout << Before << "\t" << After << endl;
-	//}
-	return;
+	FarEndSearcher fes(CurrentChr, Temp_One_Read);
+	fes.Get(in_start, in_end);
 }
 
 void CheckBoth(const SPLIT_READ & OneRead, const std::string & TheInput,
