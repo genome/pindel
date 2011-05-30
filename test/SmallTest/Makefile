@@ -59,10 +59,10 @@ assemble-coverage:
 	$(PINDEL_DBG) -T 1 $(COLOUSINGBD15_ARGS) > cover-colousingbd15.log
 
 clean:
-	-rm -rf $(DST) $(COVDST) $(COVERAGE) gmon.out *.log
+	-rm -rf $(DST) $(COVDST) $(COVERAGE) gmon.out *.log *.order *.sum
 
 gmon.sum:
-	make -C ../../src CXXFLAGS=-pg pindel
+	make -C ../../src CXXFLAGS=-pg clean pindel
 	$(PINDEL) -T $(THREADS) $(SIM1CHRVS20305_ARGS) > cover-sim1chrVs20305.log
 	gprof -b -s $(PINDEL) gmon.out
 	
