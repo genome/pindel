@@ -8,44 +8,26 @@ CPPCHECKS=cppcheck-result-pindel.xml cppcheck-result-reader.xml \
 OBJECTS=pindel.o reader.o reporter.o searcher.o parameter.o ControlState.o refreader.o
 OBJECTS_DEBUG=pindel-debug.o reader-debug.o reporter-debug.o \
 	      searcher-debug.o parameter-debug.o ControlState-debug.o refreader-debug.o
-
+SOURCES=pindel.cpp reader.cpp reporter.cpp searcher.cpp parameter.cpp \
+    refreader.cpp ControlState.cpp
+ 
 all:	pindel pindel-debug
+include $(SOURCES:.cpp=.d)
+include $(SOURCES:.cpp=-debug.d)
 test:	pindel $(CPPCHECKS)
-
-# Dependencies for the normal .o files	
-reader.o: reader.cpp reader.h pindel.h logdef.h refreader.h
-reporter.o: reporter.cpp reporter.h pindel.h
-searcher.o: searcher.cpp searcher.h pindel.h
-pindel.o: pindel.cpp pindel.h \
-	reader.h reporter.h searcher.h parameter.h ControlState.h
-parameter.o: parameter.cpp parameter.h
-ControlState.o: ControlState.cpp ControlState.h
-refreader.o: refreader.cpp refreader.h pindel.h logdef.h
-
-# Dependencies for the debug version of the .o files
-reader-debug.o: reader.cpp reader.h pindel.h logdef.h refreader.h
-reporter-debug.o: reporter.cpp reporter.h pindel.h
-searcher-debug.o: searcher.cpp searcher.h pindel.h
-pindel-debug.o: pindel.cpp pindel.h \
-	reader.h reporter.h searcher.h parameter.h ControlState.h
-parameter-debug.o: parameter.cpp parameter.h
-ControlState-debug.o: ControlState.cpp ControlState.h
-refreader-debug.o: refreader.cpp refreader.h pindel.h logdef.h
 
 # Debug version of pindel
 pindel-debug: $(OBJECTS_DEBUG)
-	$(CXX) $^ -fopenmp -g -pg -fprofile-arcs -ftest-coverage \
-	-lm -lz -L$(SAMTOOLS) -lbam -o $@
+	$(CXX) $(LDFLAGS) $^ -fopenmp -g -pg -fprofile-arcs -ftest-coverage \
+	  -lm -lz -L$(SAMTOOLS) -lbam -o $@
 
 # Normal version of pindel	
 pindel:	$(OBJECTS)
-	$(CXX) $^ -O3 -fopenmp -lm -lz -L$(SAMTOOLS) -lbam -o $@
+	$(CXX) $(LDFLAGS) $^ -O3 -fopenmp -lm -lz -L$(SAMTOOLS) -lbam -o $@
 
 clean:
-	-rm -f pindel pindel-debug
-	-rm -f $(OBJECTS) $(OBJECTS_DEBUG)
-	-rm -f $(CPPCHECKS)
-	-rm -f *.gcov *.gcda *.gcno gmon.out
+	$(RM) pindel pindel-debug $(OBJECTS) $(OBJECTS_DEBUG) $(CPPCHECKS) \
+	    *.gcov *.gcda *.gcno gmon.out *.d
 
 # Pattern rule to create normal .o files	
 %.o: %.cpp
@@ -54,12 +36,26 @@ clean:
 # Pattern rule to create debug version of .o files
 %-debug.o: %.cpp
 	$(CXX) $(CXXFLAGS) -Wall -Werror -g -c -fopenmp -g -pg \
-	-fprofile-arcs -ftest-coverage -I$(SAMTOOLS) $< -o $@
+	  -fprofile-arcs -ftest-coverage -I$(SAMTOOLS) $< -o $@
 
 # Pattern rule to create cppcheck files	
 cppcheck-result-%.xml: %.cpp
 	cppcheck --quiet --enable=all --xml -I$(SAMTOOLS) $(realpath $<) 2> $@
 
+# Pattern rule to create the .d dependency files
+%.d: %.cpp
+	@set -e; rm -f $@; \
+	    $(CXX) -I$(SAMTOOLS) -MM $(CPPFLAGS) $< > $@.$$$$; \
+	    sed 's,\($*\)\.o[ :]*,\1.o $@ : ,g' < $@.$$$$ > $@; \
+	    $(RM) $@.$$$$
+
+# Pattern rule to create the .d dependency files for the debug version
+%-debug.d: %.cpp
+	@set -e; rm -f $@; \
+	    $(CXX) -I$(SAMTOOLS) -MM $(CPPFLAGS) $< > $@.$$$$; \
+	    sed 's,\($*\)\.o[ :]*,\1-debug.o $@ : ,g' < $@.$$$$ > $@; \
+	    $(RM) $@.$$$$
+	
 # Pseudo targets for configuration
 .PHONY: all clean test
 .IGNORE: clean

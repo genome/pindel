@@ -178,9 +178,6 @@ std::string TempLine_DB_Unique;
 std::vector<Region>
 Merge(const std::vector<Region> &AllRegions);
 
-short
-CompareTwoString(const std::string & Str_A, const std::string & Str_B);
-
 //static struct option long_options[] = { { "fasta", required_argument, 0, 'f' },
 //		{ "config-file", required_argument, 0, 'i' }, { "pindel-file",
 //				required_argument, 0, 'p' }, { "output-prefix",
@@ -4690,17 +4687,4 @@ void CleanUniquePoints(std::vector<UniquePoint> &Input_UP) {
 	}
 	Input_UP.clear();
 	Input_UP = TempUP;
-}
-
-short CompareTwoString(const std::string & Str_A, const std::string & Str_B) {
-	short Str_Len = Str_A.size();
-	short CompareResult;
-	for (short i = 0; i < Str_Len; i++) {
-		CompareResult = (short) Str_A[i] - (short) Str_B[i];
-		if (CompareResult < 0)
-			return -1;
-		else if (CompareResult > 0)
-			return 1;
-	}
-	return 0;
 }
