@@ -4,10 +4,16 @@ include ../Makefile.local
 
 CPPCHECKS=cppcheck-result-pindel.xml cppcheck-result-reader.xml \
 	  cppcheck-result-searcher.xml cppcheck-result-reporter.xml \
-	  cppcheck-result-parameter.xml cppcheck-result-ControlState.xml
-OBJECTS=pindel.o reader.o reporter.o searcher.o parameter.o ControlState.o refreader.o
+	  cppcheck-result-parameter.xml cppcheck-result-ControlState.xml \
+	  cppcheck-result-search_deletions.xml cppcheck-result-search_indels.xml \
+	  cppcheck-result-search_tandem_duplications.xml cppcheck-result-search_short_insertions.xml \
+	  cppcheck-result-search_inversions.xml
+OBJECTS=pindel.o reader.o reporter.o searcher.o parameter.o ControlState.o refreader.o \
+	search_inversions.o search_short_insertions.o search_deletions.o search_indels.o search_tandem_duplications.o
 OBJECTS_DEBUG=pindel-debug.o reader-debug.o reporter-debug.o \
-	      searcher-debug.o parameter-debug.o ControlState-debug.o refreader-debug.o
+	      searcher-debug.o parameter-debug.o ControlState-debug.o refreader-debug.o \
+	      search_inversions-debug.o search_short_insertions-debug.o search_tandem_duplications-debug.o \
+	      search_indels-debug.o search_tandem_duplications-debug.o
 SOURCES=pindel.cpp reader.cpp reporter.cpp searcher.cpp parameter.cpp \
     refreader.cpp ControlState.cpp
  

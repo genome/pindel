@@ -21,6 +21,11 @@
 #ifndef REPORTER_H
 #define	REPORTER_H
 
+#include <fstream>
+#include <string>
+#include <vector>
+#include "pindel.h"
+
 void SortOutputD (const unsigned &NumBoxes, const std::string & CurrentChr,
 									std::vector < SPLIT_READ > &AllReads,
 									std::vector < unsigned >Deletions[],
