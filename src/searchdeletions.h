@@ -1,15 +1,15 @@
-#ifndef SEARCHSHORTINSERTIONS_H
-#define SEARCHSHORTINSERTIONS_H
+#ifndef SEARCHDELETIONS_H
+#define SEARCHDELETIONS_H
 
 #include <string>
 #include <vector>
 #include "searchvariant.h"
 #include "ControlState.h"
 
-class SearchShortInsertions : public SearchVariant {
+class SearchDeletions : public SearchVariant {
 public:
-	SearchShortInsertions();
-	~SearchShortInsertions();
+	SearchDeletions();
+	~SearchDeletions();
 
 protected:
 	int Count_Var;
@@ -31,8 +31,8 @@ protected:
 	void outputResults(ControlState& currentState, std::vector<unsigned> Vars[], const unsigned NumBoxes);
 
 private:
-	SearchShortInsertions(const SearchShortInsertions&);
+	SearchDeletions(const SearchDeletions&);
 
 };
 
-#endif // SEARCHSHORTINSERTIONS_H
+#endif // SEARCHDELETIONS_H

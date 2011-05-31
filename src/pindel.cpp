@@ -41,6 +41,7 @@
 #include "search_deletions.h"
 #include "FarEndSearcher.h"
 #include "searchshortinsertions.h"
+#include "searchdeletions.h"
 
 /*v EWL update 0.0.1, April 8th 2011; can use the -c option with specified regions, and produces LI output that can be read by vcfcreator */
 
@@ -1408,7 +1409,9 @@ int main(int argc, char *argv[]) {
 
 			returnValue = searchBreakPoints(currentState);
 
-			returnValue = searchDeletions(currentState, NumBoxes);
+//			returnValue = searchDeletions(currentState, NumBoxes);
+			SearchDeletions searchD;
+			searchD.Search(currentState, NumBoxes);
 
 			returnValue = searchIndels(currentState, NumBoxes);
 
@@ -1423,7 +1426,7 @@ int main(int argc, char *argv[]) {
 			}
 
 			//returnValue = searchShortInsertions(currentState, NumBoxes);
-			SearchShortInsertion searchSI;
+			SearchShortInsertions searchSI;
 			searchSI.Search(currentState, NumBoxes);
 
 			/* 3.2.8 report starts */
