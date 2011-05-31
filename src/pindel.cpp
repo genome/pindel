@@ -34,8 +34,10 @@
 #include "ControlState.h"
 #include "search_indels.h"
 #include "search_inversions.h"
+#include "search_inversions_NT.h"
 #include "search_short_insertions.h"
 #include "search_tandem_duplications.h"
+#include "search_tandem_duplications_NT.h"
 #include "search_deletions.h"
 #include "FarEndSearcher.h"
 
@@ -1411,10 +1413,12 @@ int main(int argc, char *argv[]) {
 
 			if (Analyze_TD) {
 				returnValue = searchTandemDuplications(currentState, NumBoxes);
+				returnValue = searchTandemDuplicationsNT(currentState, NumBoxes);
 			}
 
 			if (Analyze_INV) {
 				returnValue = searchInversions(currentState, NumBoxes);
+				returnValue = searchInversionsNT(currentState, NumBoxes);
 			}
 
 			returnValue = searchShortInsertions(currentState, NumBoxes);

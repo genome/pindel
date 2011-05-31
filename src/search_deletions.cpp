@@ -16,7 +16,7 @@ int searchDeletions(ControlState& currentState, unsigned NumBoxes) {
 				|| currentState.Reads[ReadIndex].UP_Far.empty())
 			continue;
 
-		if (currentState.Reads[ReadIndex].MatchedD == Plus) { // MAX_SNP_ERROR
+		if (currentState.Reads[ReadIndex].MatchedD == Plus) {
 			for (short MAX_SNP_ERROR_index = 0; MAX_SNP_ERROR_index
 					<= currentState.Reads[ReadIndex].MAX_SNP_ERROR; MAX_SNP_ERROR_index++) {
 				for (unsigned int CloseIndex = 0; CloseIndex
@@ -62,35 +62,29 @@ int searchDeletions(ControlState& currentState, unsigned NumBoxes) {
 										= (currentState.Reads[ReadIndex].Right
 												- currentState.Reads[ReadIndex].Left)
 												- currentState.Reads[ReadIndex].ReadLengthMinus;
-								currentState.Reads[ReadIndex].NT_str = "";
-								currentState.Reads[ReadIndex].NT_size = 0;
-								currentState.Reads[ReadIndex].InsertedStr = "";
 								currentState.Reads[ReadIndex].BPLeft
 										= currentState.Reads[ReadIndex].UP_Close[CloseIndex].AbsLoc
 												- SpacerBeforeAfter;
 								currentState.Reads[ReadIndex].BPRight
 										= currentState.Reads[ReadIndex].UP_Far[FarIndex].AbsLoc
 												- SpacerBeforeAfter;
-								{
-									if (readTransgressesBinBoundaries(
+								if (readTransgressesBinBoundaries(
+										currentState.Reads[ReadIndex],
+										currentState.upperBinBorder)) {
+									saveReadForNextCycle(
 											currentState.Reads[ReadIndex],
-											currentState.upperBinBorder)) {
-										saveReadForNextCycle(
-												currentState.Reads[ReadIndex],
-												currentState.FutureReads);
-									} else {
-										if (readInSpecifiedRegion(
-												currentState.Reads[ReadIndex],
-												currentState.startOfRegion,
-												currentState.endOfRegion)) {
-											Deletions[(int) currentState.Reads[ReadIndex]. BPLeft
-													/ BoxSize]. push_back(
-													ReadIndex);
-											currentState.Reads[ReadIndex].Used
-													= true;
-											Count_D++;
-											Count_D_Plus++;
-										}
+											currentState.FutureReads);
+								} else {
+									if (readInSpecifiedRegion(
+											currentState.Reads[ReadIndex],
+											currentState.startOfRegion,
+											currentState.endOfRegion)) {
+										Deletions[(int) currentState.Reads[ReadIndex]. BPLeft
+												/ BoxSize]. push_back(ReadIndex);
+										currentState.Reads[ReadIndex].Used
+												= true;
+										Count_D++;
+										Count_D_Plus++;
 									}
 								}
 							}
@@ -109,8 +103,9 @@ int searchDeletions(ControlState& currentState, unsigned NumBoxes) {
 					if (currentState.Reads[ReadIndex].UP_Close[CloseIndex]. Mismatches
 							> MAX_SNP_ERROR_index)
 						continue;
-					for (unsigned int FarIndex = 0; FarIndex
-							< currentState.Reads[ReadIndex].UP_Far.size(); FarIndex++) {
+					for (int FarIndex =
+							currentState.Reads[ReadIndex].UP_Far.size() - 1; FarIndex
+							>= 0; FarIndex--) {
 						if (currentState.Reads[ReadIndex].Used)
 							break;
 						if (currentState.Reads[ReadIndex].UP_Far[FarIndex]. Mismatches
@@ -145,36 +140,29 @@ int searchDeletions(ControlState& currentState, unsigned NumBoxes) {
 										= (currentState.Reads[ReadIndex].Right
 												- currentState.Reads[ReadIndex].Left)
 												- currentState.Reads[ReadIndex].ReadLengthMinus;
-								currentState.Reads[ReadIndex].NT_str = "";
-								currentState.Reads[ReadIndex].NT_size = 0;
-								currentState.Reads[ReadIndex].InsertedStr = "";
 								currentState.Reads[ReadIndex].BPLeft
 										= currentState.Reads[ReadIndex].UP_Far[FarIndex].AbsLoc
 												- SpacerBeforeAfter;
 								currentState.Reads[ReadIndex].BPRight
 										= currentState.Reads[ReadIndex].UP_Close[CloseIndex].AbsLoc
 												- SpacerBeforeAfter;
-								{
-
-									if (readTransgressesBinBoundaries(
+								if (readTransgressesBinBoundaries(
+										currentState.Reads[ReadIndex],
+										currentState.upperBinBorder)) {
+									saveReadForNextCycle(
 											currentState.Reads[ReadIndex],
-											currentState.upperBinBorder)) {
-										saveReadForNextCycle(
-												currentState.Reads[ReadIndex],
-												currentState.FutureReads);
-									} else {
-										if (readInSpecifiedRegion(
-												currentState.Reads[ReadIndex],
-												currentState.startOfRegion,
-												currentState.endOfRegion)) {
-											Deletions[(int) currentState.Reads[ReadIndex]. BPLeft
-													/ BoxSize]. push_back(
-													ReadIndex);
-											currentState.Reads[ReadIndex].Used
-													= true;
-											Count_D++;
-											Count_D_Minus++;
-										}
+											currentState.FutureReads);
+								} else {
+									if (readInSpecifiedRegion(
+											currentState.Reads[ReadIndex],
+											currentState.startOfRegion,
+											currentState.endOfRegion)) {
+										Deletions[(int) currentState.Reads[ReadIndex]. BPLeft
+												/ BoxSize]. push_back(ReadIndex);
+										currentState.Reads[ReadIndex].Used
+												= true;
+										Count_D++;
+										Count_D_Minus++;
 									}
 								}
 							}

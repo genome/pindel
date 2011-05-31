@@ -28,6 +28,7 @@ int searchIndels(ControlState& currentState, unsigned NumBoxes) {
 								* (currentState.Reads[ReadIndex].UP_Far[FarIndex].LengthStr
 										+ currentState.Reads[ReadIndex].UP_Close[CloseIndex]. LengthStr)))
 			continue;
+
 		if (currentState.Reads[ReadIndex].MatchedD == Plus) {
 			if (currentState.Reads[ReadIndex].UP_Far[FarIndex].Direction
 					== Minus) {
