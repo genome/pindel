@@ -29,7 +29,8 @@ FarEndSearcher::FarEndSearcher(const std::string & CurrentChr_in, SPLIT_READ & T
 }
 
 void FarEndSearcher::Get(const int &in_start, const int &in_end) {
-	int Start, End;
+	int Start = in_start;
+	int End = in_end;
 	short BP_Start = Temp_One_Read->MinClose;
 	short BP_End = Temp_One_Read->ReadLengthMinus;
 	std::vector<UniquePoint> UP;
@@ -37,11 +38,9 @@ void FarEndSearcher::Get(const int &in_start, const int &in_end) {
 	std::vector<unsigned int> PD_Minus[Temp_One_Read->TOTAL_SNP_ERROR_CHECKED];
 
 	for (int CheckIndex = 0; CheckIndex < Temp_One_Read->TOTAL_SNP_ERROR_CHECKED; CheckIndex++) {
-		PD_Plus[CheckIndex].reserve(in_end - in_start + 1);
-		PD_Minus[CheckIndex].reserve(in_end - in_start + 1);
+		PD_Plus[CheckIndex].reserve(End - Start + 1);
+		PD_Minus[CheckIndex].reserve(End - Start + 1);
 	}
-	Start = in_start;
-	End = in_end;
 
 	char CurrentBase = Temp_One_Read->UnmatchedSeq[0];
 	char CurrentBaseRC = Convert2RC4N[(short) CurrentBase];
@@ -90,11 +89,7 @@ void FarEndSearcher::Get(const int &in_start, const int &in_end) {
 	CheckBoth(*Temp_One_Read, *CurrentChr, Temp_One_Read->UnmatchedSeq, PD_Plus, PD_Minus, BP_Start, BP_End, FirstBase,
 					UP);
 
-	if (UP.empty()) {
-		// Empty.
-	} else if (UP[UP.size() - 1].LengthStr + Temp_One_Read->MinClose >= Temp_One_Read->ReadLength) {
-		// Empty.
-	} else {
+	if (!UP.empty() && UP[UP.size() - 1].LengthStr + Temp_One_Read->MinClose < Temp_One_Read->ReadLength) {
 		for (unsigned UP_index = 0; UP_index < UP.size(); UP_index++) {
 			if (CheckMismatches(*CurrentChr, Temp_One_Read->UnmatchedSeq, UP[UP_index]))
 				Temp_One_Read->UP_Far.push_back(UP[UP_index]);
@@ -105,4 +100,5 @@ void FarEndSearcher::Get(const int &in_start, const int &in_end) {
 }
 
 FarEndSearcher::~FarEndSearcher() {
+	// Empty.
 }
