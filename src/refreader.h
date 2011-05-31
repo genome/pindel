@@ -30,6 +30,8 @@ public:
   ~RefReader() ;
 
 private:
+  RefReader(const RefReader&);
+
   std::ifstream* inf_Seq;
   std::string* TheInput;
   void CopyThisSeq() ;
@@ -38,4 +40,3 @@ private:
 
 
 #endif	/* REFREADER_H */
-
