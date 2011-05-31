@@ -297,8 +297,6 @@ void GetRealStart4Deletion(const std::string & TheInput,
 bool ReportEvent(const std::vector<SPLIT_READ> &Deletions,
 		const unsigned int &Pre_S, const unsigned int &Pre_E);
 void GetCloseEnd(const std::string & CurrentChr, SPLIT_READ & Temp_One_Read);
-void GetFarEnd_BothStrands(const std::string & CurrentChr,
-		SPLIT_READ & Temp_One_Read, const short &RangeIndex);
 void GetFarEnd_OtherStrand(const std::string & CurrentChr,
 		SPLIT_READ & Temp_One_Read, const short &RangeIndex);
 void GetFarEnd_SingleStrandDownStream(const std::string & CurrentChr,
