@@ -10,9 +10,6 @@ int searchTandemDuplications(ControlState& currentState, unsigned NumBoxes) {
 
 	std::vector<unsigned> TD[NumBoxes];
 
-	int CloseIndex = 0;
-	int FarIndex = 0;
-
 	std::cout << "Searching tandem duplication events ... " << std::endl;
 	for (unsigned ReadIndex = 0; ReadIndex < currentState.Reads.size(); ReadIndex++) {
 		if (currentState.Reads[ReadIndex].Used
@@ -21,16 +18,16 @@ int searchTandemDuplications(ControlState& currentState, unsigned NumBoxes) {
 		if (currentState.Reads[ReadIndex].MatchedD == Plus) {
 			for (short MAX_SNP_ERROR_index = 0; MAX_SNP_ERROR_index
 					<= currentState.Reads[ReadIndex].MAX_SNP_ERROR; MAX_SNP_ERROR_index++) {
-				for (CloseIndex = 0; CloseIndex
-						< (int) currentState.Reads[ReadIndex].UP_Close.size(); CloseIndex++) {
+				for (unsigned int CloseIndex = 0; CloseIndex
+						< currentState.Reads[ReadIndex].UP_Close.size(); CloseIndex++) {
 					if (currentState.Reads[ReadIndex].Used)
 						break;
 					if (currentState.Reads[ReadIndex].UP_Close[CloseIndex]. Mismatches
 							> MAX_SNP_ERROR_index)
 						continue;
-					for (FarIndex
-							= (int) currentState.Reads[ReadIndex].UP_Far.size()
-									- 1; FarIndex >= 0; FarIndex--) {
+					for (int FarIndex =
+							currentState.Reads[ReadIndex].UP_Far.size() - 1; FarIndex
+							>= 0; FarIndex--) {
 						if (currentState.Reads[ReadIndex].Used)
 							break;
 						if (currentState.Reads[ReadIndex].UP_Far[FarIndex]. Mismatches
@@ -42,12 +39,14 @@ int searchTandemDuplications(ControlState& currentState, unsigned NumBoxes) {
 							continue;
 						if (currentState.Reads[ReadIndex].UP_Far[FarIndex]. Direction
 								== Minus) {
+
 							if (currentState.Reads[ReadIndex].UP_Far[FarIndex]. LengthStr
 									+ currentState.Reads[ReadIndex]. UP_Close[CloseIndex].LengthStr
 									== currentState.Reads[ReadIndex].ReadLength
 									&& currentState.Reads[ReadIndex]. UP_Far[FarIndex].AbsLoc
 											+ currentState.Reads[ReadIndex].ReadLength
 											< currentState.Reads[ReadIndex]. UP_Close[CloseIndex].AbsLoc) {
+
 								currentState.Reads[ReadIndex].Right
 										= currentState.Reads[ReadIndex]. UP_Close[CloseIndex].AbsLoc
 												- currentState.Reads[ReadIndex]. UP_Close[CloseIndex].LengthStr
@@ -64,8 +63,6 @@ int searchTandemDuplications(ControlState& currentState, unsigned NumBoxes) {
 										= currentState.Reads[ReadIndex]. UP_Close[CloseIndex].AbsLoc
 												- currentState.Reads[ReadIndex]. UP_Far[FarIndex].AbsLoc
 												+ 1;
-								currentState.Reads[ReadIndex].NT_str = "";
-								currentState.Reads[ReadIndex].NT_size = 0;
 								currentState.Reads[ReadIndex].InsertedStr = "";
 								currentState.Reads[ReadIndex].BPRight
 										= currentState.Reads[ReadIndex].UP_Close[CloseIndex].AbsLoc
@@ -110,7 +107,7 @@ int searchTandemDuplications(ControlState& currentState, unsigned NumBoxes) {
 					if (currentState.Reads[ReadIndex].UP_Close[CloseIndex]. Mismatches
 							> MAX_SNP_ERROR_index)
 						continue;
-					for (FarIndex = 0; FarIndex
+					for (int FarIndex = 0; FarIndex
 							< (int) currentState.Reads[ReadIndex].UP_Far.size(); FarIndex++) {
 						if (currentState.Reads[ReadIndex].Used)
 							break;
@@ -145,9 +142,6 @@ int searchTandemDuplications(ControlState& currentState, unsigned NumBoxes) {
 										= currentState.Reads[ReadIndex]. UP_Far[FarIndex].AbsLoc
 												- currentState.Reads[ReadIndex]. UP_Close[CloseIndex].AbsLoc
 												+ 1;
-								;
-								currentState.Reads[ReadIndex].NT_str = "";
-								currentState.Reads[ReadIndex].NT_size = 0;
 								currentState.Reads[ReadIndex].InsertedStr = "";
 								currentState.Reads[ReadIndex].BPRight
 										= currentState.Reads[ReadIndex].UP_Far[FarIndex].AbsLoc

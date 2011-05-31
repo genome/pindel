@@ -40,6 +40,7 @@
 #include "search_tandem_duplications_NT.h"
 #include "search_deletions.h"
 #include "FarEndSearcher.h"
+#include "searchshortinsertions.h"
 
 /*v EWL update 0.0.1, April 8th 2011; can use the -c option with specified regions, and produces LI output that can be read by vcfcreator */
 
@@ -1421,7 +1422,9 @@ int main(int argc, char *argv[]) {
 				returnValue = searchInversionsNT(currentState, NumBoxes);
 			}
 
-			returnValue = searchShortInsertions(currentState, NumBoxes);
+			//returnValue = searchShortInsertions(currentState, NumBoxes);
+			SearchShortInsertion searchSI;
+			searchSI.Search(currentState, NumBoxes);
 
 			/* 3.2.8 report starts */
 			int TotalNumReads = currentState.Reads.size();
