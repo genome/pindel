@@ -26,6 +26,8 @@ public:
 	FarEndSearcher(const std::string & CurrentChr_in, SPLIT_READ & Temp_One_Read_in);
     void GetFarEnd(const int &in_start, const int &in_end);
     void GetFarEnd_OtherStrand(const short &RangeIndex);
+    void GetFarEnd_SingleStrandUpStream(const short &RangeIndex);
+    void GetFarEnd_SingleStrandDownStream(const short &RangeIndex);
 	virtual ~FarEndSearcher();
 
 private:

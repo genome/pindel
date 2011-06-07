@@ -194,6 +194,259 @@ void FarEndSearcher::GetFarEnd_General(const int &in_start, const int &in_end, c
 	UP.clear();
 }
 
+void
+FarEndSearcher::GetFarEnd_SingleStrandUpStream(const short &RangeIndex) {
+	Temp_One_Read->ReadLength = Temp_One_Read->UnmatchedSeq.size();
+	Temp_One_Read->ReadLengthMinus = Temp_One_Read->ReadLength - 1;
+	std::string CurrentReadSeq;
+	std::vector<unsigned int> PD[Temp_One_Read->TOTAL_SNP_ERROR_CHECKED];
+	for (int CheckIndex = 0; CheckIndex < Temp_One_Read->TOTAL_SNP_ERROR_CHECKED; CheckIndex++) {
+		PD[CheckIndex].reserve(Temp_One_Read->InsertSize * 2 + DSizeArray[RangeIndex]);
+	}
+	std::vector<UniquePoint> UP;
+	int Start, End;
+	short BP_Start = Temp_One_Read->MinClose + RangeIndex;
+	short BP_End = Temp_One_Read->ReadLengthMinus;
+
+	if (Temp_One_Read->MatchedD == Minus) {
+		CurrentReadSeq = Temp_One_Read->UnmatchedSeq;
+
+		Start = Temp_One_Read->UP_Close[0].AbsLoc + Temp_One_Read->UP_Close[0].LengthStr;
+		End = Start + DSizeArray[RangeIndex] + Temp_One_Read->InsertSize * 2;
+		if (End > (int)CurrentChr->size() - (int)SpacerBeforeAfter)
+			End = (int)CurrentChr->size() - (int)SpacerBeforeAfter;
+
+		char LeftChar = CurrentReadSeq[0];
+		if (Temp_One_Read->TOTAL_SNP_ERROR_CHECKED_Minus) {
+			if (LeftChar != 'N') {
+				for (int pos = Start; pos < End; pos++) {
+					if (CurrentChr->at(pos) == LeftChar) {
+						PD[0].push_back(pos);
+					} else
+						PD[1].push_back(pos);
+				}
+			} else {
+				for (int pos = Start; pos < End; pos++) {
+					if (Match2N[(short) CurrentChr->at(pos)] == 'N') {
+						PD[0].push_back(pos);
+					}
+				}
+			}
+		} else {
+			if (LeftChar != 'N') {
+				for (int pos = Start; pos < End; pos++) {
+					if (CurrentChr->at(pos) == LeftChar) {
+						PD[0].push_back(pos);
+					}
+				}
+			} else {
+				for (int pos = Start; pos < End; pos++) {
+					if (Match2N[(short) CurrentChr->at(pos)] == 'N') {
+						PD[0].push_back(pos);
+					}
+				}
+			}
+		}
+
+		CheckLeft_Far(*Temp_One_Read, *CurrentChr, CurrentReadSeq, PD, BP_Start, BP_End, FirstBase, UP);
+
+		if (!UP.empty() && (UP[UP.size() - 1].LengthStr + Temp_One_Read->MinClose < Temp_One_Read->ReadLength)) {
+			for (unsigned LeftUP_index = 0; LeftUP_index < UP.size(); LeftUP_index++) {
+				if (CheckMismatches(*CurrentChr, Temp_One_Read->UnmatchedSeq, UP[LeftUP_index])) {
+					Temp_One_Read->Used = false;
+					Temp_One_Read->UP_Far.push_back(UP[LeftUP_index]);
+				}
+			}
+		}
+
+		UP.clear();
+	} else if (Temp_One_Read->MatchedD == Plus) {
+		char RightChar;
+		CurrentReadSeq = ReverseComplement(Temp_One_Read->UnmatchedSeq);
+
+		End = Temp_One_Read->UP_Close[0].AbsLoc - Temp_One_Read->UP_Close[0].LengthStr;
+
+		if (End > (int)DSizeArray[RangeIndex] + (int)Temp_One_Read->InsertSize * 2 + (int)SpacerBeforeAfter)
+			Start = End - DSizeArray[RangeIndex] - Temp_One_Read->InsertSize * 2;
+		else
+			Start = SpacerBeforeAfter;
+
+		RightChar = CurrentReadSeq[Temp_One_Read->ReadLengthMinus];
+		if (Temp_One_Read->TOTAL_SNP_ERROR_CHECKED_Minus) {
+			if (RightChar != 'N') {
+				for (int pos = Start; pos < End; pos++) {
+					if (CurrentChr->at(pos) == RightChar) {
+						PD[0].push_back(pos);
+					} else
+						PD[1].push_back(pos);
+				}
+			} else {
+				for (int pos = Start; pos < End; pos++) {
+					if (Match2N[(short) CurrentChr->at(pos)] == 'N') {
+						PD[0].push_back(pos);
+					}
+				}
+			}
+		} else {
+			if (RightChar != 'N') {
+				for (int pos = Start; pos < End; pos++) {
+					if (CurrentChr->at(pos) == RightChar) {
+						PD[0].push_back(pos);
+					}
+				}
+			} else {
+				for (int pos = Start; pos < End; pos++) {
+					if (Match2N[(short) CurrentChr->at(pos)] == 'N') {
+						PD[0].push_back(pos);
+					}
+				}
+			}
+		}
+
+		CheckRight_Far(*Temp_One_Read, *CurrentChr, CurrentReadSeq, PD, BP_Start, BP_End, FirstBase, UP);
+
+		if (!UP.empty() && (UP[UP.size() - 1].LengthStr + Temp_One_Read->MinClose < Temp_One_Read->ReadLength)) {
+			for (unsigned RightUP_index = 0; RightUP_index < UP.size(); RightUP_index++) {
+				if (CheckMismatches(*CurrentChr, Temp_One_Read->UnmatchedSeq, UP[RightUP_index])) {
+					Temp_One_Read->Used = false;
+					Temp_One_Read->UP_Far.push_back(UP[RightUP_index]);
+				}
+			}
+		}
+
+		UP.clear();
+	}
+}
+
+void
+FarEndSearcher::GetFarEnd_SingleStrandDownStream(const short &RangeIndex) {
+	std::string CurrentReadSeq;
+	std::vector<unsigned int> PD[Temp_One_Read->TOTAL_SNP_ERROR_CHECKED];
+	for (int CheckIndex = 0; CheckIndex < Temp_One_Read->TOTAL_SNP_ERROR_CHECKED; CheckIndex++) {
+		PD[CheckIndex].reserve(Temp_One_Read->InsertSize * 2 + DSizeArray[RangeIndex]);
+	}
+	std::vector<UniquePoint> UP;
+	unsigned int Start, End;
+	short BP_Start = Temp_One_Read->MinClose + RangeIndex;
+	short BP_End = Temp_One_Read->ReadLengthMinus;
+
+	if (Temp_One_Read->MatchedD == Minus) {
+		char LeftChar;
+		CurrentReadSeq = Temp_One_Read->UnmatchedSeq;
+
+		End = Temp_One_Read->UP_Close[0].AbsLoc
+				+ Temp_One_Read->UP_Close[0].LengthStr
+				- Temp_One_Read->ReadLength;
+		if (End > SpacerBeforeAfter + Temp_One_Read->InsertSize * 2 + DSizeArray[RangeIndex])
+			Start = End - DSizeArray[RangeIndex] - Temp_One_Read->InsertSize * 2;
+		else
+			Start = SpacerBeforeAfter;
+
+		if (End > CurrentChr->size() - SpacerBeforeAfter)
+			End = CurrentChr->size() - SpacerBeforeAfter;
+
+		LeftChar = CurrentReadSeq[0];
+		if (Temp_One_Read->TOTAL_SNP_ERROR_CHECKED_Minus) {
+			if (LeftChar != 'N') {
+				for (unsigned int pos = Start; pos < End; pos++) {
+					if (CurrentChr->at(pos) == LeftChar) {
+						PD[0].push_back(pos);
+					} else
+						PD[1].push_back(pos);
+				}
+			} else {
+				for (unsigned int pos = Start; pos < End; pos++) {
+					if (Match2N[(short) CurrentChr->at(pos)] == 'N') {
+						PD[0].push_back(pos);
+					}
+				}
+			}
+		} else {
+			if (LeftChar != 'N') {
+				for (unsigned int pos = Start; pos < End; pos++) {
+					if (CurrentChr->at(pos) == LeftChar) {
+						PD[0].push_back(pos);
+					}
+				}
+			} else {
+				for (unsigned int pos = Start; pos < End; pos++) {
+					if (Match2N[(short) CurrentChr->at(pos)] == 'N') {
+						PD[0].push_back(pos);
+					}
+				}
+			}
+		}
+
+		CheckLeft_Far(*Temp_One_Read, *CurrentChr, CurrentReadSeq, PD, BP_Start, BP_End, FirstBase, UP);
+
+		if (!UP.empty() && (UP[UP.size() - 1].LengthStr + Temp_One_Read->MinClose < Temp_One_Read->ReadLength)) {
+			for (unsigned LeftUP_index = 0; LeftUP_index < UP.size(); LeftUP_index++) {
+				if (CheckMismatches(*CurrentChr, Temp_One_Read->UnmatchedSeq, UP[LeftUP_index])) {
+					Temp_One_Read->Used = false;
+					Temp_One_Read->UP_Far.push_back(UP[LeftUP_index]);
+				}
+			}
+		}
+
+		UP.clear();
+	} else if (Temp_One_Read->MatchedD == Plus) {
+		char RightChar;
+		CurrentReadSeq = ReverseComplement(Temp_One_Read->UnmatchedSeq);
+
+		Start = Temp_One_Read->UP_Close[0].AbsLoc
+				- Temp_One_Read->UP_Close[0].LengthStr
+				+ Temp_One_Read->ReadLength;
+		End = Start + DSizeArray[RangeIndex] + Temp_One_Read->InsertSize * 2;
+		if (End > CurrentChr->size() - SpacerBeforeAfter)
+			End = CurrentChr->size() - SpacerBeforeAfter;
+
+		RightChar = CurrentReadSeq[Temp_One_Read->ReadLengthMinus];
+		if (Temp_One_Read->TOTAL_SNP_ERROR_CHECKED_Minus) {
+			if (RightChar != 'N') {
+				for (unsigned int pos = Start; pos < End; pos++) {
+					if (CurrentChr->at(pos) == RightChar) {
+						PD[0].push_back(pos);
+					} else
+						PD[1].push_back(pos);
+				}
+			} else {
+				for (unsigned int pos = Start; pos < End; pos++) {
+					if (Match2N[(short) CurrentChr->at(pos)] == 'N') {
+						PD[0].push_back(pos);
+					}
+				}
+			}
+		} else {
+			if (RightChar != 'N') {
+				for (unsigned int pos = Start; pos < End; pos++) {
+					if (CurrentChr->at(pos) == RightChar) {
+						PD[0].push_back(pos);
+					}
+				}
+			} else {
+				for (unsigned int pos = Start; pos < End; pos++) {
+					if (Match2N[(short) CurrentChr->at(pos)] == 'N') {
+						PD[0].push_back(pos);
+					}
+				}
+			}
+		}
+
+		CheckRight_Far(*Temp_One_Read, *CurrentChr, CurrentReadSeq, PD, BP_Start, BP_End, FirstBase, UP);
+
+		if (!UP.empty() && (UP[UP.size() - 1].LengthStr + Temp_One_Read->MinClose < Temp_One_Read->ReadLength)) {
+			for (unsigned RightUP_index = 0; RightUP_index < UP.size(); RightUP_index++) {
+				if (CheckMismatches(*CurrentChr, Temp_One_Read->UnmatchedSeq, UP[RightUP_index])) {
+					Temp_One_Read->Used = false;
+					Temp_One_Read->UP_Far.push_back(UP[RightUP_index]);
+				}
+			}
+		}
+
+		UP.clear();
+	}
+}
+
 FarEndSearcher::~FarEndSearcher() {
 	// Empty.
 }
