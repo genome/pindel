@@ -24,10 +24,12 @@
 class FarEndSearcher {
 public:
 	FarEndSearcher(const std::string & CurrentChr_in, SPLIT_READ & Temp_One_Read_in);
-    void Get(const int &in_start, const int &in_end);
+    void GetFarEnd(const int &in_start, const int &in_end);
+    void GetFarEnd_OtherStrand(const short &RangeIndex);
 	virtual ~FarEndSearcher();
 
 private:
+	void GetFarEnd_General(const int &in_start, const int &in_end, const bool &UseRangeIndex, const short &RangeIndex);
 	const std::string* CurrentChr;
 	SPLIT_READ* Temp_One_Read;
 };

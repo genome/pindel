@@ -39,6 +39,7 @@ extern char Match2N[256];
 extern char Convert2RC[256];
 extern char Convert2RC4N[256];
 extern char Cap2LowArray[256];
+extern unsigned int DSizeArray[15];
 extern int Min_Perfect_Match_Around_BP;
 extern double MaximumAllowedMismatchRate;
 extern short ReportLength;
