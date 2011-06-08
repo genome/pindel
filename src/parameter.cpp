@@ -28,6 +28,7 @@
 
 // Pindel header files
 #include "parameter.h"
+#include "logdef.h"
 
 /* 'Parameter' stores an individual parameter; it is set by the command line parameters, and used by the program. */
 Parameter::Parameter (const std::string & shortName, const std::string & longName,
@@ -88,17 +89,14 @@ Parameter::makeNiceLine (const std::string & rawDescription) const
 void
 Parameter::describe () const
 {
-	for (int i = 0; i < d_DESCRIBE_WIDTH; i++)
-		{
-			std::cout << " ";
-		}
-	std::cout << d_shortName << "/";
-	std::cout << d_longName << std::endl;
+	LOG_INFO(std::cout << std::string(d_DESCRIBE_WIDTH, ' '));
+	LOG_INFO(std::cout << d_shortName << "/");
+	LOG_INFO(std::cout << d_longName << std::endl);
 
 	//for (int i=0; i<d_DESCRIBE_WIDTH; i++)  { cout << " ";} // TODO: Ask Kai whether this can be removed
-	std::cout << makeNiceLine (d_description);
+	LOG_INFO(std::cout << makeNiceLine (d_description));
 	//if ( d_required ) { cout << " required parameter" ; } // TODO: Ask Kai whether this can be removed
-	std::cout << std::endl << std::endl;
+	LOG_INFO(std::cout << std::endl << std::endl);
 }
 
 /* IntParameter */

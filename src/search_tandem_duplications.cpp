@@ -1,6 +1,27 @@
+/* 
+ * This File is part of Pindel; a program to locate genomic variation. 
+ * https://trac.nbic.nl/pindel/
+ * 
+ *   Copyright (C) 2011 Kai Ye
+ * 
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   This program is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU General Public License for more details.
+ *
+ *   You should have received a copy of the GNU General Public License
+ *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 // Pindel header files
 #include "reporter.h"
 #include "ControlState.h"
+#include "logdef.h"
 
 int searchTandemDuplications(ControlState& currentState, unsigned NumBoxes) {
 
@@ -10,7 +31,7 @@ int searchTandemDuplications(ControlState& currentState, unsigned NumBoxes) {
 
 	std::vector<unsigned> TD[NumBoxes];
 
-	std::cout << "Searching tandem duplication events ... " << std::endl;
+	LOG_INFO(std::cout << "Searching tandem duplication events ... " << std::endl);
 	for (unsigned ReadIndex = 0; ReadIndex < currentState.Reads.size(); ReadIndex++) {
 		if (currentState.Reads[ReadIndex].Used
 				|| currentState.Reads[ReadIndex].UP_Far.empty())
@@ -176,8 +197,8 @@ int searchTandemDuplications(ControlState& currentState, unsigned NumBoxes) {
 			}
 		}
 	}
-	std::cout << "Total: " << Count_TD << "\t+" << Count_TD_Plus << "\t-"
-			<< Count_TD_Minus << std::endl;
+	LOG_INFO(std::cout << "Total: " << Count_TD << "\t+" << Count_TD_Plus << "\t-"
+			<< Count_TD_Minus << std::endl);
 	std::ofstream TDOutf(currentState.TDOutputFilename.c_str(), std::ios::app);
 	SortAndOutputTandemDuplications(NumBoxes, currentState.CurrentChr,
 			currentState.Reads, TD, TDOutf, false);

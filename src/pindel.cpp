@@ -494,8 +494,7 @@ bool checkParameters() {
 				<< std::endl);
 		return false;
 	}
-	// TODO: Ask Kai whether this can be removed
-	//std::cout << "chkP4\n";
+	LOG_DEBUG(std::cout << "chkP4\n");
 	return true;
 }
 

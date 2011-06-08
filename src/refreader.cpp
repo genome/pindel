@@ -22,6 +22,7 @@
 #include <iostream>
 #include <fstream>
 
+// Pindel header files
 #include "pindel.h"
 #include "logdef.h"
 #include "refreader.h"
@@ -54,7 +55,7 @@ RefReader::ReadChr(const std::string & ChrName)
 			LOG_INFO(std::cout << "Processing chromosome " << TempChrName << std::endl);
 			if (!TheInput->empty ())
 				{
-					std::cout << "Skip the rest of chromosomes.\n";
+					LOG_INFO(std::cout << "Skip the rest of chromosomes.\n");
 					break;
 				}
 			if (TempChrName == ChrName)
@@ -68,7 +69,7 @@ RefReader::ReadChr(const std::string & ChrName)
 					SkipThisSeq();
 				}
 		}
-	std::cout << ChrName << "\t" << TheInput->size () << "\t";
+	LOG_INFO(std::cout << ChrName << "\t" << TheInput->size () << "\t");
 	if (!TheInput->empty ())
 		{
 			std::string Spacer = "";
@@ -76,7 +77,7 @@ RefReader::ReadChr(const std::string & ChrName)
 				Spacer += "N";
 			*TheInput = Spacer + *TheInput + Spacer;
 		}
-	std::cout << TheInput->size () << std::endl;
+	LOG_INFO(std::cout << TheInput->size () << std::endl);
 
 	// EWL280311: reset file for to allow re-reading for the next chromosome
 	inf_Seq->clear ();

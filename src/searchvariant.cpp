@@ -1,9 +1,32 @@
+/* 
+ * This File is part of Pindel; a program to locate genomic variation. 
+ * https://trac.nbic.nl/pindel/
+ * 
+ *   Copyright (C) 2011 Kai Ye
+ * 
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   This program is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU General Public License for more details.
+ *
+ *   You should have received a copy of the GNU General Public License
+ *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+// System header files
+#include <string>
+#include <vector>
+
+// Pindel header files
 #include "searchvariant.h"
 #include "pindel.h"
 #include "ControlState.h"
-
-#include <string>
-#include <vector>
+#include "logdef.h"
 
 SearchVariant::SearchVariant() {
 	Count_Var = 0;
@@ -20,7 +43,7 @@ int SearchVariant::Search(ControlState& currentState, const unsigned numBoxes) {
 
 	std::vector<unsigned> Vars[numBoxes];
 
-	std::cout << "Searching " << typeOfVariant << " ... " << std::endl;
+	LOG_INFO(std::cout << "Searching " << typeOfVariant << " ... " << std::endl);
 	for (unsigned ReadIndex = 0; ReadIndex < currentState.Reads.size(); ReadIndex++) {
 		if (currentState.Reads[ReadIndex].Used
 				|| currentState.Reads[ReadIndex].UP_Far.empty())
@@ -211,8 +234,8 @@ int SearchVariant::Search(ControlState& currentState, const unsigned numBoxes) {
 			}
 		}
 	}
-	std::cout << "Total: " << Count_Var << "\t+" << Count_Var_Plus << "\t-"
-			<< Count_Var_Minus << std::endl;
+	LOG_INFO(std::cout << "Total: " << Count_Var << "\t+" << Count_Var_Plus << "\t-"
+			<< Count_Var_Minus << std::endl);
 
 //	std::ofstream SIoutputfile(currentState.SIOutputFilename.c_str(),
 //			std::ios::app);
