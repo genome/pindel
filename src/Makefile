@@ -9,8 +9,8 @@ SOURCES=pindel.cpp reader.cpp reporter.cpp searcher.cpp parameter.cpp \
     outputsorter.cpp FarEndSearcher.cpp searchvariant.cpp searchshortinsertions.cpp searchdeletions.cpp
  
 all:	pindel pindel-debug
-include $(SOURCES:.cpp=.d)
-include $(SOURCES:.cpp=-debug.d)
+-include $(SOURCES:.cpp=.d)
+-include $(SOURCES:.cpp=-debug.d)
 test:	pindel $(addprefix cppcheck-result-,$(SOURCES:.cpp=.xml))
 
 # Debug version of pindel

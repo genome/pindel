@@ -1,6 +1,6 @@
 # Main make file for the pindel project
 # Include the local configuration
-include Makefile.local
+-include Makefile.local
 
 default: pindel
 
