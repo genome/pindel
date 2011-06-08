@@ -42,6 +42,7 @@
 #include "FarEndSearcher.h"
 #include "searchshortinsertions.h"
 #include "searchdeletions.h"
+#include "logdef.h"
 
 /*v EWL update 0.0.1, April 8th 2011; can use the -c option with specified regions, and produces LI output that can be read by vcfcreator */
 
@@ -391,7 +392,7 @@ void readParameters(int argc, char *argv[]) {
 		//find argument in parameterlist
 		int parameterIndex = findParameter(currentArgument);
 		if (parameterIndex == -1) {
-			std::cout << "unknown argument: " << currentArgument << std::endl;
+			LOG_ERROR(std::cout << "unknown argument: " << currentArgument << std::endl);
 			return;
 		}
 
@@ -408,12 +409,12 @@ void readParameters(int argc, char *argv[]) {
 		} else { // argument needs a parameter
 			argumentIndex++; // move on to next argument in the list
 			if (argumentIndex >= argc) {
-				std::cout << "argument of " << currentArgument << " lacking.\n";
+				LOG_ERROR(std::cout << "argument of " << currentArgument << " lacking.\n");
 				return;
 			}
 			if (argv[argumentIndex][0] == '-') {
-				std::cout << "argument of " << currentArgument
-						<< " seems erroneous.\n";
+				LOG_ERROR(std::cout << "argument of " << currentArgument
+						<< " seems erroneous.\n");
 				return;
 			}
 			// but if everything is allright,
@@ -436,19 +437,19 @@ void printHelp() {
 	// TODO: Ask Kai whether this can be removed
 	//cout << "Please specify input, either bam configure file and/or pindel input format" << endl;
 	//cout.width(0);
-	std::cout << std::endl
+	LOG_INFO(std::cout << std::endl
 			<< "Program:   pindel (detection of indels and structural variations)"
-			<< std::endl;
-	std::cout << "Version:   0.2.2" << std::endl;
-	std::cout << "Contact:   Kai Ye <k.ye@lumc.nl>" << std::endl << std::endl;
+			<< std::endl);
+	LOG_INFO(std::cout << "Version:   0.2.2" << std::endl);
+	LOG_INFO(std::cout << "Contact:   Kai Ye <k.ye@lumc.nl>" << std::endl << std::endl);
 
-	std::cout << "Usage:     pindel -f <reference.fa> -p <pindel_input>"
-			<< std::endl;
-	std::cout << "           [and/or -i bam_configuration_file]" << std::endl;
-	std::cout << "           -c <chromosome_name> -o <prefix_for_output_file>"
-			<< std::endl << std::endl;
+	LOG_INFO(std::cout << "Usage:     pindel -f <reference.fa> -p <pindel_input>"
+			<< std::endl);
+	LOG_INFO(std::cout << "           [and/or -i bam_configuration_file]" << std::endl);
+	LOG_INFO(std::cout << "           -c <chromosome_name> -o <prefix_for_output_file>"
+			<< std::endl << std::endl);
 
-	std::cout << "Required parameters:" << std::endl;
+	LOG_INFO(std::cout << "Required parameters:" << std::endl);
 	// TODO: Ask Kai whether this can be removed
 	//parameters[1]->describe();
 	for (unsigned int i = 0; i < parameters.size(); i++) {
@@ -456,7 +457,7 @@ void printHelp() {
 			parameters[i]->describe();
 		}
 	}
-	std::cout << "\nOptional parameters:" << std::endl;
+	LOG_INFO(std::cout << "\nOptional parameters:" << std::endl);
 
 	for (unsigned int parameterIndex = 0; parameterIndex < parameters.size(); parameterIndex++) {
 		if (!parameters[parameterIndex]->isRequired() && !isReadsFileParam(
@@ -476,11 +477,11 @@ bool checkParameters() {
 	for (unsigned int parameterIndex = 0; parameterIndex < parameters.size(); parameterIndex++) {
 		if (parameters[parameterIndex]->isRequired()
 				&& !parameters[parameterIndex]->isSet()) {
-			std::cout << "Required parameter "
+			LOG_ERROR(std::cout << "Required parameter "
 					<< parameters[parameterIndex]-> getShortName() << "/"
 					<< parameters[parameterIndex]-> getLongName() << " "
 					<< parameters[parameterIndex]-> getDescription()
-					<< " needs to be set." << std::endl;
+					<< " needs to be set." << std::endl);
 			return false;
 		} //if
 	}
@@ -488,13 +489,13 @@ bool checkParameters() {
 	bool hasBam = parameters[findParameter("-i")]->isSet();
 	bool hasPin = parameters[findParameter("-p")]->isSet();
 	if (!hasBam && !hasPin) {
-		std::cout
+		LOG_ERROR(std::cout
 				<< "Bam and/or pindel input file required, use -p and/or -i to designate input file(s)."
-				<< std::endl;
+				<< std::endl);
 		return false;
 	}
 	// TODO: Ask Kai whether this can be removed
-	//cout << "chkP4\n";
+	//std::cout << "chkP4\n";
 	return true;
 }
 
@@ -578,7 +579,7 @@ bool isFinishedBAM(const int upperBinBorder, // in: last position analyzed so fa
 }
 
 int init(int argc, char *argv[], ControlState& currentState) {
-	std::cout << Pindel_Version_str << std::endl;
+	LOG_INFO(std::cout << Pindel_Version_str << std::endl);
 
 	if (NumRead2ReportCutOff == 1)
 		BalanceCutoff = 3000000000u;
@@ -598,12 +599,12 @@ int init(int argc, char *argv[], ControlState& currentState) {
 	if (!checkParameters())
 		exit ( EXIT_FAILURE);
 	if (FLOAT_WINDOW_SIZE > 5000.0) {
-		std::cout << "Window size " << FLOAT_WINDOW_SIZE
-				<< " million bases is too large" << std::endl;
+		LOG_ERROR(std::cout << "Window size " << FLOAT_WINDOW_SIZE
+				<< " million bases is too large" << std::endl);
 		return 1;
 	} else if (FLOAT_WINDOW_SIZE > 500.0) {
-		std::cout << "Window size " << FLOAT_WINDOW_SIZE
-				<< " million bases is rather large" << std::endl;
+		LOG_ERROR(std::cout << "Window size " << FLOAT_WINDOW_SIZE
+				<< " million bases is rather large" << std::endl);
 	}
 	WINDOW_SIZE = 1000000 * FLOAT_WINDOW_SIZE;
 
@@ -640,9 +641,9 @@ int init(int argc, char *argv[], ControlState& currentState) {
 	omp_set_num_threads(par.numThreads);
 
 	if (MaxRangeIndex > 9) {
-		std::cout
+		LOG_ERROR(std::cout
 				<< "Maximal range index (-x) exceeds the allowed value (9) - resetting to 9."
-				<< std::endl;
+				<< std::endl);
 		MaxRangeIndex = 9;
 	}
 
@@ -665,8 +666,8 @@ int init(int argc, char *argv[], ControlState& currentState) {
 	currentState.SIOutputFilename = currentState.OutputFolder + "_SI"; // output file name
 	std::ofstream SIoutputfile_test(currentState.SIOutputFilename.c_str());
 	if (!SIoutputfile_test) {
-		std::cout << "Sorry, cannot write to the file: "
-				<< currentState.SIOutputFilename << std::endl;
+		LOG_ERROR(std::cout << "Sorry, cannot write to the file: "
+				<< currentState.SIOutputFilename << std::endl);
 		return 1;
 	}
 	SIoutputfile_test.close();
@@ -675,8 +676,8 @@ int init(int argc, char *argv[], ControlState& currentState) {
 	std::ofstream
 			DeletionOutf_test(currentState.DeletionOutputFilename.c_str());
 	if (!DeletionOutf_test) {
-		std::cout << "Sorry, cannot write to the file: "
-				<< currentState.DeletionOutputFilename << std::endl;
+		LOG_ERROR(std::cout << "Sorry, cannot write to the file: "
+				<< currentState.DeletionOutputFilename << std::endl);
 		return 1;
 	}
 	DeletionOutf_test.close();
@@ -684,8 +685,8 @@ int init(int argc, char *argv[], ControlState& currentState) {
 	currentState.TDOutputFilename = currentState.OutputFolder + "_TD";
 	std::ofstream TDOutf_test(currentState.TDOutputFilename.c_str());
 	if (!TDOutf_test) {
-		std::cout << "Sorry, cannot write to the file: "
-				<< currentState.TDOutputFilename << std::endl;
+		LOG_ERROR(std::cout << "Sorry, cannot write to the file: "
+				<< currentState.TDOutputFilename << std::endl);
 		return 1;
 	}
 	TDOutf_test.close();
@@ -694,8 +695,8 @@ int init(int argc, char *argv[], ControlState& currentState) {
 	std::ofstream InversionOutf_test(
 			currentState.InversionOutputFilename.c_str());
 	if (!InversionOutf_test) {
-		std::cout << "Sorry, cannot write to the file: "
-				<< currentState.InversionOutputFilename << std::endl;
+		LOG_ERROR(std::cout << "Sorry, cannot write to the file: "
+				<< currentState.InversionOutputFilename << std::endl);
 		return 1;
 	}
 	InversionOutf_test.close();
@@ -705,8 +706,8 @@ int init(int argc, char *argv[], ControlState& currentState) {
 	std::ofstream LargeInsertionOutf_test(
 			currentState.LargeInsertionOutputFilename.c_str());
 	if (!LargeInsertionOutf_test) {
-		std::cout << "Sorry, cannot write to the file: "
-				<< currentState.LargeInsertionOutputFilename << std::endl;
+		LOG_ERROR(std::cout << "Sorry, cannot write to the file: "
+				<< currentState.LargeInsertionOutputFilename << std::endl);
 		return 1;
 	}
 	LargeInsertionOutf_test.close();
@@ -714,8 +715,8 @@ int init(int argc, char *argv[], ControlState& currentState) {
 	currentState.RestOutputFilename = currentState.OutputFolder + "_BP";
 	std::ofstream RestOutf_test(currentState.RestOutputFilename.c_str());
 	if (!RestOutf_test) {
-		std::cout << "Sorry, cannot write to the file: "
-				<< currentState.RestOutputFilename << std::endl;
+		LOG_ERROR(std::cout << "Sorry, cannot write to the file: "
+				<< currentState.RestOutputFilename << std::endl);
 		return 1;
 	}
 	RestOutf_test.close();
@@ -813,16 +814,16 @@ int init(int argc, char *argv[], ControlState& currentState) {
 			currentState.All_BD_events_WG.push_back(Temp_BD_event);
 		}
 	}
-	std::cout << "BreakDancer events: " << currentState.All_BD_events_WG.size()
-			- 1 << std::endl;
+	LOG_INFO(std::cout << "BreakDancer events: " << currentState.All_BD_events_WG.size()
+			- 1 << std::endl);
 
 	std::vector < std::string > chromosomes;
 
 	char FirstCharOfFasta;
 	currentState.inf_Seq >> FirstCharOfFasta;
 	if (FirstCharOfFasta != '>') {
-		std::cout << "The reference genome must be in fasta format!"
-				<< std::endl;
+		LOG_ERROR(std::cout << "The reference genome must be in fasta format!"
+				<< std::endl);
 		return 1;
 	}
 
@@ -835,11 +836,11 @@ int init(int argc, char *argv[], ControlState& currentState) {
 	parseRegion(currentState.WhichChr, currentState.startOfRegion,
 			currentState.endOfRegion, chrName, correctParse);
 	if (!correctParse) {
-		std::cout << "I cannot parse the region '" << currentState.WhichChr
+		LOG_ERROR(std::cout << "I cannot parse the region '" << currentState.WhichChr
 				<< "'. Please give region in the format -c ALL, -c <chromosome_name> "
 					"(for example -c 20) or -c <chromosome_name>:<start_position>[-<end_position>], for example -c II:1,000 or "
 					"-c II:1,000-50,000. If an end position is specified, it must be larger than the start position."
-				<< std::endl;
+				<< std::endl);
 		exit ( EXIT_FAILURE);
 	}
 	currentState.WhichChr = chrName; // removes the region from the 'pure' chromosome name
@@ -862,7 +863,7 @@ int init(int argc, char *argv[], ControlState& currentState) {
 	}
 
 	if (currentState.WhichChr.compare("ALL") == 0) {
-		std::cout << "Looping over ALL chromosomes." << std::endl;
+		LOG_INFO(std::cout << "Looping over ALL chromosomes." << std::endl);
 		currentState.loopOverAllChromosomes = true;
 	}
 	return EXIT_SUCCESS;
@@ -882,9 +883,9 @@ int searchBreakPoints(ControlState& currentState) {
 	}
 
 	if (currentState.All_BD_events.size() > 1) {
-		std::cout
+		LOG_INFO(std::cout
 				<< "Searching additional breakpoints by adding BreakDancer results"
-				<< std::endl;
+				<< std::endl);
 		int *BD_INDEX = new int[currentState.CurrentChr.size()];
 		for (unsigned i = 0; i < currentState.CurrentChr.size(); i++)
 			BD_INDEX[i] = 0;
@@ -904,7 +905,7 @@ int searchBreakPoints(ControlState& currentState) {
 			else if (BD_INDEX[i] < 0)
 				BD_Minus++;
 		}
-		std::cout << BD_Plus << "\t" << BD_Minus << std::endl;
+		LOG_INFO(std::cout << BD_Plus << "\t" << BD_Minus << std::endl);
 
 		currentState.CountFarEnd = 0;
 		currentState.CountFarEndMinus = 0;
@@ -974,15 +975,15 @@ int searchBreakPoints(ControlState& currentState) {
 				}
 			}
 		}
-		std::cout << "\tNumber of reads with far end mapped: "
+		LOG_INFO(std::cout << "\tNumber of reads with far end mapped: "
 				<< currentState.CountFarEnd << "\t" << "Far+: "
 				<< currentState.CountFarEndPlus << "\tFar-: "
-				<< currentState.CountFarEndMinus << std::endl << std::endl; //endl;
+				<< currentState.CountFarEndMinus << std::endl << std::endl); //endl;
 		delete[] BD_INDEX;
 	}
 
 	/* 3.2.2.2 search breakpoints of deletion */
-	std::cout << "Searching breakpoints of deletion" << std::endl;
+	LOG_INFO(std::cout << "Searching breakpoints of deletion" << std::endl);
 	for (short RangeIndex = 1; RangeIndex < MaxRangeIndex; RangeIndex++) {
 		currentState.CountFarEnd = 0;
 		currentState.CountFarEndMinus = 0;
@@ -1032,14 +1033,14 @@ int searchBreakPoints(ControlState& currentState) {
 			}
 		} // #pragma omp parallel default(shared)
 
-		std::cout << RangeIndex << "\tNumber of reads with far end mapped: "
+		LOG_INFO(std::cout << RangeIndex << "\tNumber of reads with far end mapped: "
 				<< currentState.CountFarEnd << "\t" << "Far+: "
 				<< currentState.CountFarEndPlus << "\tFar-: "
-				<< currentState.CountFarEndMinus << std::endl;
+				<< currentState.CountFarEndMinus << std::endl);
 	}
 
 	/* 3.2.2.3 search breakpoints of short insertion */
-	std::cout << "Searching breakpoints of short insertions" << std::endl;
+	LOG_INFO(std::cout << "Searching breakpoints of short insertions" << std::endl);
 	for (short RangeIndex = 1; RangeIndex < 2; RangeIndex++) {
 		currentState.CountFarEnd = 0;
 		currentState.CountFarEndMinus = 0;
@@ -1070,17 +1071,17 @@ int searchBreakPoints(ControlState& currentState) {
 			}
 		}
 
-		std::cout << RangeIndex << "\tNumber of reads with far end mapped: "
+		LOG_INFO(std::cout << RangeIndex << "\tNumber of reads with far end mapped: "
 				<< currentState.CountFarEnd << "\t" << "Far+: "
 				<< currentState.CountFarEndPlus << "\tFar-: "
-				<< currentState.CountFarEndMinus << std::endl;
+				<< currentState.CountFarEndMinus << std::endl);
 	}
 
 	/* 3.2.2.4 search breakpoints of tandem duplication */
 	if (Analyze_TD) {
 
-		std::cout << "Searching breakpoints of tandem duplications"
-				<< std::endl;
+		LOG_INFO(std::cout << "Searching breakpoints of tandem duplications"
+				<< std::endl);
 		for (short RangeIndex = 1; RangeIndex < MaxRangeIndex; RangeIndex++) {
 
 			currentState.CountFarEnd = 0;
@@ -1144,18 +1145,18 @@ int searchBreakPoints(ControlState& currentState) {
 					}
 				}
 			}
-			std::cout << RangeIndex
+			LOG_INFO(std::cout << RangeIndex
 					<< "\tNumber of reads with far end mapped: "
 					<< currentState.CountFarEnd << "\t" << "Far+: "
 					<< currentState.CountFarEndPlus << "\tFar-: "
-					<< currentState.CountFarEndMinus << std::endl;
+					<< currentState.CountFarEndMinus << std::endl);
 		}
 	} // if (Analyze_TD)
 
 	/* 3.2.2.5 search breakpoints of inversion */
 
 	if (Analyze_INV) {
-		std::cout << "Searching breakpoints of inversion" << std::endl;
+		LOG_INFO(std::cout << "Searching breakpoints of inversion" << std::endl);
 		for (short RangeIndex = 1; RangeIndex < MaxRangeIndex; RangeIndex++) {
 
 			currentState.CountFarEnd = 0;
@@ -1208,18 +1209,18 @@ int searchBreakPoints(ControlState& currentState) {
 					}
 				}
 			}
-			std::cout << RangeIndex
+			LOG_INFO(std::cout << RangeIndex
 					<< "\tNumber of reads with far end mapped: "
 					<< currentState.CountFarEnd << "\t" << "Far+: "
 					<< currentState.CountFarEndPlus << "\tFar-: "
-					<< currentState.CountFarEndMinus << std::endl;
+					<< currentState.CountFarEndMinus << std::endl);
 		}
 	} // if (Analyze_INV)
 
 	/* 3.2.2.6 compare backup with current value */
 	// TODO: check with Kai what is the use of following
 	// compare backup with current value
-	std::cout << "revisit all breakpoints identified ...";
+	LOG_INFO(std::cout << "revisit all breakpoints identified ...");
 	for (unsigned ReadIndex = 0; ReadIndex < currentState.Reads.size(); ReadIndex++) {
 		if (currentState.Reads[ReadIndex].UP_Far.empty()) {
 			if (!currentState.Reads[ReadIndex].UP_Far_backup.empty()) {
@@ -1236,7 +1237,7 @@ int searchBreakPoints(ControlState& currentState) {
 			}
 		}
 	}
-	std::cout << " done." << std::endl;
+	LOG_INFO(std::cout << " done." << std::endl);
 
 	return EXIT_SUCCESS;
 }
@@ -1274,8 +1275,8 @@ int main(int argc, char *argv[]) {
 			>> currentState.CurrentChrName && !currentState.inf_Seq.eof()) {
 
 		/* 3.1 preparation starts */
-		std::cout << "Processing chromosome: " << currentState.CurrentChrName
-				<< std::endl;
+		LOG_INFO(std::cout << "Processing chromosome: " << currentState.CurrentChrName
+				<< std::endl);
 
 		//TODO: check with Kai what's the use of this line.
 		std::getline(currentState.inf_Seq, emptystr);
@@ -1288,20 +1289,20 @@ int main(int argc, char *argv[]) {
 			currentState.SpecifiedChrVisited = true;
 		} else { // not build up sequence
 			GetOneChrSeq(currentState.inf_Seq, currentState.CurrentChr, false);
-			std::cout << "Skipping chromosome: " << currentState.CurrentChrName
-					<< std::endl;
+			LOG_INFO(std::cout << "Skipping chromosome: " << currentState.CurrentChrName
+					<< std::endl);
 			continue;
 		}
 
 		CONS_Chr_Size = currentState.CurrentChr.size() - 2 * SpacerBeforeAfter;
-		std::cout << "Chromosome Size: " << CONS_Chr_Size << std::endl;
+		LOG_INFO(std::cout << "Chromosome Size: " << CONS_Chr_Size << std::endl);
 		CurrentChrMask.resize(currentState.CurrentChr.size());
 		for (unsigned int i = 0; i < currentState.CurrentChr.size(); i++) {
 			CurrentChrMask[i] = 'N';
 		}
 		unsigned NumBoxes = (unsigned) (currentState.CurrentChr.size()
 				/ BoxSize) + 1; // box size
-		std::cout << NumBoxes << "\t" << BoxSize << std::endl;
+		LOG_INFO(std::cout << NumBoxes << "\t" << BoxSize << std::endl);
 
 		/* 3.1 preparation ends */
 
@@ -1334,13 +1335,13 @@ int main(int argc, char *argv[]) {
 			}
 
 			if (displayedStartOfRegion < displayedEndOfRegion) {
-				std::cout << "Looking at chromosome " << currentState.WhichChr
+				LOG_INFO(std::cout << "Looking at chromosome " << currentState.WhichChr
 						<< " bases " << displayedStartOfRegion << " to "
-						<< displayedEndOfRegion << "." << std::endl;
+						<< displayedEndOfRegion << "." << std::endl);
 			} else {
-				std::cout
+				LOG_INFO(std::cout
 						<< "Checking out reads near the borders of the specified regions for extra evidence."
-						<< std::endl;
+						<< std::endl);
 			}
 
 			if (Time_Load_S == 0)
@@ -1360,18 +1361,18 @@ int main(int argc, char *argv[]) {
 							currentState.lowerBinBorder,
 							currentState.upperBinBorder);
 					if (ReturnFromReadingReads == 0) {
-						std::cout << "Bam read failed: "
+						LOG_ERROR(std::cout << "Bam read failed: "
 								<< currentState.bams_to_parse[i].BamFile
-								<< std::endl;
+								<< std::endl);
 						return 1;
 					} else if (currentState.Reads.size() == 0) {
-						std::cout << "No currentState.Reads for "
+						LOG_ERROR(std::cout << "No currentState.Reads for "
 								<< currentState.WhichChr << " found in "
 								<< currentState.bams_to_parse[i].BamFile
-								<< std::endl;
+								<< std::endl);
 					}
-					std::cout << "BAM file index\t" << i << "\t"
-							<< currentState.Reads.size() << std::endl;
+					LOG_INFO(std::cout << "BAM file index\t" << i << "\t"
+							<< currentState.Reads.size() << std::endl);
 				}
 
 			}
@@ -1383,19 +1384,20 @@ int main(int argc, char *argv[]) {
 						currentState.lowerBinBorder,
 						currentState.upperBinBorder);
 				if (ReturnFromReadingReads == 1) {
-					std::cout << "malformed record detected!" << std::endl;
+					LOG_ERROR(std::cout << "malformed record detected!" << std::endl);
 					return 1;
 				} else if (currentState.Reads.size() == 0) {
-					std::cout << "No reads found!?" << std::endl;
+					LOG_ERROR(std::cout << "No reads found!?" << std::endl);
 				}
 			}
 			Time_Mine_E = time(NULL);
 
-			if (currentState.Reads.size())
-				std::cout << "There are " << currentState.Reads. size()
-						<< " reads for this chromosome." << std::endl;
+			if (currentState.Reads.size()) {
+				LOG_INFO(std::cout << "There are " << currentState.Reads. size()
+						<< " reads for this chromosome." << std::endl);
+			}
 			else {
-				std::cout << "There are no reads for this bin." << std::endl;
+				LOG_INFO(std::cout << "There are no reads for this bin." << std::endl);
 				continue;
 			}
 
@@ -1508,12 +1510,12 @@ int main(int argc, char *argv[]) {
 					Count_Used++;
 			}
 
-			std::cout << "Total: " << TotalNumReads << ";\tClose_end_found "
+			LOG_INFO(std::cout << "Total: " << TotalNumReads << ";\tClose_end_found "
 					<< TotalNumReads << ";\tFar_end_found " << Count_Far
 					<< ";\tUsed\t" << Count_Used << "." << std::endl
-					<< std::endl;
-			std::cout << "For LI and BP: " << Count_Unused << std::endl
-					<< std::endl;
+					<< std::endl);
+			LOG_INFO(std::cout << "For LI and BP: " << Count_Unused << std::endl
+					<< std::endl);
 
 			if (Analyze_LI) {
 				time_t Time_LI_S, Time_LI_E;
@@ -1525,10 +1527,10 @@ int main(int argc, char *argv[]) {
 						LargeInsertionOutf);
 				LargeInsertionOutf.close();
 				Time_LI_E = time(NULL);
-				std::cout << "Mining, Sorting and output LI results: "
+				LOG_INFO(std::cout << "Mining, Sorting and output LI results: "
 						<< (unsigned
 						int) difftime(Time_LI_E, Time_LI_S) << " seconds."
-						<< std::endl << std::endl;
+						<< std::endl << std::endl);
 				;
 			}
 
@@ -1543,10 +1545,10 @@ int main(int argc, char *argv[]) {
 						BP_Reads, RestOutf);
 				RestOutf.close();
 				Time_BP_E = time(NULL);
-				std::cout << "Mining, Sorting and output BP results: "
+				LOG_INFO(std::cout << "Mining, Sorting and output BP results: "
 						<< (unsigned
 						int) difftime(Time_BP_E, Time_BP_S) << " seconds."
-						<< std::endl << std::endl;
+						<< std::endl << std::endl);
 			}
 
 			Time_Sort_E = time(NULL);
@@ -1554,8 +1556,8 @@ int main(int argc, char *argv[]) {
 			AllLoadings += (unsigned int) difftime(Time_Load_E, Time_Load_S);
 			AllSortReport += (unsigned int) difftime(Time_Sort_E, Time_Load_E);
 			currentState.Reads.clear();
-			std::cout << "I have " << currentState.FutureReads. size()
-					<< " reads saved for the next cycle." << std::endl;
+			LOG_INFO(std::cout << "I have " << currentState.FutureReads. size()
+					<< " reads saved for the next cycle." << std::endl);
 			currentState.Reads.swap(currentState.FutureReads);
 			Time_Load_S = 0;
 			/* 3.2.8 report ends */
@@ -1571,10 +1573,10 @@ int main(int argc, char *argv[]) {
 
 	} // while ( loopOverAllChromosomes && chromosomeIndex < chromosomes.size() );
 
-	std::cout << "Loading genome sequences and reads: " << AllLoadings
-			<< " seconds." << std::endl;
-	std::cout << "Mining, Sorting and output results: " << AllSortReport
-			<< " seconds." << std::endl;
+	LOG_INFO(std::cout << "Loading genome sequences and reads: " << AllLoadings
+			<< " seconds." << std::endl);
+	LOG_INFO(std::cout << "Mining, Sorting and output results: " << AllSortReport
+			<< " seconds." << std::endl);
 	return 0;
 } //main
 
