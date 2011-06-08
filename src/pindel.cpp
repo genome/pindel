@@ -376,15 +376,14 @@ int findParameter(std::string name) {
 			return parameterCounter;
 		}
 	}
-	// TODO: Ask Kai whether this can be removed
-	//cout << "Result of FindParameter is -1\n";
+	LOG_DEBUG(cout << "Result of FindParameter is -1\n");
 	return -1;
 }
 
 /* 'readParameters' reads the parameters as entered in the command line. */
 void readParameters(int argc, char *argv[]) {
 	// TODO: Ask Kai whether this can be removed
-	//for (int argumentIndex=1; argumentIndex<argc; argumentIndex++ ) { cout << argumentIndex  << ". " << argv[argumentIndex] << endl; }
+	//for (int argumentIndex=1; argumentIndex<argc; argumentIndex++ ) { std::cout << argumentIndex  << ". " << argv[argumentIndex] << endl; }
 
 	for (int argumentIndex = 1; argumentIndex < argc; argumentIndex++) {
 		std::string currentArgument = argv[argumentIndex];
@@ -418,8 +417,7 @@ void readParameters(int argc, char *argv[]) {
 				return;
 			}
 			// but if everything is allright,
-			// TODO: Ask Kai whether this can be removed
-			//cout << "Giving " << currentArgument << " the value " << argv[ argumentIndex ] << endl;
+			LOG_DEBUG(std::cout << "Giving " << currentArgument << " the value " << argv[ argumentIndex ] << std::endl);
 			parameters[parameterIndex]->setValue(
 					std::string(argv[argumentIndex]));
 		}
@@ -535,8 +533,8 @@ void parseRegion(const std::string & region, // in: region
 			endOfRegion = atoi(secondPositionStr.c_str());
 		}
 		startOfRegion = atoi(coordinates.c_str());
-		// TODO: Ask Kai whether this can be removed
-		//cout << "sor: " << startOfRegion << "eor: " << endOfRegion << endl;
+
+		LOG_DEBUG(std::cout << "sor: " << startOfRegion << "eor: " << endOfRegion << std::endl);
 		if (startOfRegion < 0 || (endOfRegion < startOfRegion && endOfRegion
 				!= -1)) {
 			correctParse = false;
@@ -1825,12 +1823,10 @@ void GetCloseEnd(const std::string & CurrentChr, SPLIT_READ & Temp_One_Read) {
 					//else Left_PD[1].push_back(pos);
 				}
 			}
-			// TODO: Ask Kai whether this can be removed
-			//cout << "1\t" << PD[0].size() << "\t" << PD[1].size() << endl;
+			LOG_DEBUG(std::cout << "1\t" << PD[0].size() << "\t" << PD[1].size() << std::endl);
 			CheckRight_Close(Temp_One_Read, CurrentChr, CurrentReadSeq, PD,
 					BP_Start, BP_End, FirstBase, UP);
-			// TODO: Ask Kai whether this can be removed
-			//cout << UP.size() << endl;
+			LOG_DEBUG(std::cout << UP.size() << std::endl);
 			//Direction = '+';
 			if (UP.empty()) {
 			} else if (UP[UP.size() - 1].LengthStr + Temp_One_Read.MinClose
@@ -1909,12 +1905,10 @@ void GetCloseEnd(const std::string & CurrentChr, SPLIT_READ & Temp_One_Read) {
 					//else Left_PD[1].push_back(pos);
 				}
 			}
-			// TODO: Ask Kai whether this can be removed
-			//cout << "2" << PD[0].size() << "\t" << PD[1].size() << endl;
+			LOG_DEBUG(std::cout << "2" << PD[0].size() << "\t" << PD[1].size() << std::endl);
 			CheckRight_Close(Temp_One_Read, CurrentChr, CurrentReadSeq, PD,
 					BP_Start, BP_End, FirstBase, UP);
-			// TODO: Ask Kai whether this can be removed
-			//cout << UP.size() << endl;
+			LOG_DEBUG(std::cout << UP.size() << std::endl);
 			//Direction = '+';
 			if (UP.empty()) {
 			} else if (UP[UP.size() - 1].LengthStr + Temp_One_Read.MinClose
@@ -1943,7 +1937,7 @@ void GetFarEnd_SingleStrandDownStreamInsertions(const std::string & CurrentChr,
 	//Temp_One_Read.ReadLength = Temp_One_Read.UnmatchedSeq.size();
 	//Temp_One_Read.ReadLengthMinus = Temp_One_Read.ReadLength - 1;
 	//if (Temp_One_Read.MatchedRelPos > 160000)
-	//cout << Temp_One_Read.UnmatchedSeq << Temp_One_Read.UnmatchedSeq.size() << endl;
+	//std::cout << Temp_One_Read.UnmatchedSeq << Temp_One_Read.UnmatchedSeq.size() << std::endl;
 	std::string CurrentReadSeq;
 	std::vector<unsigned int> PD[Temp_One_Read.TOTAL_SNP_ERROR_CHECKED];
 	for (int CheckIndex = 0; CheckIndex < Temp_One_Read.TOTAL_SNP_ERROR_CHECKED; CheckIndex++) {

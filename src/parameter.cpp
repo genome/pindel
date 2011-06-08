@@ -93,9 +93,7 @@ Parameter::describe () const
 	LOG_INFO(std::cout << d_shortName << "/");
 	LOG_INFO(std::cout << d_longName << std::endl);
 
-	//for (int i=0; i<d_DESCRIBE_WIDTH; i++)  { cout << " ";} // TODO: Ask Kai whether this can be removed
 	LOG_INFO(std::cout << makeNiceLine (d_description));
-	//if ( d_required ) { cout << " required parameter" ; } // TODO: Ask Kai whether this can be removed
 	LOG_INFO(std::cout << std::endl << std::endl);
 }
 
