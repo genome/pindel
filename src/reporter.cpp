@@ -22,10 +22,11 @@
 #include <iostream>
 #include <fstream>
 #include <cmath>
+
 // Pindel header files
 #include "pindel.h"
 #include "logdef.h"
-#include "outputsorter.h"
+#include "output_sorter.h"
 #include "reporter.h"
 
 void

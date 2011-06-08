@@ -20,7 +20,7 @@
 
 // Pindel header files
 #include "reporter.h"
-#include "ControlState.h"
+#include "control_state.h"
 #include "logdef.h"
 
 int searchTandemDuplicationsNT(ControlState& currentState, unsigned NumBoxes) {

@@ -1,11 +1,6 @@
 #ifndef SEARCHDELETIONS_H
 #define SEARCHDELETIONS_H
 
-#include <string>
-#include <vector>
-#include "searchvariant.h"
-#include "ControlState.h"
-
 class SearchDeletions : public SearchVariant {
 public:
 	SearchDeletions();

@@ -1,10 +1,6 @@
 #ifndef SEARCHVARIANT_H
 #define SEARCHVARIANT_H
 
-#include <string>
-#include <vector>
-#include "ControlState.h"
-
 class SearchVariant {
 public:
 	SearchVariant();

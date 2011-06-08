@@ -3,10 +3,11 @@
 include ../Makefile.local
 
 SOURCES=pindel.cpp reader.cpp reporter.cpp searcher.cpp parameter.cpp \
-    refreader.cpp ControlState.cpp search_deletions.cpp search_indels.cpp \
-    search_inversions.cpp search_inversions_NT.cpp search_short_insertions.cpp \
-    search_tandem_duplications.cpp search_tandem_duplications_NT.cpp \
-    outputsorter.cpp FarEndSearcher.cpp searchvariant.cpp searchshortinsertions.cpp searchdeletions.cpp
+    refreader.cpp control_state.cpp search_deletions.cpp search_deletions_nt.cpp \
+    search_inversions.cpp search_inversions_nt.cpp search_short_insertions.cpp \
+    search_tandem_duplications.cpp search_tandem_duplications_nt.cpp \
+    output_sorter.cpp farend_searcher.cpp search_variant.cpp \
+    searchshortinsertions.cpp searchdeletions.cpp
  
 all:	pindel pindel-debug
 -include $(SOURCES:.cpp=.d)

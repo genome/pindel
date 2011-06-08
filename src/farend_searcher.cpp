@@ -21,7 +21,7 @@
 #include "pindel.h"
 #include "searcher.h"
 
-#include "FarEndSearcher.h"
+#include "farend_searcher.h"
 
 FarEndSearcher::FarEndSearcher(const std::string & CurrentChr_in, SPLIT_READ & Temp_One_Read_in) {
 	CurrentChr = &CurrentChr_in;

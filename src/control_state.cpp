@@ -19,7 +19,7 @@
  */
 
 // Pindel header files
-#include "ControlState.h"
+#include "control_state.h"
 
 ControlState::ControlState() {
 	BAMDefined = false;

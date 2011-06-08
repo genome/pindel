@@ -1,11 +1,6 @@
 #ifndef SEARCHSHORTINSERTIONS_H
 #define SEARCHSHORTINSERTIONS_H
 
-#include <string>
-#include <vector>
-#include "searchvariant.h"
-#include "ControlState.h"
-
 class SearchShortInsertions : public SearchVariant {
 public:
 	SearchShortInsertions();

@@ -23,9 +23,9 @@
 #include <vector>
 
 // Pindel header files
-#include "searchvariant.h"
+#include "control_state.h"
+#include "search_variant.h"
 #include "pindel.h"
-#include "ControlState.h"
 #include "logdef.h"
 
 SearchVariant::SearchVariant() {
