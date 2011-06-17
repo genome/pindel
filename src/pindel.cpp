@@ -786,28 +786,14 @@ int init(int argc, char *argv[], ControlState& currentState) {
 			std::getline(currentState.inf_BP_test, TempLine_BD);
 			std::getline(currentState.inf_BP, TempLine_BD);
 		} else {
-			std::getline(currentState.inf_BP_test, TempLine_BD);
-			currentState.inf_BP >> Temp_BD_event.ChrName_A >> Temp_BD_event.S1
+         std::getline(currentState.inf_BP_test, TempLine_BD);
+         currentState.inf_BP >> Temp_BD_event.ChrName_A >> Temp_BD_event.POS1 
 					>> TempLine_BD >> Temp_BD_event.ChrName_B
-					>> Temp_BD_event.S3 >> TempLine_BD;
-			std::getline(currentState.inf_BP, TempLine_BD);
+				   >> Temp_BD_event.POS2 >> TempLine_BD;
+         std::getline(currentState.inf_BP, TempLine_BD);
 
-			Temp_BD_event.S2 = Temp_BD_event.S1 + 200;
-			if (Temp_BD_event.S1 > 200)
-				Temp_BD_event.S1 = Temp_BD_event.S1 - 200;
-			else
-				Temp_BD_event.S1 = 1;
-
-			Temp_BD_event.S4 = Temp_BD_event.S3 + 200;
-			if (Temp_BD_event.S3 > 200)
-				Temp_BD_event.S3 = Temp_BD_event.S3 - 200;
-			else
-				Temp_BD_event.S3 = 1;
-
-			Temp_BD_event.S1 += SpacerBeforeAfter;
-			Temp_BD_event.S2 += SpacerBeforeAfter;
-			Temp_BD_event.S3 += SpacerBeforeAfter;
-			Temp_BD_event.S4 += SpacerBeforeAfter;
+         Temp_BD_event.POS1 += SpacerBeforeAfter;
+         Temp_BD_event.POS2 += SpacerBeforeAfter;
 
 			currentState.All_BD_events_WG.push_back(Temp_BD_event);
 		}
@@ -870,14 +856,22 @@ int init(int argc, char *argv[], ControlState& currentState) {
 int searchBreakPoints(ControlState& currentState) {
 	/* 3.2.2.1 prepare break dancer events */
 	currentState.All_BD_events.clear();
+	currentState.All_BD_events.push_back( currentState.All_BD_events_WG[0] ); //EW140611 mind the empty 0 element hack
 	for (unsigned int All_BD_events_WG_index = 0; All_BD_events_WG_index
 			< currentState.All_BD_events_WG.size(); All_BD_events_WG_index++) {
 		if (currentState.All_BD_events_WG[All_BD_events_WG_index].ChrName_A
 				== currentState.CurrentChrName
 				&& currentState.All_BD_events_WG[All_BD_events_WG_index].ChrName_B
-						== currentState.CurrentChrName)
-			currentState.All_BD_events.push_back(
-					currentState.All_BD_events_WG[All_BD_events_WG_index]);
+						== currentState.CurrentChrName) 
+		{
+			// we may also want to use references here, A.B[C] is rather a mindful.
+			if ( currentState.All_BD_events[All_BD_events_WG_index].POS1 > currentState.All_BD_events[ All_BD_events_WG_index ].POS2) {
+				int oldPos1 = currentState.All_BD_events[ All_BD_events_WG_index ].POS1;
+				currentState.All_BD_events[ All_BD_events_WG_index ].POS1 = currentState.All_BD_events[ All_BD_events_WG_index ].POS2;
+				currentState.All_BD_events[ All_BD_events_WG_index ].POS2 = oldPos1;	// EW140611 we should actually do this in the breakdancer read-from-disk function
+		   }
+			currentState.All_BD_events.push_back( currentState.All_BD_events_WG[ All_BD_events_WG_index ] );
+		}
 	}
 
 	if (currentState.All_BD_events.size() > 1) {
@@ -887,13 +881,22 @@ int searchBreakPoints(ControlState& currentState) {
 		int *BD_INDEX = new int[currentState.CurrentChr.size()];
 		for (unsigned i = 0; i < currentState.CurrentChr.size(); i++)
 			BD_INDEX[i] = 0;
+		unsigned int ChrSize = currentState.CurrentChr.size() - 1;
 		for (unsigned i = 1; i < currentState.All_BD_events.size(); i++) {
-			for (unsigned j = currentState.All_BD_events[i].S1; j
-					< currentState.All_BD_events[i].S2; j++)
-				BD_INDEX[j] = i;
-			for (unsigned j = currentState.All_BD_events[i].S3; j
-					< currentState.All_BD_events[i].S4; j++)
-				BD_INDEX[j] = i * (-1);
+			unsigned int Start = currentState.All_BD_events[i].POS1 - 200;
+			unsigned int End = currentState.All_BD_events[i].POS1 + 200;
+			if (Start < 0) Start = 0; // EW140611 We may want to make a normalisation function here to prevent code duplication
+			if (Start > ChrSize) Start = ChrSize;
+			if (End < 0) End = 0;
+			if (End > ChrSize) End = ChrSize;
+			for (unsigned j = Start; j < End; j++) BD_INDEX[j] = i;
+			Start = currentState.All_BD_events[i].POS2 - 200;
+			End = currentState.All_BD_events[i].POS2 + 200;
+			if (Start < 0) Start = 0;
+			if (Start > ChrSize) Start = ChrSize;
+			if (End < 0) End = 0;
+			if (End > ChrSize) End = ChrSize;
+			for (unsigned j = Start; j < End; j++) BD_INDEX[j] = i * (-1);
 		}
 		int BD_Plus = 0;
 		int BD_Minus = 0;
@@ -917,18 +920,18 @@ int searchBreakPoints(ControlState& currentState) {
 					BD_INDEX[currentState.Reads[ReadIndex].UP_Close[0].AbsLoc];
 			if (BD_event_Index == 0)
 				continue;
-			if (BD_event_Index > 0) {
-				Start_pos = currentState.All_BD_events[BD_event_Index].S3
+			if (BD_event_Index > 0) {  
+				Start_pos = currentState.All_BD_events[BD_event_Index].POS2 - 200
 						- currentState.Reads[ReadIndex].ReadLength;
-				End_pos = currentState.All_BD_events[BD_event_Index].S4
+				End_pos = currentState.All_BD_events[BD_event_Index].POS2 + 200
 						+ currentState.Reads[ReadIndex].ReadLength;
 				GetFarEnd(currentState.CurrentChr,
 						currentState.Reads[ReadIndex], Start_pos, End_pos);
 			} else {
 				Start_pos
-						= currentState.All_BD_events[BD_event_Index * (-1)].S1
+						= currentState.All_BD_events[BD_event_Index * (-1)].POS1 - 200
 								- currentState.Reads[ReadIndex].ReadLength;
-				End_pos = currentState.All_BD_events[BD_event_Index * (-1)].S2
+				End_pos = currentState.All_BD_events[BD_event_Index * (-1)].POS1 + 200
 						+ currentState.Reads[ReadIndex].ReadLength;
 				GetFarEnd(currentState.CurrentChr,
 						currentState.Reads[ReadIndex], Start_pos, End_pos);

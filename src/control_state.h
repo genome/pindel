@@ -29,25 +29,21 @@
 #include "pindel.h"
 
 struct BreakDancer {
-	BreakDancer() {
-		ChrName_A = "";
-		ChrName_B = "";
-		Size = 0;
-		Score = 0;
-		S1 = 0;
-		S2 = 0;
-		S3 = 0;
-		S4 = 0;
+	BreakDancer() { 
+		ChrName_A=""; 
+		ChrName_B=""; 
+		Size=0; 
+		Score=0; 
+		POS1=0;
+		POS2=0;
 	}
 	std::string ChrName_A;
 	std::string ChrName_B;
 	std::string Type;
 	int Size;
 	int Score;
-	unsigned S1;
-	unsigned S2;
-	unsigned S3;
-	unsigned S4;
+	unsigned POS1;
+	unsigned POS2;
 };
 
 class ControlState {
