@@ -436,19 +436,19 @@ void printHelp() {
 	// TODO: Ask Kai whether this can be removed
 	//cout << "Please specify input, either bam configure file and/or pindel input format" << endl;
 	//cout.width(0);
-	LOG_INFO(std::cout << std::endl
+	std::cout << std::endl
 			<< "Program:   pindel (detection of indels and structural variations)"
-			<< std::endl);
-	LOG_INFO(std::cout << "Version:   0.2.2" << std::endl);
-	LOG_INFO(std::cout << "Contact:   Kai Ye <k.ye@lumc.nl>" << std::endl << std::endl);
+			<< std::endl;
+	std::cout << "Version:   0.2.2" << std::endl;
+	std::cout << "Contact:   Kai Ye <k.ye@lumc.nl>" << std::endl << std::endl;
 
-	LOG_INFO(std::cout << "Usage:     pindel -f <reference.fa> -p <pindel_input>"
-			<< std::endl);
-	LOG_INFO(std::cout << "           [and/or -i bam_configuration_file]" << std::endl);
-	LOG_INFO(std::cout << "           -c <chromosome_name> -o <prefix_for_output_file>"
-			<< std::endl << std::endl);
+	std::cout << "Usage:     pindel -f <reference.fa> -p <pindel_input>"
+			<< std::endl;
+	std::cout << "           [and/or -i bam_configuration_file]" << std::endl;
+	std::cout << "           -c <chromosome_name> -o <prefix_for_output_file>"
+			<< std::endl << std::endl;
 
-	LOG_INFO(std::cout << "Required parameters:" << std::endl);
+	std::cout << "Required parameters:" << std::endl;
 	// TODO: Ask Kai whether this can be removed
 	//parameters[1]->describe();
 	for (unsigned int i = 0; i < parameters.size(); i++) {
@@ -456,7 +456,7 @@ void printHelp() {
 			parameters[i]->describe();
 		}
 	}
-	LOG_INFO(std::cout << "\nOptional parameters:" << std::endl);
+	std::cout << "\nOptional parameters:" << std::endl;
 
 	for (unsigned int parameterIndex = 0; parameterIndex < parameters.size(); parameterIndex++) {
 		if (!parameters[parameterIndex]->isRequired() && !isReadsFileParam(
@@ -577,7 +577,7 @@ bool isFinishedBAM(const int upperBinBorder, // in: last position analyzed so fa
 }
 
 int init(int argc, char *argv[], ControlState& currentState) {
-	LOG_INFO(std::cout << Pindel_Version_str << std::endl);
+	std::cout << Pindel_Version_str << std::endl;
 
 	if (NumRead2ReportCutOff == 1)
 		BalanceCutoff = 3000000000u;
@@ -798,16 +798,16 @@ int init(int argc, char *argv[], ControlState& currentState) {
 			currentState.All_BD_events_WG.push_back(Temp_BD_event);
 		}
 	}
-	LOG_INFO(std::cout << "BreakDancer events: " << currentState.All_BD_events_WG.size()
-			- 1 << std::endl);
+	std::cout << "BreakDancer events: " << currentState.All_BD_events_WG.size()
+			- 1 << std::endl;
 
 	std::vector < std::string > chromosomes;
 
 	char FirstCharOfFasta;
 	currentState.inf_Seq >> FirstCharOfFasta;
 	if (FirstCharOfFasta != '>') {
-		LOG_ERROR(std::cout << "The reference genome must be in fasta format!"
-				<< std::endl);
+		std::cout << "The reference genome must be in fasta format!"
+				<< std::endl;
 		return 1;
 	}
 
@@ -847,7 +847,7 @@ int init(int argc, char *argv[], ControlState& currentState) {
 	}
 
 	if (currentState.WhichChr.compare("ALL") == 0) {
-		LOG_INFO(std::cout << "Looping over ALL chromosomes." << std::endl);
+		std::cout << "Looping over all chromosomes." << std::endl;
 		currentState.loopOverAllChromosomes = true;
 	}
 	return EXIT_SUCCESS;
@@ -855,29 +855,28 @@ int init(int argc, char *argv[], ControlState& currentState) {
 
 int searchBreakPoints(ControlState& currentState) {
 	/* 3.2.2.1 prepare break dancer events */
-	currentState.All_BD_events.clear();
-	currentState.All_BD_events.push_back( currentState.All_BD_events_WG[0] ); //EW140611 mind the empty 0 element hack
-	for (unsigned int All_BD_events_WG_index = 0; All_BD_events_WG_index
-			< currentState.All_BD_events_WG.size(); All_BD_events_WG_index++) {
-		if (currentState.All_BD_events_WG[All_BD_events_WG_index].ChrName_A
-				== currentState.CurrentChrName
-				&& currentState.All_BD_events_WG[All_BD_events_WG_index].ChrName_B
-						== currentState.CurrentChrName) 
+
+	std::vector<BreakDancer>& wholeGenomeEvents = currentState.All_BD_events_WG;
+	std::vector<BreakDancer>& chromosomeEvents = currentState.All_BD_events;
+	chromosomeEvents.clear();
+	chromosomeEvents.push_back( wholeGenomeEvents[0] ); //EW140611 mind the empty 0 element hack
+	for (unsigned int wgEventIndex = 1; wgEventIndex< wholeGenomeEvents.size(); wgEventIndex++) {
+    	BreakDancer &breakDancerEvent = wholeGenomeEvents[ wgEventIndex ];
+		if (breakDancerEvent.ChrName_A == currentState.CurrentChrName
+				&& breakDancerEvent.ChrName_B == currentState.CurrentChrName) 
 		{
-			// we may also want to use references here, A.B[C] is rather a mindful.
-			if ( currentState.All_BD_events[All_BD_events_WG_index].POS1 > currentState.All_BD_events[ All_BD_events_WG_index ].POS2) {
-				int oldPos1 = currentState.All_BD_events[ All_BD_events_WG_index ].POS1;
-				currentState.All_BD_events[ All_BD_events_WG_index ].POS1 = currentState.All_BD_events[ All_BD_events_WG_index ].POS2;
-				currentState.All_BD_events[ All_BD_events_WG_index ].POS2 = oldPos1;	// EW140611 we should actually do this in the breakdancer read-from-disk function
+			if ( breakDancerEvent.POS1 > breakDancerEvent.POS2) {
+				int oldPos1 = breakDancerEvent.POS1;
+				breakDancerEvent.POS1 = breakDancerEvent.POS2;
+				breakDancerEvent.POS2 = oldPos1;	// EW140611 we should actually do this in the breakdancer read-from-disk function
 		   }
-			currentState.All_BD_events.push_back( currentState.All_BD_events_WG[ All_BD_events_WG_index ] );
+			chromosomeEvents.push_back( breakDancerEvent );
 		}
 	}
-
 	if (currentState.All_BD_events.size() > 1) {
-		LOG_INFO(std::cout
+		std::cout
 				<< "Searching additional breakpoints by adding BreakDancer results"
-				<< std::endl);
+				<< std::endl;
 		int *BD_INDEX = new int[currentState.CurrentChr.size()];
 		for (unsigned i = 0; i < currentState.CurrentChr.size(); i++)
 			BD_INDEX[i] = 0;
@@ -906,16 +905,18 @@ int searchBreakPoints(ControlState& currentState) {
 			else if (BD_INDEX[i] < 0)
 				BD_Minus++;
 		}
-		LOG_INFO(std::cout << BD_Plus << "\t" << BD_Minus << std::endl);
+		std::cout << BD_Plus << "\t" << BD_Minus << std::endl;
 
 		currentState.CountFarEnd = 0;
 		currentState.CountFarEndMinus = 0;
 		currentState.CountFarEndPlus = 0;
 		int Start_pos, End_pos;
+//if (currentState.Reads.size()>17800) std::cout << "DEBUG06 " << currentState.Reads[ 17643 ].UP_Close[0].AbsLoc << std::endl;
 		for (unsigned ReadIndex = 0; ReadIndex < currentState.Reads.size(); ReadIndex++) {
 			if (!currentState.Reads[ReadIndex].UP_Far.empty()) {
 				continue;
 			}
+		  // std::cout << "of total " << currentState.Reads.size() << " reads, currentState.Reads[" << ReadIndex << "].UP_Close[0].AbsLoc = " << currentState.Reads[ReadIndex].UP_Close[0].AbsLoc << std::endl;
 			int BD_event_Index =
 					BD_INDEX[currentState.Reads[ReadIndex].UP_Close[0].AbsLoc];
 			if (BD_event_Index == 0)
@@ -976,7 +977,7 @@ int searchBreakPoints(ControlState& currentState) {
 				}
 			}
 		}
-		LOG_INFO(std::cout << "\tNumber of reads with far end mapped: "
+		(std::cout << "\tNumber of reads with far end mapped: "
 				<< currentState.CountFarEnd << "\t" << "Far+: "
 				<< currentState.CountFarEndPlus << "\tFar-: "
 				<< currentState.CountFarEndMinus << std::endl << std::endl); //endl;
@@ -984,7 +985,7 @@ int searchBreakPoints(ControlState& currentState) {
 	}
 
 	/* 3.2.2.2 search breakpoints of deletion */
-	LOG_INFO(std::cout << "Searching breakpoints of deletion" << std::endl);
+	(std::cout << "Searching breakpoints of deletion" << std::endl);
 	for (short RangeIndex = 1; RangeIndex < MaxRangeIndex; RangeIndex++) {
 		currentState.CountFarEnd = 0;
 		currentState.CountFarEndMinus = 0;
@@ -1034,14 +1035,14 @@ int searchBreakPoints(ControlState& currentState) {
 			}
 		} // #pragma omp parallel default(shared)
 
-		LOG_INFO(std::cout << RangeIndex << "\tNumber of reads with far end mapped: "
+		(std::cout << RangeIndex << "\tNumber of reads with far end mapped: "
 				<< currentState.CountFarEnd << "\t" << "Far+: "
 				<< currentState.CountFarEndPlus << "\tFar-: "
 				<< currentState.CountFarEndMinus << std::endl);
 	}
 
 	/* 3.2.2.3 search breakpoints of short insertion */
-	LOG_INFO(std::cout << "Searching breakpoints of short insertions" << std::endl);
+	(std::cout << "Searching breakpoints of short insertions" << std::endl);
 	for (short RangeIndex = 1; RangeIndex < 2; RangeIndex++) {
 		currentState.CountFarEnd = 0;
 		currentState.CountFarEndMinus = 0;
@@ -1072,7 +1073,7 @@ int searchBreakPoints(ControlState& currentState) {
 			}
 		}
 
-		LOG_INFO(std::cout << RangeIndex << "\tNumber of reads with far end mapped: "
+		(std::cout << RangeIndex << "\tNumber of reads with far end mapped: "
 				<< currentState.CountFarEnd << "\t" << "Far+: "
 				<< currentState.CountFarEndPlus << "\tFar-: "
 				<< currentState.CountFarEndMinus << std::endl);
@@ -1081,7 +1082,7 @@ int searchBreakPoints(ControlState& currentState) {
 	/* 3.2.2.4 search breakpoints of tandem duplication */
 	if (Analyze_TD) {
 
-		LOG_INFO(std::cout << "Searching breakpoints of tandem duplications"
+		(std::cout << "Searching breakpoints of tandem duplications"
 				<< std::endl);
 		for (short RangeIndex = 1; RangeIndex < MaxRangeIndex; RangeIndex++) {
 
@@ -1146,7 +1147,7 @@ int searchBreakPoints(ControlState& currentState) {
 					}
 				}
 			}
-			LOG_INFO(std::cout << RangeIndex
+			(std::cout << RangeIndex
 					<< "\tNumber of reads with far end mapped: "
 					<< currentState.CountFarEnd << "\t" << "Far+: "
 					<< currentState.CountFarEndPlus << "\tFar-: "
@@ -1157,7 +1158,7 @@ int searchBreakPoints(ControlState& currentState) {
 	/* 3.2.2.5 search breakpoints of inversion */
 
 	if (Analyze_INV) {
-		LOG_INFO(std::cout << "Searching breakpoints of inversion" << std::endl);
+		(std::cout << "Searching breakpoints of inversion" << std::endl);
 		for (short RangeIndex = 1; RangeIndex < MaxRangeIndex; RangeIndex++) {
 
 			currentState.CountFarEnd = 0;
@@ -1210,7 +1211,7 @@ int searchBreakPoints(ControlState& currentState) {
 					}
 				}
 			}
-			LOG_INFO(std::cout << RangeIndex
+			(std::cout << RangeIndex
 					<< "\tNumber of reads with far end mapped: "
 					<< currentState.CountFarEnd << "\t" << "Far+: "
 					<< currentState.CountFarEndPlus << "\tFar-: "
@@ -1221,7 +1222,7 @@ int searchBreakPoints(ControlState& currentState) {
 	/* 3.2.2.6 compare backup with current value */
 	// TODO: check with Kai what is the use of following
 	// compare backup with current value
-	LOG_INFO(std::cout << "revisit all breakpoints identified ...");
+	(std::cout << "revisit all breakpoints identified ...");
 	for (unsigned ReadIndex = 0; ReadIndex < currentState.Reads.size(); ReadIndex++) {
 		if (currentState.Reads[ReadIndex].UP_Far.empty()) {
 			if (!currentState.Reads[ReadIndex].UP_Far_backup.empty()) {
@@ -1238,7 +1239,7 @@ int searchBreakPoints(ControlState& currentState) {
 			}
 		}
 	}
-	LOG_INFO(std::cout << " done." << std::endl);
+	(std::cout << " done." << std::endl);
 
 	return EXIT_SUCCESS;
 }
@@ -1276,7 +1277,7 @@ int main(int argc, char *argv[]) {
 			>> currentState.CurrentChrName && !currentState.inf_Seq.eof()) {
 
 		/* 3.1 preparation starts */
-		LOG_INFO(std::cout << "Processing chromosome: " << currentState.CurrentChrName
+		(std::cout << "Processing chromosome: " << currentState.CurrentChrName
 				<< std::endl);
 
 		//TODO: check with Kai what's the use of this line.
@@ -1290,20 +1291,20 @@ int main(int argc, char *argv[]) {
 			currentState.SpecifiedChrVisited = true;
 		} else { // not build up sequence
 			GetOneChrSeq(currentState.inf_Seq, currentState.CurrentChr, false);
-			LOG_INFO(std::cout << "Skipping chromosome: " << currentState.CurrentChrName
+			(std::cout << "Skipping chromosome: " << currentState.CurrentChrName
 					<< std::endl);
 			continue;
 		}
 
 		CONS_Chr_Size = currentState.CurrentChr.size() - 2 * SpacerBeforeAfter;
-		LOG_INFO(std::cout << "Chromosome Size: " << CONS_Chr_Size << std::endl);
+		(std::cout << "Chromosome Size: " << CONS_Chr_Size << std::endl);
 		CurrentChrMask.resize(currentState.CurrentChr.size());
 		for (unsigned int i = 0; i < currentState.CurrentChr.size(); i++) {
 			CurrentChrMask[i] = 'N';
 		}
 		unsigned NumBoxes = (unsigned) (currentState.CurrentChr.size()
 				/ BoxSize) + 1; // box size
-		LOG_INFO(std::cout << NumBoxes << "\t" << BoxSize << std::endl);
+		(std::cout << NumBoxes << "\t" << BoxSize << std::endl);
 
 		/* 3.1 preparation ends */
 
@@ -1336,11 +1337,11 @@ int main(int argc, char *argv[]) {
 			}
 
 			if (displayedStartOfRegion < displayedEndOfRegion) {
-				LOG_INFO(std::cout << "Looking at chromosome " << currentState.WhichChr
+				(std::cout << "Looking at chromosome " << currentState.WhichChr
 						<< " bases " << displayedStartOfRegion << " to "
 						<< displayedEndOfRegion << "." << std::endl);
 			} else {
-				LOG_INFO(std::cout
+				(std::cout
 						<< "Checking out reads near the borders of the specified regions for extra evidence."
 						<< std::endl);
 			}
@@ -1372,7 +1373,7 @@ int main(int argc, char *argv[]) {
 								<< currentState.bams_to_parse[i].BamFile
 								<< std::endl);
 					}
-					LOG_INFO(std::cout << "BAM file index\t" << i << "\t"
+					(std::cout << "BAM file index\t" << i << "\t"
 							<< currentState.Reads.size() << std::endl);
 				}
 
@@ -1384,6 +1385,9 @@ int main(int argc, char *argv[]) {
 						currentState.CurrentChr, currentState.Reads,
 						currentState.lowerBinBorder,
 						currentState.upperBinBorder);
+//if (currentState.Reads.size()>17800)				std::cout << "DEBUG-00 " << currentState.Reads[ 17641 ].UP_Close[0].AbsLoc << std::endl;
+//if (currentState.Reads.size()>17800)				std::cout << "DEBUG00 " << currentState.Reads[ 17642 ].UP_Close[0].AbsLoc << std::endl;
+//if (currentState.Reads.size()>17800)				std::cout << "DEBUG01 " << currentState.Reads[ 17643 ].UP_Close[0].AbsLoc << std::endl;
 				if (ReturnFromReadingReads == 1) {
 					LOG_ERROR(std::cout << "malformed record detected!" << std::endl);
 					return 1;
@@ -1394,14 +1398,14 @@ int main(int argc, char *argv[]) {
 			Time_Mine_E = time(NULL);
 
 			if (currentState.Reads.size()) {
-				LOG_INFO(std::cout << "There are " << currentState.Reads. size()
+				(std::cout << "There are " << currentState.Reads. size()
 						<< " reads for this chromosome." << std::endl);
 			}
 			else {
-				LOG_INFO(std::cout << "There are no reads for this bin." << std::endl);
+				(std::cout << "There are no reads for this bin." << std::endl);
 				continue;
 			}
-
+//if (currentState.Reads.size()>17800) std::cout << "DEBUG02 " << currentState.Reads[ 17643 ].UP_Close[0].AbsLoc << std::endl;
 			//TODO: to remove the following 3 lines?
 			unsigned int Num_Left;
 			Num_Left = currentState.Reads.size();
@@ -1409,7 +1413,7 @@ int main(int argc, char *argv[]) {
 
 			Time_Load_E = time(NULL);
 			/* 3.2.1 preparation ends */
-
+//if (currentState.Reads.size()>17800) std::cout << "DEBUG03 " << currentState.Reads[ 17643 ].UP_Close[0].AbsLoc << std::endl;
 			returnValue = searchBreakPoints(currentState);
 
 //			returnValue = searchDeletions(currentState, NumBoxes);
@@ -1431,7 +1435,7 @@ int main(int argc, char *argv[]) {
 			//returnValue = searchShortInsertions(currentState, NumBoxes);
 			SearchShortInsertions searchSI;
 			searchSI.Search(currentState, NumBoxes);
-
+//if (currentState.Reads.size()>17800) std::cout << "DEBUG03 " << currentState.Reads[ 17643 ].UP_Close[0].AbsLoc << std::endl;
 			/* 3.2.8 report starts */
 			int TotalNumReads = currentState.Reads.size();
 			if (ReportCloseMappedRead) {
@@ -1511,11 +1515,11 @@ int main(int argc, char *argv[]) {
 					Count_Used++;
 			}
 
-			LOG_INFO(std::cout << "Total: " << TotalNumReads << ";\tClose_end_found "
+			(std::cout << "Total: " << TotalNumReads << ";\tClose_end_found "
 					<< TotalNumReads << ";\tFar_end_found " << Count_Far
 					<< ";\tUsed\t" << Count_Used << "." << std::endl
 					<< std::endl);
-			LOG_INFO(std::cout << "For LI and BP: " << Count_Unused << std::endl
+			(std::cout << "For LI and BP: " << Count_Unused << std::endl
 					<< std::endl);
 
 			if (Analyze_LI) {
@@ -1528,7 +1532,7 @@ int main(int argc, char *argv[]) {
 						LargeInsertionOutf);
 				LargeInsertionOutf.close();
 				Time_LI_E = time(NULL);
-				LOG_INFO(std::cout << "Mining, Sorting and output LI results: "
+				(std::cout << "Mining, Sorting and output LI results: "
 						<< (unsigned
 						int) difftime(Time_LI_E, Time_LI_S) << " seconds."
 						<< std::endl << std::endl);
@@ -1546,7 +1550,7 @@ int main(int argc, char *argv[]) {
 						BP_Reads, RestOutf);
 				RestOutf.close();
 				Time_BP_E = time(NULL);
-				LOG_INFO(std::cout << "Mining, Sorting and output BP results: "
+				(std::cout << "Mining, Sorting and output BP results: "
 						<< (unsigned
 						int) difftime(Time_BP_E, Time_BP_S) << " seconds."
 						<< std::endl << std::endl);
@@ -1557,7 +1561,7 @@ int main(int argc, char *argv[]) {
 			AllLoadings += (unsigned int) difftime(Time_Load_E, Time_Load_S);
 			AllSortReport += (unsigned int) difftime(Time_Sort_E, Time_Load_E);
 			currentState.Reads.clear();
-			LOG_INFO(std::cout << "I have " << currentState.FutureReads. size()
+			(std::cout << "I have " << currentState.FutureReads. size()
 					<< " reads saved for the next cycle." << std::endl);
 			currentState.Reads.swap(currentState.FutureReads);
 			Time_Load_S = 0;
@@ -1574,9 +1578,9 @@ int main(int argc, char *argv[]) {
 
 	} // while ( loopOverAllChromosomes && chromosomeIndex < chromosomes.size() );
 
-	LOG_INFO(std::cout << "Loading genome sequences and reads: " << AllLoadings
+	(std::cout << "Loading genome sequences and reads: " << AllLoadings
 			<< " seconds." << std::endl);
-	LOG_INFO(std::cout << "Mining, Sorting and output results: " << AllSortReport
+	(std::cout << "Mining, Sorting and output results: " << AllSortReport
 			<< " seconds." << std::endl);
 	return 0;
 } //main
