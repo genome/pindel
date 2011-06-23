@@ -20,7 +20,10 @@ fi
 
 ABSPATH=`cd $1; pwd`
 
+ABSPATH="$ABSPATH/"
+echo "path is now: $ABSPATH"
 make SAMTOOLS=$ABSPATH
+
 if [ "$?" -ne 0 ]; then 
     echo "  "
     echo "INSTALL failed" 
