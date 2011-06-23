@@ -89,12 +89,12 @@ Parameter::makeNiceLine (const std::string & rawDescription) const
 void
 Parameter::describe () const
 {
-	LOG_INFO(std::cout << std::string(d_DESCRIBE_WIDTH, ' '));
-	LOG_INFO(std::cout << d_shortName << "/");
-	LOG_INFO(std::cout << d_longName << std::endl);
+	(std::cout << std::string(d_DESCRIBE_WIDTH, ' '));
+	(std::cout << d_shortName << "/");
+	(std::cout << d_longName << std::endl);
 
-	LOG_INFO(std::cout << makeNiceLine (d_description));
-	LOG_INFO(std::cout << std::endl << std::endl);
+	(std::cout << makeNiceLine (d_description));
+	(std::cout << std::endl << std::endl);
 }
 
 /* IntParameter */
