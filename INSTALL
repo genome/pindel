@@ -22,13 +22,13 @@ ABSPATH=`cd $1; pwd`
 
 ABSPATH="$ABSPATH/"
 echo "path is now: $ABSPATH"
-if [ -e "Makefile.local"];
+if [ -e "Makefile.local" ];
   then LATERRUN="1";
 fi 
 
 make SAMTOOLS=$ABSPATH
 
-if [ $LATERRUN != "1" ]; then
+if [ "$LATERRUN" != "1" ]; then
    echo "If this is the first time you're running this install script please wait a moment as we create the Makefile.local"
    sleep 10
    make SAMTOOLS=$ABSPATH
