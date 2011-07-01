@@ -131,6 +131,23 @@ private:
 	int *d_data_ptr;
 };
 
+class UIntParameter:public Parameter
+{
+public:
+	UIntParameter (unsigned int *par_ptr, const std::string & shortName,
+								const std::string & longName, const std::string & description,
+								const bool required, const unsigned int value);
+
+	virtual unsigned int getUIValue () const
+	{
+		return *d_data_ptr;
+	}
+	virtual void setValue (const std::string & value);
+	virtual void setValue (const unsigned int value);
+private:
+	unsigned int *d_data_ptr;
+};
+
 class BoolParameter:public Parameter
 {
 public:

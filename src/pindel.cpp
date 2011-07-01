@@ -367,6 +367,14 @@ void defineParameters(std::string & WhichChr) {
 					"--min_num_matched_bases",
 					"only consider reads as evidence if they map with more than X bases to the reference. "
 						"(default 30)", false, 30));
+	parameters. push_back(
+			new UIntParameter(
+					&BalanceCutoff,
+					"-B",
+					"--balance_cutoff",
+					"the number of bases of a SV above which a more stringent filter is applied which demands "
+               "that both sides of the SV are mapped with sufficiently long strings of bases "
+					"(default 100)", false, 100));
 
 }
 

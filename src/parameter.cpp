@@ -121,6 +121,30 @@ IntParameter::setValue (const int value)
 	set ();
 }
 
+/* UIntParameter */
+UIntParameter::UIntParameter (unsigned int *par_ptr, const std::string & shortName,
+														const std::string & longName,
+														const std::string & description, const bool required,
+														const unsigned int value):
+Parameter (shortName, longName, description, required),
+d_data_ptr (par_ptr)
+{
+	*d_data_ptr = value;
+}
+
+void
+UIntParameter::setValue (const std::string & value)
+{
+	setValue ((unsigned int)atoi (value.c_str ()));
+}
+
+void
+UIntParameter::setValue (const unsigned int value)
+{
+	*d_data_ptr = value;
+	set ();
+}
+
 /* BoolParameter */
 BoolParameter::BoolParameter (bool * par_ptr, const std::string & shortName, const std::string & longName, const std::string & description, const bool required, const bool value):
 Parameter (shortName, longName, description,
