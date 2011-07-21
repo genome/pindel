@@ -26,8 +26,11 @@
 // Pindel header files
 #include "pindel.h"
 #include "logdef.h"
+#include "output_file_data.h"
 #include "output_sorter.h"
 #include "reporter.h"
+
+OutputFileData deletionFileData;
 
 void
 OutputTDs (const std::vector < SPLIT_READ > &TDs,
@@ -37,6 +40,7 @@ OutputTDs (const std::vector < SPLIT_READ > &TDs,
 					 const unsigned int &RealStart,
 					 const unsigned int &RealEnd, std::ofstream & TDOutf)
 {
+
 	//short ReadLength = Deletions[C_S].ReadLength;
 	//short ReadLengthMinus = ReadLength - 1;
 	unsigned int NumberOfReads = C_E - C_S + 1;
@@ -285,7 +289,7 @@ OutputDeletions (const std::vector < SPLIT_READ > &Deletions,
 	DeletionOutf <<
 		"####################################################################################################"
 		<< std::endl;
-	DeletionOutf << NumberOfDeletionsInstances << "\tD " << Deletions[C_S].IndelSize	// << " bases " 
+	DeletionOutf << deletionFileData.getSvIndex() << "\tD " << Deletions[C_S].IndelSize	// << " bases " 
 		<< "\tNT " << Deletions[C_S].NT_size << " \"" << Deletions[C_S].NT_str << "\"" << "\tChrID " << Deletions[C_S].FragName << "\tBP " << Deletions[C_S].BPLeft + 1 << "\t" << Deletions[C_S].BPRight + 1 << "\tBP_range " << RealStart + 1 << "\t" << RealEnd + 1 << "\tSupports " << NumberOfReads << "\t" << Num_U_Reads << "\t+ " << LeftS - 1 << "\t" << LeftUNum << "\t- " << RightS - 1 << "\t" << RightUNum << "\tS1 " << EasyScore;	//EWL070111  << "\tS2 " << PreciseScore; 
 	LOG_DEBUG(std::cout << "d_6" << std::endl);
 	int SUM_MS = 0;
@@ -837,7 +841,7 @@ OutputDI (const std::vector < SPLIT_READ > &DI,
 	DeletionOutf <<
 		"####################################################################################################"
 		<< std::endl;
-	DeletionOutf << NumberOfDIInstances + NumberOfDeletionsInstances + 1 << "\tD " << DI[C_S].IndelSize << "\tNT " << DI[C_S].NT_size << " \"" << DI[C_S].NT_str << "\"" << "\tChrID " << DI[C_S].FragName << "\tBP " << DI[C_S].BPLeft + 1 << "\t" << DI[C_S].BPRight + 1 << "\tBP_range " << DI[C_S].BPLeft + 1 << "\t" << DI[C_S].BPRight + 1 << "\tSupports " << NumberOfReads << "\t" << Num_U_Reads << "\t+ " << LeftS - 1 << "\t" << LeftUNum << "\t- " << RightS - 1 << "\t" << RightUNum << "\tS1 " << EasyScore;	// << "\tS2 0.0";// << PreciseScore << "\t"; 
+	DeletionOutf << deletionFileData.getSvIndex() << "\tD " << DI[C_S].IndelSize << "\tNT " << DI[C_S].NT_size << " \"" << DI[C_S].NT_str << "\"" << "\tChrID " << DI[C_S].FragName << "\tBP " << DI[C_S].BPLeft + 1 << "\t" << DI[C_S].BPRight + 1 << "\tBP_range " << DI[C_S].BPLeft + 1 << "\t" << DI[C_S].BPRight + 1 << "\tSupports " << NumberOfReads << "\t" << Num_U_Reads << "\t+ " << LeftS - 1 << "\t" << LeftUNum << "\t- " << RightS - 1 << "\t" << RightUNum << "\tS1 " << EasyScore;	// << "\tS2 0.0";// << PreciseScore << "\t"; 
 	//EWL070111 << "\tS2 " << PreciseScore; 
 
 	int SUM_MS = 0;
@@ -1511,7 +1515,7 @@ SortOutputD (const unsigned &NumBoxes, const std::string & CurrentChr,
 																							 IndelEvents[Max_Support_Index].
 																							 End, RealStart, RealEnd,
 																							 DeletionOutf);
-															NumberOfDeletionsInstances++;
+															deletionFileData.increaseTemplateSvCounter();
 															LOG_DEBUG(std::cout << "bb" << std::endl);
 														}
 													else
@@ -1527,7 +1531,7 @@ SortOutputD (const unsigned &NumBoxes, const std::string & CurrentChr,
 																							 IndelEvents[Max_Support_Index].
 																							 End, RealStart, RealEnd,
 																							 DeletionOutf);
-															NumberOfDeletionsInstances++;
+															deletionFileData.increaseTemplateSvCounter();
 															LOG_DEBUG(std::cout << "cb" << std::endl);
 														}
 												}
@@ -1536,7 +1540,7 @@ SortOutputD (const unsigned &NumBoxes, const std::string & CurrentChr,
 						}
 				}												// if (!Deletions[Box_index].empty())
 		}														// for (unsigned Box_index = 0; Box_index < NumBoxes; Box_index++)
-	LOG_INFO(std::cout << "Deletions: " << NumberOfDeletionsInstances << std::endl << std::endl);
+	LOG_INFO(std::cout << "Deletions: " << deletionFileData.getTemplateSvCounter() << std::endl << std::endl);
 }
 
 void
@@ -1730,7 +1734,7 @@ SortOutputDI (const unsigned &NumBoxes, const std::string & CurrentChr,
 																IndelEvents[EventIndex].Start,
 																IndelEvents[EventIndex].End,
 																RealStart, RealEnd, DIOutf);
-											NumberOfDIInstances++;
+											deletionFileData.increaseNonTemplateSvCounter();
 										}
 									else
 										if (ReportEvent
@@ -1741,13 +1745,13 @@ SortOutputDI (const unsigned &NumBoxes, const std::string & CurrentChr,
 																IndelEvents[EventIndex].Start,
 																IndelEvents[EventIndex].End,
 																RealStart, RealEnd, DIOutf);
-											NumberOfDIInstances++;
+											deletionFileData.increaseNonTemplateSvCounter();
 										}
 								}
 						}
 				}												// if (!Deletions[Box_index].empty())
 		}														// for (unsigned Box_index = 0; Box_index < NumBoxes; Box_index++)
-	LOG_INFO(std::cout << "deletions with non-template sequences: " << NumberOfDIInstances <<
+	LOG_INFO(std::cout << "deletions with non-template sequences: " << deletionFileData.getNonTemplateSvCounter() <<
 					 std::endl << std::endl);
 }
 

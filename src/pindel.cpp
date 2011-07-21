@@ -46,7 +46,7 @@
 #include "searchdeletions.h"
 #include "logdef.h"
 
-/*v EWL update 0.0.1, April 8th 2011; can use the -c option with specified regions, and produces LI output that can be read by vcfcreator */
+/*v EWL update 0.2.5, July 21st, 2011 corrected small bug in counter for deletions and insertion-deletions */
 
 int g_binIndex = -1; // global variable for the bin index, as I cannot easily pass an extra parameter to the diverse functions
 int g_maxPos = -1; // to calculate which is the last position in the chromosome, and hence to calculate the number of bins
@@ -55,7 +55,7 @@ int g_maxPos = -1; // to calculate which is the last position in the chromosome,
 //end charris add
 //#include <omp.h>
 
-const std::string Pindel_Version_str = "Pindel version 0.2.2, April 8 2011.";
+const std::string Pindel_Version_str = "Pindel version 0.2.5, July 21st 2011.";
 
 // TODO: Ask Kai whether this can be removed
 //unsigned int DSizeArray[15];

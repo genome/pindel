@@ -50,7 +50,16 @@ if [ "$?" -ne 0 ]; then
     echo "Or contact us on k.ye@lumc.nl" 
     exit 1
 else
+    echo "Creating pindel2vcf utility..."
+    g++ src/vcfcreator017.cpp -o pindel2vcf
+    echo "pindel2vcf created."
+    mv src/pindel .
     echo " "
-    echo "Pindel successfully compiled; the pindel executable can be found in the src directory."
-    echo " "  
+    echo "Pindel successfully compiled. The pindel executable can be found in this directory."
+    echo " "
+    echo "You can test pindel with the example files in the demo directory; example commands are given in the RUNME in that directory."
+    echo " " 
+    echo "For help and background information, see the pindel wiki and its FAQ on https://trac.nbic.nl/pindel/wiki/PindelFaq"
+    echo "Or contact us on k.ye@lumc.nl" 
+    echo " "
 fi 

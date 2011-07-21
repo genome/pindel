@@ -3,9 +3,8 @@
 
 #include "logtypes.h"
 
-#define __LOG(s,lvl) \
-	std::cout << __FILE__ << "#" << __LINE__ << " [" << __FUNCTION__ << "] " << (lvl) << ": "; \
-	s;
+#define __LOG(s,lvl) (s);
+/* original: std::cout << __FILE__ << "#" << __LINE__ << " [" << __FUNCTION__ << "] " << (lvl) << ": " << s; */
 
 #ifndef LOG_LEVEL
 #define LOG_LEVEL LOGLEVEL_INFO
