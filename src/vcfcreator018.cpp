@@ -7,7 +7,7 @@
 	e.m.w.lameijer@lumc.nl
 	+31(0)71-526 9745
 
-	Version 0.1.7 [July 19th, 2011. Has updated/corrected help text, mentioning -d] */
+	Version 0.1.8 [July 27th, 2011. END-position now proper according to VCF rules (so for deletion: start+length+1, for SI: start+1), mentioning -d] */
 
 #include <algorithm>
 #include <fstream>
@@ -27,7 +27,7 @@ const int FIRST_SAMPLE_INDEX = 32; // index of first sample name
 
 using namespace std;
 
-string g_versionString = "0.1.7";
+string g_versionString = "0.1.8";
 string g_programName = "pindel2vcf";
 
 bool g_normalBaseArray[256];
@@ -786,7 +786,6 @@ void convertIndelToSVdata( ifstream& svfile, map< string, int>& sampleMap, const
 		int separatorPos = numNTaddedStr.find(":");
 		string secondNumber = numNTaddedStr.substr(separatorPos+1);
 		numNTinvAdded = atoi( secondNumber.c_str() ); 
-		//cout << "Inv: " << numNTadded << "/" << numNTinvAdded << endl;
 	} 
 
    string ntAdded = fetchElement( lineStream, 1 ); // to 6
@@ -795,7 +794,6 @@ void convertIndelToSVdata( ifstream& svfile, map< string, int>& sampleMap, const
 		int separatorPos = ntAdded.find(":");
 		ntInvAdded = ntAdded.substr( separatorPos+2, numNTinvAdded ); // erases ""
 		ntAdded = ntAdded.substr(0,separatorPos);
-		//cout << "InvS: " << ntAdded << "\\[" << ntInvAdded << "]" << endl;
 	}
    ntAdded.erase(0,1); // erases opening "
 	ntAdded.erase(numNTadded); // erases closing "
@@ -803,7 +801,6 @@ void convertIndelToSVdata( ifstream& svfile, map< string, int>& sampleMap, const
 	if (chromosomeID!=par.chromosome) {
 		return;
 	}
-	//cout << "CID: " << chromosomeID << endl;
 	const string* reference = genome.getChromosome( chromosomeID );
 	if ( reference== NULL ) {
 		cout << "Error! Reference chromosome \"" << chromosomeID << "\" not found!" << endl;
@@ -842,11 +839,8 @@ void convertIndelToSVdata( ifstream& svfile, map< string, int>& sampleMap, const
    svd.setAlternative( altVariant ); 
 	int leftmostStartPos = atoi (fetchElement( lineStream, 2 ).c_str());  // at position 13
    int rightmostEndPos = atoi (fetchElement( lineStream, 1 ).c_str()); // now at position 14
-//cout << "LMSP" << leftmostStartPos << endl;
-//char a;
-//cin >> a;
    svd.setBPrange( leftmostStartPos, rightmostEndPos );
-   svd.setEnd( rightmostEndPos );
+   svd.setEnd( leftmostEndPos );
 	svd.setHomlen( rightmostEndPos - leftmostEndPos );
 	string homSeq="";
 	for (int position=leftmostEndPos; position<rightmostEndPos; position++ ) {
