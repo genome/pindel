@@ -41,6 +41,7 @@
 // Static function declaration
 
 static int fetch_func (const bam1_t * b1, void *data);
+int32_t bam_cigar2mismatch( const bam1_core_t *readCore, const uint32_t *cigar);
 
 // Reader (BamReader and PindelReader)
 
@@ -484,12 +485,16 @@ bool isGoodAnchor( const flagshit *read, const bam1_core_t *bamCore )
           );
 }
 
-bool isWeirdRead( const flagshit *read )
+bool isWeirdRead( const flagshit *read, const bam1_t * bamOfRead )
 {
 	if ( ! read->mapped ) {
 		return true;
 	}
-	else if ( read->edits > 0 ) {
+
+	uint32_t *cigar_pointer = bam1_cigar (bamOfRead);
+	int cigarMismatchedBases = bam_cigar2mismatch (&bamOfRead->core, cigar_pointer);
+
+	if ( read->edits + cigarMismatchedBases > 0 ) {
 		return true;
 	}
 	else return false;
@@ -538,10 +543,10 @@ fetch_func (const bam1_t * b1, void *data)
 	parse_flags_and_tags (b2, b2_flags);
 	//read_name = bam1_qname(b1); 
 
-	if (isGoodAnchor( b1_flags, b1_core ) && isWeirdRead( b2_flags ) ) {
+	if (isGoodAnchor( b1_flags, b1_core ) && isWeirdRead( b2_flags, b2 ) ) {
 		build_record (b1, b2, data);
 	}
-	if (isGoodAnchor( b2_flags, b2_core ) && isWeirdRead( b1_flags ) ) {
+	if (isGoodAnchor( b2_flags, b2_core ) && isWeirdRead( b1_flags, b1 ) ) {
 		build_record (b2, b1, data);
 	}
 /*
@@ -923,4 +928,17 @@ bam_cigar2len (const bam1_core_t * c, const uint32_t * cigar)
 				l -= cigar[k] >> BAM_CIGAR_SHIFT;
 		}
 	return l;
+}
+
+int32_t bam_cigar2mismatch( const bam1_core_t *readCore, const uint32_t *cigar)
+{
+	uint32_t cigarIndex; 
+	int32_t numberOfMismatches = 0;
+	for (cigarIndex = 0; cigarIndex < readCore->n_cigar; ++cigarIndex) {
+		int elementType = cigar[cigarIndex] & BAM_CIGAR_MASK;
+		if (elementType != BAM_CMATCH ) {
+			numberOfMismatches += cigar[cigarIndex] >> BAM_CIGAR_SHIFT;
+		}
+	}
+	return numberOfMismatches;
 }
