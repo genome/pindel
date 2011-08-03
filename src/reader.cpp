@@ -474,6 +474,28 @@ ReadInBamReads (const char *bam_path, const std::string & FragName,
 	return true;
 }
 
+bool isGoodAnchor( flagshit *read, bam1_core_t *bamCore )
+{
+	int maxEdits = int (b1_core->l_qseq * .05) + 1;
+	return ( read->mapped &&
+            ( read->unique || read->sw ) &&
+				( ! read->suboptimal ) &&
+				( read->edits <= maxEdits ) 
+          );
+}
+
+bool isWeirdRead( flagshit *read )
+{
+	if ( ! read->mapped ) {
+		return true;
+	}
+	else if ( read->edits > 0 ) {
+		return true;
+	}
+	else return false;
+		
+}
+
 static int
 fetch_func (const bam1_t * b1, void *data)
 {
@@ -516,6 +538,13 @@ fetch_func (const bam1_t * b1, void *data)
 	parse_flags_and_tags (b2, b2_flags);
 	//read_name = bam1_qname(b1); 
 
+	if (isGoodAnchor( b1_flags, b1_core ) && isWeirdRead( b2_flags ) ) {
+		build_record (b1, b2, data);
+	}
+	if (isGoodAnchor( b2_flags, b2_core ) && isWeirdRead( b1_flags ) ) {
+		build_record (b2, b1, data);
+	}
+/*
 	// process the reads if at least one of the reads of the pair is mapped, at least one of the reads could be mapped uniquely or by Smith-Waterman
 	if (( b1_flags->mapped || b2_flags->mapped ) 
 		 && ( b1_flags->unique || b1_flags->sw || b2_flags->unique || b2_flags->sw ))
@@ -590,13 +619,13 @@ fetch_func (const bam1_t * b1, void *data)
 					&& b1_flags->edits > 0)
 				{
 					build_record (b2, b1, data);
-				}*/
+				}*//*
 		}
 		if (second_read_is_suitable_anchor)
 		{
 			build_record (b2, b1, data);
 		}
-	}	
+	}	*/
 	bam_destroy1 (b2);
 	return 0;
 }
