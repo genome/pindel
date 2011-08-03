@@ -496,113 +496,107 @@ fetch_func (const bam1_t * b1, void *data)
 	//            return 0;
 	//NO BUENO!        }
 	khint_t key = kh_get (read_name, read_to_map_qual, bam1_qname (b1));
-	if (key == kh_end (read_to_map_qual))
-		{
-			int ret;
-			key =
-				kh_put (read_name, read_to_map_qual, strdup (bam1_qname (b1)), &ret);
-			kh_value (read_to_map_qual, key) = bam_dup1 (b1);
-			return 0;
-		}
-	else
-		{
-			b2 = bam_dup1 (kh_value (read_to_map_qual, key));
-			bam_destroy1 (kh_value (read_to_map_qual, key));
-			b2_core = &b2->core;
-			//this seems stupid, but in order to manage the read names, necessary
-			free ((char *) kh_key (read_to_map_qual, key));
-			kh_del (read_name, read_to_map_qual, key);
-			std::string c_sequence;
-		}
+	if (key == kh_end (read_to_map_qual)) {
+		int ret;
+		key = kh_put (read_name, read_to_map_qual, strdup (bam1_qname (b1)), &ret);
+		kh_value (read_to_map_qual, key) = bam_dup1 (b1);
+		return 0;
+	}
+	else {
+		b2 = bam_dup1 (kh_value (read_to_map_qual, key));
+		bam_destroy1 (kh_value (read_to_map_qual, key));
+		b2_core = &b2->core;
+		//this seems stupid, but in order to manage the read names, necessary
+		free ((char *) kh_key (read_to_map_qual, key));
+		kh_del (read_name, read_to_map_qual, key);
+		std::string c_sequence;
+	}
 
 	parse_flags_and_tags (b1, b1_flags);
 	parse_flags_and_tags (b2, b2_flags);
 	//read_name = bam1_qname(b1); 
-	if (!(b1_flags->mapped) && !(b2_flags->mapped))
+
+	// process the reads if at least one of the reads of the pair is mapped, at least one of the reads could be mapped uniquely or by Smith-Waterman
+	if (( b1_flags->mapped || b2_flags->mapped ) 
+		 && ( b1_flags->unique || b1_flags->sw || b2_flags->unique || b2_flags->sw ))
+	{ 
+		// throw away perfect read pairs (both unique and without any SNPs/mismatches [EW: and soft clip?]		
+		if (b1_flags->unique && b2_flags->unique && b1_flags->edits == 0
+			&& b2_flags->edits == 0) 
+      {
+			bam_destroy1 (b2);
+			return 0;
+		}	
+		// also throw away read pairs where both elements have been mapped suboptimally
+		if (b1_flags->suboptimal && b2_flags->suboptimal)
+		{
+			bam_destroy1 (b2);
+			return 0;
+		}
+		int max_edits1 = int (b1_core->l_qseq * .05) + 1;
+		int max_edits2 = int (b2_core->l_qseq * .05) + 1;	
+
+		// now throw reads pairs away where both reads have many SNPs
+		if (b1_flags->edits > max_edits1 && b2_flags->edits > max_edits2)
 		{
 			bam_destroy1 (b2);
 			return 0;
 		}
 
-	if (!b1_flags->unique && !b1_flags->sw && !b2_flags->unique
-			&& !b2_flags->sw)
-		{
-			bam_destroy1 (b2);
-			return 0;
-		}
+		bool first_read_is_suitable_anchor = false;
+		bool second_read_is_suitable_anchor = false;	
 
-	if (b1_flags->unique && b2_flags->unique && b1_flags->edits == 0
-			&& b2_flags->edits == 0)
+		// if both reads are mapped
+		if (b1_flags->mapped && b2_flags->mapped)
 		{
-
-			bam_destroy1 (b2);
-
-			return 0;
-		}
-	if (b1_flags->suboptimal && b2_flags->suboptimal)
-		{
-			bam_destroy1 (b2);
-			return 0;
-		}
-	int max_edits1 = int (b1_core->l_qseq * .05) + 1;
-	int max_edits2 = int (b2_core->l_qseq * .05) + 1;
-
-	if (b1_flags->edits > max_edits1 && b2_flags->edits > max_edits2)
-		{
-			bam_destroy1 (b2);
-			return 0;
-		}
-
-	int which_read_is_mapped = 0;
-	if (b1_flags->mapped && b2_flags->mapped)
-		{
+			// if the first read is mapped well enough (uniquely or with Smith-Waterman) and has an acceptable number of errors, while there is something odd with the second read, first read is a good anchor
 			if ((b1_flags->unique || b1_flags->sw) && b1_flags->edits <= max_edits1
 					&& b2_flags->edits > 0)
-				{
-					which_read_is_mapped = 1;
-				}
-			else if ((b2_flags->unique || b2_flags->sw)
+			{
+				first_read_is_suitable_anchor = true;
+			}
+			// if the second read is mapped well enough (uniquely or with Smith-Waterman) and has an acceptable number of errors, while there is something odd with the first read, first read is a good anchor
+			if ((b2_flags->unique || b2_flags->sw)
 							 && b2_flags->edits <= max_edits1 && b1_flags->edits > 0)
-				{
-					which_read_is_mapped = 2;
-				}
-			else
-				{
-					bam_destroy1 (b2);
-					return 0;
-				}
+			{
+				second_read_is_suitable_anchor = true;
+			}
+			// if neither read is a good anchor, throw away 
+			if (!(first_read_is_suitable_anchor || second_read_is_suitable_anchor ))
+			{
+				bam_destroy1 (b2);
+				return 0;
+			}
 		}
-	else if (!b1_flags->mapped && b2_flags->edits <= max_edits2)
+		// if the first read is not mapped and the second read has few mismatching nucleotides (SNP edits)
+		else if (!b1_flags->mapped && b2_flags->edits <= max_edits2)
 		{
-			which_read_is_mapped = 2;
+			second_read_is_suitable_anchor = true;
 		}
-	else if (!b2_flags->mapped && b1_flags->edits <= max_edits1)
+		// if the second read is not mapped and the first read has few mismatching nucleotides (SNP edits)
+		else if (!b2_flags->mapped && b1_flags->edits <= max_edits1)
 		{
-			which_read_is_mapped = 1;
+			first_read_is_suitable_anchor = true;
 		}
-	else
+		else
 		{
 			bam_destroy1 (b2);
 			return 0;
 		}
-	if (which_read_is_mapped == 1)
+		if (first_read_is_suitable_anchor)
 		{
 			build_record (b1, b2, data);
-			if ((b2_flags->unique || b2_flags->sw) && b2_flags->edits <= max_edits2
+/*			if ((b2_flags->unique || b2_flags->sw) && b2_flags->edits <= max_edits2
 					&& b1_flags->edits > 0)
 				{
 					build_record (b2, b1, data);
-				}
+				}*/
 		}
-	else if (which_read_is_mapped == 2)
+		if (second_read_is_suitable_anchor)
 		{
 			build_record (b2, b1, data);
 		}
-	else
-		{
-			LOG_ERROR(std::cerr << "Should not get here" << std::endl);
-			exit (1);
-		}
+	}	
 	bam_destroy1 (b2);
 	return 0;
 }
