@@ -212,6 +212,8 @@ OutputDeletions (const std::vector < SPLIT_READ > &Deletions,
 	LOG_DEBUG(std::cout << "d_2" << std::endl);
 	SupportPerSample NumSupportPerTag[VectorTag.size ()];
 
+	DeletionOutf << "EWL BREAKING JENKINS! (see if it still works)\n";
+
 	for (unsigned short i = 0; i < VectorTag.size (); i++)
 		{
 			NumSupportPerTag[i].NumPlus = 0;
