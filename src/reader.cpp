@@ -474,9 +474,9 @@ ReadInBamReads (const char *bam_path, const std::string & FragName,
 	return true;
 }
 
-bool isGoodAnchor( flagshit *read, bam1_core_t *bamCore )
+bool isGoodAnchor( const flagshit *read, const bam1_core_t *bamCore )
 {
-	int maxEdits = int (b1_core->l_qseq * .05) + 1;
+	int maxEdits = int (bamCore->l_qseq * .05) + 1;
 	return ( read->mapped &&
             ( read->unique || read->sw ) &&
 				( ! read->suboptimal ) &&
@@ -484,7 +484,7 @@ bool isGoodAnchor( flagshit *read, bam1_core_t *bamCore )
           );
 }
 
-bool isWeirdRead( flagshit *read )
+bool isWeirdRead( const flagshit *read )
 {
 	if ( ! read->mapped ) {
 		return true;
@@ -615,11 +615,11 @@ fetch_func (const bam1_t * b1, void *data)
 		if (first_read_is_suitable_anchor)
 		{
 			build_record (b1, b2, data);
-/*			if ((b2_flags->unique || b2_flags->sw) && b2_flags->edits <= max_edits2
+			if ((b2_flags->unique || b2_flags->sw) && b2_flags->edits <= max_edits2
 					&& b1_flags->edits > 0)
 				{
 					build_record (b2, b1, data);
-				}*//*
+				}
 		}
 		if (second_read_is_suitable_anchor)
 		{
