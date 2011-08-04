@@ -51,7 +51,7 @@ if [ "$?" -ne 0 ]; then
     exit 1
 else
     echo "Creating pindel2vcf utility..."
-    g++ src/vcfcreator017.cpp -o pindel2vcf
+    g++ src/vcfcreator018.cpp -o pindel2vcf
     echo "pindel2vcf created."
     mv src/pindel .
     echo " "
