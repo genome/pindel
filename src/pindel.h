@@ -65,6 +65,7 @@ extern unsigned int GetPlus;
 extern unsigned int GetMinus;
 extern int g_binIndex;
 extern int WINDOW_SIZE;
+extern unsigned int g_minimalAnchorQuality;
 
 /*
  * For search functions

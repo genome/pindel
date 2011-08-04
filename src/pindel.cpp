@@ -130,6 +130,7 @@ std::vector<Parameter *> parameters;
 
 // #########################################################
 int ADDITIONAL_MISMATCH = 1; // user
+unsigned int g_minimalAnchorQuality = 20; // true value set in the defineParameters 
 int Min_Perfect_Match_Around_BP = 3; // user                   //#
 int MIN_IndelSize_NT = 50; //user            //#
 int MIN_IndelSize_Inversion = 50; //user       //#
@@ -291,7 +292,7 @@ void defineParameters(std::string & WhichChr) {
 			new FloatParameter(&Seq_Error_Rate, "-e",
 					"--sequencing_error_rate",
 					"the expected fraction of sequencing errors "
-						"(default 0.05)", false, 0.05));
+						"(default 0.03)", false, 0.03));
 
 	parameters. push_back(
 			new FloatParameter(
@@ -299,7 +300,7 @@ void defineParameters(std::string & WhichChr) {
 					"-u",
 					"--maximum_allowed_mismatch_rate",
 					"Only reads with no less than this fraction of mismatches than the reference genome will be considered. "
-						"(default 0.1)", false, 0.1));
+						"(default 0.05)", false, 0.05));
 
 	parameters. push_back(
 			new BoolParameter(&Analyze_INV, "-r", "--report_inversions",
@@ -375,6 +376,13 @@ void defineParameters(std::string & WhichChr) {
 					"the number of bases of a SV above which a more stringent filter is applied which demands "
                "that both sides of the SV are mapped with sufficiently long strings of bases "
 					"(default 100)", false, 100));
+	parameters. push_back(
+			new UIntParameter(
+					&g_minimalAnchorQuality,
+					"-A",
+					"--anchor_quality",
+					"the minimal mapping quality of the reads Pindel uses as anchor "
+					"(default 20)", false, 20));
 
 }
 

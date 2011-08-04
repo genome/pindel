@@ -477,8 +477,11 @@ ReadInBamReads (const char *bam_path, const std::string & FragName,
 
 bool isGoodAnchor( const flagshit *read, const bam1_core_t *bamCore )
 {
-	int maxEdits = int (bamCore->l_qseq * .05) + 1;
+	int maxEdits = int (bamCore->l_qseq * MaximumAllowedMismatchRate) + 1;
+	unsigned int mappingQuality = bamCore->qual;
+
 	return ( read->mapped &&
+				( mappingQuality >= g_minimalAnchorQuality ) &&
             ( read->unique || read->sw ) &&
 				( ! read->suboptimal ) &&
 				( read->edits <= maxEdits ) 
@@ -549,88 +552,6 @@ fetch_func (const bam1_t * b1, void *data)
 	if (isGoodAnchor( b2_flags, b2_core ) && isWeirdRead( b1_flags, b1 ) ) {
 		build_record (b2, b1, data);
 	}
-/*
-	// process the reads if at least one of the reads of the pair is mapped, at least one of the reads could be mapped uniquely or by Smith-Waterman
-	if (( b1_flags->mapped || b2_flags->mapped ) 
-		 && ( b1_flags->unique || b1_flags->sw || b2_flags->unique || b2_flags->sw ))
-	{ 
-		// throw away perfect read pairs (both unique and without any SNPs/mismatches [EW: and soft clip?]		
-		if (b1_flags->unique && b2_flags->unique && b1_flags->edits == 0
-			&& b2_flags->edits == 0) 
-      {
-			bam_destroy1 (b2);
-			return 0;
-		}	
-		// also throw away read pairs where both elements have been mapped suboptimally
-		if (b1_flags->suboptimal && b2_flags->suboptimal)
-		{
-			bam_destroy1 (b2);
-			return 0;
-		}
-		int max_edits1 = int (b1_core->l_qseq * .05) + 1;
-		int max_edits2 = int (b2_core->l_qseq * .05) + 1;	
-
-		// now throw reads pairs away where both reads have many SNPs
-		if (b1_flags->edits > max_edits1 && b2_flags->edits > max_edits2)
-		{
-			bam_destroy1 (b2);
-			return 0;
-		}
-
-		bool first_read_is_suitable_anchor = false;
-		bool second_read_is_suitable_anchor = false;	
-
-		// if both reads are mapped
-		if (b1_flags->mapped && b2_flags->mapped)
-		{
-			// if the first read is mapped well enough (uniquely or with Smith-Waterman) and has an acceptable number of errors, while there is something odd with the second read, first read is a good anchor
-			if ((b1_flags->unique || b1_flags->sw) && b1_flags->edits <= max_edits1
-					&& b2_flags->edits > 0)
-			{
-				first_read_is_suitable_anchor = true;
-			}
-			// if the second read is mapped well enough (uniquely or with Smith-Waterman) and has an acceptable number of errors, while there is something odd with the first read, first read is a good anchor
-			if ((b2_flags->unique || b2_flags->sw)
-							 && b2_flags->edits <= max_edits1 && b1_flags->edits > 0)
-			{
-				second_read_is_suitable_anchor = true;
-			}
-			// if neither read is a good anchor, throw away 
-			if (!(first_read_is_suitable_anchor || second_read_is_suitable_anchor ))
-			{
-				bam_destroy1 (b2);
-				return 0;
-			}
-		}
-		// if the first read is not mapped and the second read has few mismatching nucleotides (SNP edits)
-		else if (!b1_flags->mapped && b2_flags->edits <= max_edits2)
-		{
-			second_read_is_suitable_anchor = true;
-		}
-		// if the second read is not mapped and the first read has few mismatching nucleotides (SNP edits)
-		else if (!b2_flags->mapped && b1_flags->edits <= max_edits1)
-		{
-			first_read_is_suitable_anchor = true;
-		}
-		else
-		{
-			bam_destroy1 (b2);
-			return 0;
-		}
-		if (first_read_is_suitable_anchor)
-		{
-			build_record (b1, b2, data);
-			if ((b2_flags->unique || b2_flags->sw) && b2_flags->edits <= max_edits2
-					&& b1_flags->edits > 0)
-				{
-					build_record (b2, b1, data);
-				}
-		}
-		if (second_read_is_suitable_anchor)
-		{
-			build_record (b2, b1, data);
-		}
-	}	*/
 	bam_destroy1 (b2);
 	return 0;
 }
