@@ -78,9 +78,9 @@ ReadInOneChr (std::ifstream & inf_Seq, std::string & TheInput, const std::string
 }
 
 void
-GetOneChrSeq (std::ifstream & inf_Seq, std::string & TheInput, bool WhetherBuildUp)
+GetOneChrSeq (std::ifstream & fastaFile, std::string & chromosomeSequence, bool WhetherBuildUp)
 {
-	RefReader* rr = new RefReader(inf_Seq, TheInput);
+	RefReader* rr = new RefReader(fastaFile, chromosomeSequence );
 	rr->ReadSeq(WhetherBuildUp);
 	delete rr;
 }

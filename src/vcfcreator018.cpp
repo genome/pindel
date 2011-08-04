@@ -7,7 +7,7 @@
 	e.m.w.lameijer@lumc.nl
 	+31(0)71-526 9745
 
-	Version 0.1.8 [July 27th, 2011. END-position now proper according to VCF rules (so for deletion: start+length+1, for SI: start+1), mentioning -d] */
+	Version 0.1.7 [July 19th, 2011. Has updated/corrected help text, mentioning -d] */
 
 #include <algorithm>
 #include <fstream>
@@ -27,7 +27,7 @@ const int FIRST_SAMPLE_INDEX = 32; // index of first sample name
 
 using namespace std;
 
-string g_versionString = "0.1.8";
+string g_versionString = "0.1.7";
 string g_programName = "pindel2vcf";
 
 bool g_normalBaseArray[256];
@@ -839,8 +839,8 @@ void convertIndelToSVdata( ifstream& svfile, map< string, int>& sampleMap, const
    svd.setAlternative( altVariant ); 
 	int leftmostStartPos = atoi (fetchElement( lineStream, 2 ).c_str());  // at position 13
    int rightmostEndPos = atoi (fetchElement( lineStream, 1 ).c_str()); // now at position 14
-   svd.setBPrange( leftmostStartPos, rightmostEndPos );
-   svd.setEnd( leftmostEndPos );
+   svd.setBPrange( leftmostStartPos, leftmostEndPos );
+   svd.setEnd( rightmostEndPos );
 	svd.setHomlen( rightmostEndPos - leftmostEndPos );
 	string homSeq="";
 	for (int position=leftmostEndPos; position<rightmostEndPos; position++ ) {
