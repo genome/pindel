@@ -146,8 +146,8 @@ unsigned int BalanceCutoff = 100; //                    //#
 //short RangeLowSensivity = 7;                           //#
 bool Analyze_INV = true; //# user
 bool Analyze_TD = true; //# user
-bool Analyze_LI = true; //EWL070111 user
-bool Analyze_BP = true; //EWL070111 user
+bool Analyze_LI = true; //user
+bool Analyze_BP = true; // user
 unsigned int NumRead2ReportCutOff = 3; //#
 int NumRead2ReportCutOff_BP = 2;
 int MaxRangeIndex = 9; // 5 or 6 or 7 or maximum 8      //# // user
@@ -1290,6 +1290,10 @@ int main(int argc, char *argv[]) {
 	std::string emptystr;
 
 	/* 3 loop over chromosomes. this is the most outer loop in the main function. */
+
+	// Get a new chromosome again and again until you have visited the specified chromosome or the file ends
+	// CurrentChrName stores the name of the chromosome.
+
 	while (currentState.SpecifiedChrVisited == false && currentState.inf_Seq
 			>> currentState.CurrentChrName && !currentState.inf_Seq.eof()) {
 
@@ -1298,8 +1302,8 @@ int main(int argc, char *argv[]) {
 				<< std::endl);
 
 		//TODO: check with Kai what's the use of this line.
+		// dangerous, there may be no other elements on the fasta header line
 		std::getline(currentState.inf_Seq, emptystr);
-
 		if (currentState.loopOverAllChromosomes) {
 			GetOneChrSeq(currentState.inf_Seq, currentState.CurrentChr, true);
 			currentState.WhichChr = currentState.CurrentChrName;
@@ -1332,8 +1336,12 @@ int main(int argc, char *argv[]) {
 						((currentState.startOfRegion >= 0) ? (currentState.startOfRegion
 								- WINDOW_SIZE)
 								: currentState.lowerBinBorder);
-		int displayedEndOfRegion = displayedStartOfRegion + WINDOW_SIZE;
 
+		currentState.lowerBinBorder = -WINDOW_SIZE;
+		currentState.upperBinBorder = currentState.lowerBinBorder + WINDOW_SIZE;
+
+		int displayedEndOfRegion = displayedStartOfRegion + WINDOW_SIZE;
+		// loop over one chromosome
 		do {
 
 			/* 3.2.1 preparation starts */
