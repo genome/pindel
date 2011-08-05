@@ -86,6 +86,25 @@ GetOneChrSeq (std::ifstream & fastaFile, std::string & chromosomeSequence, bool 
 }
 
 
+int safeDivide( int dividend, int divisor )
+{
+	if (divisor == 0) return 0;
+	else return (dividend / divisor );
+}
+
+void showReadStats(const std::vector<SPLIT_READ>& Reads)
+{
+	LOG_INFO(std::cout << "NumReadScanned:\t" << NumReadScanned << std::endl);
+	LOG_INFO(std::cout << "NumReadInChr:\t" << NumReadInChr << std::endl);
+	LOG_INFO(std::cout << "NumReadStored:\t" << Reads.size () << std::endl);
+	LOG_INFO(std::cout << "NumReadStored / NumReadInChr = " << 
+	   	       safeDivide( Reads.size () * 100.0 , NumReadInChr ) << 
+                " %" << std::endl << "InChrPlus \t" << InChrPlus << "\tGetPlus \t" <<
+					 GetPlus << "\t" << 
+                safeDivide( GetPlus * 100.0 , InChrPlus ) << " %" << std::endl << "InChrMinus\t" << InChrMinus << "\tGetMinus\t" <<
+					 GetMinus << "\t" << safeDivide (GetMinus * 100.0 , InChrMinus )<< " %" << std::endl << std::endl);
+}
+
 short
 ReadInRead (std::ifstream & inf_ReadSeq, const std::string & FragName,
 						const std::string & CurrentChr, std::vector < SPLIT_READ > &Reads,
@@ -311,25 +330,11 @@ ReadInRead (std::ifstream & inf_ReadSeq, const std::string & FragName,
 
 	if (FirstChr)
 		{
-			LOG_INFO(std::cout << std::endl << "The last read Pindel scanned: " << std::endl);
-			LOG_INFO(std::cout << Temp_One_Read.Name << std::endl
-							 << Temp_One_Read.UnmatchedSeq << std::endl
-				<< Temp_One_Read.MatchedD << "\t"
-				<< Temp_One_Read.FragName << "\t"
-				<< Temp_One_Read.MatchedRelPos << "\t"
-				<< Temp_One_Read.MS << "\t"
-							 << Temp_One_Read.InsertSize << "\t" << Temp_One_Read.Tag << std::endl << std::endl);
+			showReadStats(Reads);
 			FirstChr = false;
 			//ReportLength = Temp_One_Read.UnmatchedSeq.size();
 		}
-	LOG_INFO(std::cout << "NumReadScanned:\t" << NumReadScanned << std::endl);
-	LOG_INFO(std::cout << "NumReadInChr:\t" << NumReadInChr << std::endl);
-	LOG_INFO(std::cout << "NumReadStored:\t" << Reads.size () << std::endl);
-	LOG_INFO(std::cout << "NumReadStored / NumReadInChr = " << Reads.size () * 100.0 /
-					 NumReadInChr << " %" << std::endl << "InChrPlus \t" << InChrPlus << "\tGetPlus \t" <<
-					 GetPlus << "\t" << GetPlus * 100.0 /
-					 InChrPlus << " %" << std::endl << "InChrMinus\t" << InChrMinus << "\tGetMinus\t" <<
-					 GetMinus << "\t" << GetMinus * 100.0 / InChrMinus << " %" << std::endl << std::endl);
+
 	//inf_ReadSeq.close();
 	if (Reads.size () == 0)
 		return 0;
@@ -405,15 +410,8 @@ ReadInBamReads (const char *bam_path, const std::string & FragName,
 	//ADDITIONAL_MISMATCH = 1;
 	//Seq_Error_Rate = 0.05;
 	bam_fetch (fp, idx, tid, binStart, binEnd, &data, fetch_func);
-	LOG_INFO(std::cout << "Bam:\t" << bam_path << "\tTag:\t" << Tag << std::endl);
-	LOG_INFO(std::cout << "NumReadScanned:\t" << NumReadScanned << std::endl);
-	LOG_INFO(std::cout << "NumReadInChr:\t" << NumReadInChr << std::endl);
-	LOG_INFO(std::cout << "NumReadStored:\t" << LeftReads.size () << std::endl);
-	LOG_INFO(std::cout << "NumReadStored / NumReadInChr = " << LeftReads.size () * 100.0 /
-					 NumReadInChr << " %" << std::endl << "InChrPlus \t" << InChrPlus << "\tGetPlus \t" <<
-					 GetPlus << "\t" << GetPlus * 100.0 /
-					 InChrPlus << " %" << std::endl << "InChrMinus\t" << InChrMinus << "\tGetMinus\t" <<
-					 GetMinus << "\t" << GetMinus * 100.0 / InChrMinus << " %" << std::endl << std::endl);
+	showReadStats(LeftReads);
+
 	khint_t key;
 	if (kh_size (data.read_to_map_qual) > 0)
 		{
