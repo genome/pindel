@@ -124,6 +124,8 @@ int SearchVariant::Search(ControlState& currentState, const unsigned numBoxes) {
 								} else {
 									if (readInSpecifiedRegion(
 											currentState.Reads[ReadIndex],
+											currentState.regionStartDefined,
+											currentState.regionEndDefined,
 											currentState.startOfRegion,
 											currentState.endOfRegion)) {
 										Vars[(int) currentState.Reads[ReadIndex]. BPLeft
@@ -217,6 +219,8 @@ int SearchVariant::Search(ControlState& currentState, const unsigned numBoxes) {
 								} else {
 									if (readInSpecifiedRegion(
 											currentState.Reads[ReadIndex],
+											currentState.regionStartDefined,
+											currentState.regionEndDefined,
 											currentState.startOfRegion,
 											currentState.endOfRegion)) {
 										Vars[(int) currentState.Reads[ReadIndex]. BPLeft

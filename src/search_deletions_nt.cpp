@@ -111,6 +111,8 @@ int searchIndels(ControlState& currentState, unsigned NumBoxes) {
 						} else {
 							if (readInSpecifiedRegion(
 									currentState.Reads[ReadIndex],
+									currentState.regionStartDefined,
+									currentState.regionEndDefined,
 									currentState.startOfRegion,
 									currentState.endOfRegion)) {
 								DI[(int) currentState.Reads[ReadIndex]. BPLeft
@@ -182,6 +184,8 @@ int searchIndels(ControlState& currentState, unsigned NumBoxes) {
 							} else {
 								if (readInSpecifiedRegion(
 										currentState.Reads[ReadIndex],
+										currentState.regionStartDefined,
+										currentState.regionEndDefined,
 										currentState.startOfRegion,
 										currentState.endOfRegion)) {
 									DI[(int) currentState.Reads[ReadIndex]. BPLeft

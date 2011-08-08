@@ -107,6 +107,8 @@ int searchShortInsertions(ControlState& currentState, unsigned NumBoxes) {
 								} else {
 									if (readInSpecifiedRegion(
 											currentState.Reads[ReadIndex],
+											currentState.regionStartDefined,
+											currentState.regionEndDefined,
 											currentState.startOfRegion,
 											currentState.endOfRegion)) {
 										SIs[(int) currentState.Reads[ReadIndex]. BPLeft
@@ -191,6 +193,8 @@ int searchShortInsertions(ControlState& currentState, unsigned NumBoxes) {
 								} else {
 									if (readInSpecifiedRegion(
 											currentState.Reads[ReadIndex],
+											currentState.regionStartDefined,
+											currentState.regionEndDefined,
 											currentState.startOfRegion,
 											currentState.endOfRegion)) {
 										SIs[(int) currentState.Reads[ReadIndex]. BPLeft

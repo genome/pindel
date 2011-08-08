@@ -104,6 +104,8 @@ int searchTandemDuplicationsNT(ControlState& currentState, unsigned NumBoxes) {
 						if (currentState.Reads[ReadIndex].NT_size
 								<= Max_Length_NT && readInSpecifiedRegion(
 								currentState.Reads[ReadIndex],
+								currentState.regionStartDefined,
+								currentState.regionEndDefined,
 								currentState.startOfRegion,
 								currentState.endOfRegion)) {
 							TD_NT[(int) currentState.Reads[ReadIndex]. BPLeft
@@ -165,6 +167,8 @@ int searchTandemDuplicationsNT(ControlState& currentState, unsigned NumBoxes) {
 						if (currentState.Reads[ReadIndex].NT_size
 								<= Max_Length_NT && readInSpecifiedRegion(
 								currentState.Reads[ReadIndex],
+								currentState.regionStartDefined,
+								currentState.regionEndDefined,
 								currentState.startOfRegion,
 								currentState.endOfRegion)) {
 							TD_NT[(int) currentState.Reads[ReadIndex]. BPLeft

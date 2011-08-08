@@ -355,7 +355,8 @@ bool readTransgressesBinBoundaries(SPLIT_READ & read,
 void saveReadForNextCycle(SPLIT_READ & read,
 		std::vector<SPLIT_READ> &futureReads);
 
-bool readInSpecifiedRegion(const SPLIT_READ & read, const int startOfRegion,
+bool readInSpecifiedRegion(const SPLIT_READ & read, const bool regionStartDefined,
+		const bool regionEndDefined, const int startOfRegion,
 		const int endOfRegion);
 
 #endif /* PINDEL_H */

@@ -113,6 +113,8 @@ int searchInversions(ControlState& currentState, unsigned NumBoxes) {
 										} else {
 											if (readInSpecifiedRegion(
 													currentState.Reads[ReadIndex],
+													currentState.regionStartDefined,
+													currentState.regionEndDefined,
 													currentState.startOfRegion,
 													currentState.endOfRegion)) {
 												Inv[(int) currentState.Reads[ReadIndex]. BPLeft
@@ -199,6 +201,8 @@ int searchInversions(ControlState& currentState, unsigned NumBoxes) {
 										} else {
 											if (readInSpecifiedRegion(
 													currentState.Reads[ReadIndex],
+													currentState.regionStartDefined,
+													currentState.regionEndDefined,
 													currentState.startOfRegion,
 													currentState.endOfRegion)) {
 												Inv[(int) currentState.Reads[ReadIndex]. BPLeft
@@ -279,6 +283,8 @@ int searchInversions(ControlState& currentState, unsigned NumBoxes) {
 														- 1 - SpacerBeforeAfter;
 										if (readInSpecifiedRegion(
 												currentState.Reads[ReadIndex],
+												currentState.regionStartDefined,
+												currentState.regionEndDefined,
 												currentState.startOfRegion,
 												currentState.endOfRegion)) {
 											Inv[(int) currentState.Reads[ReadIndex]. BPLeft
@@ -358,6 +364,8 @@ int searchInversions(ControlState& currentState, unsigned NumBoxes) {
 														- 1 - SpacerBeforeAfter;
 										if (readInSpecifiedRegion(
 												currentState.Reads[ReadIndex],
+												currentState.regionStartDefined,
+												currentState.regionEndDefined,
 												currentState.startOfRegion,
 												currentState.endOfRegion)) {
 											Inv[(int) currentState.Reads[ReadIndex]. BPLeft

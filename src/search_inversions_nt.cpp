@@ -107,6 +107,8 @@ int searchInversionsNT(ControlState& currentState, unsigned NumBoxes) {
 									<= Max_Length_NT) {
 								if (readInSpecifiedRegion(
 										currentState.Reads[ReadIndex],
+										currentState.regionStartDefined,
+										currentState.regionEndDefined,
 										currentState.startOfRegion,
 										currentState.endOfRegion)) {
 									Inv_NT[(int) currentState.Reads[ReadIndex]. BPLeft
@@ -170,6 +172,8 @@ int searchInversionsNT(ControlState& currentState, unsigned NumBoxes) {
 							if (currentState.Reads[ReadIndex].NT_size
 									<= Max_Length_NT && readInSpecifiedRegion(
 									currentState.Reads[ReadIndex],
+									currentState.regionStartDefined,
+									currentState.regionEndDefined,
 									currentState.startOfRegion,
 									currentState.endOfRegion)) {
 								Inv_NT[(int) currentState.Reads[ReadIndex]. BPLeft
@@ -235,6 +239,8 @@ int searchInversionsNT(ControlState& currentState, unsigned NumBoxes) {
 							if (currentState.Reads[ReadIndex].NT_size
 									<= Max_Length_NT && readInSpecifiedRegion(
 									currentState.Reads[ReadIndex],
+									currentState.regionStartDefined,
+									currentState.regionEndDefined,
 									currentState.startOfRegion,
 									currentState.endOfRegion)) {
 								Inv_NT[(int) currentState.Reads[ReadIndex]. BPLeft
@@ -298,6 +304,8 @@ int searchInversionsNT(ControlState& currentState, unsigned NumBoxes) {
 							if (currentState.Reads[ReadIndex].NT_size
 									<= Max_Length_NT && readInSpecifiedRegion(
 									currentState.Reads[ReadIndex],
+									currentState.regionStartDefined,
+									currentState.regionEndDefined,
 									currentState.startOfRegion,
 									currentState.endOfRegion)) {
 								Inv_NT[(int) currentState.Reads[ReadIndex]. BPLeft

@@ -330,10 +330,19 @@ ReadInRead (std::ifstream & inf_ReadSeq, const std::string & FragName,
 
 	if (FirstChr)
 		{
-			showReadStats(Reads);
-			FirstChr = false;
+      LOG_INFO(std::cout << std::endl << "The last read Pindel scanned: " << std::endl);
+      LOG_INFO(std::cout << Temp_One_Read.Name << std::endl
+                         << Temp_One_Read.UnmatchedSeq << std::endl
+                         << Temp_One_Read.MatchedD << "\t"
+                         << Temp_One_Read.FragName << "\t"
+                         << Temp_One_Read.MatchedRelPos << "\t"
+                         << Temp_One_Read.MS << "\t"
+                         << Temp_One_Read.InsertSize << "\t" << Temp_One_Read.Tag << std::endl << std::endl);
+		FirstChr = false;
 			//ReportLength = Temp_One_Read.UnmatchedSeq.size();
 		}
+	showReadStats(Reads);	
+
 
 	//inf_ReadSeq.close();
 	if (Reads.size () == 0)

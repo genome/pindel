@@ -204,19 +204,20 @@ bool readTransgressesBinBoundaries(SPLIT_READ & read,
 
 /** 'readInSpecifiedRegion' if a region is specified, check if the read is in it. */
 bool readInSpecifiedRegion(const SPLIT_READ & read, // in: the read
+		const bool regionStartDefined,
+		const bool regionEndDefined,
 		const int startOfRegion, // in: the first base of the specified region
 		const int endOfRegion // in: the last base of the specified region (-1 if no region has been specified)
 ) {
 	bool passesFilter = true;
 
 	// if a start position has been defined, and the breakpoint is before it
-	if ((startOfRegion != -1) && (read.BPLeft + 1
-			< (unsigned int) startOfRegion)) {
+	if (regionStartDefined && (read.BPLeft + 1 < (unsigned int) startOfRegion)) {
 		passesFilter = false;
 	}
 
 	// if an end of the region has been specified
-	if ((endOfRegion != -1) && (read.BPLeft + 1 > (unsigned int) endOfRegion)) {
+	if (regionEndDefined && (read.BPLeft + 1 > (unsigned int) endOfRegion)) {
 		passesFilter = false;
 
 	}
@@ -527,12 +528,16 @@ void eliminate(const char ch, // in: character to be eliminated from the string
 
 /** 'parseRegion' interprets the region specified by the user in the -c option. */
 void parseRegion(const std::string & region, // in: region
+		bool &regionStartDefined, 
+		bool &regionEndDefined,
 		int &startOfRegion, // out: starting position of the region, -1 if not specified
 		int &endOfRegion, // out: ending position of the region, -1 if not specified
 		std::string & chromosomeName, // out: name of the pure chromosome without region information
 		bool & correctParse // out: whether parsing has succeeded.
 ) {
 	size_t separatorPos = region.find(":");
+	regionStartDefined = false;
+	regionEndDefined = false;
 	startOfRegion = -1;
 	endOfRegion = -1;
 	correctParse = false;
@@ -549,12 +554,13 @@ void parseRegion(const std::string & region, // in: region
 			std::string secondPositionStr = coordinates.substr(
 					startEndSeparatorPos + 1);
 			endOfRegion = atoi(secondPositionStr.c_str());
+			regionEndDefined = true;
 		}
 		startOfRegion = atoi(coordinates.c_str());
+		regionStartDefined = true;
 
 		LOG_DEBUG(std::cout << "sor: " << startOfRegion << "eor: " << endOfRegion << std::endl);
-		if (startOfRegion < 0 || (endOfRegion < startOfRegion && endOfRegion
-				!= -1)) {
+		if (startOfRegion < 0 || (regionEndDefined && ( endOfRegion < startOfRegion) )) {
 			correctParse = false;
 		} else {
 			correctParse = true;
@@ -834,7 +840,7 @@ int init(int argc, char *argv[], ControlState& currentState) {
 	currentState.endOfRegion = -1;
 	bool correctParse = false;
 	std::string chrName;
-	parseRegion(currentState.WhichChr, currentState.startOfRegion,
+	parseRegion(currentState.WhichChr, currentState.regionStartDefined, currentState.regionEndDefined, currentState.startOfRegion,
 			currentState.endOfRegion, chrName, correctParse);
 	if (!correctParse) {
 		LOG_ERROR(std::cout << "I cannot parse the region '" << currentState.WhichChr
@@ -848,7 +854,7 @@ int init(int argc, char *argv[], ControlState& currentState) {
 
 	int startOffSet = 0;
 	// if a region has been specified
-	if (currentState.startOfRegion >= 0) {
+	if (currentState.regionStartDefined ) {
 		startOffSet = currentState.startOfRegion - AROUND_REGION_BUFFER;
 		if (startOffSet < 0) {
 			startOffSet = 0;
@@ -858,7 +864,7 @@ int init(int argc, char *argv[], ControlState& currentState) {
 	currentState.upperBinBorder = currentState.lowerBinBorder + WINDOW_SIZE;
 
 	currentState.endRegionPlusBuffer = -1; // -1 indicates that the chromosome must be read to the end
-	if (currentState.endOfRegion > -1) {
+	if (currentState.regionEndDefined ) {
 		currentState.endRegionPlusBuffer = currentState.endOfRegion
 				+ AROUND_REGION_BUFFER;
 	}
@@ -1331,14 +1337,14 @@ int main(int argc, char *argv[]) {
 
 		/* 3.2 apply sliding windows to input datasets starts. This is the 2nd level while loop */
 		g_binIndex = -1; // to start with 0...
-		int
-				displayedStartOfRegion =
-						((currentState.startOfRegion >= 0) ? (currentState.startOfRegion
-								- WINDOW_SIZE)
-								: currentState.lowerBinBorder);
 
 		currentState.lowerBinBorder = -WINDOW_SIZE;
 		currentState.upperBinBorder = currentState.lowerBinBorder + WINDOW_SIZE;
+		int displayedStartOfRegion =
+						((currentState.regionStartDefined) ? (currentState.startOfRegion- WINDOW_SIZE)
+								                             : currentState.lowerBinBorder);
+
+
 
 		int displayedEndOfRegion = displayedStartOfRegion + WINDOW_SIZE;
 		// loop over one chromosome
@@ -1350,14 +1356,13 @@ int main(int argc, char *argv[]) {
 			currentState.upperBinBorder += WINDOW_SIZE;
 			displayedStartOfRegion += WINDOW_SIZE;
 			displayedEndOfRegion += WINDOW_SIZE;
-			if (displayedEndOfRegion > currentState.endOfRegion) {
+			if (currentState.regionEndDefined && ( displayedEndOfRegion > currentState.endOfRegion )) {
 				displayedEndOfRegion = currentState.endOfRegion;
 			}
 
 			// if the region end is specified, and it is before the regular upper border of the bin
-			if (currentState.endRegionPlusBuffer > -1
-					&& currentState.upperBinBorder
-							> currentState.endRegionPlusBuffer) {
+			if (currentState.regionEndDefined
+					&& currentState.upperBinBorder > currentState.endRegionPlusBuffer) {
 				currentState.upperBinBorder = currentState.endRegionPlusBuffer;
 			}
 
