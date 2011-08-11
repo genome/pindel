@@ -42,10 +42,10 @@ CheckLeft_Close (const SPLIT_READ & OneRead,
 						{
 							Sum = 0;
 							if (ADDITIONAL_MISMATCH)
-								for (short j = 1; j <= ADDITIONAL_MISMATCH; j++)
-									Sum += Left_PD[i + j].size ();
+								for (short j = 0; j <= i + ADDITIONAL_MISMATCH; j++)
+									Sum += Left_PD[j].size ();
 
-							if (Sum == 0
+							if (Sum == 1
 									&& i <= (short) (CurrentLength * Seq_Error_Rate + 1))
 								{
 									UniquePoint TempOne;
@@ -53,9 +53,11 @@ CheckLeft_Close (const SPLIT_READ & OneRead,
 									TempOne.AbsLoc = Left_PD[i][0];
 									TempOne.Direction = FORWARD;
 									TempOne.Strand = ANTISENSE;
-									TempOne.Mismatches = i;
-									LeftUP.push_back (TempOne);
-									break;
+									TempOne.Mismatches = i; 
+                                    if (CheckMismatches(TheInput, OneRead.UnmatchedSeq, TempOne)) {
+                                        LeftUP.push_back (TempOne);
+                                        break;
+                                    }
 								}
 						}
 				}
@@ -175,10 +177,10 @@ CheckRight_Close (const SPLIT_READ & OneRead,
 						{
 							Sum = 0;
 							if (ADDITIONAL_MISMATCH)
-								for (short j = 1; j <= ADDITIONAL_MISMATCH; j++)
-									Sum += Right_PD[i + j].size ();
+								for (short j = 0; j <= i+ ADDITIONAL_MISMATCH; j++)
+									Sum += Right_PD[j].size ();
 
-							if (Sum == 0
+							if (Sum == 1
 									&& i <= (short) (CurrentLength * Seq_Error_Rate + 1))
 								{
 									UniquePoint TempOne;
@@ -187,8 +189,10 @@ CheckRight_Close (const SPLIT_READ & OneRead,
 									TempOne.Direction = BACKWARD;
 									TempOne.Strand = SENSE;
 									TempOne.Mismatches = i;
-									RightUP.push_back (TempOne);
-									break;
+                                    if (CheckMismatches(TheInput, OneRead.UnmatchedSeq, TempOne)) {
+                                        RightUP.push_back (TempOne);
+                                        break;
+                                    } // ###################################
 								}
 						}
 				}

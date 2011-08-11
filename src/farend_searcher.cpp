@@ -479,7 +479,7 @@ if (Temp_One_Read.UP_Far.size()>0 ) { std::cout << "KAI1108 UP_Far.size() == " <
 	if (CurrentBase != 'N') {
 	 	for (int pos = Start; pos < End; pos++) {
 		   if (chromosome.at(pos) == CurrentBase) {
-				PD_Plus[0].push_back(pos);
+				PD_Plus[0].push_back(pos); // else 
 		  	}	
 		   else if (chromosome.at(pos) == CurrentBaseRC) {
 			   PD_Minus[0].push_back(pos);
@@ -492,38 +492,24 @@ if (Temp_One_Read.UP_Far.size()>0 ) { std::cout << "KAI1108 UP_Far.size() == " <
 	}
     
 	if (UP.empty()) {}
-	else 
-     if (UP[UP.size() - 1].LengthStr + Temp_One_Read.UP_Close[Temp_One_Read.UP_Close.size() - 1].LengthStr < Temp_One_Read.ReadLength) { // should put into UP_Far_backup
+    //else if (UP[UP.size() - 1].LengthStr + Temp_One_Read.MinClose >= Temp_One_Read.ReadLength) {} // match too long
+	else if (UP[UP.size() - 1].LengthStr + Temp_One_Read.UP_Close[Temp_One_Read.UP_Close.size() - 1].LengthStr < Temp_One_Read.ReadLength) { // should put into UP_Far_backup
         if (Temp_One_Read.UP_Far_backup.empty()) { // UP_Far_backup is empty, put it straightforwards 
-            for (unsigned UP_index = 0; UP_index < UP.size(); UP_index++) {
-                if (CheckMismatches(chromosome, Temp_One_Read.UnmatchedSeq, UP[UP_index])) { // better put CheckMismatches at searching stage than here
-                    Temp_One_Read.UP_Far_backup.push_back(UP[UP_index]);
-                }
-            }
+            Temp_One_Read.UP_Far_backup.swap(UP);
         }
         else if (UP[UP.size() - 1].LengthStr > Temp_One_Read.UP_Far_backup[Temp_One_Read.UP_Far_backup.size() - 1].LengthStr) { // check whether the new result is better
             Temp_One_Read.UP_Far_backup.clear();  
-            for (unsigned UP_index = 0; UP_index < UP.size(); UP_index++) {
-                if (CheckMismatches(chromosome, Temp_One_Read.UnmatchedSeq, UP[UP_index])) { // better put CheckMismatches at searching stage than here
-                    Temp_One_Read.UP_Far_backup.push_back(UP[UP_index]);
-                }  // if CheckMis
-            } // for UP_index           
+            Temp_One_Read.UP_Far_backup.swap(UP);
         } // if UP[UP.size()
     } // if read is incompletely mapped
-
 	else { // should put into UP_Far
         if (Temp_One_Read.UP_Far.empty()) {
-            for (unsigned UP_index = 0; UP_index < UP.size(); UP_index++) {
-                if (CheckMismatches(chromosome, Temp_One_Read.UnmatchedSeq, UP[UP_index])) { // better put CheckMismatches at searching stage than here
-                    Temp_One_Read.UP_Far.push_back(UP[UP_index]);
-                }
-            }
+            Temp_One_Read.UP_Far.swap(UP);
         }
         else {
             std::cout << "We shouldn't get here: farend_searcher.cpp at line ~516" << std::endl;
         }
 	}
-
 	UP.clear();
 }
 

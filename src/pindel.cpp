@@ -1130,7 +1130,7 @@ int main(int argc, char *argv[]) {
 
 			if (currentState.Reads.size()) {
 				(std::cout << "There are " << currentState.Reads. size()
-						<< " reads for this chromosome." << std::endl);
+						<< " reads for this chromosome region." << std::endl); // what region?
 			}
 			else {
 				(std::cout << "There are no reads for this bin." << std::endl);
@@ -1145,9 +1145,16 @@ int main(int argc, char *argv[]) {
 			Time_Load_E = time(NULL);
 			/* 3.2.1 preparation ends */
 //if (currentState.Reads.size()>17800) std::cout << "DEBUG03 " << currentState.Reads[ 17643 ].UP_Close[0].AbsLoc << std::endl;
-			for (unsigned int readIndex=0; readIndex<currentState.Reads.size(); readIndex++ ) {
-				SearchFarEnd( currentState.CurrentChr, currentState.Reads[readIndex], bdData );
-			}	
+#pragma omp parallel default(shared) 
+{
+#pragma omp for   
+            for (int readIndex= 0; readIndex < (int)currentState.Reads.size(); readIndex++ ) {
+               SearchFarEnd( currentState.CurrentChr, currentState.Reads[readIndex], bdData );
+            }	
+}
+            
+            
+
 
 
 			(std::cout << "Far end searching completed for this window." << std::endl);
@@ -1497,55 +1504,34 @@ void GetCloseEnd(const std::string & CurrentChr, SPLIT_READ & Temp_One_Read) {
 	BP_End = Temp_One_Read.ReadLengthMinus;
 	// TODO: Ask Kai whether this can be removed
 	//Temp_One_Read.Unique = true;
-	if (Temp_One_Read.TOTAL_SNP_ERROR_CHECKED_Minus) {
+	//if (Temp_One_Read.TOTAL_SNP_ERROR_CHECKED_Minus) 
+    
 		if (Temp_One_Read.MatchedD == Plus) {
 			CurrentReadSeq = ReverseComplement(Temp_One_Read.UnmatchedSeq);
 			Start = Temp_One_Read.MatchedRelPos + SpacerBeforeAfter;
 			End = Start + 3 * Temp_One_Read.InsertSize;
 			LeftChar = CurrentReadSeq[0];
 			if (LeftChar != 'N') {
-				// TODO: Ask Kai whether this can be removed
-				//#pragma omp parallel default(shared)
 				{
 					// #pragma omp for
 					for (int pos = Start; pos < End; pos++) {
 						if (CurrentChr[pos] == LeftChar) {
 							PD[0].push_back(pos);
-						} else
-							PD[1].push_back(pos);
+						} 
+                        //else PD[1].push_back(pos);
 					}
 				}
-			} else { //Match2N[(short)'A'] = 'N';
-				// TODO: Ask Kai whether this can be removed
-				//#pragma omp parallel default(shared)
-				{
-					//#pragma omp for
-					for (int pos = Start; pos < End; pos++) {
-						if (Match2N[(short) CurrentChr[pos]] == 'N') {
-							PD[0].push_back(pos);
-						}
-						//else Left_PD[1].push_back(pos);
-					}
-				}
-			}
-			CheckLeft_Close(Temp_One_Read, CurrentChr, CurrentReadSeq, PD,
+			} 
+            if (PD[0].size()) 
+			   CheckLeft_Close(Temp_One_Read, CurrentChr, CurrentReadSeq, PD,
 					BP_Start, BP_End, FirstBase, UP); // LengthStr
-			// TODO: Ask Kai whether this can be removed
-			//Direction = Minus;
-			if (UP.empty()) {
-			} else if (UP[UP.size() - 1].LengthStr + Temp_One_Read.MinClose
-					>= Temp_One_Read.ReadLength) {
-			} else {
-				for (unsigned LeftUP_index = 0; LeftUP_index < UP.size(); LeftUP_index++) {
-					if (CheckMismatches(CurrentChr, Temp_One_Read.UnmatchedSeq,
-							UP[LeftUP_index])) {
-						Temp_One_Read.Used = false;
-						Temp_One_Read.UP_Close.push_back(UP[LeftUP_index]);
-					}
-				}
+			if (UP.empty()) {} 
+            //else if (UP[UP.size() - 1].LengthStr + Temp_One_Read.MinClose >= Temp_One_Read.ReadLength) {} 
+            else {
+                Temp_One_Read.Used = false;
+                Temp_One_Read.UP_Close.swap(UP);
+                UP.clear();
 			}
-
-			UP.clear();
 		} else if (Temp_One_Read.MatchedD == Minus) {
 			CurrentReadSeq = Temp_One_Read.UnmatchedSeq;
 			End = Temp_One_Read.MatchedRelPos + SpacerBeforeAfter;
@@ -1555,120 +1541,25 @@ void GetCloseEnd(const std::string & CurrentChr, SPLIT_READ & Temp_One_Read) {
 				for (int pos = Start; pos < End; pos++) {
 					if (CurrentChr[pos] == RightChar) {
 						PD[0].push_back(pos);
-					} else
-						PD[1].push_back(pos);
-				}
-			} else { //Match2N[(short)'A'] = 'N';
-				for (int pos = Start; pos < End; pos++) {
-					if (Match2N[(short) CurrentChr[pos]] == 'N') {
-						PD[0].push_back(pos);
-					}
-					// TODO: Ask Kai whether this can be removed
-					//else Left_PD[1].push_back(pos);
+					} 
+                    //else PD[1].push_back(pos);
 				}
 			}
+ 
 			LOG_DEBUG(std::cout << "1\t" << PD[0].size() << "\t" << PD[1].size() << std::endl);
 			CheckRight_Close(Temp_One_Read, CurrentChr, CurrentReadSeq, PD,
 					BP_Start, BP_End, FirstBase, UP);
 			LOG_DEBUG(std::cout << UP.size() << std::endl);
 			//Direction = '+';
-			if (UP.empty()) {
-			} else if (UP[UP.size() - 1].LengthStr + Temp_One_Read.MinClose
-					>= Temp_One_Read.ReadLength) {
-			} else {
-				for (unsigned RightUP_index = 0; RightUP_index < UP.size(); RightUP_index++) {
-					if (CheckMismatches(CurrentChr, Temp_One_Read.UnmatchedSeq,
-							UP[RightUP_index])) {
-						Temp_One_Read.Used = false;
-						Temp_One_Read.UP_Close.push_back(UP[RightUP_index]);
-					}
-				}
+			if (UP.empty()) {} 
+            //else if (UP[UP.size() - 1].LengthStr + Temp_One_Read.MinClose >= Temp_One_Read.ReadLength) {} 
+            else {
+                Temp_One_Read.Used = false;
+                Temp_One_Read.UP_Close.swap(UP);
+                UP.clear();
 			}
-			UP.clear();
 		}
-	} else { // TOTAL_SNP_ERROR_CHECKED_Minus
-		if (Temp_One_Read.MatchedD == Plus) {
-			CurrentReadSeq = ReverseComplement(Temp_One_Read.UnmatchedSeq);
-			Start = Temp_One_Read.MatchedRelPos + SpacerBeforeAfter;
-			End = Start + 3 * Temp_One_Read.InsertSize;
-			LeftChar = CurrentReadSeq[0];
-			if (LeftChar != 'N') {
-				for (int pos = Start; pos < End; pos++) {
-					if (CurrentChr[pos] == LeftChar) {
-						PD[0].push_back(pos);
-					}
-					// TODO: Ask Kai whether this can be removed
-					//else PD[1].push_back(pos);
-				}
-			} else { //Match2N[(short)'A'] = 'N';
-				for (int pos = Start; pos < End; pos++) {
-					if (Match2N[(short) CurrentChr[pos]] == 'N') {
-						PD[0].push_back(pos);
-					}
-					// TODO: Ask Kai whether this can be removed
-					//else Left_PD[1].push_back(pos);
-				}
-			}
-			CheckLeft_Close(Temp_One_Read, CurrentChr, CurrentReadSeq, PD,
-					BP_Start, BP_End, FirstBase, UP);
-			// TODO: Ask Kai whether this can be removed
-			//Direction = Minus;
-			if (UP.empty()) {
-			} else if (UP[UP.size() - 1].LengthStr + Temp_One_Read.MinClose
-					>= Temp_One_Read.ReadLength) {
-			} else {
-				for (unsigned LeftUP_index = 0; LeftUP_index < UP.size(); LeftUP_index++) {
-					if (CheckMismatches(CurrentChr, Temp_One_Read.UnmatchedSeq,
-							UP[LeftUP_index])) {
-						Temp_One_Read.Used = false;
-						Temp_One_Read.UP_Close.push_back(UP[LeftUP_index]);
-					}
-				}
-			}
 
-			UP.clear();
-		} else if (Temp_One_Read.MatchedD == Minus) {
-			CurrentReadSeq = Temp_One_Read.UnmatchedSeq;
-			End = Temp_One_Read.MatchedRelPos + SpacerBeforeAfter;
-			Start = End - 3 * Temp_One_Read.InsertSize;
-			RightChar = CurrentReadSeq[Temp_One_Read.ReadLengthMinus];
-			if (RightChar != 'N') {
-				for (int pos = Start; pos < End; pos++) {
-					if (CurrentChr[pos] == RightChar) {
-						PD[0].push_back(pos);
-					}
-					// TODO: Ask Kai whether this can be removed
-					//else PD[1].push_back(pos);
-				}
-			} else { //Match2N[(short)'A'] = 'N';
-				for (int pos = Start; pos < End; pos++) {
-					if (Match2N[(short) CurrentChr[pos]] == 'N') {
-						PD[0].push_back(pos);
-					}
-					// TODO: Ask Kai whether this can be removed
-					//else Left_PD[1].push_back(pos);
-				}
-			}
-			LOG_DEBUG(std::cout << "2" << PD[0].size() << "\t" << PD[1].size() << std::endl);
-			CheckRight_Close(Temp_One_Read, CurrentChr, CurrentReadSeq, PD,
-					BP_Start, BP_End, FirstBase, UP);
-			LOG_DEBUG(std::cout << UP.size() << std::endl);
-			//Direction = '+';
-			if (UP.empty()) {
-			} else if (UP[UP.size() - 1].LengthStr + Temp_One_Read.MinClose
-					>= Temp_One_Read.ReadLength) {
-			} else {
-				for (unsigned RightUP_index = 0; RightUP_index < UP.size(); RightUP_index++) {
-					if (CheckMismatches(CurrentChr, Temp_One_Read.UnmatchedSeq,
-							UP[RightUP_index])) {
-						Temp_One_Read.Used = false;
-						Temp_One_Read.UP_Close.push_back(UP[RightUP_index]);
-					}
-				}
-			}
-			UP.clear();
-		}
-	}
 	// TODO: Ask Kai whether this can be removed
 	//if (!Temp_One_Read.UP_Close.empty())
 	//   CleanUniquePoints(Temp_One_Read.UP_Close);
@@ -1767,15 +1658,11 @@ void GetFarEnd_SingleStrandDownStreamInsertions(const std::string & CurrentChr,
 		} else if (UP[UP.size() - 1].LengthStr + Temp_One_Read.MinClose
 				>= Temp_One_Read.ReadLength) {
 		} else {
-			for (unsigned LeftUP_index = 0; LeftUP_index < UP.size(); LeftUP_index++) {
-				if (CheckMismatches(CurrentChr, Temp_One_Read.UnmatchedSeq,
-						UP[LeftUP_index])) {
-					Temp_One_Read.Used = false;
-					Temp_One_Read.UP_Far.push_back(UP[LeftUP_index]);
-				}
-			}
+            Temp_One_Read.Used = false;
+            Temp_One_Read.UP_Far.swap(UP);
+            UP.clear();
 		}
-		UP.clear();
+		
 	} else if (Temp_One_Read.MatchedD == Plus) {
 		char RightChar;
 		CurrentReadSeq = ReverseComplement(Temp_One_Read.UnmatchedSeq);
@@ -1834,6 +1721,7 @@ void GetFarEnd_SingleStrandDownStreamInsertions(const std::string & CurrentChr,
 		} else if (UP[UP.size() - 1].LengthStr + Temp_One_Read.MinClose
 				>= Temp_One_Read.ReadLength) {
 		} else {
+            
 			for (unsigned RightUP_index = 0; RightUP_index < UP.size(); RightUP_index++) {
 				if (CheckMismatches(CurrentChr, Temp_One_Read.UnmatchedSeq,
 						UP[RightUP_index])) {
@@ -1885,10 +1773,10 @@ void CheckBoth(const SPLIT_READ & OneRead, const std::string & TheInput,
 					>= BP_Start + i) {
 				Sum = 0;
 				if (ADDITIONAL_MISMATCH)
-					for (short j = 1; j <= ADDITIONAL_MISMATCH; j++)
-						Sum += PD_Plus[i + j].size() + PD_Minus[i + j].size();
+					for (short j = 0; j <= i + ADDITIONAL_MISMATCH; j++)
+						Sum += PD_Plus[j].size() + PD_Minus[j].size();
 
-				if (Sum == 0 && i <= (short) (Seq_Error_Rate * CurrentLength
+				if (Sum == 1 && i <= (short) (Seq_Error_Rate * CurrentLength
 						+ 1)) {
 					UniquePoint TempOne;
 					TempOne.LengthStr = CurrentLength;
@@ -1896,14 +1784,21 @@ void CheckBoth(const SPLIT_READ & OneRead, const std::string & TheInput,
 						TempOne.Direction = FORWARD;
 						TempOne.Strand = SENSE;
 						TempOne.AbsLoc = PD_Plus[i][0];
+                        TempOne.Mismatches = i;
+                        if (CheckMismatches(TheInput, OneRead.UnmatchedSeq, TempOne)) {
+                           UP.push_back (TempOne);
+                           break;
+                        }
 					} else if (PD_Minus[i].size() == 1) {
 						TempOne.Direction = BACKWARD;
 						TempOne.Strand = ANTISENSE;
 						TempOne.AbsLoc = PD_Minus[i][0];
+                        TempOne.Mismatches = i;
+                        if (CheckMismatches(TheInput, OneRead.UnmatchedSeq, TempOne)) { // ######################
+                           UP.push_back (TempOne);
+                           break;
+                        } // ######################
 					}
-					TempOne.Mismatches = i;
-					UP.push_back(TempOne);
-					break;
 				}
 			}
 		}
