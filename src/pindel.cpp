@@ -28,6 +28,7 @@
 
 // Pindel header files
 #include "pindel.h"
+#include "bddata.h"
 #include "reader.h"
 #include "searcher.h"
 #include "reporter.h"
@@ -111,8 +112,8 @@ unsigned int DSizeArray[15];
 std::string BreakDancerMask;
 std::string CurrentChrMask;
 
-unsigned int NumReadScanned = 0;
-unsigned int NumReadInChr = 0;
+unsigned int g_NumReadScanned = 0;
+unsigned int g_NumReadInChr = 0;
 unsigned int InChrPlus = 0;
 unsigned int InChrMinus = 0;
 unsigned int GetPlus = 0;
@@ -175,6 +176,37 @@ unsigned int Distance = 300;
 short MinFar_D = 8; //atoi(argv[3]);
 const short MaxDI = 30;
 
+unsigned int SPLIT_READ::getLastAbsLocCloseEnd() const
+{
+	return UP_Close[ UP_Close.size()-1 ].AbsLoc;
+}
+
+bool SPLIT_READ::goodFarEndFound() const
+{
+	return !UP_Far.empty();
+}
+
+unsigned int SPLIT_READ::MaxEndSize( const std::vector<UniquePoint> upVector) const
+{
+	if (upVector.size() == 0 ) {
+		return 0;
+	}
+	else {
+		int lastElementIndex = upVector.size()-1;
+		return upVector[ lastElementIndex ].LengthStr;
+	}
+}
+
+unsigned int SPLIT_READ::MaxLenFarEnd() const
+{
+	return MaxEndSize( UP_Far );
+}
+
+unsigned int SPLIT_READ::MaxLenFarEndBackup() const
+{
+	return MaxEndSize( UP_Far_backup);
+}
+
 struct Region {
 	Region() {
 		start = 0;
@@ -229,6 +261,53 @@ void saveReadForNextCycle(SPLIT_READ & read,
 		std::vector<SPLIT_READ> &futureReads) {
 	futureReads.push_back(read);
 	read.Used = true; // as it cannot be used for this round of analyses anymore
+}
+
+std::ostream& operator<<(std::ostream& os, const UniquePoint& up )
+{
+	os << "LengthStr: " << up.LengthStr << " * Absloc: " << up.AbsLoc << " * Direction: " << up.Direction << " * Strand: " << up.Strand;
+	os << " * Mismatches: " << up.Mismatches << std::endl;
+	return os;
+}
+
+std::ostream& operator<<(std::ostream& os, const SPLIT_READ& splitRead)
+{
+	os << "Fragname: " << splitRead.FragName << std::endl;
+	os << "Name: " << splitRead.Name << std::endl;
+	os << "UnmatchedSeq: " << splitRead.UnmatchedSeq << std::endl;
+	os << "HalfMapped: " << splitRead.HalfMapped << std::endl;
+	os << "HalfUnMapped: " << splitRead.HalfUnmapped << std::endl;
+	os << "MatchedD: " << splitRead.MatchedD << " * MatchedRelPos: " << splitRead.MatchedRelPos << " * MS: " << splitRead.MS << " * ";
+	os << "InsertSize: " << splitRead.InsertSize << std::endl;
+	os << "Tag: " << splitRead.Tag << std::endl;
+	os << "UP_Close: " ;
+	for (unsigned int i=0; i<splitRead.UP_Close.size();i++) { os << "[" << i << "]=" << splitRead.UP_Close[i] << " "; }
+	os << std::endl;
+	os << "UP_Far: " ;
+	for (unsigned int i=0; i<splitRead.UP_Far.size();i++) { os << "[" << i << "]=" << splitRead.UP_Far[i] << " "; }
+	os << std::endl;
+	os << "UP_Far_backup: " ;
+	for (unsigned int i=0; i<splitRead.UP_Far_backup.size();i++) { os << "[" << i << "]=" << splitRead.UP_Far_backup[i] << " "; }
+	os << std::endl;		
+	os << "ReadLength: " << splitRead.ReadLength << std::endl;
+	os << "ReadLengthMinus: " << splitRead.ReadLengthMinus << std::endl;
+	os << "MAX_SNP_ERROR:" << splitRead.MAX_SNP_ERROR << std::endl;
+	os << "TOTAL_SNP_ERROR_CHECKED:" << splitRead.TOTAL_SNP_ERROR_CHECKED << std::endl;
+	os << "TOTAL_SNP_ERROR_CHECKED_Minus:" << splitRead.TOTAL_SNP_ERROR_CHECKED_Minus << std::endl;
+	os << "MinClose:" << splitRead.MinClose << std::endl;
+	os << "BP:" << splitRead.BP << std::endl;	
+	os << "Left:" << splitRead.Left << std::endl;
+	os << "Right:" << splitRead.Right << std::endl;
+	os << "BPLeft:" << splitRead.BPLeft << std::endl;
+	os << "BPRight:" << splitRead.BPRight << std::endl;
+	os << "IndelSize:" << splitRead.IndelSize << std::endl;
+	os << "Unique:" << splitRead.Unique << std::endl;
+	os << "score:" << splitRead.score << std::endl;
+	os << "InsertedStr:" << splitRead.InsertedStr << std::endl;
+	os << "NT_str:" << splitRead.NT_str  << std::endl;
+	os << "NT_size:" << splitRead.NT_size << std::endl;
+	return os;
+//	cout << ":" <<  << std::endl;
 }
 
 /* 'defineParameters' defines the parameters to be used by Pindel. Takes the variables from the calling function as argument for those variables which
@@ -599,7 +678,7 @@ bool isFinishedBAM(const int upperBinBorder, // in: last position analyzed so fa
 	}
 }
 
-int init(int argc, char *argv[], ControlState& currentState) {
+int init(int argc, char *argv[], ControlState& currentState, BDData& bdData) {
 	std::cout << Pindel_Version_str << std::endl;
 
 	if (NumRead2ReportCutOff == 1)
@@ -657,7 +736,10 @@ int init(int argc, char *argv[], ControlState& currentState) {
 	if (currentState.BreakDancerDefined) {
 		currentState.inf_BP_test.open(par.breakdancerFileName.c_str());
 		currentState.inf_BP.open(par.breakdancerFileName.c_str());
+		bdData.loadBDFile(par.breakdancerFileName);
 	}
+
+
 
 	omp_set_num_threads(par.numThreads);
 
@@ -795,34 +877,7 @@ int init(int argc, char *argv[], ControlState& currentState) {
 	DSizeArray[13] = DSizeArray[12] * 4;
 	DSizeArray[14] = DSizeArray[13] * 4;
 
-	std::string TempLie_BD;
 
-	char FirstSharpChar;
-
-	std::string TempLine_BD;
-	BreakDancer Temp_BD_event;
-
-	currentState.All_BD_events_WG.push_back(Temp_BD_event);
-
-	while (currentState.inf_BP_test >> FirstSharpChar) {
-		if (FirstSharpChar == '#') {
-			std::getline(currentState.inf_BP_test, TempLine_BD);
-			std::getline(currentState.inf_BP, TempLine_BD);
-		} else {
-         std::getline(currentState.inf_BP_test, TempLine_BD);
-         currentState.inf_BP >> Temp_BD_event.ChrName_A >> Temp_BD_event.POS1 
-					>> TempLine_BD >> Temp_BD_event.ChrName_B
-				   >> Temp_BD_event.POS2 >> TempLine_BD;
-         std::getline(currentState.inf_BP, TempLine_BD);
-
-         Temp_BD_event.POS1 += SpacerBeforeAfter;
-         Temp_BD_event.POS2 += SpacerBeforeAfter;
-
-			currentState.All_BD_events_WG.push_back(Temp_BD_event);
-		}
-	}
-	std::cout << "BreakDancer events: " << currentState.All_BD_events_WG.size()
-			- 1 << std::endl;
 
 	std::vector < std::string > chromosomes;
 
@@ -876,396 +931,36 @@ int init(int argc, char *argv[], ControlState& currentState) {
 	return EXIT_SUCCESS;
 }
 
-int searchBreakPoints(ControlState& currentState) {
-	/* 3.2.2.1 prepare break dancer events */
 
-	std::vector<BreakDancer>& wholeGenomeEvents = currentState.All_BD_events_WG;
-	std::vector<BreakDancer>& chromosomeEvents = currentState.All_BD_events;
-	chromosomeEvents.clear();
-	chromosomeEvents.push_back( wholeGenomeEvents[0] ); //EW140611 mind the empty 0 element hack
-	for (unsigned int wgEventIndex = 1; wgEventIndex< wholeGenomeEvents.size(); wgEventIndex++) {
-    	BreakDancer &breakDancerEvent = wholeGenomeEvents[ wgEventIndex ];
-		if (breakDancerEvent.ChrName_A == currentState.CurrentChrName
-				&& breakDancerEvent.ChrName_B == currentState.CurrentChrName) 
-		{
-			if ( breakDancerEvent.POS1 > breakDancerEvent.POS2) {
-				int oldPos1 = breakDancerEvent.POS1;
-				breakDancerEvent.POS1 = breakDancerEvent.POS2;
-				breakDancerEvent.POS2 = oldPos1;	// EW140611 we should actually do this in the breakdancer read-from-disk function
-		   }
-			chromosomeEvents.push_back( breakDancerEvent );
-		}
-	}
-	if (currentState.All_BD_events.size() > 1) {
-		std::cout
-				<< "Searching additional breakpoints by adding BreakDancer results"
-				<< std::endl;
-		int *BD_INDEX = new int[currentState.CurrentChr.size()];
-		for (unsigned i = 0; i < currentState.CurrentChr.size(); i++)
-			BD_INDEX[i] = 0;
-		unsigned int ChrSize = currentState.CurrentChr.size() - 1;
-		for (unsigned i = 1; i < currentState.All_BD_events.size(); i++) {
-			unsigned int Start = currentState.All_BD_events[i].POS1 - 200;
-			unsigned int End = currentState.All_BD_events[i].POS1 + 200;
-			if (Start < 0) Start = 0; // EW140611 We may want to make a normalisation function here to prevent code duplication
-			if (Start > ChrSize) Start = ChrSize;
-			if (End < 0) End = 0;
-			if (End > ChrSize) End = ChrSize;
-			for (unsigned j = Start; j < End; j++) BD_INDEX[j] = i;
-			Start = currentState.All_BD_events[i].POS2 - 200;
-			End = currentState.All_BD_events[i].POS2 + 200;
-			if (Start < 0) Start = 0;
-			if (Start > ChrSize) Start = ChrSize;
-			if (End < 0) End = 0;
-			if (End > ChrSize) End = ChrSize;
-			for (unsigned j = Start; j < End; j++) BD_INDEX[j] = i * (-1);
-		}
-		int BD_Plus = 0;
-		int BD_Minus = 0;
-		for (unsigned i = 0; i < currentState.CurrentChr.size(); i++) {
-			if (BD_INDEX[i] > 0)
-				BD_Plus++;
-			else if (BD_INDEX[i] < 0)
-				BD_Minus++;
-		}
-		std::cout << BD_Plus << "\t" << BD_Minus << std::endl;
+void SearchFarEnd( const std::string& chromosome, SPLIT_READ& read, const BDData& bdData)
+{
+	const int BD_SPAN = 200;
+	const int START_SEARCH_SPAN = 128;	
 
-		currentState.CountFarEnd = 0;
-		currentState.CountFarEndMinus = 0;
-		currentState.CountFarEndPlus = 0;
-		int Start_pos, End_pos;
-//if (currentState.Reads.size()>17800) std::cout << "DEBUG06 " << currentState.Reads[ 17643 ].UP_Close[0].AbsLoc << std::endl;
-		for (unsigned ReadIndex = 0; ReadIndex < currentState.Reads.size(); ReadIndex++) {
-			if (!currentState.Reads[ReadIndex].UP_Far.empty()) {
-				continue;
-			}
-		  // std::cout << "of total " << currentState.Reads.size() << " reads, currentState.Reads[" << ReadIndex << "].UP_Close[0].AbsLoc = " << currentState.Reads[ReadIndex].UP_Close[0].AbsLoc << std::endl;
-			int BD_event_Index =
-					BD_INDEX[currentState.Reads[ReadIndex].UP_Close[0].AbsLoc];
-			if (BD_event_Index == 0)
-				continue;
-			if (BD_event_Index > 0) {  
-				Start_pos = currentState.All_BD_events[BD_event_Index].POS2 - 200
-						- currentState.Reads[ReadIndex].ReadLength;
-				End_pos = currentState.All_BD_events[BD_event_Index].POS2 + 200
-						+ currentState.Reads[ReadIndex].ReadLength;
-				GetFarEnd(currentState.CurrentChr,
-						currentState.Reads[ReadIndex], Start_pos, End_pos);
-			} else {
-				Start_pos
-						= currentState.All_BD_events[BD_event_Index * (-1)].POS1 - 200
-								- currentState.Reads[ReadIndex].ReadLength;
-				End_pos = currentState.All_BD_events[BD_event_Index * (-1)].POS1 + 200
-						+ currentState.Reads[ReadIndex].ReadLength;
-				GetFarEnd(currentState.CurrentChr,
-						currentState.Reads[ReadIndex], Start_pos, End_pos);
-			}
+	std::vector<unsigned int> bdEvents;
 
-			if (!currentState.Reads[ReadIndex].UP_Far.empty()) { // if a far end has been found
-
-
-				// if there is a non-template sequence present between close and far end
-				if (currentState.Reads[ReadIndex]. UP_Far[currentState.Reads[ReadIndex].UP_Far.size()
-						- 1].LengthStr
-						+ currentState.Reads[ReadIndex].CloseEndLength
-						< currentState.Reads[ReadIndex].ReadLength) {
-
-					// if there are backup reads
-					if (currentState.Reads[ReadIndex].UP_Far_backup.size()) {
-
-						// if the backup reads are worse
-						if (currentState.Reads[ReadIndex]. UP_Far_backup[currentState.Reads[ReadIndex]. UP_Far_backup.size()
-								- 1].LengthStr
-								< currentState.Reads[ReadIndex].UP_Far[currentState.Reads[ReadIndex]. UP_Far.size()
-										- 1].LengthStr) {
-
-							// put current reads in backup
-							currentState.Reads[ReadIndex].UP_Far_backup
-									= currentState.Reads[ReadIndex].UP_Far;
-							currentState.Reads[ReadIndex].UP_Far.clear();
-						} else
-							currentState.Reads[ReadIndex].UP_Far.clear(); // otherwise keep your backup
-					} else { // there are no backup reads, prepare for next cycle
-						currentState.Reads[ReadIndex].UP_Far_backup
-								= currentState.Reads[ReadIndex].UP_Far;
-						currentState.Reads[ReadIndex].UP_Far.clear();
-					}
-				} else { // no non-template bases present: good match found
-					currentState.CountFarEnd++;
-					if (currentState.Reads[ReadIndex].MatchedD == Plus)
-						currentState.CountFarEndPlus++;
-					else
-						currentState.CountFarEndMinus++;
-					// note:UPFar remains filled, so read will be skipped in next cycle
-				}
-			}
-		}
-		(std::cout << "\tNumber of reads with far end mapped: "
-				<< currentState.CountFarEnd << "\t" << "Far+: "
-				<< currentState.CountFarEndPlus << "\tFar-: "
-				<< currentState.CountFarEndMinus << std::endl << std::endl); //endl;
-		delete[] BD_INDEX;
+	bdData.getCorrespondingEvents( read, bdEvents );
+	for (unsigned int bdEventIndex=0; bdEventIndex<bdEvents.size(); bdEventIndex++ ) {  
+		SearchFarEndAtPos( chromosome, read, bdEvents[ bdEventIndex ], BD_SPAN );
+		if (read.goodFarEndFound()) { return; }
 	}
 
-	/* 3.2.2.2 search breakpoints of deletion */
-	(std::cout << "Searching breakpoints of deletion" << std::endl);
-	for (short RangeIndex = 1; RangeIndex < MaxRangeIndex; RangeIndex++) {
-		currentState.CountFarEnd = 0;
-		currentState.CountFarEndMinus = 0;
-		currentState.CountFarEndPlus = 0;
 
-#pragma omp parallel default(shared)
-		{
-#pragma omp for
-			for (int ReadIndex = 0; ReadIndex
-			       < (int)currentState.Reads.size(); ReadIndex++) { // openMP 2.5 requires signed loop
-				if (!currentState.Reads[ReadIndex].UP_Far.empty()) {
-					continue;
-				}
-				GetFarEnd_SingleStrandDownStream(currentState.CurrentChr,
-						currentState.Reads[ReadIndex], RangeIndex);
-				if (!currentState.Reads[ReadIndex].UP_Far.empty()) {
-					if (currentState.Reads[ReadIndex]. UP_Far[currentState.Reads[ReadIndex].UP_Far.size()
-							- 1].LengthStr
-							+ currentState.Reads[ReadIndex].CloseEndLength
-							< currentState.Reads[ReadIndex].ReadLength) {
-						if (currentState.Reads[ReadIndex].UP_Far_backup.size()) {
-							if (currentState.Reads[ReadIndex]. UP_Far_backup[currentState.Reads[ReadIndex]. UP_Far_backup.size()
-									- 1].LengthStr
-									< currentState.Reads[ReadIndex].UP_Far[currentState.Reads[ReadIndex]. UP_Far.size()
-											- 1].LengthStr) {
-								currentState.Reads[ReadIndex].UP_Far_backup
-										= currentState.Reads[ReadIndex].UP_Far;
-								currentState.Reads[ReadIndex].UP_Far.clear();
-							} else
-								currentState.Reads[ReadIndex].UP_Far.clear();
-						} else {
-							currentState.Reads[ReadIndex].UP_Far_backup
-									= currentState.Reads[ReadIndex].UP_Far;
-							currentState.Reads[ReadIndex].UP_Far.clear();
-						}
-					} else {
-#pragma omp critical
-						{
-							currentState.CountFarEnd++;
-							if (currentState.Reads[ReadIndex].MatchedD == Plus)
-								currentState.CountFarEndPlus++;
-							else
-								currentState.CountFarEndMinus++;
-						}
-					}
-				}
-			}
-		} // #pragma omp parallel default(shared)
-
-		(std::cout << RangeIndex << "\tNumber of reads with far end mapped: "
-				<< currentState.CountFarEnd << "\t" << "Far+: "
-				<< currentState.CountFarEndPlus << "\tFar-: "
-				<< currentState.CountFarEndMinus << std::endl);
+	// if breakdancer does not find the event, or not find an event we trust, we turn to regular pattern matching
+	int searchSpan=START_SEARCH_SPAN;
+	int centerOfSearch = read.getLastAbsLocCloseEnd();
+	for (int rangeIndex=1; rangeIndex<=MaxRangeIndex; rangeIndex++ ) {
+		SearchFarEndAtPos( chromosome, read, centerOfSearch, searchSpan );		
+		searchSpan *= 4;
+		if (read.goodFarEndFound()) { return; }
 	}
 
-	/* 3.2.2.3 search breakpoints of short insertion */
-	(std::cout << "Searching breakpoints of short insertions" << std::endl);
-	for (short RangeIndex = 1; RangeIndex < 2; RangeIndex++) {
-		currentState.CountFarEnd = 0;
-		currentState.CountFarEndMinus = 0;
-		currentState.CountFarEndPlus = 0;
-
-#pragma omp parallel default(shared)
-		{
-#pragma omp for
-			for (int ReadIndex = 0; ReadIndex
-			       < (int)currentState.Reads.size(); ReadIndex++) { // OpenMP 2.5 requires signed looop
-				if (!currentState.Reads[ReadIndex].UP_Far.empty()) {
-					continue;
-				}
-
-				GetFarEnd_SingleStrandDownStreamInsertions(
-						currentState.CurrentChr, currentState.Reads[ReadIndex],
-						RangeIndex);
-#pragma omp critical
-				{
-					if (!currentState.Reads[ReadIndex].UP_Far.empty()) {
-						currentState.CountFarEnd++;
-						if (currentState.Reads[ReadIndex].MatchedD == Plus)
-							currentState.CountFarEndPlus++;
-						else
-							currentState.CountFarEndMinus++;
-					}
-				}
-			}
-		}
-
-		(std::cout << RangeIndex << "\tNumber of reads with far end mapped: "
-				<< currentState.CountFarEnd << "\t" << "Far+: "
-				<< currentState.CountFarEndPlus << "\tFar-: "
-				<< currentState.CountFarEndMinus << std::endl);
+	// if no perfect far end has been found
+	if (read.MaxLenFarEndBackup() > read.MaxLenFarEnd() ) {
+		read.UP_Far.swap(read.UP_Far_backup);
 	}
-
-	/* 3.2.2.4 search breakpoints of tandem duplication */
-	if (Analyze_TD) {
-
-		(std::cout << "Searching breakpoints of tandem duplications"
-				<< std::endl);
-		for (short RangeIndex = 1; RangeIndex < MaxRangeIndex; RangeIndex++) {
-
-			currentState.CountFarEnd = 0;
-			currentState.CountFarEndMinus = 0;
-			currentState.CountFarEndPlus = 0;
-#pragma omp parallel default(shared)
-			{
-#pragma omp for
-				for (int ReadIndex = 0; ReadIndex
-				       < (int)currentState.Reads.size(); ReadIndex++) { // OpenMP 2.5 requires signed loop
-					if (!currentState.Reads[ReadIndex].UP_Far.empty()) {
-						continue;
-					}
-
-					GetFarEnd_SingleStrandUpStream(currentState.CurrentChr,
-							currentState.Reads[ReadIndex], RangeIndex);
-					if (!currentState.Reads[ReadIndex].UP_Far.empty()) {
-						if (currentState.Reads[ReadIndex]. UP_Far[currentState.Reads[ReadIndex].UP_Far.size()
-								- 1].LengthStr
-								+ currentState.Reads[ReadIndex].CloseEndLength
-								>= currentState.Reads[ReadIndex].ReadLength) {
-							if (currentState.Reads[ReadIndex].MatchedD == Plus) {
-								if (currentState.Reads[ReadIndex].UP_Close[0].AbsLoc
-										< currentState.Reads[ReadIndex].ReadLength
-												+ currentState.Reads[ReadIndex].UP_Far[0].AbsLoc)
-									currentState.Reads[ReadIndex].UP_Far.clear();
-							} else { // if (currentState.Reads[ReadIndex].MatchedD == Minus)
-								if (currentState.Reads[ReadIndex].UP_Far[0].AbsLoc
-										< currentState.Reads[ReadIndex].ReadLength
-												+ currentState.Reads[ReadIndex].UP_Close[0].AbsLoc)
-									currentState.Reads[ReadIndex].UP_Far.clear();
-							}
-						} else {
-							if (currentState.Reads[ReadIndex].UP_Far_backup.size()) {
-								if (currentState.Reads[ReadIndex]. UP_Far_backup[currentState.Reads[ReadIndex]. UP_Far_backup.size()
-										- 1].LengthStr
-										< currentState.Reads[ReadIndex]. UP_Far[currentState.Reads[ReadIndex].UP_Far. size()
-												- 1].LengthStr) {
-									currentState.Reads[ReadIndex].UP_Far_backup
-											= currentState.Reads[ReadIndex].UP_Far;
-									currentState.Reads[ReadIndex].UP_Far.clear();
-								} else
-									currentState.Reads[ReadIndex].UP_Far.clear();
-							} else {
-								currentState.Reads[ReadIndex].UP_Far_backup
-										= currentState.Reads[ReadIndex].UP_Far;
-								currentState.Reads[ReadIndex].UP_Far.clear();
-							}
-						}
-#pragma omp critical
-						{
-							if (!currentState.Reads[ReadIndex].UP_Far.empty()) {
-								currentState.CountFarEnd++;
-								if (currentState.Reads[ReadIndex].MatchedD
-										== Plus)
-									currentState.CountFarEndPlus++;
-								else
-									currentState.CountFarEndMinus++;
-							}
-						}
-					}
-				}
-			}
-			(std::cout << RangeIndex
-					<< "\tNumber of reads with far end mapped: "
-					<< currentState.CountFarEnd << "\t" << "Far+: "
-					<< currentState.CountFarEndPlus << "\tFar-: "
-					<< currentState.CountFarEndMinus << std::endl);
-		}
-	} // if (Analyze_TD)
-
-	/* 3.2.2.5 search breakpoints of inversion */
-
-	if (Analyze_INV) {
-		(std::cout << "Searching breakpoints of inversion" << std::endl);
-		for (short RangeIndex = 1; RangeIndex < MaxRangeIndex; RangeIndex++) {
-
-			currentState.CountFarEnd = 0;
-			currentState.CountFarEndMinus = 0;
-			currentState.CountFarEndPlus = 0;
-#pragma omp parallel default(shared)
-			{
-#pragma omp for
-				for (int ReadIndex = 0; ReadIndex
-				       < (int)currentState.Reads.size(); ReadIndex++) { // OpenMP 2.5 requires signed loop
-					if (currentState.Reads[ReadIndex].Used
-							|| currentState.Reads[ReadIndex].UP_Far.size()) {
-						continue;
-					}
-
-					GetFarEnd_OtherStrand(currentState.CurrentChr,
-							currentState.Reads[ReadIndex], RangeIndex);
-
-					if (!currentState.Reads[ReadIndex].UP_Far.empty()) {
-						if (currentState.Reads[ReadIndex]. UP_Far[currentState.Reads[ReadIndex].UP_Far.size()
-								- 1].LengthStr
-								+ currentState.Reads[ReadIndex].CloseEndLength
-								< currentState.Reads[ReadIndex].ReadLength) {
-							if (currentState.Reads[ReadIndex].UP_Far_backup.size()) {
-								if (currentState.Reads[ReadIndex]. UP_Far_backup[currentState.Reads[ReadIndex]. UP_Far_backup.size()
-										- 1].LengthStr
-										< currentState.Reads[ReadIndex]. UP_Far[currentState.Reads[ReadIndex].UP_Far. size()
-												- 1].LengthStr) {
-									currentState.Reads[ReadIndex].UP_Far_backup
-											= currentState.Reads[ReadIndex].UP_Far;
-									currentState.Reads[ReadIndex].UP_Far.clear();
-								} else
-									currentState.Reads[ReadIndex].UP_Far.clear();
-							} else {
-								currentState.Reads[ReadIndex].UP_Far_backup
-										= currentState.Reads[ReadIndex].UP_Far;
-								currentState.Reads[ReadIndex].UP_Far.clear();
-							}
-						} else {
-#pragma omp critical
-							{
-								currentState.CountFarEnd++;
-								if (currentState.Reads[ReadIndex].MatchedD
-										== Plus)
-									currentState.CountFarEndPlus++;
-								else
-									currentState.CountFarEndMinus++;
-							}
-						}
-					}
-				}
-			}
-			(std::cout << RangeIndex
-					<< "\tNumber of reads with far end mapped: "
-					<< currentState.CountFarEnd << "\t" << "Far+: "
-					<< currentState.CountFarEndPlus << "\tFar-: "
-					<< currentState.CountFarEndMinus << std::endl);
-		}
-	} // if (Analyze_INV)
-
-	/* 3.2.2.6 compare backup with current value */
-	// TODO: check with Kai what is the use of following
-	// compare backup with current value
-	(std::cout << "revisit all breakpoints identified ...");
-	for (unsigned ReadIndex = 0; ReadIndex < currentState.Reads.size(); ReadIndex++) {
-		if (currentState.Reads[ReadIndex].UP_Far.empty()) {
-			if (!currentState.Reads[ReadIndex].UP_Far_backup.empty()) {
-				currentState.Reads[ReadIndex].UP_Far
-						= currentState.Reads[ReadIndex].UP_Far_backup;
-			}
-		} else if (!currentState.Reads[ReadIndex].UP_Far_backup.empty()) {
-			if (currentState.Reads[ReadIndex]. UP_Far_backup[currentState.Reads[ReadIndex].UP_Far_backup.size()
-					- 1].LengthStr
-					> currentState.Reads[ReadIndex].UP_Far[currentState.Reads[ReadIndex].UP_Far. size()
-							- 1].LengthStr) {
-				currentState.Reads[ReadIndex].UP_Far
-						= currentState.Reads[ReadIndex].UP_Far_backup;
-			}
-		}
-	}
-	(std::cout << " done." << std::endl);
-
-	return EXIT_SUCCESS;
 }
+
 
 int main(int argc, char *argv[]) {
 
@@ -1286,8 +981,9 @@ int main(int argc, char *argv[]) {
 	ControlState currentState;
 
 	int returnValue;
+	BDData bdData;
 
-	returnValue = init(argc, argv, currentState);
+	returnValue = init(argc, argv, currentState, bdData);
 
 	if (returnValue != EXIT_SUCCESS) {
 		return returnValue;
@@ -1326,6 +1022,7 @@ int main(int argc, char *argv[]) {
 		CONS_Chr_Size = currentState.CurrentChr.size() - 2 * SpacerBeforeAfter;
 		(std::cout << "Chromosome Size: " << CONS_Chr_Size << std::endl);
 		CurrentChrMask.resize(currentState.CurrentChr.size());
+		bdData.loadChromosome( currentState.WhichChr, currentState.CurrentChr.size() );
 		for (unsigned int i = 0; i < currentState.CurrentChr.size(); i++) {
 			CurrentChrMask[i] = 'N';
 		}
@@ -1444,7 +1141,12 @@ int main(int argc, char *argv[]) {
 			Time_Load_E = time(NULL);
 			/* 3.2.1 preparation ends */
 //if (currentState.Reads.size()>17800) std::cout << "DEBUG03 " << currentState.Reads[ 17643 ].UP_Close[0].AbsLoc << std::endl;
-			returnValue = searchBreakPoints(currentState);
+			for (unsigned int readIndex=0; readIndex<currentState.Reads.size(); readIndex++ ) {
+				SearchFarEnd( currentState.CurrentChr, currentState.Reads[readIndex], bdData );
+			}	
+
+
+			(std::cout << "Far end searching completed for this window." << std::endl);
 
 //			returnValue = searchDeletions(currentState, NumBoxes);
 			SearchDeletions searchD;

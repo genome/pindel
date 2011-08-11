@@ -21,6 +21,8 @@
 #ifndef PINDEL_H
 #define	PINDEL_H
 
+#include <iostream>
+
 // System header files
 #include <string>
 #include <vector>
@@ -57,8 +59,8 @@ extern char Cap2LowArray[256];
 extern int g_maxPos;
 extern unsigned int CONS_Chr_Size;
 extern bool FirstChr;
-extern unsigned int NumReadScanned;
-extern unsigned int NumReadInChr;
+extern unsigned int g_NumReadScanned;
+extern unsigned int g_NumReadInChr;
 extern unsigned int InChrPlus;
 extern unsigned int InChrMinus;
 extern unsigned int GetPlus;
@@ -104,6 +106,8 @@ struct UniquePoint {
 	char Direction; // forward reverse
 	char Strand; // sense antisense
 	short Mismatches;
+
+	friend std::ostream& operator<<(std::ostream& os, const UniquePoint& up );
 };
 
 struct SPLIT_READ {
@@ -177,6 +181,17 @@ struct SPLIT_READ {
 	short CloseEndLength;
 	bool Found;
 	int LeftMostPos;
+	
+
+	unsigned int getLastAbsLocCloseEnd() const;
+	bool goodFarEndFound() const;
+	unsigned int MaxLenFarEnd() const;
+	unsigned int MaxLenFarEndBackup() const;
+	friend std::ostream& operator<<(std::ostream& os, const SPLIT_READ& splitRead);
+
+private:
+	unsigned int MaxEndSize( const std::vector<UniquePoint> upVector) const;
+
 };
 
 struct SupportPerSample {

@@ -94,11 +94,11 @@ int safeDivide( int dividend, int divisor )
 
 void showReadStats(const std::vector<SPLIT_READ>& Reads)
 {
-	LOG_INFO(std::cout << "NumReadScanned:\t" << NumReadScanned << std::endl);
-	LOG_INFO(std::cout << "NumReadInChr:\t" << NumReadInChr << std::endl);
+	LOG_INFO(std::cout << "NumReadScanned:\t" << g_NumReadScanned << std::endl);
+	LOG_INFO(std::cout << "NumReadInChr:\t" << g_NumReadInChr << std::endl);
 	LOG_INFO(std::cout << "NumReadStored:\t" << Reads.size () << std::endl);
 	LOG_INFO(std::cout << "NumReadStored / NumReadInChr = " << 
-	   	       safeDivide( Reads.size () * 100.0 , NumReadInChr ) << 
+	   	       safeDivide( Reads.size () * 100.0 , g_NumReadInChr ) << 
                 " %" << std::endl << "InChrPlus \t" << InChrPlus << "\tGetPlus \t" <<
 					 GetPlus << "\t" << 
                 safeDivide( GetPlus * 100.0 , InChrPlus ) << " %" << std::endl << "InChrMinus\t" << InChrMinus << "\tGetMinus\t" <<
@@ -113,8 +113,6 @@ ReadInRead (std::ifstream & inf_ReadSeq, const std::string & FragName,
 	LOG_INFO(std::cout << "Scanning and processing reads anchored in " << FragName << std::endl);
 	//short ADDITIONAL_MISMATCH = 1;
 	SPLIT_READ Temp_One_Read;
-	unsigned int NumReadScanned = 0;
-	unsigned int NumReadInChr = 0;
 	unsigned int InChrPlus = 0;
 	unsigned int InChrMinus = 0;
 	unsigned int GetPlus = 0;
@@ -141,7 +139,7 @@ ReadInRead (std::ifstream & inf_ReadSeq, const std::string & FragName,
 					Reads.clear ();
 					return 1;
 				}
-			NumReadScanned++;
+			g_NumReadScanned++;
 			// get (useless) rest of first line
 			std::getline (inf_ReadSeq, TempLine);
 			inf_ReadSeq >> Temp_One_Read.UnmatchedSeq;
@@ -174,7 +172,7 @@ ReadInRead (std::ifstream & inf_ReadSeq, const std::string & FragName,
 				{
 					Temp_One_Read.ReadLength = Temp_One_Read.UnmatchedSeq.size ();
 					Temp_One_Read.ReadLengthMinus = Temp_One_Read.ReadLength - 1;
-					NumReadInChr++;
+					g_NumReadInChr++;
 
 					Temp_One_Read.MAX_SNP_ERROR =
 						(short) (Temp_One_Read.UnmatchedSeq.size () * Seq_Error_Rate);
@@ -437,13 +435,6 @@ ReadInBamReads (const char *bam_path, const std::string & FragName,
 	kh_clear (read_name, data.read_to_map_qual);
 	kh_destroy (read_name, data.read_to_map_qual);
 
-	NumReadScanned = 0;
-	NumReadInChr = 0;
-	InChrPlus = 0;
-	InChrMinus = 0;
-	GetPlus = 0;
-	GetMinus = 0;
-
 
 	//kai does the below in read inreads dunno why yet
 	std::string Str4Exchange;
@@ -515,7 +506,7 @@ static int
 fetch_func (const bam1_t * b1, void *data)
 {
 
-	NumReadScanned++;
+	g_NumReadScanned++;
 	fetch_func_data *data_for_bam = (fetch_func_data *) data;
 	khash_t (read_name) * read_to_map_qual =
 		(khash_t (read_name) *) data_for_bam->read_to_map_qual;
@@ -687,7 +678,7 @@ build_record (const bam1_t * mapped_read, const bam1_t * unmapped_read,
 						"\t" << Temp_One_Read.MS << 
 						"\t" << Temp_One_Read.InsertSize << 
 						"\t" << Temp_One_Read.Tag << std.endl);
-	NumReadInChr++;
+	g_NumReadInChr++;
 	Temp_One_Read.MAX_SNP_ERROR =
 		(short) (Temp_One_Read.UnmatchedSeq.size () * Seq_Error_Rate);
 	Temp_One_Read.TOTAL_SNP_ERROR_CHECKED =
