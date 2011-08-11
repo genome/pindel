@@ -937,6 +937,10 @@ void SearchFarEnd( const std::string& chromosome, SPLIT_READ& read, const BDData
 	const int BD_SPAN = 200;
 	const int START_SEARCH_SPAN = 128;	
 
+	// when using bins, some reads may already have been assigned far ends already if they were members of the previous bins; they
+	// can be skipped here
+	if (read.goodFarEndFound()) { return; }	
+
 	std::vector<unsigned int> bdEvents;
 
 	bdData.getCorrespondingEvents( read, bdEvents );

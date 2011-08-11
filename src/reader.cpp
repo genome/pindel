@@ -51,6 +51,7 @@ KSORT_INIT_GENERIC (uint32_t) KHASH_MAP_INIT_STR (read_name, bam1_t *)
 		 {
 			 fetch_func_data ()
 			 {
+				 LeftReads = NULL;
 				 read_to_map_qual = NULL;
 				 header = NULL;
 				 b1_flags = NULL;
@@ -525,7 +526,7 @@ fetch_func (const bam1_t * b1, void *data)
 	//NO BUENO!        }
 	khint_t key = kh_get (read_name, read_to_map_qual, bam1_qname (b1));
 	if (key == kh_end (read_to_map_qual)) {
-		int ret;
+		int ret=0;
 		key = kh_put (read_name, read_to_map_qual, strdup (bam1_qname (b1)), &ret);
 		kh_value (read_to_map_qual, key) = bam_dup1 (b1);
 		return 0;
