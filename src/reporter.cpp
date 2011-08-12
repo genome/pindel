@@ -2123,11 +2123,11 @@ std::cout << "SBA: " << g_SpacerBeforeAfter << " WS " << windowStart << " Total:
 
 	//uint8_t *plus_LI_Pos = new uint8_t[CurrentChr.size () + 1];
 	//uint8_t *minus_LI_Pos = new uint8_t[CurrentChr.size () + 1];
-	for (unsigned i = 0; i < CurrentChr.size () + 1; i++)
+	/*for (unsigned i = 0; i < CurrentChr.size () + 1; i++)
 		{
 			plus_LI_Pos[i] = 0;
 			minus_LI_Pos[i] = 0;
-		}
+		}*/
 	for (unsigned Index = 0; Index < Reads.size (); Index++)
 		{
 			if (Reads[Index].Found || Reads[Index].Used
