@@ -463,8 +463,8 @@ if (Temp_One_Read.UP_Far.size()>0 ) { std::cout << "KAI1108 UP_Far.size() == " <
 	std::vector<unsigned int> PD_Plus[Temp_One_Read.TOTAL_SNP_ERROR_CHECKED];
 	std::vector<unsigned int> PD_Minus[Temp_One_Read.TOTAL_SNP_ERROR_CHECKED];
     
-	int Start = SearchCenter - Range;
-	int End = SearchCenter + Range;
+	int Start = SearchCenter - Range - Temp_One_Read.ReadLength;
+	int End = SearchCenter + Range + Temp_One_Read.ReadLength;
     
 	for (int CheckIndex = 0; CheckIndex < Temp_One_Read.TOTAL_SNP_ERROR_CHECKED; CheckIndex++) {
 		PD_Plus[CheckIndex].reserve(End - Start + 1);
