@@ -1764,8 +1764,8 @@ SortOutputLI (const std::string & CurrentChr, std::vector < SPLIT_READ > &Reads,
 {
 	unsigned UP_Close_index;
 	unsigned temp_AbsLoc;
+	unsigned int LI_BORDER_BUFFER = 2 * g_maxInsertSize; 
 
-	const unsigned int LI_BORDER_BUFFER = 200;
 //return;
 	// find LI combinations
  //	try
@@ -2112,7 +2112,7 @@ SortOutputRest (const std::string & CurrentChr, std::vector < SPLIT_READ > &Read
 	LOG_DEBUG(std::cout << "1" << std::endl);
 	// find LI combinations
 
-	const int BP_BORDER_BUFFER = 200;
+	const int BP_BORDER_BUFFER = 2 * g_maxInsertSize; 
 	
 	unsigned int absStartBPWindow = g_SpacerBeforeAfter + windowStart - BP_BORDER_BUFFER;
 	unsigned int absEndBPWindow = g_SpacerBeforeAfter +windowEnd + BP_BORDER_BUFFER;

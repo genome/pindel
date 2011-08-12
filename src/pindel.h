@@ -68,6 +68,7 @@ extern unsigned int g_CloseMappedMinus;
 extern int g_binIndex;
 extern int WINDOW_SIZE;
 extern unsigned int g_minimalAnchorQuality;
+extern int g_maxInsertSize;
 
 /*
  * For search functions
@@ -96,6 +97,7 @@ const char FirstCharReadName = '@';
 const short Max_short = 128;
 const unsigned int NumberOfReadsPerBuffer = 1000; // estimate later
 const short FirstBase = 1;
+
 
 /*
  * Data structures

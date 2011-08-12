@@ -108,6 +108,7 @@ bool FirstChr = true;
 const double InsertSizeExtra = 2;
 unsigned int CONS_Chr_Size;
 unsigned int DSizeArray[15];
+int g_maxInsertSize=0;
 
 std::string BreakDancerMask;
 std::string CurrentChrMask;
@@ -1488,6 +1489,9 @@ void GetCloseEnd(const std::string & CurrentChr, SPLIT_READ & Temp_One_Read) {
 	char LeftChar, RightChar;
 	std::string CurrentReadSeq;
 	std::vector<unsigned int> PD[Temp_One_Read.TOTAL_SNP_ERROR_CHECKED];
+	if (Temp_One_Read.InsertSize > g_maxInsertSize) { 
+		g_maxInsertSize = Temp_One_Read.InsertSize;
+	}
 	for (int CheckIndex = 0; CheckIndex < Temp_One_Read.TOTAL_SNP_ERROR_CHECKED; CheckIndex++) {
 		PD[CheckIndex].reserve(3 * Temp_One_Read.InsertSize);
 	}
