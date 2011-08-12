@@ -93,10 +93,10 @@ int searchInversionsNT(ControlState& currentState, unsigned NumBoxes) {
 						currentState.Reads[ReadIndex].InsertedStr = "";
 						currentState.Reads[ReadIndex].BPLeft
 								= currentState.Reads[ReadIndex].UP_Close[CloseIndex].AbsLoc
-										+ 1 - SpacerBeforeAfter;
+										+ 1 - g_SpacerBeforeAfter;
 						currentState.Reads[ReadIndex].BPRight
 								= currentState.Reads[ReadIndex].UP_Far[FarIndex].AbsLoc
-										- SpacerBeforeAfter;
+										- g_SpacerBeforeAfter;
 						if (readTransgressesBinBoundaries(
 								currentState.Reads[ReadIndex],
 								currentState.upperBinBorder)) {
@@ -158,10 +158,10 @@ int searchInversionsNT(ControlState& currentState, unsigned NumBoxes) {
 						currentState.Reads[ReadIndex].InsertedStr = "";
 						currentState.Reads[ReadIndex].BPRight
 								= currentState.Reads[ReadIndex].UP_Close[CloseIndex].AbsLoc
-										- SpacerBeforeAfter;
+										- g_SpacerBeforeAfter;
 						currentState.Reads[ReadIndex].BPLeft
 								= (currentState.Reads[ReadIndex].UP_Far[FarIndex].AbsLoc
-										+ 1) - SpacerBeforeAfter;
+										+ 1) - g_SpacerBeforeAfter;
 
 						if (readTransgressesBinBoundaries(
 								currentState.Reads[ReadIndex],
@@ -226,10 +226,10 @@ int searchInversionsNT(ControlState& currentState, unsigned NumBoxes) {
 						currentState.Reads[ReadIndex].InsertedStr = "";
 						currentState.Reads[ReadIndex].BPLeft
 								= currentState.Reads[ReadIndex].UP_Far[FarIndex].AbsLoc
-										- SpacerBeforeAfter;
+										- g_SpacerBeforeAfter;
 						currentState.Reads[ReadIndex].BPRight
 								= currentState.Reads[ReadIndex].UP_Close[CloseIndex].AbsLoc
-										- 1 - SpacerBeforeAfter;
+										- 1 - g_SpacerBeforeAfter;
 						if (readTransgressesBinBoundaries(
 								currentState.Reads[ReadIndex],
 								currentState.upperBinBorder)) {
@@ -290,10 +290,10 @@ int searchInversionsNT(ControlState& currentState, unsigned NumBoxes) {
 						currentState.Reads[ReadIndex].InsertedStr = "";
 						currentState.Reads[ReadIndex].BPLeft
 								= currentState.Reads[ReadIndex].UP_Close[CloseIndex].AbsLoc
-										- SpacerBeforeAfter;
+										- g_SpacerBeforeAfter;
 						currentState.Reads[ReadIndex].BPRight
 								= currentState.Reads[ReadIndex].UP_Far[FarIndex].AbsLoc
-										- 1 - SpacerBeforeAfter;
+										- 1 - g_SpacerBeforeAfter;
 
 						if (readTransgressesBinBoundaries(
 								currentState.Reads[ReadIndex],

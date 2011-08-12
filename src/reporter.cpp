@@ -29,6 +29,7 @@
 #include "output_file_data.h"
 #include "output_sorter.h"
 #include "reporter.h"
+#include "shifted_vector.h"
 
 OutputFileData deletionFileData;
 
@@ -121,8 +122,8 @@ OutputTDs (const std::vector < SPLIT_READ > &TDs,
 	//	GapSize = TDs[C_S].IndelSize;
 	//else
 	//	GapSize = 13 + (int) log10 (TDs[C_S].IndelSize - 10);
-	CurrentChrMask[TDs[C_S].BPLeft + SpacerBeforeAfter] = 'B';
-	CurrentChrMask[TDs[C_S].BPRight + SpacerBeforeAfter] = 'B';
+	CurrentChrMask[TDs[C_S].BPLeft + g_SpacerBeforeAfter] = 'B';
+	CurrentChrMask[TDs[C_S].BPRight + g_SpacerBeforeAfter] = 'B';
 
 	TDOutf <<
 		"####################################################################################################"
@@ -146,7 +147,7 @@ OutputTDs (const std::vector < SPLIT_READ > &TDs,
 	TDOutf << std::endl;
 
 	//DeletionOutf << TheInput.substr(Deletions[C_S].Left - ReportLength + Deletions[C_S].BP + 1, ReportLength * 2) << endl;// << endl;// ReportLength                 
-	TDOutf << TheInput.substr (TDs[C_S].BPRight + SpacerBeforeAfter - ReportLength + 1, ReportLength);	// << endl;// 
+	TDOutf << TheInput.substr (TDs[C_S].BPRight + g_SpacerBeforeAfter - ReportLength + 1, ReportLength);	// << endl;// 
 	if (TDs[C_S].NT_size)
 		{
 			for (short i = 0; i < TDs[C_S].NT_size; i++)
@@ -154,7 +155,7 @@ OutputTDs (const std::vector < SPLIT_READ > &TDs,
 		}
 	//ReportLength 
 	TDOutf << Cap2Low (TheInput.
-										 substr (TDs[C_S].BPLeft + SpacerBeforeAfter,
+										 substr (TDs[C_S].BPLeft + g_SpacerBeforeAfter,
 														 ReportLength)) << std::endl;
 
 	short SpaceBeforeReadSeq;
@@ -165,7 +166,7 @@ OutputTDs (const std::vector < SPLIT_READ > &TDs,
 			for (int i = 0; i < SpaceBeforeReadSeq; i++)
 				TDOutf << " ";
 			//short SpaceBeforeD =
-			//	ReportLength + ReportLength - SpacerBeforeAfter -
+			//	ReportLength + ReportLength - g_SpacerBeforeAfter -
 			//	TDs[GoodIndex].ReadLength;
 			if (TDs[GoodIndex].MatchedD == Minus)
 				{
@@ -280,13 +281,13 @@ OutputDeletions (const std::vector < SPLIT_READ > &Deletions,
 	else
 		GapSize = 13 + (int) log10 (Deletions[C_S].IndelSize - 10);
 	LOG_DEBUG(std::cout << "d_5a" << std::endl);
-	CurrentChrMask[Deletions[C_S].BPLeft + SpacerBeforeAfter] = 'B';
+	CurrentChrMask[Deletions[C_S].BPLeft + g_SpacerBeforeAfter] = 'B';
 	LOG_DEBUG(std::cout << "d_5b" << std::endl);
-	CurrentChrMask[Deletions[C_S].BPRight + SpacerBeforeAfter] = 'B';
+	CurrentChrMask[Deletions[C_S].BPRight + g_SpacerBeforeAfter] = 'B';
 	LOG_DEBUG(std::cout << "d_5c" << std::endl);
-	CurrentChrMask[RealStart + SpacerBeforeAfter] = 'B';
+	CurrentChrMask[RealStart + g_SpacerBeforeAfter] = 'B';
 	LOG_DEBUG(std::cout << "d_5d" << std::endl);
-	CurrentChrMask[RealEnd + SpacerBeforeAfter] = 'B';
+	CurrentChrMask[RealEnd + g_SpacerBeforeAfter] = 'B';
 	LOG_DEBUG(std::cout << "d_5e" << std::endl);
 	DeletionOutf <<
 		"####################################################################################################"
@@ -482,8 +483,8 @@ OutputInversions (const std::vector < SPLIT_READ > &Inv,
 	//	GapSize = Inv[C_S].IndelSize;
 	//else
 	//	GapSize = 13 + (int) log10 (Inv[C_S].IndelSize - 10);
-	CurrentChrMask[Inv[C_S].BPLeft + SpacerBeforeAfter] = 'B';
-	CurrentChrMask[Inv[C_S].BPRight + SpacerBeforeAfter] = 'B';
+	CurrentChrMask[Inv[C_S].BPLeft + g_SpacerBeforeAfter] = 'B';
+	CurrentChrMask[Inv[C_S].BPRight + g_SpacerBeforeAfter] = 'B';
 	InvOutf <<
 		"####################################################################################################"
 		<< std::endl;
@@ -507,7 +508,7 @@ OutputInversions (const std::vector < SPLIT_READ > &Inv,
 
 	short SpaceBeforeReadSeq;
 	//DeletionOutf << TheInput.substr(Deletions[C_S].Left - ReportLength + Deletions[C_S].BP + 1, ReportLength * 2) << endl;// << endl;// ReportLength                 
-	InvOutf << TheInput.substr (Inv[C_S].BPLeft + SpacerBeforeAfter - ReportLength, ReportLength);	//;// << endl;// ReportLength  
+	InvOutf << TheInput.substr (Inv[C_S].BPLeft + g_SpacerBeforeAfter - ReportLength, ReportLength);	//;// << endl;// ReportLength  
 	LOG_DEBUG(std::cout << Inv[C_S].NT_size << "\t" << Inv[C_S].NT_2size << std::endl);
 	if (LeftNT_size)
 		{
@@ -519,7 +520,7 @@ OutputInversions (const std::vector < SPLIT_READ > &Inv,
 	InvOutf <<
 		Cap2Low (ReverseComplement
 						 (TheInput.
-							substr (Inv[C_S].BPRight + 1 + SpacerBeforeAfter - ReportLength,
+							substr (Inv[C_S].BPRight + 1 + g_SpacerBeforeAfter - ReportLength,
 											ReportLength))) << std::endl;
 	for (unsigned int GoodIndex = C_S; GoodIndex <= C_E; GoodIndex++)
 		{
@@ -565,7 +566,7 @@ OutputInversions (const std::vector < SPLIT_READ > &Inv,
 	InvOutf <<
 		Cap2Low (ReverseComplement
 						 (TheInput.
-							substr (Inv[C_S].BPLeft + SpacerBeforeAfter, ReportLength)));
+							substr (Inv[C_S].BPLeft + g_SpacerBeforeAfter, ReportLength)));
 	if (RightNT_size)
 		{
 			for (int i = 0; i < RightNT_size; i++)
@@ -573,7 +574,7 @@ OutputInversions (const std::vector < SPLIT_READ > &Inv,
 					InvOutf << " ";
 				}
 		}
-	InvOutf << TheInput.substr (Inv[C_S].BPRight + 1 + SpacerBeforeAfter,
+	InvOutf << TheInput.substr (Inv[C_S].BPRight + 1 + g_SpacerBeforeAfter,
 															ReportLength) << std::endl;
 	for (unsigned int GoodIndex = C_S; GoodIndex <= C_E; GoodIndex++)
 		{
@@ -700,10 +701,10 @@ OutputSIs (const std::vector < SPLIT_READ > &SIs,
 	//double PreciseScore = (LeftScore + RightScore) * (-1);
 	std::string CurrentReadSeq;
 
-	CurrentChrMask[SIs[C_S].BPLeft + SpacerBeforeAfter] = 'B';
-	CurrentChrMask[SIs[C_S].BPRight + SpacerBeforeAfter] = 'B';
-	CurrentChrMask[RealStart + SpacerBeforeAfter] = 'B';
-	CurrentChrMask[RealEnd + SpacerBeforeAfter] = 'B';
+	CurrentChrMask[SIs[C_S].BPLeft + g_SpacerBeforeAfter] = 'B';
+	CurrentChrMask[SIs[C_S].BPRight + g_SpacerBeforeAfter] = 'B';
+	CurrentChrMask[RealStart + g_SpacerBeforeAfter] = 'B';
+	CurrentChrMask[RealEnd + g_SpacerBeforeAfter] = 'B';
 
 	SIsOutf <<
 		"####################################################################################################"
@@ -836,10 +837,10 @@ OutputDI (const std::vector < SPLIT_READ > &DI,
 	//short GapSize =0;
 	//if (DI[C_S].IndelSize < 14) GapSize = DI[C_S].IndelSize;
 	//else GapSize = 13 + (int)log10(Deletions[C_S].IndelSize - 10);
-	CurrentChrMask[DI[C_S].BPLeft + SpacerBeforeAfter] = 'B';
-	CurrentChrMask[DI[C_S].BPRight + SpacerBeforeAfter] = 'B';
-	//CurrentChrMask[RealStart + SpacerBeforeAfter] = 'B';
-	//CurrentChrMask[RealStart + SpacerBeforeAfter] = 'B'; 
+	CurrentChrMask[DI[C_S].BPLeft + g_SpacerBeforeAfter] = 'B';
+	CurrentChrMask[DI[C_S].BPRight + g_SpacerBeforeAfter] = 'B';
+	//CurrentChrMask[RealStart + g_SpacerBeforeAfter] = 'B';
+	//CurrentChrMask[RealStart + g_SpacerBeforeAfter] = 'B'; 
 	DeletionOutf <<
 		"####################################################################################################"
 		<< std::endl;
@@ -1759,24 +1760,46 @@ SortOutputDI (const unsigned &NumBoxes, const std::string & CurrentChr,
 
 void
 SortOutputLI (const std::string & CurrentChr, std::vector < SPLIT_READ > &Reads,
-							std::ofstream & LargeInsertionOutf)
+							std::ofstream & LargeInsertionOutf, const unsigned int windowStart, const unsigned int windowEnd)
 {
 	unsigned UP_Close_index;
 	unsigned temp_AbsLoc;
-return;
+
+	const unsigned int LI_BORDER_BUFFER = 200;
+//return;
 	// find LI combinations
  //	try
   	//{
-		uint8_t *plus_LI_Pos = new uint8_t[CurrentChr.size () + 1];
+	/*	uint8_t *plus_LI_Pos = new uint8_t[CurrentChr.size () + 1];
 		uint8_t *minus_LI_Pos = new uint8_t[CurrentChr.size () + 1];
-		int32_t *EventIndex_Pos = new int32_t[CurrentChr.size () + 1];
+		int32_t *EventIndex_Pos = new int32_t[CurrentChr.size () + 1];*/
+	unsigned int absStartLIWindow = g_SpacerBeforeAfter + windowStart - LI_BORDER_BUFFER;
+	unsigned int absEndLIWindow = g_SpacerBeforeAfter +windowEnd + LI_BORDER_BUFFER;
 
-	for (unsigned i = 0; i < CurrentChr.size () + 1; i++)
+std::cout << "SBA: " << g_SpacerBeforeAfter << " WS " << windowStart << " Total: " << g_SpacerBeforeAfter + windowStart - LI_BORDER_BUFFER << std::endl;
+	ShiftedVector< uint8_t > plus_LI_Pos( absStartLIWindow , absEndLIWindow , 0 );
+	ShiftedVector< uint8_t > minus_LI_Pos( absStartLIWindow , absEndLIWindow , 0 );
+	ShiftedVector< int32_t > EventIndex_Pos( absStartLIWindow , absEndLIWindow , -1 );
+/*std::string s;
+std::cout << "Alloc0" << CurrentChr.size() << std::endl;
+std::cin >> s;
+	std::vector< uint8_t > plus_LI_Pos(CurrentChr.size () + 1, 0 );
+std::cout << "Alloc1\n";
+std::cin >> s;
+	std::vector< uint8_t > minus_LI_Pos(CurrentChr.size () + 1, 0 );
+std::cout << "Alloc2\n";
+std::cin >> s;
+	std::vector< int > EventIndex_Pos(CurrentChr.size () + 1, -1 );
+std::cout << "Alloc3\n";
+std::cin >> s;*/
+
+	/*for (unsigned i = 0; i < CurrentChr.size () + 1; i++)
 		{
 			plus_LI_Pos[i] = 0;
 			minus_LI_Pos[i] = 0;
 			EventIndex_Pos[i] = -1;
 		}
+*/
 	for (unsigned Index = 0; Index < Reads.size (); Index++)
 		{
 			//UP_Close_index = ;
@@ -1785,6 +1808,7 @@ return;
 				continue;
 			temp_AbsLoc =
 				Reads[Index].UP_Close[Reads[Index].UP_Close.size () - 1].AbsLoc;
+//std::cout << "tabsloc = " << temp_AbsLoc  << std::endl;
 			if (plus_LI_Pos[temp_AbsLoc] < Max_short)
 				{
 					if (Reads[Index].MatchedD == Plus)
@@ -1801,8 +1825,10 @@ return;
 	bool SkipThis;
 	int LI_Positions_Size = 0;
 	bool SkipPlus;
-	for (unsigned int Index_Minus = SpacerBeforeAfter;
-			 Index_Minus < CurrentChr.size () - SpacerBeforeAfter; Index_Minus++)
+	//for (unsigned int Index_Minus = g_SpacerBeforeAfter;
+	//		 Index_Minus < CurrentChr.size () - g_SpacerBeforeAfter; Index_Minus++)
+	for (unsigned int Index_Minus = absStartLIWindow;
+			 Index_Minus < absEndLIWindow; Index_Minus++)
 		{
 			SkipPlus = false;
 			for (unsigned int MaskedPosIndexMinus = Index_Minus + 10;
@@ -1999,10 +2025,10 @@ return;
 							std::endl;
 						LargeInsertionOutf << Count_LI++ << "\tLI\tChrID " <<
 							temp_Plus_Reads[0].FragName << "\t" << LI_Positions[LI_index].
-							Plus_Pos - SpacerBeforeAfter +
+							Plus_Pos - g_SpacerBeforeAfter +
 							1 << "\t" << temp_Plus_Reads.
 							size () << "\t" << LI_Positions[LI_index].Minus_Pos -
-							SpacerBeforeAfter +
+							g_SpacerBeforeAfter +
 							1 << "\t" << temp_Minus_Reads.size () << std::endl;
 
 						LargeInsertionOutf << (CurrentChr.
@@ -2059,9 +2085,9 @@ return;
 			//LI_Positions[LI_index].WhetherReport = true; 
 		}
 	// output
-	delete[]plus_LI_Pos;
+/*	delete[]plus_LI_Pos;
 	delete[]minus_LI_Pos;
-	delete[]EventIndex_Pos;
+	delete[]EventIndex_Pos;*/
 	LOG_INFO(std::cout << "Breakpoints for large insertions (LI): " << Count_LI << std::endl << std::endl);
  //	}
   /* catch (std::bad_alloc& ba)
@@ -2076,7 +2102,7 @@ return;
 
 void
 SortOutputRest (const std::string & CurrentChr, std::vector < SPLIT_READ > &Reads,
-								std::vector < SPLIT_READ > &BP_Reads, std::ofstream & Outf_Rest)
+								std::vector < SPLIT_READ > &BP_Reads, std::ofstream & Outf_Rest, const unsigned int windowStart, const unsigned int windowEnd)
 {
 	SPLIT_READ one_BP_read;
 	std::string HalfMapped, HalfUnmapped;
@@ -2085,8 +2111,18 @@ SortOutputRest (const std::string & CurrentChr, std::vector < SPLIT_READ > &Read
 	unsigned temp_AbsLoc;
 	LOG_DEBUG(std::cout << "1" << std::endl);
 	// find LI combinations
-	uint8_t *plus_LI_Pos = new uint8_t[CurrentChr.size () + 1];
-	uint8_t *minus_LI_Pos = new uint8_t[CurrentChr.size () + 1];
+
+	const int BP_BORDER_BUFFER = 200;
+	
+	unsigned int absStartBPWindow = g_SpacerBeforeAfter + windowStart - BP_BORDER_BUFFER;
+	unsigned int absEndBPWindow = g_SpacerBeforeAfter +windowEnd + BP_BORDER_BUFFER;
+
+std::cout << "SBA: " << g_SpacerBeforeAfter << " WS " << windowStart << " Total: " << g_SpacerBeforeAfter + windowStart - BP_BORDER_BUFFER << std::endl;
+	ShiftedVector< uint8_t > plus_LI_Pos( absStartBPWindow , absEndBPWindow , 0 );
+	ShiftedVector< uint8_t > minus_LI_Pos( absStartBPWindow , absEndBPWindow , 0 );
+
+	//uint8_t *plus_LI_Pos = new uint8_t[CurrentChr.size () + 1];
+	//uint8_t *minus_LI_Pos = new uint8_t[CurrentChr.size () + 1];
 	for (unsigned i = 0; i < CurrentChr.size () + 1; i++)
 		{
 			plus_LI_Pos[i] = 0;
@@ -2116,8 +2152,8 @@ SortOutputRest (const std::string & CurrentChr, std::vector < SPLIT_READ > &Read
 	LOG_DEBUG(std::cout << "2" << std::endl);
 
 	bool SkipThisPos;
-	for (unsigned int Index = SpacerBeforeAfter;
-			 Index < CurrentChr.size () - SpacerBeforeAfter; Index++)
+	for (unsigned int Index = absStartBPWindow;
+			 Index < absEndBPWindow; Index++)
 		{
 			SkipThisPos = false;
 			//for (int MaskIndex = Index + 10; MaskIndex >= Index - 10; MaskIndex--) {
@@ -2201,7 +2237,7 @@ SortOutputRest (const std::string & CurrentChr, std::vector < SPLIT_READ > &Read
 								std::endl;
 							Outf_Rest << "ChrID " << temp_Pos_Reads[0].
 								FragName << "\t" << Rest_Positions[LI_index].Pos -
-								SpacerBeforeAfter +
+								g_SpacerBeforeAfter +
 								1 << "\t" << Rest_Positions[LI_index].Pos_Reads.
 								size () << "\t+" << std::endl;
 
@@ -2255,7 +2291,7 @@ SortOutputRest (const std::string & CurrentChr, std::vector < SPLIT_READ > &Read
 								std::endl;
 							Outf_Rest << "ChrID " << temp_Pos_Reads[0].
 								FragName << "\t" << Rest_Positions[LI_index].Pos -
-								SpacerBeforeAfter +
+								g_SpacerBeforeAfter +
 								1 << "\t" << Rest_Positions[LI_index].Pos_Reads.
 								size () << "\t-" << std::endl;
 							Outf_Rest << Cap2Low (CurrentChr.
@@ -2290,7 +2326,7 @@ SortOutputRest (const std::string & CurrentChr, std::vector < SPLIT_READ > &Read
 						}
 				}
 		}
-	delete[]plus_LI_Pos;
-	delete[]minus_LI_Pos;
+	//delete[]plus_LI_Pos;
+	//delete[]minus_LI_Pos;
 	LOG_INFO(std::cout << "Other unassigned breakpoints (BP): " << Count_BP << std::endl << std::endl);
 }

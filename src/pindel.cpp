@@ -855,7 +855,7 @@ int init(int argc, char *argv[], ControlState& currentState, BDData& bdData) {
 	Cap2LowArray[(short) '$'] = 'n';
 
 	std::string Spacer = "";
-	for (unsigned int i = 0; i < SpacerBeforeAfter; i++)
+	for (unsigned int i = 0; i < g_SpacerBeforeAfter; i++)
 		Spacer += "N";
 
 	Distance = 300;
@@ -1023,7 +1023,7 @@ int main(int argc, char *argv[]) {
 			continue;
 		}
 
-		CONS_Chr_Size = currentState.CurrentChr.size() - 2 * SpacerBeforeAfter;
+		CONS_Chr_Size = currentState.CurrentChr.size() - 2 * g_SpacerBeforeAfter;
 		(std::cout << "Chromosome Size: " << CONS_Chr_Size << std::endl);
 		CurrentChrMask.resize(currentState.CurrentChr.size());
 		bdData.loadChromosome( currentState.WhichChr, currentState.CurrentChr.size() );
@@ -1277,7 +1277,7 @@ int main(int argc, char *argv[]) {
 						currentState.LargeInsertionOutputFilename. c_str(),
 						std::ios::app);
 				SortOutputLI(currentState.CurrentChr, currentState.Reads,
-						LargeInsertionOutf);
+						LargeInsertionOutf, currentState.lowerBinBorder, currentState.upperBinBorder);
 				LargeInsertionOutf.close();
 				Time_LI_E = time(NULL);
 				(std::cout << "Mining, Sorting and output LI results: "
@@ -1295,7 +1295,7 @@ int main(int argc, char *argv[]) {
 				std::ofstream RestOutf(currentState.RestOutputFilename.c_str(),
 						std::ios::app);
 				SortOutputRest(currentState.CurrentChr, currentState.Reads,
-						BP_Reads, RestOutf);
+						BP_Reads, RestOutf, currentState.lowerBinBorder, currentState.upperBinBorder);
 				RestOutf.close();
 				Time_BP_E = time(NULL);
 				(std::cout << "Mining, Sorting and output BP results: "
@@ -1425,56 +1425,56 @@ bool ReportEvent(const std::vector<SPLIT_READ> &Deletions,
 
 void GetRealStart4Deletion(const std::string & TheInput,
 		unsigned int &RealStart, unsigned int &RealEnd) {
-	unsigned int PosIndex = RealStart + SpacerBeforeAfter;
+	unsigned int PosIndex = RealStart + g_SpacerBeforeAfter;
 	unsigned int Start = PosIndex + 1;
-	unsigned int End = RealEnd + SpacerBeforeAfter - 1;
+	unsigned int End = RealEnd + g_SpacerBeforeAfter - 1;
 	while (TheInput[PosIndex] == TheInput[End]) {
 		--PosIndex;
 		--End;
 	}
-	RealStart = PosIndex - SpacerBeforeAfter;
-	PosIndex = RealEnd + SpacerBeforeAfter;
+	RealStart = PosIndex - g_SpacerBeforeAfter;
+	PosIndex = RealEnd + g_SpacerBeforeAfter;
 	while (TheInput[PosIndex] == TheInput[Start]) {
 		++PosIndex;
 		++Start;
 	}
-	RealEnd = PosIndex - SpacerBeforeAfter;
+	RealEnd = PosIndex - g_SpacerBeforeAfter;
 }
 
 void GetRealStart4Insertion(const std::string & TheInput,
 		const std::string & InsertedStr, unsigned int &RealStart,
 		unsigned int &RealEnd) {
 	unsigned int IndelSize = InsertedStr.size();
-	unsigned int PosIndex = RealStart + SpacerBeforeAfter;
+	unsigned int PosIndex = RealStart + g_SpacerBeforeAfter;
 	// TODO: Ask Kai whether this can be removed
 	//unsigned int Start = PosIndex + 1;
 
-	//unsigned int End = RealEnd + SpacerBeforeAfter - 1;
+	//unsigned int End = RealEnd + g_SpacerBeforeAfter - 1;
 	for (int i = IndelSize - 1; i >= 0; i--) {
 		if (TheInput[PosIndex] == InsertedStr[i])
 			PosIndex--;
 		else
 			break;
 	}
-	if (PosIndex == RealStart + SpacerBeforeAfter - IndelSize) {
+	if (PosIndex == RealStart + g_SpacerBeforeAfter - IndelSize) {
 		while (TheInput[PosIndex] == TheInput[PosIndex + IndelSize]) {
 			PosIndex--;
 		}
 	}
-	RealStart = PosIndex - SpacerBeforeAfter;
-	PosIndex = RealEnd + SpacerBeforeAfter;
+	RealStart = PosIndex - g_SpacerBeforeAfter;
+	PosIndex = RealEnd + g_SpacerBeforeAfter;
 	for (unsigned int i = 0; i < IndelSize; i++) {
 		if (TheInput[PosIndex] == InsertedStr[i])
 			PosIndex++;
 		else
 			break;
 	}
-	if (PosIndex == RealEnd + SpacerBeforeAfter + IndelSize) {
+	if (PosIndex == RealEnd + g_SpacerBeforeAfter + IndelSize) {
 		while (TheInput[PosIndex] == TheInput[PosIndex - IndelSize]) {
 			PosIndex++;
 		}
 	}
-	RealEnd = PosIndex - SpacerBeforeAfter;
+	RealEnd = PosIndex - g_SpacerBeforeAfter;
 }
 
 std::vector<Region> Merge(const std::vector<Region> &AllRegions) {
@@ -1513,7 +1513,7 @@ void GetCloseEnd(const std::string & CurrentChr, SPLIT_READ & Temp_One_Read) {
     
 		if (Temp_One_Read.MatchedD == Plus) {
 			CurrentReadSeq = ReverseComplement(Temp_One_Read.UnmatchedSeq);
-			Start = Temp_One_Read.MatchedRelPos + SpacerBeforeAfter;
+			Start = Temp_One_Read.MatchedRelPos + g_SpacerBeforeAfter;
 			End = Start + 3 * Temp_One_Read.InsertSize;
 			LeftChar = CurrentReadSeq[0];
 			if (LeftChar != 'N') {
@@ -1539,7 +1539,7 @@ void GetCloseEnd(const std::string & CurrentChr, SPLIT_READ & Temp_One_Read) {
 			}
 		} else if (Temp_One_Read.MatchedD == Minus) {
 			CurrentReadSeq = Temp_One_Read.UnmatchedSeq;
-			End = Temp_One_Read.MatchedRelPos + SpacerBeforeAfter;
+			End = Temp_One_Read.MatchedRelPos + g_SpacerBeforeAfter;
 			Start = End - 3 * Temp_One_Read.InsertSize;
 			RightChar = CurrentReadSeq[Temp_One_Read.ReadLengthMinus];
 			if (RightChar != 'N') {
@@ -1612,14 +1612,14 @@ void GetFarEnd_SingleStrandDownStreamInsertions(const std::string & CurrentChr,
 
 		End = Temp_One_Read.UP_Close[0].AbsLoc
 				+ Temp_One_Read.UP_Close[0].LengthStr;
-		if (End > SpacerBeforeAfter + Temp_One_Read.InsertSize * 2
+		if (End > g_SpacerBeforeAfter + Temp_One_Read.InsertSize * 2
 				+ DSizeArray[RangeIndex])
 			Start = End - DSizeArray[RangeIndex] - Temp_One_Read.InsertSize * 2;
 		else
-			Start = SpacerBeforeAfter;
+			Start = g_SpacerBeforeAfter;
 
-		if (End > CurrentChr.size() - SpacerBeforeAfter)
-			End = CurrentChr.size() - SpacerBeforeAfter;
+		if (End > CurrentChr.size() - g_SpacerBeforeAfter)
+			End = CurrentChr.size() - g_SpacerBeforeAfter;
 		LeftChar = CurrentReadSeq[0];
 		if (Temp_One_Read.TOTAL_SNP_ERROR_CHECKED_Minus) {
 			if (LeftChar != 'N') {
@@ -1675,10 +1675,10 @@ void GetFarEnd_SingleStrandDownStreamInsertions(const std::string & CurrentChr,
 		Start = Temp_One_Read.UP_Close[0].AbsLoc
 				- Temp_One_Read.UP_Close[0].LengthStr;
 		// TODO: Ask Kai whether this can be removed
-		//Start = Temp_One_Read.MatchedRelPos + SpacerBeforeAfter;
+		//Start = Temp_One_Read.MatchedRelPos + g_SpacerBeforeAfter;
 		End = Start + DSizeArray[RangeIndex] + Temp_One_Read.InsertSize * 2;
-		if (End > CurrentChr.size() - SpacerBeforeAfter)
-			End = CurrentChr.size() - SpacerBeforeAfter;
+		if (End > CurrentChr.size() - g_SpacerBeforeAfter)
+			End = CurrentChr.size() - g_SpacerBeforeAfter;
 
 		RightChar = CurrentReadSeq[Temp_One_Read.ReadLengthMinus];
 		if (Temp_One_Read.TOTAL_SNP_ERROR_CHECKED_Minus) {

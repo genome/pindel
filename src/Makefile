@@ -8,7 +8,7 @@ SOURCES=pindel.cpp reader.cpp reporter.cpp searcher.cpp parameter.cpp \
     search_tandem_duplications.cpp search_tandem_duplications_nt.cpp \
     output_sorter.cpp farend_searcher.cpp search_variant.cpp \
     searchshortinsertions.cpp searchdeletions.cpp output_file_data.cpp \
-    bddata.cpp
+    bddata.cpp shifted_vector.cpp
  
 all:	pindel pindel-debug
 -include $(SOURCES:.cpp=.d)

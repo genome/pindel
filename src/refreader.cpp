@@ -73,7 +73,7 @@ RefReader::ReadChr(const std::string & ChrName)
 	if (!TheInput->empty ())
 		{
 			std::string Spacer = "";
-			for (unsigned i = 0; i < SpacerBeforeAfter; i++)
+			for (unsigned i = 0; i < g_SpacerBeforeAfter; i++)
 				Spacer += "N";
 			*TheInput = Spacer + *TheInput + Spacer;
 		}
@@ -104,7 +104,7 @@ RefReader::ReadSeq(bool WhetherBuildUp)
 	if (!TheInput->empty ())
 		{
 			std::string Spacer = "";
-			for (unsigned i = 0; i < SpacerBeforeAfter; i++)
+			for (unsigned i = 0; i < g_SpacerBeforeAfter; i++)
 				Spacer += "N";
 			*TheInput = Spacer + *TheInput + Spacer;
 		}

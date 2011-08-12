@@ -51,14 +51,14 @@ void FarEndSearcher::GetFarEnd_General(const int &in_start, const int &in_end, c
 
 	if (UseRangeIndex) {
 		if (Temp_One_Read->MatchedD == Plus) {
-			Start = Temp_One_Read->MatchedRelPos + SpacerBeforeAfter - Temp_One_Read->ReadLength - 2
+			Start = Temp_One_Read->MatchedRelPos + g_SpacerBeforeAfter - Temp_One_Read->ReadLength - 2
 							* Temp_One_Read->InsertSize - DSizeArray[RangeIndex];
-			End = Temp_One_Read->MatchedRelPos + SpacerBeforeAfter - Temp_One_Read->ReadLength + 3
+			End = Temp_One_Read->MatchedRelPos + g_SpacerBeforeAfter - Temp_One_Read->ReadLength + 3
 							* Temp_One_Read->InsertSize + DSizeArray[RangeIndex];
 		} else {
-			Start = Temp_One_Read->MatchedRelPos + SpacerBeforeAfter - 3 * Temp_One_Read->InsertSize
+			Start = Temp_One_Read->MatchedRelPos + g_SpacerBeforeAfter - 3 * Temp_One_Read->InsertSize
 							+ Temp_One_Read->ReadLength - DSizeArray[RangeIndex];
-			End = Temp_One_Read->MatchedRelPos + SpacerBeforeAfter + 2 * Temp_One_Read->InsertSize
+			End = Temp_One_Read->MatchedRelPos + g_SpacerBeforeAfter + 2 * Temp_One_Read->InsertSize
 							+ Temp_One_Read->ReadLength + DSizeArray[RangeIndex];
 		}
 	} else {
@@ -215,8 +215,8 @@ FarEndSearcher::GetFarEnd_SingleStrandUpStream(const short &RangeIndex) {
 
 		Start = Temp_One_Read->UP_Close[0].AbsLoc + Temp_One_Read->UP_Close[0].LengthStr;
 		End = Start + DSizeArray[RangeIndex] + Temp_One_Read->InsertSize * 2;
-		if (End > (int)CurrentChr->size() - (int)SpacerBeforeAfter)
-			End = (int)CurrentChr->size() - (int)SpacerBeforeAfter;
+		if (End > (int)CurrentChr->size() - (int)g_SpacerBeforeAfter)
+			End = (int)CurrentChr->size() - (int)g_SpacerBeforeAfter;
 
 		char LeftChar = CurrentReadSeq[0];
 		if (Temp_One_Read->TOTAL_SNP_ERROR_CHECKED_Minus) {
@@ -268,10 +268,10 @@ FarEndSearcher::GetFarEnd_SingleStrandUpStream(const short &RangeIndex) {
 
 		End = Temp_One_Read->UP_Close[0].AbsLoc - Temp_One_Read->UP_Close[0].LengthStr;
 
-		if (End > (int)DSizeArray[RangeIndex] + (int)Temp_One_Read->InsertSize * 2 + (int)SpacerBeforeAfter)
+		if (End > (int)DSizeArray[RangeIndex] + (int)Temp_One_Read->InsertSize * 2 + (int)g_SpacerBeforeAfter)
 			Start = End - DSizeArray[RangeIndex] - Temp_One_Read->InsertSize * 2;
 		else
-			Start = SpacerBeforeAfter;
+			Start = g_SpacerBeforeAfter;
 
 		RightChar = CurrentReadSeq[Temp_One_Read->ReadLengthMinus];
 		if (Temp_One_Read->TOTAL_SNP_ERROR_CHECKED_Minus) {
@@ -339,13 +339,13 @@ FarEndSearcher::GetFarEnd_SingleStrandDownStream(const short &RangeIndex) {
 		End = Temp_One_Read->UP_Close[0].AbsLoc
 				+ Temp_One_Read->UP_Close[0].LengthStr
 				- Temp_One_Read->ReadLength;
-		if (End > SpacerBeforeAfter + Temp_One_Read->InsertSize * 2 + DSizeArray[RangeIndex])
+		if (End > g_SpacerBeforeAfter + Temp_One_Read->InsertSize * 2 + DSizeArray[RangeIndex])
 			Start = End - DSizeArray[RangeIndex] - Temp_One_Read->InsertSize * 2;
 		else
-			Start = SpacerBeforeAfter;
+			Start = g_SpacerBeforeAfter;
 
-		if (End > CurrentChr->size() - SpacerBeforeAfter)
-			End = CurrentChr->size() - SpacerBeforeAfter;
+		if (End > CurrentChr->size() - g_SpacerBeforeAfter)
+			End = CurrentChr->size() - g_SpacerBeforeAfter;
 
 		LeftChar = CurrentReadSeq[0];
 		if (Temp_One_Read->TOTAL_SNP_ERROR_CHECKED_Minus) {
@@ -399,8 +399,8 @@ FarEndSearcher::GetFarEnd_SingleStrandDownStream(const short &RangeIndex) {
 				- Temp_One_Read->UP_Close[0].LengthStr
 				+ Temp_One_Read->ReadLength;
 		End = Start + DSizeArray[RangeIndex] + Temp_One_Read->InsertSize * 2;
-		if (End > CurrentChr->size() - SpacerBeforeAfter)
-			End = CurrentChr->size() - SpacerBeforeAfter;
+		if (End > CurrentChr->size() - g_SpacerBeforeAfter)
+			End = CurrentChr->size() - g_SpacerBeforeAfter;
 
 		RightChar = CurrentReadSeq[Temp_One_Read->ReadLengthMinus];
 		if (Temp_One_Read->TOTAL_SNP_ERROR_CHECKED_Minus) {

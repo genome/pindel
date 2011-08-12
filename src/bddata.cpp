@@ -35,8 +35,8 @@ void BDData::loadBDFile(const std::string& filename)
                 >> temp_BD_event.ChrName_B >> temp_BD_event.POS2 >> tempStringItem;
          std::getline(bdFile, tempLine);  // get rest of line
 
-         temp_BD_event.POS1 += SpacerBeforeAfter;
-         temp_BD_event.POS2 += SpacerBeforeAfter;
+         temp_BD_event.POS1 += g_SpacerBeforeAfter;
+         temp_BD_event.POS2 += g_SpacerBeforeAfter;
 
 			m_bdEvents.push_back(temp_BD_event);
 		}

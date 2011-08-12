@@ -111,10 +111,10 @@ int SearchVariant::Search(ControlState& currentState, const unsigned numBoxes) {
 
 								currentState.Reads[ReadIndex].BPLeft
 										= currentState.Reads[ReadIndex]. UP_Close[CloseIndex].AbsLoc
-												- SpacerBeforeAfter;
+												- g_SpacerBeforeAfter;
 								currentState.Reads[ReadIndex].BPRight
 										= currentState.Reads[ReadIndex].UP_Far[FarIndex]. AbsLoc
-												- SpacerBeforeAfter;
+												- g_SpacerBeforeAfter;
 								if (readTransgressesBinBoundaries(
 										currentState.Reads[ReadIndex],
 										currentState.upperBinBorder)) {
@@ -205,10 +205,10 @@ int SearchVariant::Search(ControlState& currentState, const unsigned numBoxes) {
 
 								currentState.Reads[ReadIndex].BPLeft
 										= currentState.Reads[ReadIndex].UP_Far[FarIndex].AbsLoc
-												- SpacerBeforeAfter;
+												- g_SpacerBeforeAfter;
 								currentState.Reads[ReadIndex].BPRight
 										= currentState.Reads[ReadIndex].UP_Close[CloseIndex].AbsLoc
-												- SpacerBeforeAfter;
+												- g_SpacerBeforeAfter;
 
 								if (readTransgressesBinBoundaries(
 										currentState.Reads[ReadIndex],

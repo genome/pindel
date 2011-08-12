@@ -25,6 +25,7 @@
 #include <string>
 #include <vector>
 #include "pindel.h"
+#include "shifted_vector.h"
 
 void SortOutputD (const unsigned &NumBoxes, const std::string & CurrentChr,
 									std::vector < SPLIT_READ > &AllReads,
@@ -47,13 +48,12 @@ void SortOutputInv_NT (const unsigned &NumBoxes,
 void SortOutputDI (const unsigned &NumBoxes, const std::string & CurrentChr,
 									 std::vector < SPLIT_READ > &AllReads,
 									 std::vector < unsigned >DI[], std::ofstream & DIOutf);
-void SortOutputLI (const std::string & CurrentChr,
-									 std::vector < SPLIT_READ > &AllReads,
-									 std::ofstream & Outf_LI);
+void SortOutputLI (const std::string & CurrentChr, std::vector < SPLIT_READ > &Reads,
+							std::ofstream & LargeInsertionOutf, const unsigned int windowStart, const unsigned int windowEnd);
 void SortOutputRest (const std::string & CurrentChr,
 										 std::vector < SPLIT_READ > &AllReads,
 										 std::vector < SPLIT_READ > &BP_Reads,
-										 std::ofstream & Outf_Rest);
+										 std::ofstream & Outf_Rest, const unsigned int windowStart, const unsigned int windowEnd);
 
 
 #endif /* REPORTER_H */

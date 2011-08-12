@@ -19,6 +19,7 @@
  */
 
 // System header files
+#include <iomanip>
 #include <iostream>
 #include <fstream>
 #include <cmath>
@@ -87,10 +88,10 @@ GetOneChrSeq (std::ifstream & fastaFile, std::string & chromosomeSequence, bool 
 }
 
 
-int safeDivide( int dividend, int divisor )
+double safeDivide( int dividend, int divisor )
 {
 	if (divisor == 0) return 0;
-	else return (dividend / divisor );
+	else return ((double)dividend / divisor );
 }
 
 void showReadStats(const std::vector<SPLIT_READ>& Reads)
@@ -100,8 +101,8 @@ void showReadStats(const std::vector<SPLIT_READ>& Reads)
 								 ", + " << g_InWinPlus << " - " << g_InWinMinus << std::endl);
 	LOG_INFO(std::cout << "Number of reads where the close end could be mapped:\t" << Reads.size () << 
 								 ", + " << g_CloseMappedPlus << " - " << g_CloseMappedMinus << std::endl);
-	LOG_INFO(std::cout << "Percentage of reads which could be mapped: + " << safeDivide( g_CloseMappedPlus * 100.0 , g_InWinPlus ) <<
-								 " - " << safeDivide( g_CloseMappedMinus * 100.0 , g_InWinMinus ) << std::endl);
+	LOG_INFO(std::cout << "Percentage of reads which could be mapped: + " << std::setprecision(2) << std::fixed << safeDivide( g_CloseMappedPlus * 100.0 , g_InWinPlus ) <<
+								 "% - " << safeDivide( g_CloseMappedMinus * 100.0 , g_InWinMinus ) << "%\n");
 	std::cout << std::endl;
 	/*LOG_INFO(std::cout << "NumReadStored / NumReadInChr = " << 
 	   	       safeDivide( Reads.size () * 100.0 , g_NumReadInChr ) << 
