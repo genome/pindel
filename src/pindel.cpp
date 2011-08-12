@@ -113,11 +113,11 @@ std::string BreakDancerMask;
 std::string CurrentChrMask;
 
 unsigned int g_NumReadScanned = 0;
-unsigned int g_NumReadInChr = 0;
-unsigned int InChrPlus = 0;
-unsigned int InChrMinus = 0;
-unsigned int GetPlus = 0;
-unsigned int GetMinus = 0;
+unsigned int g_NumReadInWindow = 0;
+unsigned int g_InWinPlus = 0;
+unsigned int g_InWinMinus = 0;
+unsigned int g_CloseMappedPlus = 0;
+unsigned int g_CloseMappedMinus = 0;
 
 // TODO: Ask Kai whether this can be removed
 //short MAX_SNP_ERROR = 2;
@@ -1053,6 +1053,11 @@ int main(int argc, char *argv[]) {
 
 			/* 3.2.1 preparation starts */
 			g_binIndex++;
+ 			g_NumReadInWindow = 0;
+			g_InWinPlus = 0;
+			g_InWinMinus = 0;
+			g_CloseMappedPlus = 0;
+			g_CloseMappedMinus = 0;
 			currentState.lowerBinBorder += WINDOW_SIZE;
 			currentState.upperBinBorder += WINDOW_SIZE;
 			displayedStartOfRegion += WINDOW_SIZE;

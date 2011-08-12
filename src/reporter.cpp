@@ -1763,9 +1763,10 @@ SortOutputLI (const std::string & CurrentChr, std::vector < SPLIT_READ > &Reads,
 {
 	unsigned UP_Close_index;
 	unsigned temp_AbsLoc;
+return;
 	// find LI combinations
- 	try
-  	{
+ //	try
+  	//{
 		uint8_t *plus_LI_Pos = new uint8_t[CurrentChr.size () + 1];
 		uint8_t *minus_LI_Pos = new uint8_t[CurrentChr.size () + 1];
 		int32_t *EventIndex_Pos = new int32_t[CurrentChr.size () + 1];
@@ -2062,12 +2063,12 @@ SortOutputLI (const std::string & CurrentChr, std::vector < SPLIT_READ > &Reads,
 	delete[]minus_LI_Pos;
 	delete[]EventIndex_Pos;
 	LOG_INFO(std::cout << "Breakpoints for large insertions (LI): " << Count_LI << std::endl << std::endl);
- 	}
-   catch (std::bad_alloc& ba)
+ //	}
+  /* catch (std::bad_alloc& ba)
    {
     	std::cerr << "bad_alloc caught in SortOutputLI: " << ba.what() << std::endl;
 		exit(EXIT_FAILURE);
-   }
+   }*/
 
 
 }

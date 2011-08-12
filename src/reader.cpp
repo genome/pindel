@@ -95,15 +95,20 @@ int safeDivide( int dividend, int divisor )
 
 void showReadStats(const std::vector<SPLIT_READ>& Reads)
 {
-	LOG_INFO(std::cout << "NumReadScanned:\t" << g_NumReadScanned << std::endl);
-	LOG_INFO(std::cout << "NumReadInChr:\t" << g_NumReadInChr << std::endl);
-	LOG_INFO(std::cout << "NumReadStored:\t" << Reads.size () << std::endl);
-	LOG_INFO(std::cout << "NumReadStored / NumReadInChr = " << 
+	//LOG_INFO(std::cout << "NumReadScanned:\t" << g_NumReadScanned << std::endl);
+	LOG_INFO(std::cout << "Number of reads in current window:                  \t" << g_NumReadInWindow << 
+								 ", + " << g_InWinPlus << " - " << g_InWinMinus << std::endl);
+	LOG_INFO(std::cout << "Number of reads where the close end could be mapped:\t" << Reads.size () << 
+								 ", + " << g_CloseMappedPlus << " - " << g_CloseMappedMinus << std::endl);
+	LOG_INFO(std::cout << "Percentage of reads which could be mapped: + " << safeDivide( g_CloseMappedPlus * 100.0 , g_InWinPlus ) <<
+								 " - " << safeDivide( g_CloseMappedMinus * 100.0 , g_InWinMinus ) << std::endl);
+	std::cout << std::endl;
+	/*LOG_INFO(std::cout << "NumReadStored / NumReadInChr = " << 
 	   	       safeDivide( Reads.size () * 100.0 , g_NumReadInChr ) << 
-                " %" << std::endl << "InChrPlus \t" << InChrPlus << "\tGetPlus \t" <<
-					 GetPlus << "\t" << 
-                safeDivide( GetPlus * 100.0 , InChrPlus ) << " %" << std::endl << "InChrMinus\t" << InChrMinus << "\tGetMinus\t" <<
-					 GetMinus << "\t" << safeDivide (GetMinus * 100.0 , InChrMinus )<< " %" << std::endl << std::endl);
+                " %" << std::endl << "InChrPlus \t" << g_InChrPlus << "\tGetPlus \t" <<
+					 g_GetPlus << "\t" << 
+                safeDivide( GetPlus * 100.0 , g_InChrPlus ) << " %" << std::endl << "InChrMinus\t" << g_InChrMinus << "\tGetMinus\t" <<
+					 g_GetMinus << "\t" << safeDivide (g_GetMinus * 100.0 , g_InChrMinus )<< " %" << std::endl << std::endl);*/
 }
 
 short
@@ -114,10 +119,6 @@ ReadInRead (std::ifstream & inf_ReadSeq, const std::string & FragName,
 	LOG_INFO(std::cout << "Scanning and processing reads anchored in " << FragName << std::endl);
 	//short ADDITIONAL_MISMATCH = 1;
 	SPLIT_READ Temp_One_Read;
-	unsigned int InChrPlus = 0;
-	unsigned int InChrMinus = 0;
-	unsigned int GetPlus = 0;
-	unsigned int GetMinus = 0;
 	//NumberOfReadsPerBuffer;
 	std::vector < SPLIT_READ > BufferReads;
 	ReportLength = 0;
@@ -173,7 +174,7 @@ ReadInRead (std::ifstream & inf_ReadSeq, const std::string & FragName,
 				{
 					Temp_One_Read.ReadLength = Temp_One_Read.UnmatchedSeq.size ();
 					Temp_One_Read.ReadLengthMinus = Temp_One_Read.ReadLength - 1;
-					g_NumReadInChr++;
+					g_NumReadInWindow++;
 
 					Temp_One_Read.MAX_SNP_ERROR =
 						(short) (Temp_One_Read.UnmatchedSeq.size () * Seq_Error_Rate);
@@ -190,11 +191,11 @@ ReadInRead (std::ifstream & inf_ReadSeq, const std::string & FragName,
 					Temp_One_Read.Found = false;
 					if (Temp_One_Read.MatchedD == Plus)
 						{
-							InChrPlus++;
+							g_InWinPlus++;
 							//Temp_One_Read.UnmatchedSeq = ReverseComplement(Temp_One_Read.UnmatchedSeq);
 						}
 					else
-						InChrMinus++;				// this seems to be going correctly
+						g_InWinMinus++;				// this seems to be going correctly
 					if (Temp_One_Read.MatchedRelPos > CONS_Chr_Size)
 						Temp_One_Read.MatchedRelPos = CONS_Chr_Size;
 					if (Temp_One_Read.MatchedRelPos < 1)
@@ -252,9 +253,9 @@ ReadInRead (std::ifstream & inf_ReadSeq, const std::string & FragName,
 											LOG_DEBUG(std::cout << "Pushing back!" << std::endl);
 											Reads.push_back (BufferReads[BufferReadsIndex]);
 											if (BufferReads[BufferReadsIndex].MatchedD == Plus)
-												GetPlus++;
+												g_CloseMappedPlus++;
 											else
-												GetMinus++;
+												g_CloseMappedMinus++;
 											if (NotInVector
 													(BufferReads[BufferReadsIndex].Tag, VectorTag))
 												{
@@ -316,9 +317,9 @@ ReadInRead (std::ifstream & inf_ReadSeq, const std::string & FragName,
 							BufferReads[BufferReadsIndex].ReadLength;
 					Reads.push_back (BufferReads[BufferReadsIndex]);
 					if (BufferReads[BufferReadsIndex].MatchedD == Plus)
-						GetPlus++;
+						g_CloseMappedPlus++;
 					else
-						GetMinus++;
+						g_CloseMappedMinus++;
 					if (NotInVector (BufferReads[BufferReadsIndex].Tag, VectorTag))
 						{
 							VectorTag.push_back (BufferReads[BufferReadsIndex].Tag);
@@ -679,7 +680,7 @@ build_record (const bam1_t * mapped_read, const bam1_t * unmapped_read,
 						"\t" << Temp_One_Read.MS << 
 						"\t" << Temp_One_Read.InsertSize << 
 						"\t" << Temp_One_Read.Tag << std.endl);
-	g_NumReadInChr++;
+	g_NumReadInWindow++;
 	Temp_One_Read.MAX_SNP_ERROR =
 		(short) (Temp_One_Read.UnmatchedSeq.size () * Seq_Error_Rate);
 	Temp_One_Read.TOTAL_SNP_ERROR_CHECKED =
@@ -693,11 +694,11 @@ build_record (const bam1_t * mapped_read, const bam1_t * unmapped_read,
 	//MinFar_I = MinClose + 1;//atoi(argv[2]);
 	if (Temp_One_Read.MatchedD == Plus)
 		{
-			InChrPlus++;
+			g_InWinPlus++;
 			//Temp_One_Read.UnmatchedSeq = ReverseComplement(Temp_One_Read.UnmatchedSeq);
 		}
 	else
-		InChrMinus++;
+		g_InWinMinus++;
 	if (Temp_One_Read.MatchedRelPos > CONS_Chr_Size)
 		Temp_One_Read.MatchedRelPos = CONS_Chr_Size;
 	if (Temp_One_Read.MatchedRelPos < 1)
@@ -723,14 +724,14 @@ build_record (const bam1_t * mapped_read, const bam1_t * unmapped_read,
 					Temp_One_Read.LeftMostPos =
 						Temp_One_Read.UP_Close[0].AbsLoc + 1 -
 						Temp_One_Read.UP_Close[0].LengthStr;
-					GetPlus++;
+					g_CloseMappedPlus++;
 				}
 			else
 				{
 					Temp_One_Read.LeftMostPos =
 						Temp_One_Read.UP_Close[0].AbsLoc +
 						Temp_One_Read.UP_Close[0].LengthStr - Temp_One_Read.ReadLength;
-					GetMinus++;
+					g_CloseMappedMinus++;
 				}
 
 			//if (isInBin(Temp_One_Read)) {
