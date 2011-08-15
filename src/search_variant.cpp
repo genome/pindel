@@ -43,6 +43,23 @@ int SearchVariant::Search(ControlState& currentState, const unsigned numBoxes) {
 
 	std::vector<unsigned> Vars[numBoxes];
 
+// EW150811 DEBUG->
+	unsigned int farEndExists = 0;
+	unsigned int readsUsed = 0;
+	unsigned int bpSum = 0;
+	for (unsigned ReadIndex = 0; ReadIndex < currentState.Reads.size(); ReadIndex++)  {
+		if (currentState.Reads[ReadIndex].Used) { readsUsed++; }
+		if (!currentState.Reads[ReadIndex].UP_Far.empty()) { farEndExists++; }
+		bpSum += currentState.Reads[ReadIndex].UP_Far[ currentState.Reads[ReadIndex].UP_Far.size()-1 ].AbsLoc;
+		if (bpSum>1000000000) { bpSum -= 1000000000; }
+	}
+	std::cout << "At start of searchdeletions:\n\n";
+	std::cout << "Reads already used: " << readsUsed << std::endl;
+	std::cout << "Far ends already mapped " << farEndExists << std::endl;
+	std::cout << "Checksum of far ends: " << bpSum << std::endl;
+
+// <-EW150811 DEBUG
+
 	LOG_INFO(std::cout << "Searching " << typeOfVariant << " ... " << std::endl);
 	for (unsigned ReadIndex = 0; ReadIndex < currentState.Reads.size(); ReadIndex++) {
 		if (currentState.Reads[ReadIndex].Used
