@@ -49,8 +49,10 @@ int SearchVariant::Search(ControlState& currentState, const unsigned numBoxes) {
 	unsigned int bpSum = 0;
 	for (unsigned ReadIndex = 0; ReadIndex < currentState.Reads.size(); ReadIndex++)  {
 		if (currentState.Reads[ReadIndex].Used) { readsUsed++; }
-		if (!currentState.Reads[ReadIndex].UP_Far.empty()) { farEndExists++; }
-		bpSum += currentState.Reads[ReadIndex].UP_Far[ currentState.Reads[ReadIndex].UP_Far.size()-1 ].AbsLoc;
+		if (!currentState.Reads[ReadIndex].UP_Far.empty()) { 
+			farEndExists++; 
+			bpSum += currentState.Reads[ReadIndex].UP_Far[ currentState.Reads[ReadIndex].UP_Far.size()-1 ].AbsLoc;
+		}
 		if (bpSum>1000000000) { bpSum -= 1000000000; }
 	}
 	std::cout << "At start of searchdeletions:\n\n";
