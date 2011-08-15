@@ -1766,6 +1766,8 @@ SortOutputLI (const std::string & CurrentChr, std::vector < SPLIT_READ > &Reads,
 	unsigned temp_AbsLoc;
 	unsigned int LI_BORDER_BUFFER = 4 * g_maxInsertSize; 
 
+	std::cout << "LI: maxInsertSize: " << g_maxInsertSize << std::endl;
+
 //return;
 	// find LI combinations
  //	try
@@ -1773,13 +1775,16 @@ SortOutputLI (const std::string & CurrentChr, std::vector < SPLIT_READ > &Reads,
 	/*	uint8_t *plus_LI_Pos = new uint8_t[CurrentChr.size () + 1];
 		uint8_t *minus_LI_Pos = new uint8_t[CurrentChr.size () + 1];
 		int32_t *EventIndex_Pos = new int32_t[CurrentChr.size () + 1];*/
-	unsigned int absStartLIWindow = g_SpacerBeforeAfter + windowStart - LI_BORDER_BUFFER;
-	unsigned int absEndLIWindow = g_SpacerBeforeAfter +windowEnd + LI_BORDER_BUFFER;
+	unsigned int absStartLIWindow = g_SpacerBeforeAfter + windowStart;
+	unsigned int absEndLIWindow = g_SpacerBeforeAfter + windowEnd;
+
+	unsigned int absStartBuffered = absStartLIWindow - LI_BORDER_BUFFER;
+	unsigned int absEndBuffered = absEndLIWindow + LI_BORDER_BUFFER;
 
 std::cout << "SBA: " << g_SpacerBeforeAfter << " WS " << windowStart << " Total: " << g_SpacerBeforeAfter + windowStart - LI_BORDER_BUFFER << std::endl;
-	ShiftedVector< uint8_t > plus_LI_Pos( absStartLIWindow , absEndLIWindow , 0 );
-	ShiftedVector< uint8_t > minus_LI_Pos( absStartLIWindow , absEndLIWindow , 0 );
-	ShiftedVector< int32_t > EventIndex_Pos( absStartLIWindow , absEndLIWindow , -1 );
+	ShiftedVector< uint8_t > plus_LI_Pos( absStartBuffered , absEndBuffered , 0 );
+	ShiftedVector< uint8_t > minus_LI_Pos( absStartBuffered , absEndBuffered , 0 );
+	ShiftedVector< int32_t > EventIndex_Pos( absStartBuffered , absEndBuffered , -1 );
 /*std::string s;
 std::cout << "Alloc0" << CurrentChr.size() << std::endl;
 std::cin >> s;
@@ -1802,13 +1807,11 @@ std::cin >> s;*/
 */
 	for (unsigned Index = 0; Index < Reads.size (); Index++)
 		{
-			//UP_Close_index = ;
 			if (Reads[Index].Found || Reads[Index].Used
 					|| !Reads[Index].UP_Far.empty ())
 				continue;
 			temp_AbsLoc =
 				Reads[Index].UP_Close[Reads[Index].UP_Close.size () - 1].AbsLoc;
-//std::cout << "tabsloc = " << temp_AbsLoc  << std::endl;
 			if (plus_LI_Pos[temp_AbsLoc] < Max_short)
 				{
 					if (Reads[Index].MatchedD == Plus)
@@ -1827,8 +1830,8 @@ std::cin >> s;*/
 	bool SkipPlus;
 	//for (unsigned int Index_Minus = g_SpacerBeforeAfter;
 	//		 Index_Minus < CurrentChr.size () - g_SpacerBeforeAfter; Index_Minus++)
-	for (unsigned int Index_Minus = absStartLIWindow;
-			 Index_Minus < absEndLIWindow; Index_Minus++)
+	for (unsigned int Index_Minus = absStartBuffered;
+			 Index_Minus < absEndBuffered; Index_Minus++)
 		{
 			SkipPlus = false;
 			for (unsigned int MaskedPosIndexMinus = Index_Minus + 10;
@@ -2114,12 +2117,15 @@ SortOutputRest (const std::string & CurrentChr, std::vector < SPLIT_READ > &Read
 
 	const int BP_BORDER_BUFFER = 4 * g_maxInsertSize; 
 	
-	unsigned int absStartBPWindow = g_SpacerBeforeAfter + windowStart - BP_BORDER_BUFFER;
-	unsigned int absEndBPWindow = g_SpacerBeforeAfter +windowEnd + BP_BORDER_BUFFER;
+	unsigned int absStartBPWindow = g_SpacerBeforeAfter + windowStart ;
+	unsigned int absEndBPWindow = g_SpacerBeforeAfter + windowEnd ;
+
+	unsigned int absStartBuffered = absStartBPWindow - BP_BORDER_BUFFER;	
+	unsigned int absEndBuffered = absEndBPWindow + BP_BORDER_BUFFER;
 
 std::cout << "SBA: " << g_SpacerBeforeAfter << " WS " << windowStart << " Total: " << g_SpacerBeforeAfter + windowStart - BP_BORDER_BUFFER << std::endl;
-	ShiftedVector< uint8_t > plus_LI_Pos( absStartBPWindow , absEndBPWindow , 0 );
-	ShiftedVector< uint8_t > minus_LI_Pos( absStartBPWindow , absEndBPWindow , 0 );
+	ShiftedVector< uint8_t > plus_LI_Pos( absStartBuffered , absEndBuffered , 0 );
+	ShiftedVector< uint8_t > minus_LI_Pos( absStartBuffered , absEndBuffered , 0 );
 
 	//uint8_t *plus_LI_Pos = new uint8_t[CurrentChr.size () + 1];
 	//uint8_t *minus_LI_Pos = new uint8_t[CurrentChr.size () + 1];
@@ -2152,8 +2158,8 @@ std::cout << "SBA: " << g_SpacerBeforeAfter << " WS " << windowStart << " Total:
 	LOG_DEBUG(std::cout << "2" << std::endl);
 
 	bool SkipThisPos;
-	for (unsigned int Index = absStartBPWindow;
-			 Index < absEndBPWindow; Index++)
+	for (unsigned int Index = absStartBuffered;
+			 Index < absEndBuffered; Index++)
 		{
 			SkipThisPos = false;
 			//for (int MaskIndex = Index + 10; MaskIndex >= Index - 10; MaskIndex--) {

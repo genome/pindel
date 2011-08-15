@@ -1091,6 +1091,7 @@ int main(int argc, char *argv[]) {
 			if (currentState.BAMDefined) {
 				ReturnFromReadingReads = 0;
 				for (unsigned int i = 0; i < currentState.bams_to_parse.size(); i++) {
+					std::cout << "Insertsize in bamreads: " << currentState.bams_to_parse[i].InsertSize << std::endl;
 					ReturnFromReadingReads = ReadInBamReads(
 							currentState.bams_to_parse[i].BamFile.c_str(),
 							currentState.WhichChr, &currentState.CurrentChr,
@@ -1502,18 +1503,11 @@ void GetCloseEnd(const std::string & CurrentChr, SPLIT_READ & Temp_One_Read) {
 	short BP_Start; // = MinClose;
 	short BP_End; // = ReadLength - MinClose;
 
-	// TODO: Ask Kai whether this can be removed
-	//for (int i = 0; i < TOTAL_SNP_ERROR_CHECKED; i++) {
-	//  PD[i].clear();
-	//}
-	//UP.clear();
 	Temp_One_Read.UP_Close.clear();
 	//MinClose = short(log((double)(Temp_One_Read.InsertSize * 3))/log(4.0) + 0.8) + 3;
 	BP_Start = Temp_One_Read.MinClose;
 	BP_End = Temp_One_Read.ReadLengthMinus;
 	// TODO: Ask Kai whether this can be removed
-	//Temp_One_Read.Unique = true;
-	//if (Temp_One_Read.TOTAL_SNP_ERROR_CHECKED_Minus) 
     
 		if (Temp_One_Read.MatchedD == Plus) {
 			CurrentReadSeq = ReverseComplement(Temp_One_Read.UnmatchedSeq);

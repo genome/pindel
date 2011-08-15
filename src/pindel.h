@@ -134,7 +134,7 @@ struct SPLIT_READ {
 		Left = 0;
 		Right = 0;
 		BPLeft = 0;
-		BPRight = 0;
+		BPRight = 0; 
 		IndelSize = 0;
 		Unique = false;
 		score = 0.0;
