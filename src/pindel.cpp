@@ -954,7 +954,7 @@ void SearchFarEnd( const std::string& chromosome, SPLIT_READ& read, const BDData
 	// if breakdancer does not find the event, or not find an event we trust, we turn to regular pattern matching
 	int searchSpan=START_SEARCH_SPAN;
 	int centerOfSearch = read.getLastAbsLocCloseEnd();
-	for (int rangeIndex=1; rangeIndex<=MaxRangeIndex; rangeIndex++ ) {
+	/*for (int rangeIndex=1; rangeIndex<=MaxRangeIndex; rangeIndex++ )*/ {
 		SearchFarEndAtPos( chromosome, read, centerOfSearch, searchSpan );		
 		searchSpan *= 4;
 		if (read.goodFarEndFound()) { return; }
@@ -1769,6 +1769,11 @@ void CheckBoth(const SPLIT_READ & OneRead, const std::string & TheInput,
 		const short &BP_End, const short &CurrentLength,
 		std::vector<UniquePoint> &UP) {
 	int Sum;
+
+std::cout << "CheckBoth::CurrentLength: " << CurrentLength << std::endl;
+for (short i = 0; i <= OneRead.MAX_SNP_ERROR; i++) {
+	std::cout << "CB." << CurrentLength << "[" << i << "] = +" << PD_Plus[i].size() << "/-" << PD_Minus[i].size() << std::endl;
+}
 	if (CurrentLength >= BP_Start && CurrentLength <= BP_End) {
 		// put it to LeftUP if unique
 		for (short i = 0; i <= OneRead.MAX_SNP_ERROR; i++) {

@@ -180,7 +180,9 @@ ReadInRead (std::ifstream & inf_ReadSeq, const std::string & FragName,
 					Temp_One_Read.MAX_SNP_ERROR =
 						(short) (Temp_One_Read.UnmatchedSeq.size () * Seq_Error_Rate);
 
-
+std::cout << "build_record | Temp_One_Read.UnmatchedSeq.size (): " << Temp_One_Read.UnmatchedSeq.size ()
+           << " Seq_Error_Rate: " << Seq_Error_Rate << " Temp_One_Read.MAX_SNP_ERROR: "
+           << Temp_One_Read.MAX_SNP_ERROR << std::endl;
 					Temp_One_Read.TOTAL_SNP_ERROR_CHECKED =
 						Temp_One_Read.MAX_SNP_ERROR + ADDITIONAL_MISMATCH + 1;
 					Temp_One_Read.TOTAL_SNP_ERROR_CHECKED_Minus =
@@ -683,7 +685,11 @@ build_record (const bam1_t * mapped_read, const bam1_t * unmapped_read,
 						"\t" << Temp_One_Read.Tag << std.endl);
 	g_NumReadInWindow++;
 	Temp_One_Read.MAX_SNP_ERROR =
-		(short) (Temp_One_Read.UnmatchedSeq.size () * Seq_Error_Rate);
+		(short) trunc((double)0.5+Temp_One_Read.UnmatchedSeq.size () * Seq_Error_Rate);
+
+std::cout << "build_record | Temp_One_Read.UnmatchedSeq.size (): " << Temp_One_Read.UnmatchedSeq.size ()
+           << " Seq_Error_Rate: " << Seq_Error_Rate << "Official: " << std::setprecision(20) << Seq_Error_Rate * Temp_One_Read.UnmatchedSeq.size () << "  Temp_One_Read.MAX_SNP_ERROR: "
+           << Temp_One_Read.MAX_SNP_ERROR << std::endl;
 	Temp_One_Read.TOTAL_SNP_ERROR_CHECKED =
 		Temp_One_Read.MAX_SNP_ERROR + ADDITIONAL_MISMATCH + 1;
 	Temp_One_Read.TOTAL_SNP_ERROR_CHECKED_Minus =

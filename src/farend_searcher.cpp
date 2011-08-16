@@ -456,6 +456,8 @@ void SearchFarEndAtPos( const std::string& chromosome, SPLIT_READ& Temp_One_Read
 
 if (Temp_One_Read.UP_Far.size()>0 ) { std::cout << "KAI1108 UP_Far.size() == " << Temp_One_Read.UP_Far.size() << std::endl; }
 
+
+	std::cout << "SearchCenter: " << SearchCenter << " ChromLen: " << chromosome.size() << " Range: " << Range << std::endl << Temp_One_Read << std::endl;
    short BP_Start = short(log((double)(Range))/log(4.0) + 0.8) + 3;  // required minimum length of match
 	//Temp_One_Read->MinClose + (UseRangeIndex ? RangeIndex : 0);
 	short BP_End = Temp_One_Read.ReadLengthMinus; // matched far end should be between BP_Start and BP_End bases long (including BP_Start and End)
@@ -473,12 +475,15 @@ if (Temp_One_Read.UP_Far.size()>0 ) { std::cout << "KAI1108 UP_Far.size() == " <
     
 	char CurrentBase = Temp_One_Read.UnmatchedSeq[0];
 	char CurrentBaseRC = Convert2RC4N[(short) CurrentBase];
-
+//std::cout << "CurrentBase: " << CurrentBase << std::endl;
 	//if (Temp_One_Read.MatchedD == Plus)  {
+
+std::cout << "CurrentBase: " << CurrentBase << std::endl;
 
 	if (CurrentBase != 'N') {
 	 	for (int pos = Start; pos < End; pos++) {
 		   if (chromosome.at(pos) == CurrentBase) {
+std::cout << "adding position " << pos << std::endl;
 				PD_Plus[0].push_back(pos); // else 
 		  	}	
 		   else if (chromosome.at(pos) == CurrentBaseRC) {
@@ -490,6 +495,8 @@ if (Temp_One_Read.UP_Far.size()>0 ) { std::cout << "KAI1108 UP_Far.size() == " <
    if (PD_Minus[0].size() + PD_Plus[0].size() > 0) { // skip all reads starting with 'N'
 	   CheckBoth(Temp_One_Read, chromosome, Temp_One_Read.UnmatchedSeq, PD_Plus, PD_Minus, BP_Start, BP_End, FirstBase, UP);
 	}
+
+	std::cout << "UP.size: " << UP.size() << std::endl;
     
 	if (UP.empty()) {}
     //else if (UP[UP.size() - 1].LengthStr + Temp_One_Read.MinClose >= Temp_One_Read.ReadLength) {} // match too long
