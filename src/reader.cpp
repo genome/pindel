@@ -180,16 +180,16 @@ ReadInRead (std::ifstream & inf_ReadSeq, const std::string & FragName,
 					Temp_One_Read.MAX_SNP_ERROR =
 						(short) (Temp_One_Read.UnmatchedSeq.size () * Seq_Error_Rate);
 
-std::cout << "build_record | Temp_One_Read.UnmatchedSeq.size (): " << Temp_One_Read.UnmatchedSeq.size ()
-           << " Seq_Error_Rate: " << Seq_Error_Rate << " Temp_One_Read.MAX_SNP_ERROR: "
-           << Temp_One_Read.MAX_SNP_ERROR << std::endl;
+//std::cout << "build_record | Temp_One_Read.UnmatchedSeq.size (): " << Temp_One_Read.UnmatchedSeq.size ()
+//           << " Seq_Error_Rate: " << Seq_Error_Rate << " Temp_One_Read.MAX_SNP_ERROR: "
+//           << Temp_One_Read.MAX_SNP_ERROR << std::endl;
 					Temp_One_Read.TOTAL_SNP_ERROR_CHECKED =
 						Temp_One_Read.MAX_SNP_ERROR + ADDITIONAL_MISMATCH + 1;
 					Temp_One_Read.TOTAL_SNP_ERROR_CHECKED_Minus =
 						Temp_One_Read.MAX_SNP_ERROR + ADDITIONAL_MISMATCH;
-					Temp_One_Read.MinClose =
-						short (log ((double) (Temp_One_Read.InsertSize * 3)) / log (4.0) +
-									 0.8) + 3;
+					Temp_One_Read.MinClose = 8;
+						//short (log ((double) (Temp_One_Read.InsertSize * 3)) / log (4.0) +
+						//			 0.8) + 3;
 					//Temp_One_Read.IndelSize = 0;
 					Temp_One_Read.Found = false;
 					if (Temp_One_Read.MatchedD == Plus)
@@ -687,16 +687,16 @@ build_record (const bam1_t * mapped_read, const bam1_t * unmapped_read,
 	Temp_One_Read.MAX_SNP_ERROR =
 		(short) trunc((double)0.5+Temp_One_Read.UnmatchedSeq.size () * Seq_Error_Rate);
 
-std::cout << "build_record | Temp_One_Read.UnmatchedSeq.size (): " << Temp_One_Read.UnmatchedSeq.size ()
-           << " Seq_Error_Rate: " << Seq_Error_Rate << "Official: " << std::setprecision(20) << Seq_Error_Rate * Temp_One_Read.UnmatchedSeq.size () << "  Temp_One_Read.MAX_SNP_ERROR: "
-           << Temp_One_Read.MAX_SNP_ERROR << std::endl;
+//std::cout << "build_record | Temp_One_Read.UnmatchedSeq.size (): " << Temp_One_Read.UnmatchedSeq.size ()
+  //         << " Seq_Error_Rate: " << Seq_Error_Rate << "Official: " << std::setprecision(20) << Seq_Error_Rate //* Temp_One_Read.UnmatchedSeq.size () << "  Temp_One_Read.MAX_SNP_ERROR: "
+      //     << Temp_One_Read.MAX_SNP_ERROR << std::endl;
 	Temp_One_Read.TOTAL_SNP_ERROR_CHECKED =
 		Temp_One_Read.MAX_SNP_ERROR + ADDITIONAL_MISMATCH + 1;
 	Temp_One_Read.TOTAL_SNP_ERROR_CHECKED_Minus =
 		Temp_One_Read.MAX_SNP_ERROR + ADDITIONAL_MISMATCH;
-	Temp_One_Read.MinClose =
-		short (log ((double) (Temp_One_Read.InsertSize * 3)) / log (4.0) + 0.8) +
-		3;
+	Temp_One_Read.MinClose = 8;
+		//short (log ((double) (Temp_One_Read.InsertSize * 3)) / log (4.0) + 0.8) +
+		//3;
 	//MinClose = short(log((double)(Temp_One_Read.InsertSize * 3))/log(4.0) + 0.8) + 3;// + MAX_SNP_ERROR;//atoi(argv[1]);
 	//MinFar_I = MinClose + 1;//atoi(argv[2]);
 	if (Temp_One_Read.MatchedD == Plus)

@@ -98,10 +98,10 @@ int searchIndels(ControlState& currentState, unsigned NumBoxes) {
 							= currentState.Reads[ReadIndex].UP_Far[FarIndex].AbsLoc
 									- g_SpacerBeforeAfter;
 
-					if (currentState.Reads[ReadIndex].IndelSize
-							>= (unsigned) MIN_IndelSize_NT
-							&& currentState.Reads[ReadIndex].NT_size
-									<= Max_Length_NT) {
+					if (//currentState.Reads[ReadIndex].IndelSize
+						//	>= (unsigned) MIN_IndelSize_NT
+						//	&& 
+                        currentState.Reads[ReadIndex].NT_size <= Max_Length_NT) {
 
 						if (readTransgressesBinBoundaries(
 								currentState.Reads[ReadIndex],
@@ -170,9 +170,10 @@ int searchIndels(ControlState& currentState, unsigned NumBoxes) {
 							= currentState.Reads[ReadIndex].UP_Close[CloseIndex].AbsLoc
 									- g_SpacerBeforeAfter;
 					{
-						if (currentState.Reads[ReadIndex].IndelSize
-								>= (unsigned) MIN_IndelSize_NT
-								&& currentState.Reads[ReadIndex].NT_size
+						if (//currentState.Reads[ReadIndex].IndelSize
+							//	>= (unsigned) MIN_IndelSize_NT
+							//	&& 
+                            currentState.Reads[ReadIndex].NT_size
 										<= Max_Length_NT) {
 
 							if (readTransgressesBinBoundaries(

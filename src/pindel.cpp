@@ -131,7 +131,7 @@ unsigned int g_CloseMappedMinus = 0;
 std::vector<Parameter *> parameters;
 
 // #########################################################
-int ADDITIONAL_MISMATCH = 1; // user
+int ADDITIONAL_MISMATCH = 2; // user
 unsigned int g_minimalAnchorQuality = 20; // true value set in the defineParameters 
 int Min_Perfect_Match_Around_BP = 3; // user                   //#
 int MIN_IndelSize_NT = 50; //user            //#
@@ -141,7 +141,7 @@ double Seq_Error_Rate = 0.05; // user            //#
 //float Seq_Error_Rate_1 = 0.05;                         //# 
 //float Seq_Error_Rate_2 = 0.02;                         //#
 //float Seq_Error_Rate_3 = 0.00;                         //#
-unsigned int BalanceCutoff = 100; //                    //#
+unsigned int BalanceCutoff = 0; //                    //#
 // TODO: Ask Kai whether this can be removed
 //short RangeMaxSensivity = 9;       // 3                //#
 //short RangeMediumSensivity = 9;    // 5                //# 
@@ -167,13 +167,7 @@ int WINDOW_SIZE = 10000000;
 const int AROUND_REGION_BUFFER = 10000; // how much earlier reads should be selected if only a region of the chromosome needs be specified.
 // #########################################################
 
-// TODO: Ask Kai whether this can be removed
-//const float Double_Seq_Error_Rate_Per_Side = Seq_Error_Rate_Per_Side * 2;
 unsigned int Distance = 300;
-// TODO: Ask Kai whether this can be removed
-//short MinClose = 8;//short(log((double)Distance)/log(4.0) + 0.8) + 3 + MAX_SNP_ERROR;//atoi(argv[1]);
-//short MinFar_I = MinClose + 1;//atoi(argv[2]);
-//cout << "For short insertion: " << MinClose << "\t" << MinFar_I << endl;
 short MinFar_D = 8; //atoi(argv[3]);
 const short MaxDI = 30;
 
@@ -1770,10 +1764,10 @@ void CheckBoth(const SPLIT_READ & OneRead, const std::string & TheInput,
 		std::vector<UniquePoint> &UP) {
 	int Sum;
 
-std::cout << "CheckBoth::CurrentLength: " << CurrentLength << std::endl;
-for (short i = 0; i <= OneRead.MAX_SNP_ERROR; i++) {
-	std::cout << "CB." << CurrentLength << "[" << i << "] = +" << PD_Plus[i].size() << "/-" << PD_Minus[i].size() << std::endl;
-}
+//std::cout << "CheckBoth::CurrentLength: " << CurrentLength << std::endl;
+//for (short i = 0; i <= OneRead.MAX_SNP_ERROR; i++) {
+//	std::cout << "CB." << CurrentLength << "[" << i << "] = +" << PD_Plus[i].size() << "/-" << PD_Minus[i].size() << std::endl;
+//}
 	if (CurrentLength >= BP_Start && CurrentLength <= BP_End) {
 		// put it to LeftUP if unique
 		for (short i = 0; i <= OneRead.MAX_SNP_ERROR; i++) {
