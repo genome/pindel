@@ -125,6 +125,8 @@ OutputTDs (const std::vector < SPLIT_READ > &TDs,
 	CurrentChrMask[TDs[C_S].BPLeft + g_SpacerBeforeAfter] = 'B';
 	CurrentChrMask[TDs[C_S].BPRight + g_SpacerBeforeAfter] = 'B';
 
+	// reports BreakDancer event if applicable (-Q-option set and both ends of the SV referring to the same event)
+   reportBreakDancerEvent(TDs[C_S].FragName, TDs[C_S].BPLeft, TDs[C_S].BPRight, TDs[C_S].IndelSize, "TD", NumberOfTDInstances);
 	TDOutf <<
 		"####################################################################################################"
 		<< std::endl;
@@ -289,6 +291,7 @@ OutputDeletions (const std::vector < SPLIT_READ > &Deletions,
 	LOG_DEBUG(std::cout << "d_5d" << std::endl);
 	CurrentChrMask[RealEnd + g_SpacerBeforeAfter] = 'B';
 	LOG_DEBUG(std::cout << "d_5e" << std::endl);
+   reportBreakDancerEvent(Deletions[C_S].FragName, Deletions[C_S].BPLeft+1, Deletions[C_S].BPRight+1, Deletions[C_S].IndelSize, "D", deletionFileData.getSvIndex());
 	DeletionOutf <<
 		"####################################################################################################"
 		<< std::endl;
@@ -485,6 +488,7 @@ OutputInversions (const std::vector < SPLIT_READ > &Inv,
 	//	GapSize = 13 + (int) log10 (Inv[C_S].IndelSize - 10);
 	CurrentChrMask[Inv[C_S].BPLeft + g_SpacerBeforeAfter] = 'B';
 	CurrentChrMask[Inv[C_S].BPRight + g_SpacerBeforeAfter] = 'B';
+   reportBreakDancerEvent(Inv[C_S].FragName, Inv[C_S].BPLeft, Inv[C_S].BPRight+2, Inv[C_S].IndelSize, "INV", NumberOfInvInstances);
 	InvOutf <<
 		"####################################################################################################"
 		<< std::endl;
@@ -706,6 +710,8 @@ OutputSIs (const std::vector < SPLIT_READ > &SIs,
 	CurrentChrMask[RealStart + g_SpacerBeforeAfter] = 'B';
 	CurrentChrMask[RealEnd + g_SpacerBeforeAfter] = 'B';
 
+   reportBreakDancerEvent(SIs[C_S].FragName, SIs[C_S].BPLeft+1, SIs[C_S].BPRight+1, SIs[C_S].IndelSize, "SI", NumberOfSIsInstances);
+
 	SIsOutf <<
 		"####################################################################################################"
 		<< std::endl;
@@ -841,6 +847,7 @@ OutputDI (const std::vector < SPLIT_READ > &DI,
 	CurrentChrMask[DI[C_S].BPRight + g_SpacerBeforeAfter] = 'B';
 	//CurrentChrMask[RealStart + g_SpacerBeforeAfter] = 'B';
 	//CurrentChrMask[RealStart + g_SpacerBeforeAfter] = 'B'; 
+   reportBreakDancerEvent(DI[C_S].FragName, DI[C_S].BPLeft+1, DI[C_S].BPRight+1, DI[C_S].IndelSize, "D", deletionFileData.getSvIndex());
 	DeletionOutf <<
 		"####################################################################################################"
 		<< std::endl;
@@ -2023,6 +2030,10 @@ std::cin >> s;*/
 				{
 					//if (LI_Positions[LI_index].WhetherReport) 
 					{
+					   reportBreakDancerEvent(temp_Plus_Reads[0].FragName, LI_Positions[LI_index].
+							Plus_Pos - g_SpacerBeforeAfter + 1, LI_Positions[LI_index].Minus_Pos -
+							g_SpacerBeforeAfter +
+							1 , -1, "LI", Count_LI);
 						LargeInsertionOutf <<
 							"########################################################" <<
 							std::endl;
@@ -2238,6 +2249,7 @@ std::cout << "SBA: " << g_SpacerBeforeAfter << " WS " << windowStart << " Total:
 					Count_BP++;
 					if (Rest_Positions[LI_index].Strand == Plus)
 						{
+	  					 reportBreakDancerEvent(temp_Pos_Reads[0].FragName,  0, 0, -1, "BP", -1);
 							Outf_Rest <<
 								"########################################################" <<
 								std::endl;
@@ -2292,6 +2304,7 @@ std::cout << "SBA: " << g_SpacerBeforeAfter << " WS " << windowStart << " Total:
 						}
 					else
 						{
+ 					      reportBreakDancerEvent(temp_Pos_Reads[0].FragName,  0,  0, -1, "BP", -1);
 							Outf_Rest <<
 								"########################################################" <<
 								std::endl;

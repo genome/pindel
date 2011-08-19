@@ -375,5 +375,7 @@ void saveReadForNextCycle(SPLIT_READ & read,
 bool readInSpecifiedRegion(const SPLIT_READ & read, const bool regionStartDefined,
 		const bool regionEndDefined, const int startOfRegion,
 		const int endOfRegion);
+void reportBreakDancerEvent( const std::string& chromosomeName, const int leftPosition, const int rightPosition, 
+	                          const int svSize, const std::string& svType, const int svCounter);
 
 #endif /* PINDEL_H */

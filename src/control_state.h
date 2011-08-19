@@ -76,6 +76,7 @@ public:
 	std::string InversionOutputFilename;
 	std::string LargeInsertionOutputFilename;
 	std::string RestOutputFilename;
+	std::string breakDancerOutputFilename;
 
 	bool loopOverAllChromosomes;
 	std::string CurrentChr;

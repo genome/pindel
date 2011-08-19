@@ -107,3 +107,18 @@ void BDData::getCorrespondingEvents( const SPLIT_READ& read, std::vector<unsigne
 	}
 
 }
+
+/* 'isBreakdancerEvent' returns whether an event between leftPosition and rightPosition in the current chromosome 
+	is confirmed by a breakdancer result. */
+bool BDData::isBreakDancerEvent( const unsigned int leftPosition, const unsigned int rightPosition ) const
+{
+   unsigned int rawLeftPosition = leftPosition + g_SpacerBeforeAfter;
+   unsigned int rawRightPosition = rightPosition + g_SpacerBeforeAfter;
+
+	if ( m_breakDancerMask[ rawLeftPosition ]!=0  && 
+		 m_breakDancerMask[ rawLeftPosition ] == -m_breakDancerMask[ rawRightPosition ] ) {
+		return true;
+	} else {
+		return false;		
+	}
+}

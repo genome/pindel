@@ -19,7 +19,7 @@ public:
 	BDData();
 	void loadBDFile(const std::string& filename);
 	void loadChromosome( const std::string& chromosomeName, const unsigned int chromosomeSize );
-
+	bool isBreakDancerEvent( const unsigned int leftPosition, const unsigned int rightPosition ) const;
 	// returns positions belonging to the the complementary breakdancer calls
 	void getCorrespondingEvents( const SPLIT_READ& read, std::vector<unsigned int>& complementaryPositions ) const; 
 

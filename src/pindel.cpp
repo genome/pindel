@@ -47,7 +47,9 @@
 #include "searchdeletions.h"
 #include "logdef.h"
 
-/*v EWL update 0.2.5, July 21st, 2011 corrected small bug in counter for deletions and insertion-deletions */
+/*v EWL update 0.2.4, August 19th, 2011 corrected small bug in counter for deletions and insertion-deletions */
+
+int findParameter(std::string name);
 
 int g_binIndex = -1; // global variable for the bin index, as I cannot easily pass an extra parameter to the diverse functions
 int g_maxPos = -1; // to calculate which is the last position in the chromosome, and hence to calculate the number of bins
@@ -56,12 +58,14 @@ int g_maxPos = -1; // to calculate which is the last position in the chromosome,
 //end charris add
 //#include <omp.h>
 
-const std::string Pindel_Version_str = "Pindel version 0.2.5, July 21st 2011.";
+const std::string Pindel_Version_str = "Pindel version 0.2.4, August 19th 2011.";
 
 // TODO: Ask Kai whether this can be removed
 //unsigned int DSizeArray[15];
 
 short Before, After;
+
+BDData g_bdData;
 
 typedef struct {
 	std::string referenceFileName;
@@ -69,6 +73,7 @@ typedef struct {
 	std::string bamConfigFileName;
 	std::string outputFileName;
 	std::string breakdancerFileName;
+   std::string breakDancerOutputFilename;
 	int numThreads;
 	bool showHelp;
 } ParCollection;
@@ -201,6 +206,29 @@ unsigned int SPLIT_READ::MaxLenFarEndBackup() const
 {
 	return MaxEndSize( UP_Far_backup);
 }
+
+bool doOutputBreakdancerEvents() 
+{ 
+	return ( par.breakDancerOutputFilename != "" && parameters[findParameter("-b")]->isSet());
+}
+
+void outputBreakDancerEvent( const std::string& chromosomeName, const int leftPosition, const int rightPosition, 
+	                          const int svSize, const std::string& svType, const int svCounter) 
+{
+	std::ofstream breakDancerOutputFile(par.breakDancerOutputFilename.c_str(), std::ios::app);
+	breakDancerOutputFile << chromosomeName << "\t" << leftPosition << "\t" << rightPosition << "\t" <<
+                         svSize << "\t" << svType << "\t" << svCounter << "\n";
+}
+
+void reportBreakDancerEvent( const std::string& chromosomeName, const int leftPosition, const int rightPosition, 
+	                          const int svSize, const std::string& svType, const int svCounter)
+{
+	if (doOutputBreakdancerEvents() && g_bdData.isBreakDancerEvent( leftPosition, rightPosition) ) {
+		//std::cout << "Entering reportBreakDancerEvent: inner loop\n";
+		outputBreakDancerEvent(chromosomeName, leftPosition,rightPosition, svSize, svType, svCounter); 
+	} 
+}
+
 
 struct Region {
 	Region() {
@@ -458,6 +486,14 @@ void defineParameters(std::string & WhichChr) {
 					"--anchor_quality",
 					"the minimal mapping quality of the reads Pindel uses as anchor "
 					"(default 20)", false, 20));
+	parameters. push_back(
+			new StringParameter(
+					&par.breakDancerOutputFilename,
+					"-Q",
+					"--output_of_breakdancer_events",
+					"If breakdancer input is used, you can specify a filename here to write the confirmed breakdancer "
+               "events with their exact breakpoints to "
+					"", false, ""));
 
 }
 
@@ -673,7 +709,7 @@ bool isFinishedBAM(const int upperBinBorder, // in: last position analyzed so fa
 	}
 }
 
-int init(int argc, char *argv[], ControlState& currentState, BDData& bdData) {
+int init(int argc, char *argv[], ControlState& currentState) {
 	std::cout << Pindel_Version_str << std::endl;
 
 	if (NumRead2ReportCutOff == 1)
@@ -731,7 +767,7 @@ int init(int argc, char *argv[], ControlState& currentState, BDData& bdData) {
 	if (currentState.BreakDancerDefined) {
 		currentState.inf_BP_test.open(par.breakdancerFileName.c_str());
 		currentState.inf_BP.open(par.breakdancerFileName.c_str());
-		bdData.loadBDFile(par.breakdancerFileName);
+		g_bdData.loadBDFile(par.breakdancerFileName);
 	}
 
 
@@ -818,6 +854,18 @@ int init(int argc, char *argv[], ControlState& currentState, BDData& bdData) {
 		return 1;
 	}
 	RestOutf_test.close();
+
+	currentState.breakDancerOutputFilename = par.breakDancerOutputFilename;
+
+   if ( currentState.breakDancerOutputFilename.compare("") != 0 ) {   
+		std::ofstream bdOutf_test(currentState.breakDancerOutputFilename.c_str());
+		if (!bdOutf_test) {
+			LOG_ERROR(std::cout << "Sorry, cannot write to the file: "
+					<< currentState.breakDancerOutputFilename << std::endl);
+			return 1;
+		}
+		bdOutf_test.close();
+	}
 
 	Match[(short) 'A'] = 'A';
 	Match[(short) 'C'] = 'C';
@@ -927,7 +975,7 @@ int init(int argc, char *argv[], ControlState& currentState, BDData& bdData) {
 }
 
 
-void SearchFarEnd( const std::string& chromosome, SPLIT_READ& read, const BDData& bdData)
+void SearchFarEnd( const std::string& chromosome, SPLIT_READ& read)
 {
 	const int BD_SPAN = 200;
 	const int START_SEARCH_SPAN = 128;	
@@ -938,7 +986,7 @@ void SearchFarEnd( const std::string& chromosome, SPLIT_READ& read, const BDData
 
 	std::vector<unsigned int> bdEvents;
 
-	bdData.getCorrespondingEvents( read, bdEvents );
+	g_bdData.getCorrespondingEvents( read, bdEvents );
 	for (unsigned int bdEventIndex=0; bdEventIndex<bdEvents.size(); bdEventIndex++ ) {  
 		SearchFarEndAtPos( chromosome, read, bdEvents[ bdEventIndex ], BD_SPAN );
 		if (read.goodFarEndFound()) { return; }
@@ -980,9 +1028,9 @@ int main(int argc, char *argv[]) {
 	ControlState currentState;
 
 	int returnValue;
-	BDData bdData;
 
-	returnValue = init(argc, argv, currentState, bdData);
+
+	returnValue = init(argc, argv, currentState);
 
 	if (returnValue != EXIT_SUCCESS) {
 		return returnValue;
@@ -1021,7 +1069,7 @@ int main(int argc, char *argv[]) {
 		CONS_Chr_Size = currentState.CurrentChr.size() - 2 * g_SpacerBeforeAfter;
 		(std::cout << "Chromosome Size: " << CONS_Chr_Size << std::endl);
 		CurrentChrMask.resize(currentState.CurrentChr.size());
-		bdData.loadChromosome( currentState.WhichChr, currentState.CurrentChr.size() );
+		g_bdData.loadChromosome( currentState.WhichChr, currentState.CurrentChr.size() );
 		for (unsigned int i = 0; i < currentState.CurrentChr.size(); i++) {
 			CurrentChrMask[i] = 'N';
 		}
@@ -1150,7 +1198,7 @@ int main(int argc, char *argv[]) {
 {
 #pragma omp for   
             for (int readIndex= 0; readIndex < (int)currentState.Reads.size(); readIndex++ ) {
-               SearchFarEnd( currentState.CurrentChr, currentState.Reads[readIndex], bdData );
+               SearchFarEnd( currentState.CurrentChr, currentState.Reads[readIndex] );
             }	
 }
             
