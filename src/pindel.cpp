@@ -47,7 +47,7 @@
 #include "searchdeletions.h"
 #include "logdef.h"
 
-/*v EWL update 0.2.4, August 19th, 2011 corrected small bug in counter for deletions and insertion-deletions */
+/*v EWL update 0.2.4a, August 19th, 2011 ensuring that read starts on right position when region is specified */
 
 int findParameter(std::string name);
 
@@ -58,7 +58,7 @@ int g_maxPos = -1; // to calculate which is the last position in the chromosome,
 //end charris add
 //#include <omp.h>
 
-const std::string Pindel_Version_str = "Pindel version 0.2.4, August 19th 2011.";
+const std::string Pindel_Version_str = "Pindel version 0.2.4a, August 19th 2011.";
 
 // TODO: Ask Kai whether this can be removed
 //unsigned int DSizeArray[15];
@@ -567,7 +567,7 @@ void printHelp() {
 	std::cout << std::endl
 			<< "Program:   pindel (detection of indels and structural variations)"
 			<< std::endl;
-	std::cout << "Version:   0.2.2" << std::endl;
+	std::cout << Pindel_Version_str << std::endl;
 	std::cout << "Contact:   Kai Ye <k.ye@lumc.nl>" << std::endl << std::endl;
 
 	std::cout << "Usage:     pindel -f <reference.fa> -p <pindel_input>"
