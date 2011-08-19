@@ -7,6 +7,7 @@
 	e.m.w.lameijer@lumc.nl
 	+31(0)71-526 9745
 
+	Version 0.1.9 [August 19th, 2011. To save memory, now reads in chromosomes only when needed, so doesn't put the entire genome in memory at once. 
 	Version 0.1.8 [July 27th, 2011. END-position now proper according to VCF rules (so for deletion: start+length+1, for SI: start+1), mentioning -d] */
 
 #include <algorithm>
@@ -27,7 +28,7 @@ const int FIRST_SAMPLE_INDEX = 32; // index of first sample name
 
 using namespace std;
 
-string g_versionString = "0.1.8";
+string g_versionString = "0.1.9";
 string g_programName = "pindel2vcf";
 
 bool g_normalBaseArray[256];
@@ -223,16 +224,65 @@ vector<Parameter*> parameters;
 /* 'Chromosome' contains a string identifier as well as the base sequence of the chromosome itself. */
 class Chromosome {
 public:
-	Chromosome(const string& identifier) { d_identifier = identifier; d_sequence="";}
-	const string* getChromPtr() const { return &d_sequence; }
+	Chromosome(const string& identifier, const string& fastaFilename) { d_identifier = identifier; d_sequence=""; d_fastaFilename=fastaFilename;}
+	const string* getChromPtr();
 	const string getID() const { return d_identifier; }
 	void addBases(const string& bases ) { d_sequence += bases; }
 	void makeStrangeBasesN();
+	void removeFromMemory() { cout << "Removing chromosome " << d_identifier << " from memory.\n"; d_sequence.clear(); }
 
 private:
+	void readFromFile();
 	string d_identifier;
 	string d_sequence;
+	string d_fastaFilename;
 };
+
+/* 'readReference' reads in the reference. */
+void Chromosome::readFromFile()
+{
+   ifstream referenceFile( d_fastaFilename.c_str() );
+	referenceFile.clear(); // reset file for reading from the start again
+	referenceFile.seekg(0);
+   if (referenceFile.fail()) {
+      cout << "Cannot open reference file. Exiting.\n";
+      exit(EXIT_FAILURE);
+   }
+   string refLine, refName, currentLine;
+
+   getline(referenceFile,refLine); // FASTA format always has a first line with the name of the reference in it
+	// loop over each chromosome
+	bool targetChromosomeRead = false;
+	do {
+   	int counter=1;
+		refName = "";
+		do {
+			refName += refLine[ counter++ ]; 
+		} while ( counter<refLine.size() && (refLine[ counter ] != ' ') && (refLine[ counter ] != '\t') && (refLine[ counter ] != '\n') );
+
+		if (refName == d_identifier ) {
+			cout << "Reading chromosome " << refName << " into memory." << endl;
+			targetChromosomeRead = true;
+			addBases("N"); // for 1-shift
+		}
+   	getline(referenceFile,currentLine);
+	   while (!referenceFile.eof() && currentLine[0]!='>') {
+	      if (refName == d_identifier ) { addBases( currentLine ); }
+	      getline(referenceFile,currentLine);  
+	   }
+		makeStrangeBasesN(); 
+		refLine = currentLine;
+	} while (!referenceFile.eof() && !targetChromosomeRead);
+}
+
+const string* Chromosome::getChromPtr()
+{ 
+	if (d_sequence=="") { // sequence not read into memory
+		readFromFile();
+		//cout << "Have read " << d_sequence;
+	}
+	return &d_sequence; 
+}
 
 bool normalBase(char ch )
 {
@@ -253,7 +303,7 @@ void Chromosome::makeStrangeBasesN()
 /* 'Genome' contains a collection of chromosomes, and returns a pointer to the requested chromosome (the chromosome with the requested ID) */
 class Genome {
 public:
-	const string* getChromosome( const string& id ) const; 
+	const string* getChromosome( const string& id ); 
 	void addChromosome( const Chromosome& chr ) { d_chromosomes.push_back( chr ); }
 	string firstChromosomeName();
 	string nextChromosomeName();
@@ -262,7 +312,7 @@ public:
 };
 
 
-const string* Genome::getChromosome( const string& id ) const
+const string* Genome::getChromosome( const string& id )
 {
 
 	for (int chromosomeIndex=0; chromosomeIndex<d_chromosomes.size(); chromosomeIndex++ ) {
@@ -737,7 +787,7 @@ void createComplement( const string& dna, string& complement )
 
 
 /* 'convertIndelToSVdata' converts insertions and deletions to nicely formatted SV-data. */
-void convertIndelToSVdata( ifstream& svfile, map< string, int>& sampleMap, const Genome& genome, SVData& svd)
+void convertIndelToSVdata( ifstream& svfile, map< string, int>& sampleMap, Genome& genome, SVData& svd)
 {
    string line;
 	do {
@@ -802,6 +852,7 @@ void convertIndelToSVdata( ifstream& svfile, map< string, int>& sampleMap, const
 		return;
 	}
 	const string* reference = genome.getChromosome( chromosomeID );
+//cout << "reference is " << *reference << endl;
 	if ( reference== NULL ) {
 		cout << "Error! Reference chromosome \"" << chromosomeID << "\" not found!" << endl;
 		exit(EXIT_FAILURE);
@@ -908,20 +959,18 @@ void readReference( const string& referenceName, Genome& genome )
 		do {
 			refName += refLine[ counter++ ]; 
 		} while ( counter<refLine.size() && (refLine[ counter ] != ' ') && (refLine[ counter ] != '\t') && (refLine[ counter ] != '\n') );
-		cout << "Name of current chromosome: " << refName << endl;
-		Chromosome newChrom( refName );
-		newChrom.addBases("N"); // for 1-shift
+		cout << "Scanning chromosome: " << refName << endl;
+		Chromosome newChrom( refName, referenceName );
    	getline(referenceFile,currentLine);
 	   while (!referenceFile.eof() && currentLine[0]!='>') {
-	      newChrom.addBases( currentLine );
 	      getline(referenceFile,currentLine);  
 	   }
-		newChrom.makeStrangeBasesN(); 
 		genome.addChromosome( newChrom );
 		refLine = currentLine;
 	} while (!referenceFile.eof());
-	cout << "Exiting reference reading.\n";
+	cout << "Exiting reference scanning.\n";
 }
+
 
 /* 'createParameters' creates the default parameters that the VCF converter uses. */
 void createParameters()
@@ -1133,6 +1182,7 @@ int main(int argc, char* argv[])
 			counter++;
 //if (counter%10==0) cout << "At counter " << counter << " pos " << svd.getPosition() << endl;
    	}
+		genome.d_chromosomes[ chromosomeCount ].removeFromMemory(); // to prevent memory overload
 		cout << "Total reads: " << svs.size() << endl;
 		sort ( svs.begin(), svs.end() );
 		cout << "Sorting completed" << endl;
@@ -1151,6 +1201,7 @@ int main(int argc, char* argv[])
 				}
 			}
 		}
+
 	}
 }
 
