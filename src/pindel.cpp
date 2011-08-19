@@ -948,7 +948,7 @@ void SearchFarEnd( const std::string& chromosome, SPLIT_READ& read, const BDData
 	// if breakdancer does not find the event, or not find an event we trust, we turn to regular pattern matching
 	int searchSpan=START_SEARCH_SPAN;
 	int centerOfSearch = read.getLastAbsLocCloseEnd();
-	/*for (int rangeIndex=1; rangeIndex<=MaxRangeIndex; rangeIndex++ )*/ {
+	for (int rangeIndex=1; rangeIndex<=MaxRangeIndex; rangeIndex++ ) {
 		SearchFarEndAtPos( chromosome, read, centerOfSearch, searchSpan );		
 		searchSpan *= 4;
 		if (read.goodFarEndFound()) { return; }
