@@ -18,7 +18,7 @@ $PINDEL_DIR/pindel -p $TEST_DIR/COLO-829_20-p_ok.txt \
                    -o $RESULT_DIR/colowobd15 > colominus.log
 
 cd $TEST_DIR
-../../pindel -i sim1chrVs2.conf \
+../pindel -i sim1chrVs2.conf \
 		   -f sim1chrVs2.fa \
                    -c ALL -T 1\
                    -o TargetOutput/sim1chrVs20305 >  ../../../../../small.log
