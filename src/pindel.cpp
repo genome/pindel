@@ -47,7 +47,7 @@
 #include "searchdeletions.h"
 #include "logdef.h"
 
-/*v EWL update 0.2.4a, August 19th, 2011 ensuring that read starts on right position when region is specified */
+/*v EWL update 0.2.4b, August 23th, 2011, LI, BP turned off by default  */
 
 int findParameter(std::string name);
 
@@ -58,7 +58,7 @@ int g_maxPos = -1; // to calculate which is the last position in the chromosome,
 //end charris add
 //#include <omp.h>
 
-const std::string Pindel_Version_str = "Pindel version 0.2.4a, August 19th 2011.";
+const std::string Pindel_Version_str = "Pindel version 0.2.4b, August 23th 2011.";
 
 // TODO: Ask Kai whether this can be removed
 //unsigned int DSizeArray[15];
@@ -417,10 +417,10 @@ void defineParameters(std::string & WhichChr) {
 					"-l",
 					"--report_long_insertions",
 					"report insertions of which the full sequence cannot be deduced because of their length "
-						"(default true)", false, true));
+						"(default false)", false, false));
 	parameters. push_back(
 			new BoolParameter(&Analyze_BP, "-k", "--report_breakpoints",
-					"report breakpoints " "(default true)", false, true));
+					"report breakpoints " "(default false)", false, false));
 
 	parameters. push_back(
 			new BoolParameter(
