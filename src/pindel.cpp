@@ -47,7 +47,7 @@
 #include "searchdeletions.h"
 #include "logdef.h"
 
-/*v EWL update 0.2.4b, August 23th, 2011, LI, BP turned off by default  */
+/*v EWL update 0.2.4c, August 23th, 2011, improved (hopefully) display of areas  */
 
 int findParameter(std::string name);
 
@@ -58,7 +58,7 @@ int g_maxPos = -1; // to calculate which is the last position in the chromosome,
 //end charris add
 //#include <omp.h>
 
-const std::string Pindel_Version_str = "Pindel version 0.2.4b, August 23th 2011.";
+const std::string Pindel_Version_str = "Pindel version 0.2.4c, August 23th 2011.";
 
 // TODO: Ask Kai whether this can be removed
 //unsigned int DSizeArray[15];
@@ -685,27 +685,29 @@ void parseRegion(const std::string & region, // in: region
 }
 
 /** 'isFinishedPindel' returns true if there are no more reads to be processed. */
-bool isFinishedPindel(const int upperBinBorder, // in: last position analyzed so far
+bool isFinishedPindel(const int lastPositionAnalyzed, // in: last position analyzed so far
+		const bool regionEndDefined, 
 		const int endOfScan // in: the last position to be scanned
 ) {
 	// if an endOfScan-value has been set
-	if (endOfScan != -1) {
-		return (upperBinBorder >= endOfScan);
+	if ( regionEndDefined ) {
+		return (lastPositionAnalyzed >= endOfScan);
 	} else { // using g_maxPos
-		return (upperBinBorder >= g_maxPos);
+		return (lastPositionAnalyzed >= g_maxPos);
 	}
 }
 
 /** 'isFinishedBAM' returns true if there are no more reads to be processed. */
-bool isFinishedBAM(const int upperBinBorder, // in: last position analyzed so far
+bool isFinishedBAM(const int lastPositionAnalyzed, // in: last position analyzed so far
+		const bool regionEndDefined, 
 		const int endOfScan, // in: the last position to be scanned
 		const int chromosomeSize // in: the size of the chromosome
 ) {
 	// if an endOfScan-value has been set
-	if (endOfScan != -1) {
-		return (upperBinBorder >= endOfScan);
+	if (regionEndDefined) {
+		return (lastPositionAnalyzed >= endOfScan);
 	} else { // using chromosomeSize
-		return (upperBinBorder >= chromosomeSize);
+		return (lastPositionAnalyzed >= chromosomeSize);
 	}
 }
 
@@ -950,22 +952,7 @@ int init(int argc, char *argv[], ControlState& currentState) {
 	}
 	currentState.WhichChr = chrName; // removes the region from the 'pure' chromosome name
 
-	int startOffSet = 0;
-	// if a region has been specified
-	if (currentState.regionStartDefined ) {
-		startOffSet = currentState.startOfRegion - AROUND_REGION_BUFFER;
-		if (startOffSet < 0) {
-			startOffSet = 0;
-		}
-	}
-	currentState.lowerBinBorder = startOffSet - WINDOW_SIZE;
-	currentState.upperBinBorder = currentState.lowerBinBorder + WINDOW_SIZE;
 
-	currentState.endRegionPlusBuffer = -1; // -1 indicates that the chromosome must be read to the end
-	if (currentState.regionEndDefined ) {
-		currentState.endRegionPlusBuffer = currentState.endOfRegion
-				+ AROUND_REGION_BUFFER;
-	}
 
 	if (currentState.WhichChr.compare("ALL") == 0) {
 		std::cout << "Looping over all chromosomes." << std::endl;
@@ -1080,40 +1067,47 @@ int main(int argc, char *argv[]) {
 		/* 3.1 preparation ends */
 
 		/* 3.2 apply sliding windows to input datasets starts. This is the 2nd level while loop */
-		g_binIndex = -1; // to start with 0...
+		g_binIndex = 0; // to start with 0...
 
-		currentState.lowerBinBorder = -WINDOW_SIZE;
+		int startOffSet = 0;
+		// if a region has been specified
+		if (currentState.regionStartDefined ) {
+			startOffSet = currentState.startOfRegion - AROUND_REGION_BUFFER;
+			if (startOffSet < 0) {
+				startOffSet = 0;
+			}
+		}
+		currentState.lowerBinBorder = startOffSet;
 		currentState.upperBinBorder = currentState.lowerBinBorder + WINDOW_SIZE;
+
+
+		if (currentState.regionEndDefined ) {
+			currentState.endRegionPlusBuffer = currentState.endOfRegion + AROUND_REGION_BUFFER;
+			if (currentState.upperBinBorder > currentState.endRegionPlusBuffer) {
+				currentState.upperBinBorder = currentState.endRegionPlusBuffer;
+			}
+		}
+
+
 		int displayedStartOfRegion =
-						((currentState.regionStartDefined) ? (currentState.startOfRegion- WINDOW_SIZE)
-								                             : currentState.lowerBinBorder);
-
-
-
+						((currentState.regionStartDefined) ? (currentState.startOfRegion) : currentState.lowerBinBorder);
 		int displayedEndOfRegion = displayedStartOfRegion + WINDOW_SIZE;
+		if ( displayedEndOfRegion > currentState.upperBinBorder ) {
+			displayedEndOfRegion = currentState.upperBinBorder;
+		}
+		if ( displayedEndOfRegion > currentState.endOfRegion ) {
+			displayedEndOfRegion = currentState.endOfRegion;
+		}
 		// loop over one chromosome
 		do {
 
 			/* 3.2.1 preparation starts */
-			g_binIndex++;
+
  			g_NumReadInWindow = 0;
 			g_InWinPlus = 0;
 			g_InWinMinus = 0;
 			g_CloseMappedPlus = 0;
 			g_CloseMappedMinus = 0;
-			currentState.lowerBinBorder += WINDOW_SIZE;
-			currentState.upperBinBorder += WINDOW_SIZE;
-			displayedStartOfRegion += WINDOW_SIZE;
-			displayedEndOfRegion += WINDOW_SIZE;
-			if (currentState.regionEndDefined && ( displayedEndOfRegion > currentState.endOfRegion )) {
-				displayedEndOfRegion = currentState.endOfRegion;
-			}
-
-			// if the region end is specified, and it is before the regular upper border of the bin
-			if (currentState.regionEndDefined
-					&& currentState.upperBinBorder > currentState.endRegionPlusBuffer) {
-				currentState.upperBinBorder = currentState.endRegionPlusBuffer;
-			}
 
 			if (displayedStartOfRegion < displayedEndOfRegion) {
 				(std::cout << "Looking at chromosome " << currentState.WhichChr
@@ -1357,15 +1351,29 @@ int main(int argc, char *argv[]) {
 					<< " reads saved for the next cycle." << std::endl);
 			currentState.Reads.swap(currentState.FutureReads);
 			Time_Load_S = 0;
+			currentState.lowerBinBorder += WINDOW_SIZE;
+			currentState.upperBinBorder += WINDOW_SIZE;
+			displayedStartOfRegion += WINDOW_SIZE;
+			displayedEndOfRegion += WINDOW_SIZE;
+			if ( displayedEndOfRegion > currentState.endOfRegion ) {
+				displayedEndOfRegion = currentState.endOfRegion;
+			}
+			if (currentState.upperBinBorder > currentState.endRegionPlusBuffer ) {
+				currentState.upperBinBorder = currentState.endRegionPlusBuffer;	
+			}
+			g_binIndex++;
 			/* 3.2.8 report ends */
 
 		} // do {
 		while ((currentState.PindelReadDefined && !isFinishedPindel(
-				currentState.upperBinBorder, currentState.endRegionPlusBuffer))
+				currentState.lowerBinBorder, currentState.regionEndDefined, currentState.endRegionPlusBuffer))
 				|| (currentState.BAMDefined && !isFinishedBAM(
-						currentState.upperBinBorder,
+						currentState.lowerBinBorder,
+						currentState.regionEndDefined,
 						currentState.endRegionPlusBuffer,
 						currentState.CurrentChr.size())));
+
+		// Pindel: stop loop if the lowerBinBorder is past the last read, or past the endRegionPlusBuffer
 		/* 3.2 apply sliding windows to input datasets ends */
 
 	} // while ( loopOverAllChromosomes && chromosomeIndex < chromosomes.size() );
