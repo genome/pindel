@@ -1054,6 +1054,7 @@ int main(int argc, char *argv[]) {
 		}
 
 		CONS_Chr_Size = currentState.CurrentChr.size() - 2 * g_SpacerBeforeAfter;
+		g_maxPos = 0;
 		(std::cout << "Chromosome Size: " << CONS_Chr_Size << std::endl);
 		CurrentChrMask.resize(currentState.CurrentChr.size());
 		g_bdData.loadChromosome( currentState.WhichChr, currentState.CurrentChr.size() );
@@ -1095,7 +1096,7 @@ int main(int argc, char *argv[]) {
 		if ( displayedEndOfRegion > currentState.upperBinBorder ) {
 			displayedEndOfRegion = currentState.upperBinBorder;
 		}
-		if ( displayedEndOfRegion > currentState.endOfRegion ) {
+		if ( currentState.regionEndDefined && displayedEndOfRegion > currentState.endOfRegion ) {
 			displayedEndOfRegion = currentState.endOfRegion;
 		}
 		// loop over one chromosome
@@ -1174,11 +1175,7 @@ int main(int argc, char *argv[]) {
 			if (currentState.Reads.size()) {
 				(std::cout << "There are " << currentState.Reads. size()
 						<< " reads for this chromosome region." << std::endl); // what region?
-			}
-			else {
-				(std::cout << "There are no reads for this bin." << std::endl);
-				continue;
-			}
+			
 //if (currentState.Reads.size()>17800) std::cout << "DEBUG02 " << currentState.Reads[ 17643 ].UP_Close[0].AbsLoc << std::endl;
 			//TODO: to remove the following 3 lines?
 			unsigned int Num_Left;
@@ -1350,15 +1347,19 @@ int main(int argc, char *argv[]) {
 			(std::cout << "I have " << currentState.FutureReads. size()
 					<< " reads saved for the next cycle." << std::endl);
 			currentState.Reads.swap(currentState.FutureReads);
+
+			} else {
+				(std::cout << "There are no reads for this bin." << std::endl);
+			}
 			Time_Load_S = 0;
 			currentState.lowerBinBorder += WINDOW_SIZE;
 			currentState.upperBinBorder += WINDOW_SIZE;
 			displayedStartOfRegion += WINDOW_SIZE;
 			displayedEndOfRegion += WINDOW_SIZE;
-			if ( displayedEndOfRegion > currentState.endOfRegion ) {
+			if ( currentState.regionEndDefined && displayedEndOfRegion > currentState.endOfRegion ) {
 				displayedEndOfRegion = currentState.endOfRegion;
 			}
-			if (currentState.upperBinBorder > currentState.endRegionPlusBuffer ) {
+			if ( currentState.regionEndDefined && currentState.upperBinBorder > currentState.endRegionPlusBuffer ) {
 				currentState.upperBinBorder = currentState.endRegionPlusBuffer;	
 			}
 			g_binIndex++;
