@@ -732,12 +732,12 @@ int init(int argc, char *argv[], ControlState& currentState) {
 	if (!checkParameters())
 		exit ( EXIT_FAILURE);
 	if (FLOAT_WINDOW_SIZE > 5000.0) {
-		LOG_ERROR(std::cout << "Window size " << FLOAT_WINDOW_SIZE
+		LOG_ERROR(std::cout << "Window size of " << FLOAT_WINDOW_SIZE
 				<< " million bases is too large" << std::endl);
 		return 1;
-	} else if (FLOAT_WINDOW_SIZE > 500.0) {
-		LOG_ERROR(std::cout << "Window size " << FLOAT_WINDOW_SIZE
-				<< " million bases is rather large" << std::endl);
+	} else if (FLOAT_WINDOW_SIZE > 100.0) {
+		LOG_ERROR(std::cout << "Window size of " << FLOAT_WINDOW_SIZE
+				<< " million bases is rather large; this may produce bad::allocs or segmentation faults. If that happens, either try to reduce the window size or deactivate the searching for breakpoints and long insertions by adding the command-line options \"-l false -k false\"." << std::endl);
 	}
 	WINDOW_SIZE = 1000000 * FLOAT_WINDOW_SIZE;
 

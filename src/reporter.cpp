@@ -1785,8 +1785,14 @@ SortOutputLI (const std::string & CurrentChr, std::vector < SPLIT_READ > &Reads,
 	unsigned int absStartLIWindow = g_SpacerBeforeAfter + windowStart;
 	unsigned int absEndLIWindow = g_SpacerBeforeAfter + windowEnd;
 
+	if (absEndLIWindow > CurrentChr.size() - g_SpacerBeforeAfter ) {
+		absEndLIWindow = CurrentChr.size() - g_SpacerBeforeAfter;
+	} 
+
 	unsigned int absStartBuffered = absStartLIWindow - LI_BORDER_BUFFER;
 	unsigned int absEndBuffered = absEndLIWindow + LI_BORDER_BUFFER;
+
+
 
 std::cout << "SBA: " << g_SpacerBeforeAfter << " WS " << windowStart << " Total: " << g_SpacerBeforeAfter + windowStart - LI_BORDER_BUFFER << std::endl;
 	ShiftedVector< uint8_t > plus_LI_Pos( absStartBuffered , absEndBuffered , 0 );
@@ -2130,9 +2136,14 @@ SortOutputRest (const std::string & CurrentChr, std::vector < SPLIT_READ > &Read
 	
 	unsigned int absStartBPWindow = g_SpacerBeforeAfter + windowStart ;
 	unsigned int absEndBPWindow = g_SpacerBeforeAfter + windowEnd ;
+	if (absEndBPWindow > CurrentChr.size()- g_SpacerBeforeAfter ) {
+		absEndBPWindow = CurrentChr.size()- g_SpacerBeforeAfter;
+	} 
 
 	unsigned int absStartBuffered = absStartBPWindow - BP_BORDER_BUFFER;	
 	unsigned int absEndBuffered = absEndBPWindow + BP_BORDER_BUFFER;
+
+
 
 std::cout << "SBA: " << g_SpacerBeforeAfter << " WS " << windowStart << " Total: " << g_SpacerBeforeAfter + windowStart - BP_BORDER_BUFFER << std::endl;
 	ShiftedVector< uint8_t > plus_LI_Pos( absStartBuffered , absEndBuffered , 0 );
