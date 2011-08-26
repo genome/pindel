@@ -47,7 +47,7 @@
 #include "searchdeletions.h"
 #include "logdef.h"
 
-/*v EWL update 0.2.4c, August 23th, 2011, improved (hopefully) display of areas  */
+/*v EWL update 0.2.4d, August 23th, 2011, improved (hopefully) display of areas  */
 
 int findParameter(std::string name);
 
@@ -58,7 +58,7 @@ int g_maxPos = -1; // to calculate which is the last position in the chromosome,
 //end charris add
 //#include <omp.h>
 
-const std::string Pindel_Version_str = "Pindel version 0.2.4c, August 23th 2011.";
+const std::string Pindel_Version_str = "Pindel version 0.2.4d, August 26th 2011.";
 
 // TODO: Ask Kai whether this can be removed
 //unsigned int DSizeArray[15];
