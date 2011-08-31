@@ -1061,8 +1061,7 @@ int main(int argc, char *argv[]) {
 		for (unsigned int i = 0; i < currentState.CurrentChr.size(); i++) {
 			CurrentChrMask[i] = 'N';
 		}
-		unsigned NumBoxes = (unsigned) (currentState.CurrentChr.size()
-				/ BoxSize) + 1; // box size
+		unsigned NumBoxes = (unsigned) (currentState.CurrentChr.size() * 2 / BoxSize) + 1; // box size
 		(std::cout << NumBoxes << "\t" << BoxSize << std::endl);
 
 		/* 3.1 preparation ends */
