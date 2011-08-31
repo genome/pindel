@@ -739,7 +739,7 @@ int init(int argc, char *argv[], ControlState& currentState) {
 		LOG_ERROR(std::cout << "Window size of " << FLOAT_WINDOW_SIZE
 				<< " million bases is rather large; this may produce bad::allocs or segmentation faults. If that happens, either try to reduce the window size or deactivate the searching for breakpoints and long insertions by adding the command-line options \"-l false -k false\"." << std::endl);
 	}
-	WINDOW_SIZE = 1000000 * FLOAT_WINDOW_SIZE;
+	WINDOW_SIZE = (int)(1000000 * FLOAT_WINDOW_SIZE);
 
 	// if all parameters are okay, open the files
 	currentState.inf_Seq.open(par.referenceFileName.c_str());

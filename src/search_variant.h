@@ -4,7 +4,7 @@
 class SearchVariant {
 public:
 	SearchVariant();
-	~SearchVariant();
+	virtual ~SearchVariant();
 
 	int Search(ControlState& currentState, const unsigned numBoxes);
 

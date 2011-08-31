@@ -4,7 +4,7 @@
 class SearchShortInsertions : public SearchVariant {
 public:
 	SearchShortInsertions();
-	~SearchShortInsertions();
+	virtual ~SearchShortInsertions();
 
 protected:
 	int Count_Var;

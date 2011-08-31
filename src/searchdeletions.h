@@ -4,7 +4,7 @@
 class SearchDeletions : public SearchVariant {
 public:
 	SearchDeletions();
-	~SearchDeletions();
+	virtual ~SearchDeletions();
 
 protected:
 	int Count_Var;

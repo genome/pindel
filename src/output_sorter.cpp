@@ -75,7 +75,6 @@ OutputSorter::DoSortAndOutputInversions (std::vector<SPLIT_READ> &Reads,
 		{
 		  InversionsNum = Inv[Box_index].size ();
 		  LOG_DEBUG (std::cout << Box_index << "\t" << Inv[Box_index].size () << std::endl);
-            
 		  for (unsigned int First = 0; First < InversionsNum - 1; First++)
 			{
 			  for (unsigned int Second = First + 1; Second < InversionsNum;
@@ -84,24 +83,21 @@ OutputSorter::DoSortAndOutputInversions (std::vector<SPLIT_READ> &Reads,
 				  LOG_DEBUG (std::cout << InputIndels[First].BPLeft << "\t" << InputIndels[First].BPRight << "\t"
 							 InputIndels[Second].BPLeft << "\t" << InputIndels[Second].BPRight << std::endl);
 				  {
-					if (Reads[Inv[Box_index][First]].ReadLength ==	Reads[Inv[Box_index][Second]].ReadLength) {
-						if (Reads[Inv[Box_index][First]].LeftMostPos == Reads[Inv[Box_index][Second]].LeftMostPos)
+					if (Reads[Inv[Box_index][First]].ReadLength ==
+						Reads[Inv[Box_index][Second]].ReadLength)
+					  {
+						if (Reads[Inv[Box_index][First]].LeftMostPos ==
+							Reads[Inv[Box_index][Second]].LeftMostPos)
 						  Reads[Inv[Box_index][Second]].Unique = false;
-					}
-                    if (Reads[Inv[Box_index][First]].BPLeft + Reads[Inv[Box_index][First]].BPRight < Reads[Inv[Box_index][Second]].BPLeft + Reads[Inv[Box_index][Second]].BPRight) continue;
-                    else if (Reads[Inv[Box_index][First]].BPLeft + Reads[Inv[Box_index][First]].BPRight > Reads[Inv[Box_index][Second]].BPLeft + Reads[Inv[Box_index][Second]].BPRight) {
-                          CompareResult = 1;
-                    }
-                    else if (Reads[Inv[Box_index][First]].IndelSize > Reads[Inv[Box_index][Second]].IndelSize) { // IndelSize: larger ones first
-                        continue;   
-                    }
-                    else if (Reads[Inv[Box_index][First]].IndelSize < Reads[Inv[Box_index][Second]].IndelSize) {
-                        CompareResult = 1;
-                    }
-                    else if (Reads[Inv[Box_index][First]].BPLeft < Reads[Inv[Box_index][Second]].BPLeft) continue;
-					else if (Reads[Inv[Box_index][First]].BPLeft > Reads[Inv[Box_index][Second]].BPLeft) {
+					  }
+					if (Reads[Inv[Box_index][First]].BPLeft <
+						Reads[Inv[Box_index][Second]].BPLeft)
+					  continue;
+					else if (Reads[Inv[Box_index][First]].BPLeft >
+							 Reads[Inv[Box_index][Second]].BPLeft)
+					  {
 						CompareResult = 1;
-					}
+					  }
 					else if (Reads[Inv[Box_index][First]].BPLeft ==
 							 Reads[Inv[Box_index][Second]].BPLeft)
 					  {
@@ -132,17 +128,18 @@ OutputSorter::DoSortAndOutputInversions (std::vector<SPLIT_READ> &Reads,
 				  }
 				}
 			}
-            
 		  GoodIndels.clear ();
 		  IndelEvents.clear ();
 
-		  for (unsigned int First = 0; First < InversionsNum; First++) {
+		  for (unsigned int First = 0; First < InversionsNum; First++)
+			{
 			  GoodIndels.push_back (Reads[Inv[Box_index][First]]);
-          }
+			}
 
 		  GoodNum = GoodIndels.size ();
 		  LOG_DEBUG (std::cout << "GoodNum " << Box_index << " " << GoodNum << std::endl);
-		  if (GoodNum == 0) continue;
+		  if (GoodNum == 0)
+			continue;
 		  LOG_DEBUG (std::cout << GoodNum << std::endl);
 		  Indel4output OneIndelEvent;
 		  OneIndelEvent.Start = 0;
@@ -158,78 +155,30 @@ OutputSorter::DoSortAndOutputInversions (std::vector<SPLIT_READ> &Reads,
 					  "\t" << GoodIndels[GoodIndex].BPRight <<
 					  "\t" << OneIndelEvent.BPLeft <<
 					  "\t" << OneIndelEvent.BPRight << std::endl);
-			  if (GoodIndels[GoodIndex].BPLeft + GoodIndels[GoodIndex].BPRight == OneIndelEvent.BPLeft + OneIndelEvent.BPRight)
+			  if (GoodIndels[GoodIndex].BPLeft == OneIndelEvent.BPLeft
+				  && GoodIndels[GoodIndex].BPRight == OneIndelEvent.BPRight)
 				OneIndelEvent.End = GoodIndex;
 			  else
 				{
-                  // change breakpoints
-                  // step 1 find the largest event
-                    unsigned MaxSize = 0;
-                    for (unsigned i = OneIndelEvent.Start; i <= OneIndelEvent.End; i++) {
-                        if (GoodIndels[i].IndelSize > MaxSize) MaxSize = GoodIndels[i].IndelSize;
-                    }
-                    
-                  // changed BP according to the largest event  
-                    for (unsigned i = OneIndelEvent.Start; i <= OneIndelEvent.End; i++) {
-                        if (GoodIndels[i].IndelSize / (float)MaxSize < 0.95 || MaxSize  + 30 > GoodIndels[i].ReadLength + GoodIndels[i].IndelSize) {
-                            OneIndelEvent.WhetherReport = false;
-                            std::cout << "Skip one inversion!" << std::endl;
-                            break;
-                        }
-                        short Diff = (MaxSize - GoodIndels[i].IndelSize) / 2;
-                        GoodIndels[i].IndelSize = MaxSize;
-                        GoodIndels[i].BPLeft = GoodIndels[i].BPLeft - Diff;
-                        GoodIndels[i].BPRight = GoodIndels[i].BPRight + Diff;
-                        // for plus
-                        if (GoodIndels[i].MatchedD == '+') GoodIndels[i].BP = GoodIndels[i].BP - Diff;
-                        else GoodIndels[i].BP = GoodIndels[i].BP + Diff; // for minus
-                        
-                    }
-				  OneIndelEvent.RealStart = GoodIndels[OneIndelEvent.Start].BPLeft; // largest one
-				  OneIndelEvent.RealEnd = GoodIndels[OneIndelEvent.Start].BPRight;  // largest one
+				  OneIndelEvent.RealStart = OneIndelEvent.BPLeft;
+				  OneIndelEvent.RealEnd = OneIndelEvent.BPRight;
 				  OneIndelEvent.Support =
 					  OneIndelEvent.End - OneIndelEvent.Start + 1;
-                  if (OneIndelEvent.WhetherReport)
-				     IndelEvents.push_back (OneIndelEvent);
+				  IndelEvents.push_back (OneIndelEvent);
 				  OneIndelEvent.Start = GoodIndex;
 				  OneIndelEvent.End = GoodIndex;
 				  OneIndelEvent.BPLeft = GoodIndels[GoodIndex].BPLeft;
 				  OneIndelEvent.BPRight = GoodIndels[GoodIndex].BPRight;
 				}
 			}
-          
-          // last element  
-          // change breakpoints
-          // step 1 find the largest event
-          unsigned MaxSize = 0;
-          for (unsigned i = OneIndelEvent.Start; i <= OneIndelEvent.End; i++) {
-              if (GoodIndels[i].IndelSize > MaxSize) MaxSize = GoodIndels[i].IndelSize;
-          }
-          
-          // changed BP according to the largest event  
-          for (unsigned i = OneIndelEvent.Start; i <= OneIndelEvent.End; i++) {
-              if (GoodIndels[i].IndelSize / (float)MaxSize < 0.95 || MaxSize  + 30 > GoodIndels[i].ReadLength + GoodIndels[i].IndelSize) {
-                  OneIndelEvent.WhetherReport = false;
-                  std::cout << "Skip one inversion!" << std::endl;
-                  break;
-              }
-              short Diff = (MaxSize - GoodIndels[i].IndelSize) / 2;
-              GoodIndels[i].IndelSize = MaxSize;
-              GoodIndels[i].BPLeft = GoodIndels[i].BPLeft - Diff;
-              GoodIndels[i].BPRight = GoodIndels[i].BPRight + Diff;
-              // for plus
-              if (GoodIndels[i].MatchedD == '+') GoodIndels[i].BP = GoodIndels[i].BP - Diff;
-              else GoodIndels[i].BP = GoodIndels[i].BP + Diff; // for minus
-                
-          }  
+
 		  OneIndelEvent.RealStart = OneIndelEvent.BPLeft;
 		  OneIndelEvent.RealEnd = OneIndelEvent.BPRight;
 		  OneIndelEvent.Support = OneIndelEvent.End - OneIndelEvent.Start + 1;
 		  LOG_DEBUG (std::cout << OneIndelEvent.Support
 				  << "\t" << OneIndelEvent.Start
 				  << "\t" << OneIndelEvent.End << std::endl);
-          if (OneIndelEvent.WhetherReport)
-		     IndelEvents.push_back (OneIndelEvent);
+		  IndelEvents.push_back (OneIndelEvent);
 		  LOG_DEBUG (std::cout << "IndelEvent: " << IndelEvents.size () << std::endl);
 
 		  if (IndelEvents.size ())

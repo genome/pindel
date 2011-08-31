@@ -1,0 +1,48 @@
+Style manual for Pindel refactoring
+by Eric-Wubbo Lameijer and Kai Ye
+Version 0.0, August 31st 2011
+
+If you refactor:
+
+General guidelines for writing new classes and functions:
+-try keep as many data members as possible private
+-add your name and the date to any new function or class you make
+
+
+Layout:
+
+if ( ) {
+	line1;
+	line2;
+}
+else {
+	line3;
+}
+
+for/while/do:
+
+for () {
+	line1;
+	line2;
+}
+
+Variable names/ function names/ class names.
+
+We use camelCase
+
+Variable names start with lower case character:
+variableName
+
+Function and classn names start with upper case character:
+FunctionName
+ClassName
+
+If a variable is global, prefix g_
+g_globalVariable;
+
+If a variable is local/private to a class, prefix m_ (member)
+
+m_memberVariable
+
+Variables local to a function just have a regular name
+variableName

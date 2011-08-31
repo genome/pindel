@@ -117,7 +117,7 @@ int searchInversions(ControlState& currentState, unsigned NumBoxes) {
 													currentState.regionEndDefined,
 													currentState.startOfRegion,
 													currentState.endOfRegion)) {
-												Inv[(int) (currentState.Reads[ReadIndex]. BPLeft + currentState.Reads[ReadIndex]. BPRight)
+												Inv[(int) currentState.Reads[ReadIndex]. BPLeft
 														/ BoxSize]. push_back(
 														ReadIndex);
 												currentState.Reads[ReadIndex]. Used
@@ -205,7 +205,7 @@ int searchInversions(ControlState& currentState, unsigned NumBoxes) {
 													currentState.regionEndDefined,
 													currentState.startOfRegion,
 													currentState.endOfRegion)) {
-												Inv[(int) (currentState.Reads[ReadIndex]. BPLeft + currentState.Reads[ReadIndex]. BPRight)
+												Inv[(int) currentState.Reads[ReadIndex]. BPLeft
 														/ BoxSize]. push_back(
 														ReadIndex);
 												currentState.Reads[ReadIndex]. Used
@@ -287,7 +287,7 @@ int searchInversions(ControlState& currentState, unsigned NumBoxes) {
 												currentState.regionEndDefined,
 												currentState.startOfRegion,
 												currentState.endOfRegion)) {
-											Inv[(int) (currentState.Reads[ReadIndex]. BPLeft + currentState.Reads[ReadIndex]. BPRight)
+											Inv[(int) currentState.Reads[ReadIndex]. BPLeft
 													/ BoxSize]. push_back(
 													ReadIndex);
 											currentState.Reads[ReadIndex]. Used
@@ -368,7 +368,7 @@ int searchInversions(ControlState& currentState, unsigned NumBoxes) {
 												currentState.regionEndDefined,
 												currentState.startOfRegion,
 												currentState.endOfRegion)) {
-											Inv[(int) (currentState.Reads[ReadIndex]. BPLeft + currentState.Reads[ReadIndex]. BPRight)
+											Inv[(int) currentState.Reads[ReadIndex]. BPLeft
 													/ BoxSize]. push_back(
 													ReadIndex);
 											currentState.Reads[ReadIndex]. Used
