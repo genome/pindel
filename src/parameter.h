@@ -87,6 +87,8 @@ public:
 
 	Parameter (const std::string & shortName, const std::string & longName,
 						 const std::string & description, const bool required);
+	virtual ~Parameter() {}
+
 protected:
 	void set ()
 	{
@@ -127,6 +129,7 @@ public:
 	}
 	virtual void setValue (const std::string & value);
 	virtual void setValue (const int value);
+	virtual ~IntParameter() {}
 private:
 	int *d_data_ptr;
 };
@@ -144,6 +147,7 @@ public:
 	}
 	virtual void setValue (const std::string & value);
 	virtual void setValue (const unsigned int value);
+	virtual ~UIntParameter() {}
 private:
 	unsigned int *d_data_ptr;
 };
@@ -165,6 +169,7 @@ public:
 	{
 		return true;
 	}
+	virtual ~BoolParameter() {}
 private:
 	  bool * d_data_ptr;
 };
@@ -183,6 +188,7 @@ public:
 	}
 	void setValue (const std::string & value);
 	void setValue (const double value);
+	virtual ~FloatParameter() {}
 private:
 	double *d_data_ptr;
 };
@@ -199,6 +205,7 @@ public:
 		return *d_data_ptr;
 	}
 	void setValue (const std::string & value);
+	virtual ~StringParameter() {}
 private:
 	  std::string * d_data_ptr;
 };

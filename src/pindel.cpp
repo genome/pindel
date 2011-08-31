@@ -47,7 +47,8 @@
 #include "searchdeletions.h"
 #include "logdef.h"
 
-/*v EWL update 0.2.4d, August 23th, 2011, improved (hopefully) display of areas  */
+/*v EWL update 0.2.4e, August 31st, 2011, added virtual destructors to Parameter functions to adapt to the warnings of specific g++ compilers  */
+const std::string Pindel_Version_str = "Pindel version 0.2.4e, August 31st 2011.";
 
 int findParameter(std::string name);
 
@@ -58,7 +59,6 @@ int g_maxPos = -1; // to calculate which is the last position in the chromosome,
 //end charris add
 //#include <omp.h>
 
-const std::string Pindel_Version_str = "Pindel version 0.2.4d, August 26th 2011.";
 
 // TODO: Ask Kai whether this can be removed
 //unsigned int DSizeArray[15];
@@ -715,7 +715,7 @@ int init(int argc, char *argv[], ControlState& currentState) {
 	std::cout << Pindel_Version_str << std::endl;
 
 	if (NumRead2ReportCutOff == 1)
-		BalanceCutoff = 3000000000u;
+		BalanceCutoff = 300000000;
 
 	// define all the parameters you have
 	defineParameters(currentState.WhichChr);
