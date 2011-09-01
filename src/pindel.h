@@ -26,6 +26,7 @@
 // System header files
 #include <string>
 #include <vector>
+#include <set>
 
 // Samtools header files
 #include "khash.h"
@@ -44,8 +45,8 @@ extern char Cap2LowArray[256];
 extern unsigned int DSizeArray[15];
 extern int Min_Perfect_Match_Around_BP;
 extern double MaximumAllowedMismatchRate;
-extern short ReportLength;
-extern std::vector<std::string> VectorTag;
+extern short g_reportLength;
+extern std::set<std::string> g_sampleNames;
 extern std::string CurrentChrMask;
 extern unsigned int NumberOfSIsInstances;
 extern unsigned int NumberOfDIInstances;
@@ -187,6 +188,7 @@ struct SPLIT_READ {
 
 	unsigned int getLastAbsLocCloseEnd() const;
 	bool goodFarEndFound() const;
+	bool hasCloseEnd() const;
 	unsigned int MaxLenFarEnd() const;
 	unsigned int MaxLenFarEndBackup() const;
 	friend std::ostream& operator<<(std::ostream& os, const SPLIT_READ& splitRead);
@@ -358,8 +360,6 @@ void CheckBoth(const SPLIT_READ & OneRead, const std::string & TheInput,
 		std::vector<UniquePoint> &UP);
 
 //void ProcessLIs(vector <SPLIT_READ> & LIs, ofstream & LIoutputfile);
-bool NotInVector(const std::string & OneTag,
-		const std::vector<std::string> &VectorTag);
 void GetIndelTypeAndRealStart(const std::string & TheInput,
 		const unsigned int &BPLeft, const unsigned int &IndelSize,
 		const std::string & IndelStr, std::string & IndelType,
@@ -377,5 +377,6 @@ bool readInSpecifiedRegion(const SPLIT_READ & read, const bool regionStartDefine
 		const int endOfRegion);
 void reportBreakDancerEvent( const std::string& chromosomeName, const int leftPosition, const int rightPosition, 
 	                          const int svSize, const std::string& svType, const int svCounter);
+void updateReadAfterCloseEndMapping( SPLIT_READ& Temp_One_Read );
 
 #endif /* PINDEL_H */

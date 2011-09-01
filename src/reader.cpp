@@ -61,6 +61,7 @@ KSORT_INIT_GENERIC (uint32_t) KHASH_MAP_INIT_STR (read_name, bam1_t *)
 				 Tag = "";
 				 InsertSize = 0;
 			 }
+			 ReadBuffer *readBuffer;
 			 std::vector < SPLIT_READ > *LeftReads;
 			 khash_t (read_name) * read_to_map_qual;
 			 bam_header_t *header;
@@ -122,14 +123,13 @@ ReadInRead (std::ifstream & inf_ReadSeq, const std::string & FragName,
 	SPLIT_READ Temp_One_Read;
 	//NumberOfReadsPerBuffer;
 	std::vector < SPLIT_READ > BufferReads;
-	ReportLength = 0;
+	g_reportLength = 0;
 	LOG_DEBUG(std::cout << LeftReads.size() << std::endl);
 	std::string TempQC, TempLine, TempStr, TempFragName;
 	//int TempInt;
 
 	inf_ReadSeq.clear ();
 	inf_ReadSeq.seekg (0);
-	VectorTag.clear ();
 	LOG_DEBUG(std::cout << "MINUSEXTRA!" << std::endl);
 	int UPCLOSE_COUNTER = 0;
 	//loop over all reads in the file
@@ -224,9 +224,9 @@ ReadInRead (std::ifstream & inf_ReadSeq, const std::string & FragName,
 									if (BufferReads[BufferReadsIndex].UP_Close.size ())
 										{
 											UPCLOSE_COUNTER++;
-											if (ReportLength <
+											if (g_reportLength <
 													BufferReads[BufferReadsIndex].ReadLength)
-												ReportLength =
+												g_reportLength =
 													BufferReads[BufferReadsIndex].ReadLength;
 											BufferReads[BufferReadsIndex].Used = false;
 											BufferReads[BufferReadsIndex].Unique = true;
@@ -259,12 +259,7 @@ ReadInRead (std::ifstream & inf_ReadSeq, const std::string & FragName,
 												g_CloseMappedPlus++;
 											else
 												g_CloseMappedMinus++;
-											if (NotInVector
-													(BufferReads[BufferReadsIndex].Tag, VectorTag))
-												{
-													VectorTag.push_back (BufferReads[BufferReadsIndex].
-																							 Tag);
-												}
+											g_sampleNames.insert(BufferReads[BufferReadsIndex].Tag);
 										}
 								}
 							BufferReads.clear ();
@@ -288,8 +283,8 @@ ReadInRead (std::ifstream & inf_ReadSeq, const std::string & FragName,
 			if (BufferReads[BufferReadsIndex].UP_Close.size ())
 				{
 					UPCLOSE_COUNTER++;
-					if (ReportLength < BufferReads[BufferReadsIndex].ReadLength)
-						ReportLength = BufferReads[BufferReadsIndex].ReadLength;
+					if (g_reportLength < BufferReads[BufferReadsIndex].ReadLength)
+						g_reportLength = BufferReads[BufferReadsIndex].ReadLength;
 					BufferReads[BufferReadsIndex].Used = false;
 					BufferReads[BufferReadsIndex].Unique = true;
 
@@ -321,12 +316,10 @@ ReadInRead (std::ifstream & inf_ReadSeq, const std::string & FragName,
 					Reads.push_back (BufferReads[BufferReadsIndex]);
 					if (BufferReads[BufferReadsIndex].MatchedD == Plus)
 						g_CloseMappedPlus++;
-					else
+					else {
 						g_CloseMappedMinus++;
-					if (NotInVector (BufferReads[BufferReadsIndex].Tag, VectorTag))
-						{
-							VectorTag.push_back (BufferReads[BufferReadsIndex].Tag);
-						}
+					}
+					g_sampleNames.insert(BufferReads[BufferReadsIndex].Tag);
 				}
 		}
 	BufferReads.clear ();
@@ -342,7 +335,7 @@ ReadInRead (std::ifstream & inf_ReadSeq, const std::string & FragName,
                          << Temp_One_Read.MS << "\t"
                          << Temp_One_Read.InsertSize << "\t" << Temp_One_Read.Tag << std::endl << std::endl);
 		FirstChr = false;
-			//ReportLength = Temp_One_Read.UnmatchedSeq.size();
+			//g_reportLength = Temp_One_Read.UnmatchedSeq.size();
 		}
 	showReadStats(Reads);	
 
@@ -351,33 +344,6 @@ ReadInRead (std::ifstream & inf_ReadSeq, const std::string & FragName,
 	if (Reads.size () == 0)
 		return 0;
 	LOG_DEBUG(std::cout << LeftReads.size() << std::endl);
-	LOG_INFO(std::cout << "sorting tags ... ");
-	std::string Str4Exchange;
-	for (unsigned short i = 0; i < VectorTag.size () - 1; i++)
-		{
-			for (unsigned short j = 1; j < VectorTag.size (); j++)
-				{
-					if (VectorTag[i].size () > VectorTag[j].size ())
-						{
-							Str4Exchange = VectorTag[i];
-							VectorTag[i] = VectorTag[j];
-							VectorTag[j] = Str4Exchange;
-						}
-					else if (VectorTag[i].size () == VectorTag[j].size ())
-						{
-							for (unsigned short k = 0; k < VectorTag[i].size (); k++)
-								{
-									if ((short) VectorTag[i][k] > (short) VectorTag[j][k])
-										{
-											Str4Exchange = VectorTag[i];
-											VectorTag[i] = VectorTag[j];
-											VectorTag[j] = Str4Exchange;
-											break;
-										}
-								}
-						}
-				}
-		}
 	LOG_INFO(std::cout << " finished!" << std::endl);
 	return 0;
 }
@@ -389,8 +355,8 @@ ReadInRead (std::ifstream & inf_ReadSeq, const std::string & FragName,
 
 bool
 ReadInBamReads (const char *bam_path, const std::string & FragName,
-								std::string * CurrentChr, std::vector < SPLIT_READ > &LeftReads,
-								int InsertSize, std::string Tag, int binStart, int binEnd)
+								std::string * CurrentChr, std::vector < SPLIT_READ > &LeftReads, 
+								int InsertSize, std::string Tag, int binStart, int binEnd, ReadBuffer& readBuffer)
 {
 	bamFile fp;
 	fp = bam_open (bam_path, "r");
@@ -405,7 +371,7 @@ ReadInBamReads (const char *bam_path, const std::string & FragName,
 	int tid;
 	tid = bam_get_tid (header, FragName.c_str ());
 	//kai does the below line in readinreads. dunno why yet
-	//VectorTag.clear();
+	//g_sampleNames.clear();
 
 
 	fetch_func_data data;
@@ -419,6 +385,7 @@ ReadInBamReads (const char *bam_path, const std::string & FragName,
 	data.b2_flags = &b2_flags;
 	data.InsertSize = InsertSize;
 	data.Tag = Tag;
+	data.readBuffer=&readBuffer;
 	//ADDITIONAL_MISMATCH = 1;
 	//Seq_Error_Rate = 0.05;
 	bam_fetch (fp, idx, tid, binStart, binEnd, &data, fetch_func);
@@ -440,38 +407,6 @@ ReadInBamReads (const char *bam_path, const std::string & FragName,
 	kh_clear (read_name, data.read_to_map_qual);
 	kh_destroy (read_name, data.read_to_map_qual);
 
-
-	//kai does the below in read inreads dunno why yet
-	std::string Str4Exchange;
-	if (VectorTag.size () > 0)
-		{
-			for (unsigned short i = 0; i < VectorTag.size () - 1; i++)
-				{
-					for (unsigned short j = 1; j < VectorTag.size (); j++)
-						{
-							if (VectorTag[i].size () > VectorTag[j].size ())
-								{
-									Str4Exchange = VectorTag[i];
-									VectorTag[i] = VectorTag[j];
-									VectorTag[j] = Str4Exchange;
-								}
-							else if (VectorTag[i].size () == VectorTag[j].size ())
-								{
-									for (unsigned short k = 0; k < VectorTag[i].size (); k++)
-										{
-											if ((short) VectorTag[i][k] > (short) VectorTag[j][k])
-												{
-													Str4Exchange = VectorTag[i];
-													VectorTag[i] = VectorTag[j];
-													VectorTag[j] = Str4Exchange;
-													break;
-												}
-										}
-								}
-						}
-				}
-		}
-	//end kai
 	bam_header_destroy (header);
 	bam_index_destroy (idx);
 	bam_close (fp);
@@ -578,8 +513,8 @@ build_record (const bam1_t * mapped_read, const bam1_t * unmapped_read,
 
 	SPLIT_READ Temp_One_Read;
 	fetch_func_data *data_for_bam = (fetch_func_data *) data;
-	std::vector < SPLIT_READ > *LeftReads =
-		(std::vector < SPLIT_READ > *)data_for_bam->LeftReads;
+	//std::vector < SPLIT_READ > *LeftReads =
+	//	(std::vector < SPLIT_READ > *)data_for_bam->LeftReads;
 	bam_header_t *header = (bam_header_t *) data_for_bam->header;
 	std::string CurrentChr = *(std::string *) data_for_bam->CurrentChr;
 	std::string Tag = (std::string) data_for_bam->Tag;
@@ -710,49 +645,8 @@ build_record (const bam1_t * mapped_read, const bam1_t * unmapped_read,
 		Temp_One_Read.MatchedRelPos = CONS_Chr_Size;
 	if (Temp_One_Read.MatchedRelPos < 1)
 		Temp_One_Read.MatchedRelPos = 0;
-	GetCloseEnd (CurrentChr, Temp_One_Read);
-	if (Temp_One_Read.UP_Close.size ())
-		{
-			if (ReportLength < Temp_One_Read.ReadLength)
-				ReportLength = Temp_One_Read.ReadLength;
-			Temp_One_Read.Used = false;
-			Temp_One_Read.Unique = true;
-			LOG_DEBUG(cout << Temp_One_Read.MatchedD << "\t" << Temp_One_Read.UP_Close.size() << "\t");
-			CleanUniquePoints (Temp_One_Read.UP_Close);
-			LOG_DEBUG(cout << Temp_One_Read.UP_Close.size() << 
-								"\t" << Temp_One_Read.UP_Close[0].Direction << endl);
-			Temp_One_Read.CloseEndLength =
-				Temp_One_Read.UP_Close[Temp_One_Read.UP_Close.size () - 1].LengthStr;
-
-			//if (Temp_One_Read.UP_Close.size()) {
-
-			if (Temp_One_Read.MatchedD == Plus)
-				{
-					Temp_One_Read.LeftMostPos =
-						Temp_One_Read.UP_Close[0].AbsLoc + 1 -
-						Temp_One_Read.UP_Close[0].LengthStr;
-					g_CloseMappedPlus++;
-				}
-			else
-				{
-					Temp_One_Read.LeftMostPos =
-						Temp_One_Read.UP_Close[0].AbsLoc +
-						Temp_One_Read.UP_Close[0].LengthStr - Temp_One_Read.ReadLength;
-					g_CloseMappedMinus++;
-				}
-
-			//if (isInBin(Temp_One_Read)) {
-			LeftReads->push_back (Temp_One_Read);
-			//}
-			if (LeftReads->size () % 10000 == 0)
-				{
-					LOG_INFO(std::cout << LeftReads->size () << std::endl);
-				}
-		}
-	if (NotInVector (Temp_One_Read.Tag, VectorTag))
-		{
-			VectorTag.push_back (Temp_One_Read.Tag);
-		}
+	data_for_bam->readBuffer->addRead(Temp_One_Read);
+	g_sampleNames.insert (Temp_One_Read.Tag);
 	return;
 }
 

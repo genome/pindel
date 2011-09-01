@@ -25,6 +25,7 @@
 #include <cmath>
 #include <getopt.h>
 #include <omp.h>
+#include <set>
 
 // Pindel header files
 #include "pindel.h"
@@ -41,14 +42,15 @@
 #include "search_tandem_duplications.h"
 #include "search_tandem_duplications_nt.h"
 #include "search_deletions.h"
+#include "read_buffer.h"
 #include "farend_searcher.h"
 #include "search_variant.h"
 #include "searchshortinsertions.h"
 #include "searchdeletions.h"
 #include "logdef.h"
 
-/*v EWL update 0.2.4e, August 31st, 2011, added virtual destructors to Parameter functions to adapt to the warnings of specific g++ compilers  */
-const std::string Pindel_Version_str = "Pindel version 0.2.4e, August 31st 2011.";
+/*v EWL update 0.2.4f, August 31st, 2011, using ReadBuffer, hoping to speed up parallelization */
+const std::string Pindel_Version_str = "Pindel version 0.2.4f, August 31st 2011.";
 
 int findParameter(std::string name);
 
@@ -83,6 +85,8 @@ unsigned int CountIndels = 0;
 const int alphs = 4;
 const char alphabet[alphs] = { 'A', 'C', 'G', 'T' };
 
+const int BUFFER_SIZE = 50000;
+
 unsigned long long int TheMax = 0;
 const short MAX_MISMATCHES = 4;
 float ExtraDistanceRate = 0.1;
@@ -102,8 +106,8 @@ unsigned int NumberOfDeletionsInstances = 0;
 unsigned int NumberOfDIInstances = 0;
 unsigned int NumberOfInvInstances = 0;
 unsigned int NumberOfTDInstances = 0;
-short ReportLength = 80;
-std::vector<std::string> VectorTag;
+short g_reportLength = 80;
+std::set<std::string> g_sampleNames;
 char Match[256];
 char Match2N[256];
 char Convert2RC[256];
@@ -184,6 +188,11 @@ unsigned int SPLIT_READ::getLastAbsLocCloseEnd() const
 bool SPLIT_READ::goodFarEndFound() const
 {
 	return !UP_Far.empty();
+}
+
+bool SPLIT_READ::hasCloseEnd() const
+{
+	return !UP_Close.empty();
 }
 
 unsigned int SPLIT_READ::MaxEndSize( const std::vector<UniquePoint> upVector) const
@@ -1061,7 +1070,8 @@ int main(int argc, char *argv[]) {
 		for (unsigned int i = 0; i < currentState.CurrentChr.size(); i++) {
 			CurrentChrMask[i] = 'N';
 		}
-		unsigned NumBoxes = (unsigned) (currentState.CurrentChr.size() * 2 / BoxSize) + 1; // box size
+		unsigned NumBoxes = (unsigned) (currentState.CurrentChr.size() * 2
+				/ BoxSize) + 1; // box size
 		(std::cout << NumBoxes << "\t" << BoxSize << std::endl);
 
 		/* 3.1 preparation ends */
@@ -1098,6 +1108,7 @@ int main(int argc, char *argv[]) {
 		if ( currentState.regionEndDefined && displayedEndOfRegion > currentState.endOfRegion ) {
 			displayedEndOfRegion = currentState.endOfRegion;
 		}
+		ReadBuffer readBuffer( BUFFER_SIZE, currentState.Reads, currentState.CurrentChr );
 		// loop over one chromosome
 		do {
 
@@ -1123,7 +1134,6 @@ int main(int argc, char *argv[]) {
 				Time_Load_S = time(NULL);
 			short ReturnFromReadingReads;
 
-			VectorTag.clear();
 			if (currentState.BAMDefined) {
 				ReturnFromReadingReads = 0;
 				for (unsigned int i = 0; i < currentState.bams_to_parse.size(); i++) {
@@ -1135,7 +1145,7 @@ int main(int argc, char *argv[]) {
 							currentState.bams_to_parse[i].InsertSize,
 							currentState.bams_to_parse[i].Tag,
 							currentState.lowerBinBorder,
-							currentState.upperBinBorder);
+							currentState.upperBinBorder, readBuffer );
 					if (ReturnFromReadingReads == 0) {
 						LOG_ERROR(std::cout << "Bam read failed: "
 								<< currentState.bams_to_parse[i].BamFile
@@ -1152,6 +1162,7 @@ int main(int argc, char *argv[]) {
 				}
 
 			}
+			readBuffer.flush();
 
 			if (currentState.PindelReadDefined) {
 				ReturnFromReadingReads = ReadInRead(
@@ -1427,15 +1438,6 @@ std::string Cap2Low(const std::string & input) {
 	return output;
 }
 
-bool NotInVector(const std::string & OneTag,
-		const std::vector<std::string> &VectorTag) {
-	for (unsigned i = 0; i < VectorTag.size(); i++) {
-		if (OneTag == VectorTag[i])
-			return false;
-	}
-	return true;
-}
-
 bool ReportEvent(const std::vector<SPLIT_READ> &Deletions,
 		const unsigned int &S, const unsigned int &E) {
 	short ReadLength = Deletions[S].ReadLength - Deletions[S].NT_size;
@@ -1531,6 +1533,33 @@ void GetRealStart4Insertion(const std::string & TheInput,
 
 std::vector<Region> Merge(const std::vector<Region> &AllRegions) {
 	return AllRegions;
+}
+
+/* 'updateReadAfterCloseEndMapping' (EWL, 31thAug2011) */
+void updateReadAfterCloseEndMapping( SPLIT_READ& Temp_One_Read )
+{
+	if (g_reportLength < Temp_One_Read.ReadLength) {
+		g_reportLength = Temp_One_Read.ReadLength;
+	}
+	Temp_One_Read.Used = false;
+	Temp_One_Read.Unique = true;
+
+	LOG_DEBUG(cout << Temp_One_Read.MatchedD << "\t" << Temp_One_Read.UP_Close.size() << "\t");
+
+	CleanUniquePoints (Temp_One_Read.UP_Close);
+
+	LOG_DEBUG(cout << Temp_One_Read.UP_Close.size() << "\t" << Temp_One_Read.UP_Close[0].Direction << endl);
+
+	Temp_One_Read.CloseEndLength = Temp_One_Read.UP_Close[Temp_One_Read.UP_Close.size () - 1].LengthStr;
+
+	if (Temp_One_Read.MatchedD == Plus) {
+		Temp_One_Read.LeftMostPos = Temp_One_Read.UP_Close[0].AbsLoc + 1 - Temp_One_Read.UP_Close[0].LengthStr;
+		g_CloseMappedPlus++;
+	}
+	else {
+		Temp_One_Read.LeftMostPos = Temp_One_Read.UP_Close[0].AbsLoc +	Temp_One_Read.UP_Close[0].LengthStr - Temp_One_Read.ReadLength;
+		g_CloseMappedMinus++;
+	}
 }
 
 void GetCloseEnd(const std::string & CurrentChr, SPLIT_READ & Temp_One_Read) {

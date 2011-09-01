@@ -22,6 +22,7 @@
 #include <iostream>
 #include <fstream>
 #include <cmath>
+#include <map>
 
 // Pindel header files
 #include "pindel.h"
@@ -32,6 +33,60 @@
 #include "shifted_vector.h"
 
 OutputFileData deletionFileData;
+
+/* 'createMaps' (EWL, Aug31st2011) creates maps to get a sample name from an index, and the other way around. */
+void createMaps( 	std::map<std::string,int>& sampleToIndexMap, std::map<int,std::string>& indexToSampleMap )
+{
+	int counter=0;
+	for (std::set<std::string>::iterator it=g_sampleNames.begin(); it!=g_sampleNames.end(); it++ ) {
+		sampleToIndexMap[ *it ] = counter;
+		indexToSampleMap[ counter ] = *it;
+		counter++;
+	}
+}
+
+/* 'calculateSupportPerTag (EWL, Aug31st2011) calculates the number of reads per tag (sample) supporting the event. */
+void calculateSupportPerTag( const std::vector< SPLIT_READ >& reads, const unsigned int firstReadIndex, const unsigned int lastReadIndex,
+						  std::map<std::string,int>& sampleToIndexMap, SupportPerSample* NumSupportPerTag )
+{
+	for (unsigned int readIndex = firstReadIndex; readIndex <= lastReadIndex; readIndex++) {
+		std::string currentTag = reads[readIndex].Tag;
+		int tagIndex = sampleToIndexMap[ currentTag ];
+
+		if (reads[readIndex].MatchedD == Plus)	{
+			NumSupportPerTag[tagIndex].NumPlus++;
+			if (reads[readIndex].Unique) {
+				NumSupportPerTag[tagIndex].NumUPlus++;
+			}
+		}
+		else {
+			NumSupportPerTag[tagIndex].NumMinus++;
+			if (reads[readIndex].Unique) {
+				NumSupportPerTag[tagIndex].NumUMinus++;
+			}
+		}
+	}
+}
+
+/* 'calculateSupportPerStrand (EWL, Aug31st2011) calculates the number of reads per strand (sample) supporting the event. */
+void calculateSupportPerStrand( const std::vector< SPLIT_READ >& reads, const unsigned int firstReadIndex, const unsigned int lastReadIndex,
+						 unsigned int& LeftS, unsigned int& LeftUNum, unsigned int& RightS, unsigned int& RightUNum )
+{
+	for (unsigned int readIndex = firstReadIndex; readIndex <= lastReadIndex; readIndex++) {
+		if (reads[readIndex].MatchedD == Plus) {
+			LeftS++;
+			if (reads[readIndex].Unique) {
+				LeftUNum++;
+			}
+		}
+		else {
+			RightS++;
+			if (reads[readIndex].Unique) {
+				RightUNum++;
+			}
+		}
+	}
+}
 
 void
 OutputTDs (const std::vector < SPLIT_READ > &TDs,
@@ -50,13 +105,15 @@ OutputTDs (const std::vector < SPLIT_READ > &TDs,
 	unsigned int LeftS = 1;
 	unsigned int RightS = 1;
 	//int LeftNum = 0;
-	int LeftUNum = 0;
+	unsigned int LeftUNum = 0;
 	//int RightNum = 0;
-	int RightUNum = 0;
+	unsigned int RightUNum = 0;
 
-	SupportPerSample NumSupportPerTag[VectorTag.size ()];
 
-	for (unsigned short i = 0; i < VectorTag.size (); i++)
+
+	SupportPerSample NumSupportPerTag[g_sampleNames.size ()];
+
+	for (unsigned short i = 0; i < g_sampleNames.size (); i++)
 		{
 			NumSupportPerTag[i].NumPlus = 0;
 			NumSupportPerTag[i].NumMinus = 0;
@@ -64,46 +121,16 @@ OutputTDs (const std::vector < SPLIT_READ > &TDs,
 			NumSupportPerTag[i].NumUMinus = 0;
 		}
 
-	for (unsigned int i = C_S; i <= C_E; i++)
-		{
-			for (unsigned short j = 0; j < VectorTag.size (); j++)
-				{
-					if (TDs[i].Tag == VectorTag[j])
-						{
-							if (TDs[i].MatchedD == Plus)
-								{
-									NumSupportPerTag[j].NumPlus++;
-									if (TDs[i].Unique)
-										NumSupportPerTag[j].NumUPlus++;
-								}
-							else
-								{
-									NumSupportPerTag[j].NumMinus++;
-									if (TDs[i].Unique)
-										NumSupportPerTag[j].NumUMinus++;
-								}
-						}
-				}
-			if (TDs[i].MatchedD == Plus)
-				{
-				  //LeftScore += TDs[i].score;
-					LeftS++;
-					if (TDs[i].Unique)
-						LeftUNum++;
-				}
-			else
-				{
-				  //RightScore += TDs[i].score;
-					RightS++;
-					if (TDs[i].Unique)
-						RightUNum++;
-				}
-		}
+	std::map<std::string,int> sampleToIndexMap;
+	std::map<int,std::string> indexToSampleMap;
+	createMaps( sampleToIndexMap, indexToSampleMap) ;
+	calculateSupportPerTag( TDs, C_S, C_E, sampleToIndexMap, NumSupportPerTag );
+	calculateSupportPerStrand( TDs, C_S, C_E, LeftS, LeftUNum, RightS, RightUNum );
 
 	short NumberSupSamples = 0;
 	short NumU_SupSamples = 0;
 	int Num_U_Reads = 0;
-	for (unsigned short i = 0; i < VectorTag.size (); ++i)
+	for (unsigned short i = 0; i < g_sampleNames.size (); ++i)
 		{
 			if (NumSupportPerTag[i].NumPlus + NumSupportPerTag[i].NumMinus)
 				++NumberSupSamples;
@@ -138,37 +165,37 @@ OutputTDs (const std::vector < SPLIT_READ > &TDs,
 		SUM_MS += TDs[i].MS;
 	TDOutf << "\tSUM_MS " << SUM_MS;
 
-	TDOutf << "\t" << VectorTag.
+	TDOutf << "\t" << g_sampleNames.
 		size () << "\tNumSupSamples " << NumberSupSamples << "\t" <<
 		NumU_SupSamples;
-	for (unsigned short i = 0; i < VectorTag.size (); i++)
-		TDOutf << "\t" << VectorTag[i] << " " << NumSupportPerTag[i].NumPlus
+	for (unsigned short i = 0; i < g_sampleNames.size (); i++)
+		TDOutf << "\t" << indexToSampleMap[i] << " " << NumSupportPerTag[i].NumPlus
 			<< " " << NumSupportPerTag[i].NumUPlus
 			<< " " << NumSupportPerTag[i].NumMinus
 			<< " " << NumSupportPerTag[i].NumUMinus;
 	TDOutf << std::endl;
 
-	//DeletionOutf << TheInput.substr(Deletions[C_S].Left - ReportLength + Deletions[C_S].BP + 1, ReportLength * 2) << endl;// << endl;// ReportLength                 
-	TDOutf << TheInput.substr (TDs[C_S].BPRight + g_SpacerBeforeAfter - ReportLength + 1, ReportLength);	// << endl;// 
+	//DeletionOutf << TheInput.substr(Deletions[C_S].Left - g_reportLength + Deletions[C_S].BP + 1, g_reportLength * 2) << endl;// << endl;// g_reportLength                 
+	TDOutf << TheInput.substr (TDs[C_S].BPRight + g_SpacerBeforeAfter - g_reportLength + 1, g_reportLength);	// << endl;// 
 	if (TDs[C_S].NT_size)
 		{
 			for (short i = 0; i < TDs[C_S].NT_size; i++)
 				TDOutf << " ";
 		}
-	//ReportLength 
+	//g_reportLength 
 	TDOutf << Cap2Low (TheInput.
 										 substr (TDs[C_S].BPLeft + g_SpacerBeforeAfter,
-														 ReportLength)) << std::endl;
+														 g_reportLength)) << std::endl;
 
 	short SpaceBeforeReadSeq;
 	for (unsigned int GoodIndex = C_S; GoodIndex <= C_E; GoodIndex++)
 		{
-			SpaceBeforeReadSeq = ReportLength - TDs[GoodIndex].BP - 1;
+			SpaceBeforeReadSeq = g_reportLength - TDs[GoodIndex].BP - 1;
 
 			for (int i = 0; i < SpaceBeforeReadSeq; i++)
 				TDOutf << " ";
 			//short SpaceBeforeD =
-			//	ReportLength + ReportLength - g_SpacerBeforeAfter -
+			//	g_reportLength + g_reportLength - g_SpacerBeforeAfter -
 			//	TDs[GoodIndex].ReadLength;
 			if (TDs[GoodIndex].MatchedD == Minus)
 				{
@@ -209,15 +236,15 @@ OutputDeletions (const std::vector < SPLIT_READ > &Deletions,
 	unsigned int LeftS = 1;
 	unsigned int RightS = 1;
 	//int LeftNum = 0;
-	int LeftUNum = 0;
+	unsigned int LeftUNum = 0;
 	//int RightNum = 0;
-	int RightUNum = 0;
+	unsigned int RightUNum = 0;
 	LOG_DEBUG(std::cout << "d_2" << std::endl);
-	SupportPerSample NumSupportPerTag[VectorTag.size ()];
+	SupportPerSample NumSupportPerTag[g_sampleNames.size ()];
 
 //DeletionOutf << "EWL BREAKING JENKINS! (see if it still works)\n";
 
-	for (unsigned short i = 0; i < VectorTag.size (); i++)
+	for (unsigned short i = 0; i < g_sampleNames.size (); i++)
 		{
 			NumSupportPerTag[i].NumPlus = 0;
 			NumSupportPerTag[i].NumMinus = 0;
@@ -225,46 +252,18 @@ OutputDeletions (const std::vector < SPLIT_READ > &Deletions,
 			NumSupportPerTag[i].NumUMinus = 0;
 		}
 	LOG_DEBUG(std::cout << "d_3" << std::endl);
-	for (unsigned int i = C_S; i <= C_E; i++)
-		{
-			for (unsigned short j = 0; j < VectorTag.size (); j++)
-				{
-					if (Deletions[i].Tag == VectorTag[j])
-						{
-							if (Deletions[i].MatchedD == Plus)
-								{
-									NumSupportPerTag[j].NumPlus++;
-									if (Deletions[i].Unique)
-										NumSupportPerTag[j].NumUPlus++;
-								}
-							else
-								{
-									NumSupportPerTag[j].NumMinus++;
-									if (Deletions[i].Unique)
-										NumSupportPerTag[j].NumUMinus++;
-								}
-						}
-				}
-			if (Deletions[i].MatchedD == Plus)
-				{
-				  //LeftScore += Deletions[i].score;
-					LeftS++;
-					if (Deletions[i].Unique)
-						LeftUNum++;
-				}
-			else
-				{
-				  //RightScore += Deletions[i].score;
-					RightS++;
-					if (Deletions[i].Unique)
-						RightUNum++;
-				}
-		}
+	std::map<std::string,int> sampleToIndexMap;
+	std::map<int,std::string> indexToSampleMap;
+	createMaps( sampleToIndexMap, indexToSampleMap) ;
+	calculateSupportPerTag( Deletions, C_S, C_E, sampleToIndexMap, NumSupportPerTag );
+	calculateSupportPerStrand( Deletions, C_S, C_E, LeftS, LeftUNum, RightS, RightUNum );
+
+	
 	LOG_DEBUG(std::cout << "d_4" << std::endl);
 	short NumberSupSamples = 0;
 	short NumU_SupSamples = 0;
 	int Num_U_Reads = 0;
-	for (unsigned short i = 0; i < VectorTag.size (); ++i)
+	for (unsigned short i = 0; i < g_sampleNames.size (); ++i)
 		{
 			if (NumSupportPerTag[i].NumPlus + NumSupportPerTag[i].NumMinus)
 				++NumberSupSamples;
@@ -303,18 +302,18 @@ OutputDeletions (const std::vector < SPLIT_READ > &Deletions,
 		SUM_MS += Deletions[i].MS;
 	DeletionOutf << "\tSUM_MS " << SUM_MS;
 
-	DeletionOutf << "\t" << VectorTag.
+	DeletionOutf << "\t" << g_sampleNames.
 		size () << "\tNumSupSamples " << NumberSupSamples << "\t" <<
 		NumU_SupSamples;
-	for (unsigned short i = 0; i < VectorTag.size (); i++)
-		DeletionOutf << "\t" << VectorTag[i] << " " << NumSupportPerTag[i].NumPlus
+	for (unsigned short i = 0; i < g_sampleNames.size (); i++)
+		DeletionOutf << "\t" << indexToSampleMap[i] << " " << NumSupportPerTag[i].NumPlus
 			<< " " << NumSupportPerTag[i].NumUPlus
 			<< " " << NumSupportPerTag[i].NumMinus
 			<< " " << NumSupportPerTag[i].NumUMinus;
 	DeletionOutf << std::endl;
 	LOG_DEBUG(std::cout << "d_7" << std::endl);
-	//DeletionOutf << TheInput.substr(Deletions[C_S].Left - ReportLength + Deletions[C_S].BP + 1, ReportLength * 2) << endl;// << endl;// ReportLength                 
-	DeletionOutf << TheInput.substr (Deletions[C_S].Left - ReportLength + Deletions[C_S].BP + 1, ReportLength);	// << endl;// ReportLength    
+	//DeletionOutf << TheInput.substr(Deletions[C_S].Left - g_reportLength + Deletions[C_S].BP + 1, g_reportLength * 2) << endl;// << endl;// g_reportLength                 
+	DeletionOutf << TheInput.substr (Deletions[C_S].Left - g_reportLength + Deletions[C_S].BP + 1, g_reportLength);	// << endl;// g_reportLength    
 	if (Deletions[C_S].IndelSize >= 14)
 		{
 			DeletionOutf << Cap2Low (TheInput.
@@ -331,16 +330,16 @@ OutputDeletions (const std::vector < SPLIT_READ > &Deletions,
 		DeletionOutf << Cap2Low (TheInput.
 														 substr (Deletions[C_S].Left + Deletions[C_S].BP +
 																		 1, GapSize));
-	DeletionOutf << TheInput.substr (Deletions[C_S].Left + Deletions[C_S].BP + 1 + Deletions[C_S].IndelSize, ReportLength - GapSize) << std::endl;	// ReportLength
+	DeletionOutf << TheInput.substr (Deletions[C_S].Left + Deletions[C_S].BP + 1 + Deletions[C_S].IndelSize, g_reportLength - GapSize) << std::endl;	// g_reportLength
 	short SpaceBeforeReadSeq;
 	for (unsigned int GoodIndex = C_S; GoodIndex <= C_E; GoodIndex++)
 		{
-			SpaceBeforeReadSeq = ReportLength - Deletions[GoodIndex].BP - 1;
+			SpaceBeforeReadSeq = g_reportLength - Deletions[GoodIndex].BP - 1;
 
 			for (int i = 0; i < SpaceBeforeReadSeq; i++)
 				DeletionOutf << " ";
 			short SpaceBeforeD =
-				ReportLength + ReportLength - SpaceBeforeReadSeq -
+				g_reportLength + g_reportLength - SpaceBeforeReadSeq -
 				Deletions[GoodIndex].ReadLength;
 			if (Deletions[GoodIndex].MatchedD == Minus)
 				{
@@ -414,13 +413,13 @@ OutputInversions (const std::vector < SPLIT_READ > &Inv,
 	unsigned int LeftS = 1;
 	unsigned int RightS = 1;
 	//int LeftNum = 0;
-	int LeftUNum = 0;
+	unsigned int LeftUNum = 0;
 	//int RightNum = 0;
-	int RightUNum = 0;
+	unsigned int RightUNum = 0;
 
-	SupportPerSample NumSupportPerTag[VectorTag.size ()];
+	SupportPerSample NumSupportPerTag[g_sampleNames.size ()];
 
-	for (unsigned short i = 0; i < VectorTag.size (); i++)
+	for (unsigned short i = 0; i < g_sampleNames.size (); i++)
 		{
 			NumSupportPerTag[i].NumPlus = 0;
 			NumSupportPerTag[i].NumMinus = 0;
@@ -428,46 +427,16 @@ OutputInversions (const std::vector < SPLIT_READ > &Inv,
 			NumSupportPerTag[i].NumUMinus = 0;
 		}
 
-	for (unsigned int i = C_S; i <= C_E; i++)
-		{
-			for (unsigned short j = 0; j < VectorTag.size (); j++)
-				{
-					if (Inv[i].Tag == VectorTag[j])
-						{
-							if (Inv[i].MatchedD == Plus)
-								{
-									NumSupportPerTag[j].NumPlus++;
-									if (Inv[i].Unique)
-										NumSupportPerTag[j].NumUPlus++;
-								}
-							else
-								{
-									NumSupportPerTag[j].NumMinus++;
-									if (Inv[i].Unique)
-										NumSupportPerTag[j].NumUMinus++;
-								}
-						}
-				}
-			if (Inv[i].MatchedD == Plus)
-				{
-				  //LeftScore += Inv[i].score;
-					LeftS++;
-					if (Inv[i].Unique)
-						LeftUNum++;
-				}
-			else
-				{
-				  //RightScore += Inv[i].score;
-					RightS++;
-					if (Inv[i].Unique)
-						RightUNum++;
-				}
-		}
+	std::map<std::string,int> sampleToIndexMap;
+	std::map<int,std::string> indexToSampleMap;
+	createMaps( sampleToIndexMap, indexToSampleMap) ;
+	calculateSupportPerTag( Inv, C_S, C_E, sampleToIndexMap, NumSupportPerTag );
+	calculateSupportPerStrand( Inv, C_S, C_E, LeftS, LeftUNum, RightS, RightUNum );
 
 	short NumberSupSamples = 0;
 	short NumU_SupSamples = 0;
 	int Num_U_Reads = 0;
-	for (unsigned short i = 0; i < VectorTag.size (); ++i)
+	for (unsigned short i = 0; i < g_sampleNames.size (); ++i)
 		{
 			if (NumSupportPerTag[i].NumPlus + NumSupportPerTag[i].NumMinus)
 				++NumberSupSamples;
@@ -500,19 +469,19 @@ OutputInversions (const std::vector < SPLIT_READ > &Inv,
 		SUM_MS += Inv[i].MS;
 	InvOutf << "\tSUM_MS " << SUM_MS;
 
-	InvOutf << "\t" << VectorTag.
+	InvOutf << "\t" << g_sampleNames.
 		size () << "\tNumSupSamples " << NumberSupSamples << "\t" <<
 		NumU_SupSamples;
-	for (unsigned short i = 0; i < VectorTag.size (); i++)
-		InvOutf << "\t" << VectorTag[i] << " " << NumSupportPerTag[i].NumPlus
+	for (unsigned short i = 0; i < g_sampleNames.size (); i++)
+		InvOutf << "\t" << indexToSampleMap[i] << " " << NumSupportPerTag[i].NumPlus
 			<< " " << NumSupportPerTag[i].NumUPlus
 			<< " " << NumSupportPerTag[i].NumMinus
 			<< " " << NumSupportPerTag[i].NumUMinus;
 	InvOutf << std::endl;
 
 	short SpaceBeforeReadSeq;
-	//DeletionOutf << TheInput.substr(Deletions[C_S].Left - ReportLength + Deletions[C_S].BP + 1, ReportLength * 2) << endl;// << endl;// ReportLength                 
-	InvOutf << TheInput.substr (Inv[C_S].BPLeft + g_SpacerBeforeAfter - ReportLength, ReportLength);	//;// << endl;// ReportLength  
+	//DeletionOutf << TheInput.substr(Deletions[C_S].Left - g_reportLength + Deletions[C_S].BP + 1, g_reportLength * 2) << endl;// << endl;// g_reportLength                 
+	InvOutf << TheInput.substr (Inv[C_S].BPLeft + g_SpacerBeforeAfter - g_reportLength, g_reportLength);	//;// << endl;// g_reportLength  
 	LOG_DEBUG(std::cout << Inv[C_S].NT_size << "\t" << Inv[C_S].NT_2size << std::endl);
 	if (LeftNT_size)
 		{
@@ -524,14 +493,14 @@ OutputInversions (const std::vector < SPLIT_READ > &Inv,
 	InvOutf <<
 		Cap2Low (ReverseComplement
 						 (TheInput.
-							substr (Inv[C_S].BPRight + 1 + g_SpacerBeforeAfter - ReportLength,
-											ReportLength))) << std::endl;
+							substr (Inv[C_S].BPRight + 1 + g_SpacerBeforeAfter - g_reportLength,
+											g_reportLength))) << std::endl;
 	for (unsigned int GoodIndex = C_S; GoodIndex <= C_E; GoodIndex++)
 		{
 			if (Inv[GoodIndex].MatchedD == Plus
 					&& Inv[GoodIndex].MatchedRelPos < Inv[GoodIndex].BPLeft)
 				{
-					SpaceBeforeReadSeq = ReportLength - Inv[GoodIndex].BP - 1;
+					SpaceBeforeReadSeq = g_reportLength - Inv[GoodIndex].BP - 1;
 					for (int i = 0; i < SpaceBeforeReadSeq; i++)
 						InvOutf << " ";
 					InvOutf << ReverseComplement (Inv[GoodIndex].UnmatchedSeq);
@@ -549,7 +518,7 @@ OutputInversions (const std::vector < SPLIT_READ > &Inv,
 			else if (Inv[GoodIndex].MatchedD == Plus
 							 && Inv[GoodIndex].MatchedRelPos > Inv[GoodIndex].BPLeft)
 				{
-					SpaceBeforeReadSeq = ReportLength - Inv[GoodIndex].BP - 1;
+					SpaceBeforeReadSeq = g_reportLength - Inv[GoodIndex].BP - 1;
 					for (int i = 0; i < SpaceBeforeReadSeq; i++)
 						InvOutf << " ";
 					InvOutf << Inv[GoodIndex].UnmatchedSeq;
@@ -570,7 +539,7 @@ OutputInversions (const std::vector < SPLIT_READ > &Inv,
 	InvOutf <<
 		Cap2Low (ReverseComplement
 						 (TheInput.
-							substr (Inv[C_S].BPLeft + g_SpacerBeforeAfter, ReportLength)));
+							substr (Inv[C_S].BPLeft + g_SpacerBeforeAfter, g_reportLength)));
 	if (RightNT_size)
 		{
 			for (int i = 0; i < RightNT_size; i++)
@@ -579,13 +548,13 @@ OutputInversions (const std::vector < SPLIT_READ > &Inv,
 				}
 		}
 	InvOutf << TheInput.substr (Inv[C_S].BPRight + 1 + g_SpacerBeforeAfter,
-															ReportLength) << std::endl;
+															g_reportLength) << std::endl;
 	for (unsigned int GoodIndex = C_S; GoodIndex <= C_E; GoodIndex++)
 		{
 			if (Inv[GoodIndex].MatchedD == Minus
 					&& Inv[GoodIndex].MatchedRelPos < Inv[GoodIndex].BPRight)
 				{
-					SpaceBeforeReadSeq = ReportLength - Inv[GoodIndex].BP - 1;
+					SpaceBeforeReadSeq = g_reportLength - Inv[GoodIndex].BP - 1;
 					for (int i = 0; i < SpaceBeforeReadSeq; i++)
 						InvOutf << " ";
 					InvOutf << ReverseComplement (Inv[GoodIndex].UnmatchedSeq);
@@ -603,7 +572,7 @@ OutputInversions (const std::vector < SPLIT_READ > &Inv,
 			else if (Inv[GoodIndex].MatchedD == Minus
 							 && Inv[GoodIndex].MatchedRelPos > Inv[GoodIndex].BPRight)
 				{
-					SpaceBeforeReadSeq = ReportLength - Inv[GoodIndex].BP - 1;
+					SpaceBeforeReadSeq = g_reportLength - Inv[GoodIndex].BP - 1;
 					for (int i = 0; i < SpaceBeforeReadSeq; i++)
 						InvOutf << " ";
 					InvOutf << Inv[GoodIndex].UnmatchedSeq;
@@ -635,61 +604,29 @@ OutputSIs (const std::vector < SPLIT_READ > &SIs,
 	unsigned int LeftS = 1;
 	unsigned int RightS = 1;
 	//int LeftNum = 0;
-	int LeftUNum = 0;
+	unsigned int LeftUNum = 0;
 	//int RightNum = 0;
-	int RightUNum = 0;
+	unsigned int RightUNum = 0;
 
-	SupportPerSample NumSupportPerTag[VectorTag.size ()];
+	SupportPerSample NumSupportPerTag[g_sampleNames.size ()];
 
-	for (unsigned short i = 0; i < VectorTag.size (); i++)
+	for (unsigned short i = 0; i < g_sampleNames.size (); i++)
 		{
 			NumSupportPerTag[i].NumPlus = 0;
 			NumSupportPerTag[i].NumMinus = 0;
 			NumSupportPerTag[i].NumUPlus = 0;
 			NumSupportPerTag[i].NumUMinus = 0;
 		}
-
-	for (unsigned int i = C_S; i <= C_E; i++)
-		{
-			for (unsigned short j = 0; j < VectorTag.size (); j++)
-				{
-					if (SIs[i].Tag == VectorTag[j])
-						{
-							if (SIs[i].MatchedD == Plus)
-								{
-									NumSupportPerTag[j].NumPlus++;
-									if (SIs[i].Unique)
-										NumSupportPerTag[j].NumUPlus++;
-								}
-							else
-								{
-									NumSupportPerTag[j].NumMinus++;
-									if (SIs[i].Unique)
-										NumSupportPerTag[j].NumUMinus++;
-								}
-						}
-				}
-			if (SIs[i].MatchedD == Plus)
-				{
-				  //LeftScore += SIs[i].score;
-					LeftS++;
-					if (SIs[i].Unique)
-						LeftUNum++;
-				}
-			else
-				{
-				  //RightScore += SIs[i].score;
-					RightS++;
-					if (SIs[i].Unique)
-						RightUNum++;
-				}
-		}
-
+	std::map<std::string,int> sampleToIndexMap;
+	std::map<int,std::string> indexToSampleMap;
+	createMaps( sampleToIndexMap, indexToSampleMap) ;
+	calculateSupportPerTag( SIs, C_S, C_E, sampleToIndexMap, NumSupportPerTag );
+	calculateSupportPerStrand( SIs, C_S, C_E, LeftS, LeftUNum, RightS, RightUNum );
 
 	short NumberSupSamples = 0;
 	short NumU_SupSamples = 0;
 	int Num_U_Reads = 0;
-	for (unsigned short i = 0; i < VectorTag.size (); ++i)
+	for (unsigned short i = 0; i < g_sampleNames.size (); ++i)
 		{
 			if (NumSupportPerTag[i].NumPlus + NumSupportPerTag[i].NumMinus)
 				++NumberSupSamples;
@@ -722,24 +659,24 @@ OutputSIs (const std::vector < SPLIT_READ > &SIs,
 		SUM_MS += SIs[i].MS;
 	SIsOutf << "\tSUM_MS " << SUM_MS;
 
-	SIsOutf << "\t" << VectorTag.
+	SIsOutf << "\t" << g_sampleNames.
 		size () << "\tNumSupSamples " << NumberSupSamples << "\t" <<
 		NumU_SupSamples;
-	for (unsigned short i = 0; i < VectorTag.size (); i++)
-		SIsOutf << "\t" << VectorTag[i] << " " << NumSupportPerTag[i].NumPlus
+	for (unsigned short i = 0; i < g_sampleNames.size (); i++)
+		SIsOutf << "\t" << indexToSampleMap[i] << " " << NumSupportPerTag[i].NumPlus
 			<< " " << NumSupportPerTag[i].NumUPlus
 			<< " " << NumSupportPerTag[i].NumMinus
 			<< " " << NumSupportPerTag[i].NumUMinus;
 	SIsOutf << std::endl;
 
-	SIsOutf << TheInput.substr (SIs[C_S].Left - ReportLength + SIs[C_S].BP + 1, ReportLength);	// ReportLength
+	SIsOutf << TheInput.substr (SIs[C_S].Left - g_reportLength + SIs[C_S].BP + 1, g_reportLength);	// g_reportLength
 	for (unsigned int i = 0; i < SIs[C_S].IndelSize; i++)
 		SIsOutf << " ";
-	SIsOutf << TheInput.substr (SIs[C_S].Left + SIs[C_S].BP + 1, ReportLength) << std::endl;	// ReportLength
+	SIsOutf << TheInput.substr (SIs[C_S].Left + SIs[C_S].BP + 1, g_reportLength) << std::endl;	// g_reportLength
 
 	for (unsigned int GoodIndex = C_S; GoodIndex <= C_E; GoodIndex++)
 		{
-			short SpaceBeforeReadSeq = ReportLength - SIs[GoodIndex].BP - 1;
+			short SpaceBeforeReadSeq = g_reportLength - SIs[GoodIndex].BP - 1;
 			for (short i = 0; i < SpaceBeforeReadSeq; i++)
 				SIsOutf << " ";
 			if (SIs[GoodIndex].MatchedD == Minus)
@@ -747,7 +684,7 @@ OutputSIs (const std::vector < SPLIT_READ > &SIs,
 			else
 				SIsOutf << ReverseComplement (SIs[GoodIndex].UnmatchedSeq);
 			short SpaceBeforeD =
-				ReportLength + ReportLength - SpaceBeforeReadSeq -
+				g_reportLength + g_reportLength - SpaceBeforeReadSeq -
 				SIs[GoodIndex].ReadLength;
 			for (short i = 0; i < SpaceBeforeD; i++)
 				SIsOutf << " ";
@@ -774,13 +711,13 @@ OutputDI (const std::vector < SPLIT_READ > &DI,
 	unsigned int LeftS = 1;
 	unsigned int RightS = 1;
 	//int LeftNum = 0;
-	int LeftUNum = 0;
+	unsigned int LeftUNum = 0;
 	//int RightNum = 0;
-	int RightUNum = 0;
+	unsigned int RightUNum = 0;
 
-	SupportPerSample NumSupportPerTag[VectorTag.size ()];
+	SupportPerSample NumSupportPerTag[g_sampleNames.size ()];
 
-	for (unsigned short i = 0; i < VectorTag.size (); i++)
+	for (unsigned short i = 0; i < g_sampleNames.size (); i++)
 		{
 			NumSupportPerTag[i].NumPlus = 0;
 			NumSupportPerTag[i].NumMinus = 0;
@@ -788,46 +725,16 @@ OutputDI (const std::vector < SPLIT_READ > &DI,
 			NumSupportPerTag[i].NumUMinus = 0;
 		}
 
-	for (unsigned int i = C_S; i <= C_E; i++)
-		{
-			for (unsigned short j = 0; j < VectorTag.size (); j++)
-				{
-					if (DI[i].Tag == VectorTag[j])
-						{
-							if (DI[i].MatchedD == Plus)
-								{
-									NumSupportPerTag[j].NumPlus++;
-									if (DI[i].Unique)
-										NumSupportPerTag[j].NumUPlus++;
-								}
-							else
-								{
-									NumSupportPerTag[j].NumMinus++;
-									if (DI[i].Unique)
-										NumSupportPerTag[j].NumUMinus++;
-								}
-						}
-				}
-			if (DI[i].MatchedD == Plus)
-				{
-				  //LeftScore += DI[i].score;
-					LeftS++;
-					if (DI[i].Unique)
-						LeftUNum++;
-				}
-			else
-				{
-				  //RightScore += DI[i].score;
-					RightS++;
-					if (DI[i].Unique)
-						RightUNum++;
-				}
-		}
+	std::map<std::string,int> sampleToIndexMap;
+	std::map<int,std::string> indexToSampleMap;
+	createMaps( sampleToIndexMap, indexToSampleMap) ;
+	calculateSupportPerTag( DI, C_S, C_E, sampleToIndexMap, NumSupportPerTag );
+	calculateSupportPerStrand( DI, C_S, C_E, LeftS, LeftUNum, RightS, RightUNum );
 
 	short NumberSupSamples = 0;
 	short NumU_SupSamples = 0;
 	int Num_U_Reads = 0;
-	for (unsigned short i = 0; i < VectorTag.size (); ++i)
+	for (unsigned short i = 0; i < g_sampleNames.size (); ++i)
 		{
 			if (NumSupportPerTag[i].NumPlus + NumSupportPerTag[i].NumMinus)
 				++NumberSupSamples;
@@ -860,30 +767,30 @@ OutputDI (const std::vector < SPLIT_READ > &DI,
 	DeletionOutf << "\tSUM_MS " << SUM_MS;
 
 
-	DeletionOutf << "\t" << VectorTag.
+	DeletionOutf << "\t" << g_sampleNames.
 		size () << "\tNumSupSamples " << NumberSupSamples << "\t" <<
 		NumU_SupSamples;
-	for (unsigned short i = 0; i < VectorTag.size (); i++)
-		DeletionOutf << "\t" << VectorTag[i] << " " << NumSupportPerTag[i].NumPlus
+	for (unsigned short i = 0; i < g_sampleNames.size (); i++)
+		DeletionOutf << "\t" << indexToSampleMap[i] << " " << NumSupportPerTag[i].NumPlus
 			<< " " << NumSupportPerTag[i].NumUPlus
 			<< " " << NumSupportPerTag[i].NumMinus
 			<< " " << NumSupportPerTag[i].NumUMinus;
 	DeletionOutf << std::endl;
 
-	//DeletionOutf << TheInput.substr(DI[C_S].Left - ReportLength + DI[C_S].BP + 1, 2 * ReportLength) << endl;       
-	DeletionOutf << TheInput.substr (DI[C_S].Left - ReportLength + DI[C_S].BP + 1, ReportLength);	// << endl;// ReportLength    
+	//DeletionOutf << TheInput.substr(DI[C_S].Left - g_reportLength + DI[C_S].BP + 1, 2 * g_reportLength) << endl;       
+	DeletionOutf << TheInput.substr (DI[C_S].Left - g_reportLength + DI[C_S].BP + 1, g_reportLength);	// << endl;// g_reportLength    
 
 	for (short i = 0; i < DI[C_S].NT_size; i++)
 		DeletionOutf << " ";
-	DeletionOutf << TheInput.substr (DI[C_S].Left + DI[C_S].BP + 1 + DI[C_S].IndelSize, ReportLength) << std::endl;	// ReportLength
+	DeletionOutf << TheInput.substr (DI[C_S].Left + DI[C_S].BP + 1 + DI[C_S].IndelSize, g_reportLength) << std::endl;	// g_reportLength
 	short SpaceBeforeReadSeq;
 	for (unsigned int GoodIndex = C_S; GoodIndex <= C_E; GoodIndex++)
 		{
-			SpaceBeforeReadSeq = ReportLength - DI[GoodIndex].BP - 1;
+			SpaceBeforeReadSeq = g_reportLength - DI[GoodIndex].BP - 1;
 
 			for (int i = 0; i < SpaceBeforeReadSeq; i++)
 				DeletionOutf << " ";
-			//short SpaceBeforeD = ReportLength + ReportLength - SpaceBeforeReadSeq - Deletions[GoodIndex].ReadLength;
+			//short SpaceBeforeD = g_reportLength + g_reportLength - SpaceBeforeReadSeq - Deletions[GoodIndex].ReadLength;
 			if (DI[GoodIndex].MatchedD == Minus)
 				{
 					DeletionOutf << DI[GoodIndex].UnmatchedSeq << "\t";
@@ -1933,6 +1840,11 @@ std::cin >> s;*/
 	bool temp_BalancedPlus_Plus, temp_BalancedPlus_Minus,
 		temp_BalancedMinus_Plus, temp_BalancedMinus_Minus;
 	short temp_LengthStr;
+
+	std::map<std::string,int> sampleToIndexMap;
+	std::map<int,std::string> indexToSampleMap;
+	createMaps( sampleToIndexMap, indexToSampleMap) ;
+
 	for (unsigned LI_index = 0; LI_index < LI_Positions.size (); LI_index++)
 		{
 			if (LI_Positions[LI_index].Minus_Reads.empty ()
@@ -1982,37 +1894,25 @@ std::cin >> s;*/
 						temp_BalancedPlus_Minus = true;
 				}
 
-			unsigned int NumSupportPerTagPlus[VectorTag.size ()];
-			unsigned int NumSupportPerTagMinus[VectorTag.size ()];
-			for (unsigned short i = 0; i < VectorTag.size (); i++)
-				{
-					NumSupportPerTagPlus[i] = 0;
-					NumSupportPerTagMinus[i] = 0;
-				}
-			for (unsigned int i = 0; i < temp_Minus_Reads.size (); i++)
-				{
-					for (unsigned short j = 0; j < VectorTag.size (); j++)
-						{
-							if (temp_Minus_Reads[i].Tag == VectorTag[j])
-								{
-									NumSupportPerTagMinus[j]++;
-									break;
-								}
-						}
-				}
-			for (unsigned int i = 0; i < temp_Plus_Reads.size (); i++)
-				{
-					for (unsigned short j = 0; j < VectorTag.size (); j++)
-						{
-							if (temp_Plus_Reads[i].Tag == VectorTag[j])
-								{
-									NumSupportPerTagPlus[j]++;
-									break;
-								}
-						}
-				}
+			unsigned int NumSupportPerTagPlus[g_sampleNames.size ()];
+			unsigned int NumSupportPerTagMinus[g_sampleNames.size ()];
+			for (unsigned short i = 0; i < g_sampleNames.size (); i++) {
+				NumSupportPerTagPlus[i] = 0;
+				NumSupportPerTagMinus[i] = 0;
+			}
+			for (unsigned int i = 0; i < temp_Minus_Reads.size (); i++) {
+				std::string currentTag = temp_Minus_Reads[i].Tag;
+				int tagIndex = sampleToIndexMap[ currentTag ];
+				NumSupportPerTagMinus[tagIndex]++;
+			}
+			for (unsigned int i = 0; i < temp_Plus_Reads.size (); i++) {
+				std::string currentTag = temp_Plus_Reads[i].Tag;
+				int tagIndex = sampleToIndexMap[ currentTag ];
+				NumSupportPerTagPlus[tagIndex]++;
+			}
+		
 			bool SupportedByOneSample = false;
-			for (unsigned short j = 0; j < VectorTag.size (); j++)
+			for (unsigned short j = 0; j < g_sampleNames.size (); j++)
 				{
 					LOG_DEBUG(std::cout << NumSupportPerTagPlus[j] << "\t" << NumSupportPerTagMinus[j] << std::endl);
 					if (NumSupportPerTagPlus[j] > 0 && NumSupportPerTagMinus[j] > 0)
@@ -2053,17 +1953,17 @@ std::cin >> s;*/
 
 						LargeInsertionOutf << (CurrentChr.
 																	 substr (LI_Positions[LI_index].Plus_Pos -
-																					 ReportLength + 1,
-																					 ReportLength)) <<
+																					 g_reportLength + 1,
+																					 g_reportLength)) <<
 							Cap2Low (CurrentChr.
 											 substr (LI_Positions[LI_index].Plus_Pos + 1,
-															 ReportLength)) << std::endl;
+															 g_reportLength)) << std::endl;
 						for (unsigned int i = 0; i < temp_Plus_Reads.size (); i++)
 							{
 								UP_Close_index = temp_Plus_Reads[i].UP_Close.size () - 1;
 								temp_LengthStr =
 									temp_Plus_Reads[i].UP_Close[UP_Close_index].LengthStr;
-								for (int j = 0; j < ReportLength - temp_LengthStr; j++)
+								for (int j = 0; j < g_reportLength - temp_LengthStr; j++)
 									{
 										LargeInsertionOutf << " ";
 									}
@@ -2078,11 +1978,11 @@ std::cin >> s;*/
 						//LargeInsertionOutf << "-\t" << minus_LI_Pos[Index_Minus].NumReads << endl;
 						LargeInsertionOutf << Cap2Low (CurrentChr.
 																					 substr (LI_Positions[LI_index].
-																									 Minus_Pos - ReportLength,
-																									 ReportLength)) <<
+																									 Minus_Pos - g_reportLength,
+																									 g_reportLength)) <<
 							(CurrentChr.
 							 substr (LI_Positions[LI_index].Minus_Pos,
-											 ReportLength)) << std::endl;
+											 g_reportLength)) << std::endl;
 						for (unsigned int i = 0; i < temp_Minus_Reads.size (); i++)
 							{
 								UP_Close_index = temp_Minus_Reads[i].UP_Close.size () - 1;
@@ -2090,7 +1990,7 @@ std::cin >> s;*/
 									temp_Minus_Reads[i].UP_Close[UP_Close_index].LengthStr;
 								for (int j = 0;
 										 j <
-										 ReportLength + temp_LengthStr -
+										 g_reportLength + temp_LengthStr -
 										 temp_Minus_Reads[i].ReadLength; j++)
 									{
 										LargeInsertionOutf << " ";
@@ -2272,13 +2172,13 @@ std::cout << "SBA: " << g_SpacerBeforeAfter << " WS " << windowStart << " Total:
 
 							Outf_Rest << (CurrentChr.
 														substr (Rest_Positions[LI_index].Pos -
-																		ReportLength + 1,
-																		ReportLength)) << Cap2Low (CurrentChr.
+																		g_reportLength + 1,
+																		g_reportLength)) << Cap2Low (CurrentChr.
 																															 substr
 																															 (Rest_Positions
 																																[LI_index].
 																																Pos + 1,
-																																ReportLength))
+																																g_reportLength))
 								<< std::endl;
 							HalfMappedIndex = 0;
 							HalfUnmappedIndex = 0;
@@ -2298,7 +2198,7 @@ std::cout << "SBA: " << g_SpacerBeforeAfter << " WS " << windowStart << " Total:
 											UP_Close[temp_Pos_Reads[HalfUnmappedIndex].UP_Close.
 															 size () - 1].LengthStr)
 										HalfUnmappedIndex = i;
-									for (int j = 0; j < ReportLength - temp_LengthStr; j++)
+									for (int j = 0; j < g_reportLength - temp_LengthStr; j++)
 										{
 											Outf_Rest << " ";
 										}
@@ -2326,13 +2226,13 @@ std::cout << "SBA: " << g_SpacerBeforeAfter << " WS " << windowStart << " Total:
 								size () << "\t-" << std::endl;
 							Outf_Rest << Cap2Low (CurrentChr.
 																		substr (Rest_Positions[LI_index].Pos -
-																						ReportLength,
-																						ReportLength)) << (CurrentChr.
+																						g_reportLength,
+																						g_reportLength)) << (CurrentChr.
 																															 substr
 																															 (Rest_Positions
 																																[LI_index].
 																																Pos,
-																																ReportLength))
+																																g_reportLength))
 								<< std::endl;
 							for (unsigned int i = 0; i < temp_Pos_Reads.size (); i++)
 								{
@@ -2341,7 +2241,7 @@ std::cout << "SBA: " << g_SpacerBeforeAfter << " WS " << windowStart << " Total:
 										temp_Pos_Reads[i].UP_Close[UP_Close_index].LengthStr;
 									for (int j = 0;
 											 j <
-											 ReportLength + temp_LengthStr -
+											 g_reportLength + temp_LengthStr -
 											 temp_Pos_Reads[i].ReadLength; j++)
 										{
 											Outf_Rest << " ";

@@ -21,12 +21,13 @@
 #ifndef READER_H
 #define	READER_H
 
+#include "read_buffer.h"
+
 void GetOneChrSeq (std::ifstream & inf_Seq, std::string & CurrentChr,
 									 bool WhetherBuildUp);
 bool ReadInBamReads (const char *bam_path, const std::string & FragName,
-										 std::string * CurrentChr,
-										 std::vector < SPLIT_READ > &LeftReads, int InsertSize,
-										 std::string Tag, int binStart, int binEnd);
+								std::string * CurrentChr, std::vector < SPLIT_READ > &LeftReads, 
+								int InsertSize, std::string Tag, int binStart, int binEnd, ReadBuffer& readBuffer);
 short ReadInRead (std::ifstream & inf_Seq,
 									const std::string & CurrentFragName,
 									const std::string & CurrentFrag,
