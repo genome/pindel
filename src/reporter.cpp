@@ -175,7 +175,10 @@ OutputTDs (const std::vector < SPLIT_READ > &TDs,
 			<< " " << NumSupportPerTag[i].NumUMinus;
 	TDOutf << std::endl;
 
-	//DeletionOutf << TheInput.substr(Deletions[C_S].Left - g_reportLength + Deletions[C_S].BP + 1, g_reportLength * 2) << endl;// << endl;// g_reportLength                 
+	//DeletionOutf << TheInput.substr(Deletions[C_S].Left - g_reportLength + Deletions[C_S].BP + 1, g_reportLength * 2) << endl;// << endl;// g_reportLength   
+    //TDOutf << TheInput.substr (TDs[C_S].BPRight + g_SpacerBeforeAfter - g_reportLength + 1, g_reportLength * 2) << std::endl;
+    //TDOutf << (TheInput.substr (TDs[C_S].BPLeft + g_SpacerBeforeAfter - g_reportLength, g_reportLength * 2)) << std::endl;
+
 	TDOutf << TheInput.substr (TDs[C_S].BPRight + g_SpacerBeforeAfter - g_reportLength + 1, g_reportLength);	// << endl;// 
 	if (TDs[C_S].NT_size)
 		{
@@ -312,24 +315,19 @@ OutputDeletions (const std::vector < SPLIT_READ > &Deletions,
 			<< " " << NumSupportPerTag[i].NumUMinus;
 	DeletionOutf << std::endl;
 	LOG_DEBUG(std::cout << "d_7" << std::endl);
-	//DeletionOutf << TheInput.substr(Deletions[C_S].Left - g_reportLength + Deletions[C_S].BP + 1, g_reportLength * 2) << endl;// << endl;// g_reportLength                 
+	//DeletionOutf << TheInput.substr(Deletions[C_S].Left - g_reportLength + Deletions[C_S].BP + 1, g_reportLength * 2) << endl;// << endl;// g_reportLength   
+    //DeletionOutf << TheInput.substr (Deletions[C_S].Left - g_reportLength + Deletions[C_S].BP + 1, g_reportLength * 2) << std::endl;
+    //DeletionOutf << TheInput.substr (Deletions[C_S].Left + Deletions[C_S].BP + 1 + Deletions[C_S].IndelSize - GapSize - g_reportLength, 2 * g_reportLength) << std::endl;	
+    
 	DeletionOutf << TheInput.substr (Deletions[C_S].Left - g_reportLength + Deletions[C_S].BP + 1, g_reportLength);	// << endl;// g_reportLength    
 	if (Deletions[C_S].IndelSize >= 14)
 		{
-			DeletionOutf << Cap2Low (TheInput.
-															 substr (Deletions[C_S].Left +
-																			 Deletions[C_S].BP + 1,
-																			 5)) << "<" << Deletions[C_S].
-				IndelSize -
-				10 << ">" << Cap2Low (TheInput.
-															substr (Deletions[C_S].Right -
-																			Deletions[C_S].ReadLength +
-																			Deletions[C_S].BP - 3, 5));
+			DeletionOutf << Cap2Low (TheInput.substr (Deletions[C_S].Left + Deletions[C_S].BP + 1, 5)) 
+                         << "<" << Deletions[C_S].IndelSize - 10 << ">" 
+                         << Cap2Low (TheInput.substr (Deletions[C_S].Right - Deletions[C_S].ReadLength + Deletions[C_S].BP - 3, 5));
 		}
 	else
-		DeletionOutf << Cap2Low (TheInput.
-														 substr (Deletions[C_S].Left + Deletions[C_S].BP +
-																		 1, GapSize));
+		DeletionOutf << Cap2Low (TheInput.substr (Deletions[C_S].Left + Deletions[C_S].BP + 1, GapSize));
 	DeletionOutf << TheInput.substr (Deletions[C_S].Left + Deletions[C_S].BP + 1 + Deletions[C_S].IndelSize, g_reportLength - GapSize) << std::endl;	// g_reportLength
 	short SpaceBeforeReadSeq;
 	for (unsigned int GoodIndex = C_S; GoodIndex <= C_E; GoodIndex++)
@@ -480,7 +478,8 @@ OutputInversions (const std::vector < SPLIT_READ > &Inv,
 	InvOutf << std::endl;
 
 	short SpaceBeforeReadSeq;
-	//DeletionOutf << TheInput.substr(Deletions[C_S].Left - g_reportLength + Deletions[C_S].BP + 1, g_reportLength * 2) << endl;// << endl;// g_reportLength                 
+	//DeletionOutf << TheInput.substr(Deletions[C_S].Left - g_reportLength + Deletions[C_S].BP + 1, g_reportLength * 2) << endl;// << endl;// g_reportLength   
+    //InvOutf << TheInput.substr (Inv[C_S].BPLeft + g_SpacerBeforeAfter - g_reportLength, g_reportLength * 2) << std::endl;	
 	InvOutf << TheInput.substr (Inv[C_S].BPLeft + g_SpacerBeforeAfter - g_reportLength, g_reportLength);	//;// << endl;// g_reportLength  
 	LOG_DEBUG(std::cout << Inv[C_S].NT_size << "\t" << Inv[C_S].NT_2size << std::endl);
 	if (LeftNT_size)
@@ -498,12 +497,12 @@ OutputInversions (const std::vector < SPLIT_READ > &Inv,
 	for (unsigned int GoodIndex = C_S; GoodIndex <= C_E; GoodIndex++)
 		{
 			if (Inv[GoodIndex].MatchedD == Plus
-					&& Inv[GoodIndex].MatchedRelPos < Inv[GoodIndex].BPLeft)
+					&& Inv[GoodIndex].UP_Close[0].AbsLoc < Inv[GoodIndex].UP_Far[0].AbsLoc)
 				{
 					SpaceBeforeReadSeq = g_reportLength - Inv[GoodIndex].BP - 1;
 					for (int i = 0; i < SpaceBeforeReadSeq; i++)
 						InvOutf << " ";
-					InvOutf << ReverseComplement (Inv[GoodIndex].UnmatchedSeq);
+                        InvOutf << ReverseComplement (Inv[GoodIndex].UnmatchedSeq);
 					for (int i = 0; i < Inv[GoodIndex].BP; i++)
 						InvOutf << " ";
 					InvOutf								//<< "\t" << Inv[GoodIndex].NT_size << "\t\"" << Inv[GoodIndex].NT_str
@@ -516,7 +515,7 @@ OutputInversions (const std::vector < SPLIT_READ > &Inv,
 					//<< "\t" << Deletions[C_S].BPRight << endl; 
 				}
 			else if (Inv[GoodIndex].MatchedD == Plus
-							 && Inv[GoodIndex].MatchedRelPos > Inv[GoodIndex].BPLeft)
+							 && Inv[GoodIndex].UP_Close[0].AbsLoc > Inv[GoodIndex].UP_Far[0].AbsLoc)
 				{
 					SpaceBeforeReadSeq = g_reportLength - Inv[GoodIndex].BP - 1;
 					for (int i = 0; i < SpaceBeforeReadSeq; i++)
@@ -535,11 +534,9 @@ OutputInversions (const std::vector < SPLIT_READ > &Inv,
 		"----------------------------------------------------------------------------------------------------"
 		<< std::endl;
 
-
-	InvOutf <<
-		Cap2Low (ReverseComplement
-						 (TheInput.
-							substr (Inv[C_S].BPLeft + g_SpacerBeforeAfter, g_reportLength)));
+    //InvOutf << TheInput.substr (Inv[C_S].BPRight + 1 + g_SpacerBeforeAfter - g_reportLength, g_reportLength * 2) << std::endl;
+    //InvOutf << TheInput.substr (Inv[C_S].BPRight + 1 + g_SpacerBeforeAfter - g_reportLength, g_reportLength * 2) << std::endl;
+	InvOutf << Cap2Low (ReverseComplement(TheInput.substr(Inv[C_S].BPLeft + g_SpacerBeforeAfter, g_reportLength)));
 	if (RightNT_size)
 		{
 			for (int i = 0; i < RightNT_size; i++)
@@ -552,12 +549,12 @@ OutputInversions (const std::vector < SPLIT_READ > &Inv,
 	for (unsigned int GoodIndex = C_S; GoodIndex <= C_E; GoodIndex++)
 		{
 			if (Inv[GoodIndex].MatchedD == Minus
-					&& Inv[GoodIndex].MatchedRelPos < Inv[GoodIndex].BPRight)
+					&& Inv[GoodIndex].UP_Close[0].AbsLoc > Inv[GoodIndex].UP_Far[0].AbsLoc)
 				{
 					SpaceBeforeReadSeq = g_reportLength - Inv[GoodIndex].BP - 1;
 					for (int i = 0; i < SpaceBeforeReadSeq; i++)
 						InvOutf << " ";
-					InvOutf << ReverseComplement (Inv[GoodIndex].UnmatchedSeq);
+					InvOutf << (Inv[GoodIndex].UnmatchedSeq);
 					for (int i = 0; i < Inv[GoodIndex].BP; i++)
 						InvOutf << " ";
 					InvOutf								//<< "\t" << Inv[GoodIndex].NT_size << "\t\"" << Inv[GoodIndex].NT_str 
@@ -570,12 +567,12 @@ OutputInversions (const std::vector < SPLIT_READ > &Inv,
 					//<< "\t" << Deletions[C_S].BPRight << endl; 
 				}
 			else if (Inv[GoodIndex].MatchedD == Minus
-							 && Inv[GoodIndex].MatchedRelPos > Inv[GoodIndex].BPRight)
+							 && Inv[GoodIndex].UP_Close[0].AbsLoc < Inv[GoodIndex].UP_Far[0].AbsLoc)
 				{
 					SpaceBeforeReadSeq = g_reportLength - Inv[GoodIndex].BP - 1;
 					for (int i = 0; i < SpaceBeforeReadSeq; i++)
 						InvOutf << " ";
-					InvOutf << Inv[GoodIndex].UnmatchedSeq;
+					InvOutf << ReverseComplement(Inv[GoodIndex].UnmatchedSeq);
 					InvOutf								//<< "\t" << Inv[GoodIndex].NT_size << "\t\"" << Inv[GoodIndex].NT_str
 						<< "\t" << Inv[GoodIndex].MatchedD << "\t"
 						<< Inv[GoodIndex].MatchedRelPos
@@ -647,7 +644,7 @@ OutputSIs (const std::vector < SPLIT_READ > &SIs,
 	CurrentChrMask[RealStart + g_SpacerBeforeAfter] = 'B';
 	CurrentChrMask[RealEnd + g_SpacerBeforeAfter] = 'B';
 
-   reportBreakDancerEvent(SIs[C_S].FragName, SIs[C_S].BPLeft+1, SIs[C_S].BPRight+1, SIs[C_S].IndelSize, "SI", NumberOfSIsInstances);
+   reportBreakDancerEvent(SIs[C_S].FragName, SIs[C_S].BPLeft+1, SIs[C_S].BPRight+1, SIs[C_S].IndelSize, "SI", NumberOfSIsInstances); // what is this?
 
 	SIsOutf <<
 		"####################################################################################################"
@@ -668,7 +665,7 @@ OutputSIs (const std::vector < SPLIT_READ > &SIs,
 			<< " " << NumSupportPerTag[i].NumMinus
 			<< " " << NumSupportPerTag[i].NumUMinus;
 	SIsOutf << std::endl;
-
+    //SIsOutf << TheInput.substr (SIs[C_S].Left - g_reportLength + SIs[C_S].BP + 1, g_reportLength * 2) << std::endl;	
 	SIsOutf << TheInput.substr (SIs[C_S].Left - g_reportLength + SIs[C_S].BP + 1, g_reportLength);	// g_reportLength
 	for (unsigned int i = 0; i < SIs[C_S].IndelSize; i++)
 		SIsOutf << " ";
@@ -777,7 +774,9 @@ OutputDI (const std::vector < SPLIT_READ > &DI,
 			<< " " << NumSupportPerTag[i].NumUMinus;
 	DeletionOutf << std::endl;
 
-	//DeletionOutf << TheInput.substr(DI[C_S].Left - g_reportLength + DI[C_S].BP + 1, 2 * g_reportLength) << endl;       
+	//DeletionOutf << TheInput.substr(DI[C_S].Left - g_reportLength + DI[C_S].BP + 1, 2 * g_reportLength) << endl;     
+    //DeletionOutf << TheInput.substr (DI[C_S].Left - g_reportLength + DI[C_S].BP + 1, g_reportLength * 2) << std::endl;
+    //DeletionOutf << TheInput.substr (DI[C_S].Left + DI[C_S].BP + 1 + DI[C_S].IndelSize - DI[C_S].NT_size - g_reportLength, g_reportLength * 2 + DI[C_S].NT_size) << std::endl;
 	DeletionOutf << TheInput.substr (DI[C_S].Left - g_reportLength + DI[C_S].BP + 1, g_reportLength);	// << endl;// g_reportLength    
 
 	for (short i = 0; i < DI[C_S].NT_size; i++)
