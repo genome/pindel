@@ -32,6 +32,10 @@
 #include "khash.h"
 #include "sam.h"
 
+#include "tag_collection.h"
+
+extern TagCollection g_sampleNames; // EWL: could make this a singleton instead
+
 /*
  * Global variables defined in pindel.cpp
  */
@@ -46,7 +50,6 @@ extern unsigned int DSizeArray[15];
 extern int Min_Perfect_Match_Around_BP;
 extern double MaximumAllowedMismatchRate;
 extern short g_reportLength;
-extern std::set<std::string> g_sampleNames;
 extern std::string CurrentChrMask;
 extern unsigned int NumberOfSIsInstances;
 extern unsigned int NumberOfDIInstances;

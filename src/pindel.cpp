@@ -47,10 +47,11 @@
 #include "search_variant.h"
 #include "searchshortinsertions.h"
 #include "searchdeletions.h"
+#include "tag_collection.h"
 #include "logdef.h"
 
-/*v EWL update 0.2.4f, August 31st, 2011, using ReadBuffer, hoping to speed up parallelization */
-const std::string Pindel_Version_str = "Pindel version 0.2.4f, August 31st 2011.";
+/*v EWL update 0.2.4g, September 7th 2011, more efficient tag processing */
+const std::string Pindel_Version_str = "Pindel version 0.2.4g, September 7th 2011.";
 
 int findParameter(std::string name);
 
@@ -64,6 +65,8 @@ int g_maxPos = -1; // to calculate which is the last position in the chromosome,
 
 // TODO: Ask Kai whether this can be removed
 //unsigned int DSizeArray[15];
+
+TagCollection g_sampleNames;
 
 short Before, After;
 
@@ -107,7 +110,6 @@ unsigned int NumberOfDIInstances = 0;
 unsigned int NumberOfInvInstances = 0;
 unsigned int NumberOfTDInstances = 0;
 short g_reportLength = 80;
-std::set<std::string> g_sampleNames;
 char Match[256];
 char Match2N[256];
 char Convert2RC[256];
@@ -764,6 +766,7 @@ int init(int argc, char *argv[], ControlState& currentState) {
 		while (currentState.config_file.good()) {
 			currentState.config_file >> currentState.info.BamFile
 					>> currentState.info.InsertSize >> currentState.info.Tag;
+			g_sampleNames.addTag( currentState.info.Tag );
 			//copy kai and throw crap into useless variable
 			std::getline(currentState.config_file, currentState.line);
 			if (currentState.config_file.good()) {

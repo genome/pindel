@@ -259,7 +259,7 @@ ReadInRead (std::ifstream & inf_ReadSeq, const std::string & FragName,
 												g_CloseMappedPlus++;
 											else
 												g_CloseMappedMinus++;
-											g_sampleNames.insert(BufferReads[BufferReadsIndex].Tag);
+											g_sampleNames.addTag(BufferReads[BufferReadsIndex].Tag);
 										}
 								}
 							BufferReads.clear ();
@@ -319,7 +319,7 @@ ReadInRead (std::ifstream & inf_ReadSeq, const std::string & FragName,
 					else {
 						g_CloseMappedMinus++;
 					}
-					g_sampleNames.insert(BufferReads[BufferReadsIndex].Tag);
+					g_sampleNames.addTag(BufferReads[BufferReadsIndex].Tag);
 				}
 		}
 	BufferReads.clear ();
@@ -646,7 +646,6 @@ build_record (const bam1_t * mapped_read, const bam1_t * unmapped_read,
 	if (Temp_One_Read.MatchedRelPos < 1)
 		Temp_One_Read.MatchedRelPos = 0;
 	data_for_bam->readBuffer->addRead(Temp_One_Read);
-	g_sampleNames.insert (Temp_One_Read.Tag);
 	return;
 }
 
