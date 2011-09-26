@@ -50,9 +50,14 @@ if [ "$?" -ne 0 ]; then
     echo "Or contact us on k.ye@lumc.nl" 
     exit 1
 else
+    echo "  "
     echo "Creating pindel2vcf utility..."
     g++ -O3 src/vcfcreator019.cpp -o pindel2vcf
     echo "pindel2vcf created."
+    echo " "
+    echo "Creating sam2pindel utility..."
+    g++ -O3 src/SAM_2_PINDEL_cin_2011Sept26.cpp -o sam2pindel
+    echo "sam2pindel created."
     mv src/pindel .
     echo " "
     echo "Pindel successfully compiled. The pindel executable can be found in this directory."
