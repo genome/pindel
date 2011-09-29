@@ -259,7 +259,7 @@ ReadInRead (std::ifstream & inf_ReadSeq, const std::string & FragName,
 												g_CloseMappedPlus++;
 											else
 												g_CloseMappedMinus++;
-											g_sampleNames.addTag(BufferReads[BufferReadsIndex].Tag);
+											g_sampleNames.insert(BufferReads[BufferReadsIndex].Tag);
 										}
 								}
 							BufferReads.clear ();
@@ -319,7 +319,7 @@ ReadInRead (std::ifstream & inf_ReadSeq, const std::string & FragName,
 					else {
 						g_CloseMappedMinus++;
 					}
-					g_sampleNames.addTag(BufferReads[BufferReadsIndex].Tag);
+					g_sampleNames.insert(BufferReads[BufferReadsIndex].Tag);
 				}
 		}
 	BufferReads.clear ();

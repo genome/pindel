@@ -34,14 +34,24 @@
 
 OutputFileData deletionFileData;
 
+/* 'createMaps' (EWL, Aug31st2011) creates maps to get a sample name from an index, and the other way around. */
+void createMaps( 	std::map<std::string,int>& sampleToIndexMap, std::map<int,std::string>& indexToSampleMap )
+{
+	int counter=0;
+	for (std::set<std::string>::iterator it=g_sampleNames.begin(); it!=g_sampleNames.end(); it++ ) {
+		sampleToIndexMap[ *it ] = counter;
+		indexToSampleMap[ counter ] = *it;
+		counter++;
+	}
+}
 
 /* 'calculateSupportPerTag (EWL, Aug31st2011) calculates the number of reads per tag (sample) supporting the event. */
 void calculateSupportPerTag( const std::vector< SPLIT_READ >& reads, const unsigned int firstReadIndex, const unsigned int lastReadIndex,
-						  SupportPerSample* NumSupportPerTag )
+						  std::map<std::string,int>& sampleToIndexMap, SupportPerSample* NumSupportPerTag )
 {
 	for (unsigned int readIndex = firstReadIndex; readIndex <= lastReadIndex; readIndex++) {
 		std::string currentTag = reads[readIndex].Tag;
-		int tagIndex = g_sampleNames.getIndexFromTag( currentTag );
+		int tagIndex = sampleToIndexMap[ currentTag ];
 
 		if (reads[readIndex].MatchedD == Plus)	{
 			NumSupportPerTag[tagIndex].NumPlus++;
@@ -101,9 +111,9 @@ OutputTDs (const std::vector < SPLIT_READ > &TDs,
 
 
 
-	SupportPerSample NumSupportPerTag[g_sampleNames.getSize()];
+	SupportPerSample NumSupportPerTag[g_sampleNames.size ()];
 
-	for (unsigned short i = 0; i < g_sampleNames.getSize(); i++)
+	for (unsigned short i = 0; i < g_sampleNames.size (); i++)
 		{
 			NumSupportPerTag[i].NumPlus = 0;
 			NumSupportPerTag[i].NumMinus = 0;
@@ -111,13 +121,16 @@ OutputTDs (const std::vector < SPLIT_READ > &TDs,
 			NumSupportPerTag[i].NumUMinus = 0;
 		}
 
-	calculateSupportPerTag( TDs, C_S, C_E, NumSupportPerTag );
+	std::map<std::string,int> sampleToIndexMap;
+	std::map<int,std::string> indexToSampleMap;
+	createMaps( sampleToIndexMap, indexToSampleMap) ;
+	calculateSupportPerTag( TDs, C_S, C_E, sampleToIndexMap, NumSupportPerTag );
 	calculateSupportPerStrand( TDs, C_S, C_E, LeftS, LeftUNum, RightS, RightUNum );
 
 	short NumberSupSamples = 0;
 	short NumU_SupSamples = 0;
 	int Num_U_Reads = 0;
-	for (unsigned short i = 0; i <g_sampleNames.getSize(); ++i)
+	for (unsigned short i = 0; i < g_sampleNames.size (); ++i)
 		{
 			if (NumSupportPerTag[i].NumPlus + NumSupportPerTag[i].NumMinus)
 				++NumberSupSamples;
@@ -153,10 +166,10 @@ OutputTDs (const std::vector < SPLIT_READ > &TDs,
 	TDOutf << "\tSUM_MS " << SUM_MS;
 
 	TDOutf << "\t" << g_sampleNames.
-		getSize () << "\tNumSupSamples " << NumberSupSamples << "\t" <<
+		size () << "\tNumSupSamples " << NumberSupSamples << "\t" <<
 		NumU_SupSamples;
-	for (unsigned short i = 0; i < g_sampleNames.getSize(); i++)
-		TDOutf << "\t" << g_sampleNames.getTagFromIndex(i) << " " << NumSupportPerTag[i].NumPlus
+	for (unsigned short i = 0; i < g_sampleNames.size (); i++)
+		TDOutf << "\t" << indexToSampleMap[i] << " " << NumSupportPerTag[i].NumPlus
 			<< " " << NumSupportPerTag[i].NumUPlus
 			<< " " << NumSupportPerTag[i].NumMinus
 			<< " " << NumSupportPerTag[i].NumUMinus;
@@ -227,11 +240,11 @@ OutputDeletions (const std::vector < SPLIT_READ > &Deletions,
 	//int RightNum = 0;
 	unsigned int RightUNum = 0;
 	LOG_DEBUG(std::cout << "d_2" << std::endl);
-	SupportPerSample NumSupportPerTag[g_sampleNames.getSize ()];
+	SupportPerSample NumSupportPerTag[g_sampleNames.size ()];
 
 //DeletionOutf << "EWL BREAKING JENKINS! (see if it still works)\n";
 
-	for (unsigned short i = 0; i < g_sampleNames.getSize (); i++)
+	for (unsigned short i = 0; i < g_sampleNames.size (); i++)
 		{
 			NumSupportPerTag[i].NumPlus = 0;
 			NumSupportPerTag[i].NumMinus = 0;
@@ -239,7 +252,10 @@ OutputDeletions (const std::vector < SPLIT_READ > &Deletions,
 			NumSupportPerTag[i].NumUMinus = 0;
 		}
 	LOG_DEBUG(std::cout << "d_3" << std::endl);
-	calculateSupportPerTag( Deletions, C_S, C_E, NumSupportPerTag );
+	std::map<std::string,int> sampleToIndexMap;
+	std::map<int,std::string> indexToSampleMap;
+	createMaps( sampleToIndexMap, indexToSampleMap) ;
+	calculateSupportPerTag( Deletions, C_S, C_E, sampleToIndexMap, NumSupportPerTag );
 	calculateSupportPerStrand( Deletions, C_S, C_E, LeftS, LeftUNum, RightS, RightUNum );
 
 	
@@ -247,7 +263,7 @@ OutputDeletions (const std::vector < SPLIT_READ > &Deletions,
 	short NumberSupSamples = 0;
 	short NumU_SupSamples = 0;
 	int Num_U_Reads = 0;
-	for (unsigned short i = 0; i < g_sampleNames.getSize (); ++i)
+	for (unsigned short i = 0; i < g_sampleNames.size (); ++i)
 		{
 			if (NumSupportPerTag[i].NumPlus + NumSupportPerTag[i].NumMinus)
 				++NumberSupSamples;
@@ -287,10 +303,10 @@ OutputDeletions (const std::vector < SPLIT_READ > &Deletions,
 	DeletionOutf << "\tSUM_MS " << SUM_MS;
 
 	DeletionOutf << "\t" << g_sampleNames.
-		getSize () << "\tNumSupSamples " << NumberSupSamples << "\t" <<
+		size () << "\tNumSupSamples " << NumberSupSamples << "\t" <<
 		NumU_SupSamples;
-	for (unsigned short i = 0; i < g_sampleNames.getSize (); i++)
-		DeletionOutf << "\t" << g_sampleNames.getTagFromIndex(i) << " " << NumSupportPerTag[i].NumPlus
+	for (unsigned short i = 0; i < g_sampleNames.size (); i++)
+		DeletionOutf << "\t" << indexToSampleMap[i] << " " << NumSupportPerTag[i].NumPlus
 			<< " " << NumSupportPerTag[i].NumUPlus
 			<< " " << NumSupportPerTag[i].NumMinus
 			<< " " << NumSupportPerTag[i].NumUMinus;
@@ -401,9 +417,9 @@ OutputInversions (const std::vector < SPLIT_READ > &Inv,
 	//int RightNum = 0;
 	unsigned int RightUNum = 0;
 
-	SupportPerSample NumSupportPerTag[g_sampleNames.getSize ()];
+	SupportPerSample NumSupportPerTag[g_sampleNames.size ()];
 
-	for (unsigned short i = 0; i < g_sampleNames.getSize (); i++)
+	for (unsigned short i = 0; i < g_sampleNames.size (); i++)
 		{
 			NumSupportPerTag[i].NumPlus = 0;
 			NumSupportPerTag[i].NumMinus = 0;
@@ -411,13 +427,16 @@ OutputInversions (const std::vector < SPLIT_READ > &Inv,
 			NumSupportPerTag[i].NumUMinus = 0;
 		}
 
-	calculateSupportPerTag( Inv, C_S, C_E, NumSupportPerTag );
+	std::map<std::string,int> sampleToIndexMap;
+	std::map<int,std::string> indexToSampleMap;
+	createMaps( sampleToIndexMap, indexToSampleMap) ;
+	calculateSupportPerTag( Inv, C_S, C_E, sampleToIndexMap, NumSupportPerTag );
 	calculateSupportPerStrand( Inv, C_S, C_E, LeftS, LeftUNum, RightS, RightUNum );
 
 	short NumberSupSamples = 0;
 	short NumU_SupSamples = 0;
 	int Num_U_Reads = 0;
-	for (unsigned short i = 0; i < g_sampleNames.getSize (); ++i)
+	for (unsigned short i = 0; i < g_sampleNames.size (); ++i)
 		{
 			if (NumSupportPerTag[i].NumPlus + NumSupportPerTag[i].NumMinus)
 				++NumberSupSamples;
@@ -451,10 +470,10 @@ OutputInversions (const std::vector < SPLIT_READ > &Inv,
 	InvOutf << "\tSUM_MS " << SUM_MS;
 
 	InvOutf << "\t" << g_sampleNames.
-		getSize () << "\tNumSupSamples " << NumberSupSamples << "\t" <<
+		size () << "\tNumSupSamples " << NumberSupSamples << "\t" <<
 		NumU_SupSamples;
-	for (unsigned short i = 0; i < g_sampleNames.getSize (); i++)
-		InvOutf << "\t" << g_sampleNames.getTagFromIndex(i) << " " << NumSupportPerTag[i].NumPlus
+	for (unsigned short i = 0; i < g_sampleNames.size (); i++)
+		InvOutf << "\t" << indexToSampleMap[i] << " " << NumSupportPerTag[i].NumPlus
 			<< " " << NumSupportPerTag[i].NumUPlus
 			<< " " << NumSupportPerTag[i].NumMinus
 			<< " " << NumSupportPerTag[i].NumUMinus;
@@ -476,41 +495,25 @@ OutputInversions (const std::vector < SPLIT_READ > &Inv,
 						 (TheInput.
 							substr (Inv[C_S].BPRight + 1 + g_SpacerBeforeAfter - g_reportLength,
 											g_reportLength))) << std::endl;
-	for (unsigned int GoodIndex = C_S; GoodIndex <= C_E; GoodIndex++)
-		{
-			if (Inv[GoodIndex].MatchedD == Plus
-					&& Inv[GoodIndex].MatchedRelPos < Inv[GoodIndex].BPLeft)
-				{
-					SpaceBeforeReadSeq = g_reportLength - Inv[GoodIndex].BP - 1;
-					for (int i = 0; i < SpaceBeforeReadSeq; i++)
-						InvOutf << " ";
-					InvOutf << ReverseComplement (Inv[GoodIndex].UnmatchedSeq);
-					for (int i = 0; i < Inv[GoodIndex].BP; i++)
-						InvOutf << " ";
-					InvOutf								//<< "\t" << Inv[GoodIndex].NT_size << "\t\"" << Inv[GoodIndex].NT_str
-						<< "\t" << Inv[GoodIndex].MatchedD << "\t"
+	for (unsigned int GoodIndex = C_S; GoodIndex <= C_E; GoodIndex++) {
+		if (Inv[GoodIndex].MatchedD == Plus) {
+			SpaceBeforeReadSeq = g_reportLength - Inv[GoodIndex].BP - 1;
+			InvOutf << std::string( SpaceBeforeReadSeq, ' ' );
+
+			if (Inv[GoodIndex].UP_Close[0].AbsLoc < Inv[GoodIndex].UP_Far[0].AbsLoc ) {
+				InvOutf << ReverseComplement (Inv[GoodIndex].UnmatchedSeq);
+				InvOutf << std::string( Inv[GoodIndex].BP, ' ' );
+			}
+			else {
+				InvOutf << Inv[GoodIndex].UnmatchedSeq;
+			}
+			InvOutf	<< "\t" << Inv[GoodIndex].MatchedD << "\t"
 						<< Inv[GoodIndex].MatchedRelPos
 						<< "\t" << Inv[GoodIndex].MS
 						<< "\t" << Inv[GoodIndex].Tag
 						<< "\t" << Inv[GoodIndex].Name << std::endl;
-					//<< "\t" << Deletions[C_S].BPLeft
-					//<< "\t" << Deletions[C_S].BPRight << endl; 
-				}
-			else if (Inv[GoodIndex].MatchedD == Plus
-							 && Inv[GoodIndex].MatchedRelPos > Inv[GoodIndex].BPLeft)
-				{
-					SpaceBeforeReadSeq = g_reportLength - Inv[GoodIndex].BP - 1;
-					for (int i = 0; i < SpaceBeforeReadSeq; i++)
-						InvOutf << " ";
-					InvOutf << Inv[GoodIndex].UnmatchedSeq;
-					InvOutf								//<< "\t" << Inv[GoodIndex].NT_size << "\t\"" << Inv[GoodIndex].NT_str
-						<< "\t" << Inv[GoodIndex].MatchedD << "\t"
-						<< Inv[GoodIndex].MatchedRelPos
-						<< "\t" << Inv[GoodIndex].MS
-						<< "\t" << Inv[GoodIndex].Tag
-						<< "\t" << Inv[GoodIndex].Name << std::endl;
-				}
 		}
+	}
 
 	InvOutf <<
 		"----------------------------------------------------------------------------------------------------"
@@ -530,43 +533,25 @@ OutputInversions (const std::vector < SPLIT_READ > &Inv,
 		}
 	InvOutf << TheInput.substr (Inv[C_S].BPRight + 1 + g_SpacerBeforeAfter,
 															g_reportLength) << std::endl;
-	for (unsigned int GoodIndex = C_S; GoodIndex <= C_E; GoodIndex++)
-		{
-			if (Inv[GoodIndex].MatchedD == Minus
-					&& Inv[GoodIndex].MatchedRelPos < Inv[GoodIndex].BPRight)
-				{
-					SpaceBeforeReadSeq = g_reportLength - Inv[GoodIndex].BP - 1;
-					for (int i = 0; i < SpaceBeforeReadSeq; i++)
-						InvOutf << " ";
-					InvOutf << ReverseComplement (Inv[GoodIndex].UnmatchedSeq);
-					for (int i = 0; i < Inv[GoodIndex].BP; i++)
-						InvOutf << " ";
-					InvOutf								//<< "\t" << Inv[GoodIndex].NT_size << "\t\"" << Inv[GoodIndex].NT_str 
-						<< "\t" << Inv[GoodIndex].MatchedD << "\t"
-						<< Inv[GoodIndex].MatchedRelPos
+	for (unsigned int GoodIndex = C_S; GoodIndex <= C_E; GoodIndex++) {
+		if (Inv[GoodIndex].MatchedD == Minus ) {
+			SpaceBeforeReadSeq = g_reportLength - Inv[GoodIndex].BP - 1;
+			InvOutf << std::string( SpaceBeforeReadSeq, ' ' );
+
+			if (Inv[GoodIndex].UP_Close[0].AbsLoc > Inv[GoodIndex].UP_Far[0].AbsLoc) {
+				InvOutf << Inv[GoodIndex].UnmatchedSeq;
+				InvOutf << std::string( Inv[GoodIndex].BP, ' ');
+			}
+			else {
+				InvOutf << ReverseComplement (Inv[GoodIndex].UnmatchedSeq);
+			}
+			InvOutf  << "\t" << Inv[GoodIndex].MatchedD << "\t"
+					   << Inv[GoodIndex].MatchedRelPos
 						<< "\t" << Inv[GoodIndex].MS
 						<< "\t" << Inv[GoodIndex].Tag
 						<< "\t" << Inv[GoodIndex].Name << std::endl;
-					//<< "\t" << Deletions[C_S].BPLeft
-					//<< "\t" << Deletions[C_S].BPRight << endl; 
-				}
-			else if (Inv[GoodIndex].MatchedD == Minus
-							 && Inv[GoodIndex].MatchedRelPos > Inv[GoodIndex].BPRight)
-				{
-					SpaceBeforeReadSeq = g_reportLength - Inv[GoodIndex].BP - 1;
-					for (int i = 0; i < SpaceBeforeReadSeq; i++)
-						InvOutf << " ";
-					InvOutf << Inv[GoodIndex].UnmatchedSeq;
-					InvOutf								//<< "\t" << Inv[GoodIndex].NT_size << "\t\"" << Inv[GoodIndex].NT_str
-						<< "\t" << Inv[GoodIndex].MatchedD << "\t"
-						<< Inv[GoodIndex].MatchedRelPos
-						<< "\t" << Inv[GoodIndex].MS
-						<< "\t" << Inv[GoodIndex].Tag
-						<< "\t" << Inv[GoodIndex].Name << std::endl;
-				}
 		}
-
-
+	}
 }
 
 void
@@ -589,22 +574,25 @@ OutputSIs (const std::vector < SPLIT_READ > &SIs,
 	//int RightNum = 0;
 	unsigned int RightUNum = 0;
 
-	SupportPerSample NumSupportPerTag[g_sampleNames.getSize ()];
+	SupportPerSample NumSupportPerTag[g_sampleNames.size ()];
 
-	for (unsigned short i = 0; i < g_sampleNames.getSize (); i++)
+	for (unsigned short i = 0; i < g_sampleNames.size (); i++)
 		{
 			NumSupportPerTag[i].NumPlus = 0;
 			NumSupportPerTag[i].NumMinus = 0;
 			NumSupportPerTag[i].NumUPlus = 0;
 			NumSupportPerTag[i].NumUMinus = 0;
 		}
-	calculateSupportPerTag( SIs, C_S, C_E, NumSupportPerTag );
+	std::map<std::string,int> sampleToIndexMap;
+	std::map<int,std::string> indexToSampleMap;
+	createMaps( sampleToIndexMap, indexToSampleMap) ;
+	calculateSupportPerTag( SIs, C_S, C_E, sampleToIndexMap, NumSupportPerTag );
 	calculateSupportPerStrand( SIs, C_S, C_E, LeftS, LeftUNum, RightS, RightUNum );
 
 	short NumberSupSamples = 0;
 	short NumU_SupSamples = 0;
 	int Num_U_Reads = 0;
-	for (unsigned short i = 0; i < g_sampleNames.getSize (); ++i)
+	for (unsigned short i = 0; i < g_sampleNames.size (); ++i)
 		{
 			if (NumSupportPerTag[i].NumPlus + NumSupportPerTag[i].NumMinus)
 				++NumberSupSamples;
@@ -638,10 +626,10 @@ OutputSIs (const std::vector < SPLIT_READ > &SIs,
 	SIsOutf << "\tSUM_MS " << SUM_MS;
 
 	SIsOutf << "\t" << g_sampleNames.
-		getSize () << "\tNumSupSamples " << NumberSupSamples << "\t" <<
+		size () << "\tNumSupSamples " << NumberSupSamples << "\t" <<
 		NumU_SupSamples;
-	for (unsigned short i = 0; i < g_sampleNames.getSize (); i++)
-		SIsOutf << "\t" << g_sampleNames.getTagFromIndex(i) << " " << NumSupportPerTag[i].NumPlus
+	for (unsigned short i = 0; i < g_sampleNames.size (); i++)
+		SIsOutf << "\t" << indexToSampleMap[i] << " " << NumSupportPerTag[i].NumPlus
 			<< " " << NumSupportPerTag[i].NumUPlus
 			<< " " << NumSupportPerTag[i].NumMinus
 			<< " " << NumSupportPerTag[i].NumUMinus;
@@ -693,9 +681,9 @@ OutputDI (const std::vector < SPLIT_READ > &DI,
 	//int RightNum = 0;
 	unsigned int RightUNum = 0;
 
-	SupportPerSample NumSupportPerTag[g_sampleNames.getSize ()];
+	SupportPerSample NumSupportPerTag[g_sampleNames.size ()];
 
-	for (unsigned short i = 0; i < g_sampleNames.getSize (); i++)
+	for (unsigned short i = 0; i < g_sampleNames.size (); i++)
 		{
 			NumSupportPerTag[i].NumPlus = 0;
 			NumSupportPerTag[i].NumMinus = 0;
@@ -703,13 +691,16 @@ OutputDI (const std::vector < SPLIT_READ > &DI,
 			NumSupportPerTag[i].NumUMinus = 0;
 		}
 
-	calculateSupportPerTag( DI, C_S, C_E, NumSupportPerTag );
+	std::map<std::string,int> sampleToIndexMap;
+	std::map<int,std::string> indexToSampleMap;
+	createMaps( sampleToIndexMap, indexToSampleMap) ;
+	calculateSupportPerTag( DI, C_S, C_E, sampleToIndexMap, NumSupportPerTag );
 	calculateSupportPerStrand( DI, C_S, C_E, LeftS, LeftUNum, RightS, RightUNum );
 
 	short NumberSupSamples = 0;
 	short NumU_SupSamples = 0;
 	int Num_U_Reads = 0;
-	for (unsigned short i = 0; i < g_sampleNames.getSize (); ++i)
+	for (unsigned short i = 0; i < g_sampleNames.size (); ++i)
 		{
 			if (NumSupportPerTag[i].NumPlus + NumSupportPerTag[i].NumMinus)
 				++NumberSupSamples;
@@ -743,10 +734,10 @@ OutputDI (const std::vector < SPLIT_READ > &DI,
 
 
 	DeletionOutf << "\t" << g_sampleNames.
-		getSize () << "\tNumSupSamples " << NumberSupSamples << "\t" <<
+		size () << "\tNumSupSamples " << NumberSupSamples << "\t" <<
 		NumU_SupSamples;
-	for (unsigned short i = 0; i < g_sampleNames.getSize (); i++)
-		DeletionOutf << "\t" << g_sampleNames.getTagFromIndex(i) << " " << NumSupportPerTag[i].NumPlus
+	for (unsigned short i = 0; i < g_sampleNames.size (); i++)
+		DeletionOutf << "\t" << indexToSampleMap[i] << " " << NumSupportPerTag[i].NumPlus
 			<< " " << NumSupportPerTag[i].NumUPlus
 			<< " " << NumSupportPerTag[i].NumMinus
 			<< " " << NumSupportPerTag[i].NumUMinus;
@@ -1816,6 +1807,10 @@ std::cin >> s;*/
 		temp_BalancedMinus_Plus, temp_BalancedMinus_Minus;
 	short temp_LengthStr;
 
+	std::map<std::string,int> sampleToIndexMap;
+	std::map<int,std::string> indexToSampleMap;
+	createMaps( sampleToIndexMap, indexToSampleMap) ;
+
 	for (unsigned LI_index = 0; LI_index < LI_Positions.size (); LI_index++)
 		{
 			if (LI_Positions[LI_index].Minus_Reads.empty ()
@@ -1865,25 +1860,25 @@ std::cin >> s;*/
 						temp_BalancedPlus_Minus = true;
 				}
 
-			unsigned int NumSupportPerTagPlus[g_sampleNames.getSize ()];
-			unsigned int NumSupportPerTagMinus[g_sampleNames.getSize ()];
-			for (unsigned short i = 0; i < g_sampleNames.getSize (); i++) {
+			unsigned int NumSupportPerTagPlus[g_sampleNames.size ()];
+			unsigned int NumSupportPerTagMinus[g_sampleNames.size ()];
+			for (unsigned short i = 0; i < g_sampleNames.size (); i++) {
 				NumSupportPerTagPlus[i] = 0;
 				NumSupportPerTagMinus[i] = 0;
 			}
 			for (unsigned int i = 0; i < temp_Minus_Reads.size (); i++) {
 				std::string currentTag = temp_Minus_Reads[i].Tag;
-				int tagIndex = g_sampleNames.getIndexFromTag( currentTag );
+				int tagIndex = sampleToIndexMap[ currentTag ];
 				NumSupportPerTagMinus[tagIndex]++;
 			}
 			for (unsigned int i = 0; i < temp_Plus_Reads.size (); i++) {
 				std::string currentTag = temp_Plus_Reads[i].Tag;
-				int tagIndex = g_sampleNames.getIndexFromTag( currentTag );
+				int tagIndex = sampleToIndexMap[ currentTag ];
 				NumSupportPerTagPlus[tagIndex]++;
 			}
 		
 			bool SupportedByOneSample = false;
-			for (unsigned short j = 0; j < g_sampleNames.getSize (); j++)
+			for (unsigned short j = 0; j < g_sampleNames.size (); j++)
 				{
 					LOG_DEBUG(std::cout << NumSupportPerTagPlus[j] << "\t" << NumSupportPerTagMinus[j] << std::endl);
 					if (NumSupportPerTagPlus[j] > 0 && NumSupportPerTagMinus[j] > 0)

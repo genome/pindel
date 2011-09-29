@@ -66,7 +66,7 @@ int g_maxPos = -1; // to calculate which is the last position in the chromosome,
 // TODO: Ask Kai whether this can be removed
 //unsigned int DSizeArray[15];
 
-TagCollection g_sampleNames;
+std::set<std::string> g_sampleNames;
 
 short Before, After;
 
@@ -766,7 +766,7 @@ int init(int argc, char *argv[], ControlState& currentState) {
 		while (currentState.config_file.good()) {
 			currentState.config_file >> currentState.info.BamFile
 					>> currentState.info.InsertSize >> currentState.info.Tag;
-			g_sampleNames.addTag( currentState.info.Tag );
+			g_sampleNames.insert( currentState.info.Tag );
 			//copy kai and throw crap into useless variable
 			std::getline(currentState.config_file, currentState.line);
 			if (currentState.config_file.good()) {

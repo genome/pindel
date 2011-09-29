@@ -34,7 +34,7 @@
 
 #include "tag_collection.h"
 
-extern TagCollection g_sampleNames; // EWL: could make this a singleton instead
+extern std::set<std::string> g_sampleNames; // EWL: could make this a singleton instead
 
 /*
  * Global variables defined in pindel.cpp
