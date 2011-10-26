@@ -41,7 +41,7 @@
 //#include "search_short_insertions.h"
 #include "search_tandem_duplications.h"
 #include "search_tandem_duplications_nt.h"
-#include "search_deletions.h"
+//#include "search_deletions.h"
 #include "read_buffer.h"
 #include "farend_searcher.h"
 #include "search_variant.h"
