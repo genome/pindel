@@ -55,7 +55,7 @@ extern unsigned int NumberOfSIsInstances;
 extern unsigned int NumberOfDIInstances;
 extern unsigned int NumberOfTDInstances;
 extern unsigned int NumberOfDeletionsInstances;
-extern unsigned int NumberOfInvInstances;
+extern unsigned int g_numberOfInvInstances;
 extern unsigned int NumRead2ReportCutOff;
 extern unsigned int BalanceCutoff;
 extern int NumRead2ReportCutOff_BP;
@@ -180,7 +180,7 @@ struct SPLIT_READ {
 	double score;
 	std::string InsertedStr;
 	std::string NT_str;
-	short NT_size;
+	unsigned short NT_size;
 	//string NT_2str;
 	//short NT_2size;
 	bool Used;
@@ -206,6 +206,8 @@ struct SupportPerSample {
 	int NumMinus;
 	int NumUPlus;
 	int NumUMinus;
+
+	SupportPerSample() { NumPlus=0; NumMinus=0; NumUPlus=0; NumUMinus=0; }
 };
 
 struct Indel4output {

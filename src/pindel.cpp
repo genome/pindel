@@ -107,7 +107,7 @@ short MIN_Len_Match = 4;
 unsigned int NumberOfSIsInstances = 0;
 unsigned int NumberOfDeletionsInstances = 0;
 unsigned int NumberOfDIInstances = 0;
-unsigned int NumberOfInvInstances = 0;
+unsigned int g_numberOfInvInstances = 0;
 unsigned int NumberOfTDInstances = 0;
 short g_reportLength = 80;
 char Match[256];

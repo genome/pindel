@@ -206,8 +206,10 @@ int searchIndels(ControlState& currentState, unsigned NumBoxes) {
 			<< Count_DI_Minus << std::endl);
 	std::ofstream DeletionOutf(currentState.DeletionOutputFilename.c_str(),
 			std::ios::app);
+	std::ofstream inversionsOutf(currentState.InversionOutputFilename.c_str(),
+			std::ios::app);
 	SortOutputDI(NumBoxes, currentState.CurrentChr, currentState.Reads, DI,
-			DeletionOutf);
+			DeletionOutf, inversionsOutf);
 	DeletionOutf.close();
 	for (unsigned int i = 0; i < NumBoxes; i++)
 		DI[i].clear();

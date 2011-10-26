@@ -46,8 +46,8 @@ void SortOutputInv_NT (const unsigned &NumBoxes,
 											 std::vector < unsigned >Inv[],
 											 std::ofstream & InvOutf);
 void SortOutputDI (const unsigned &NumBoxes, const std::string & CurrentChr,
-									 std::vector < SPLIT_READ > &AllReads,
-									 std::vector < unsigned >DI[], std::ofstream & DIOutf);
+							std::vector < SPLIT_READ > &Reads, std::vector < unsigned >DI[],
+							std::ofstream & DIOutf, std::ofstream & InvOutf);
 void SortOutputLI (const std::string & CurrentChr, std::vector < SPLIT_READ > &Reads,
 							std::ofstream & LargeInsertionOutf, const unsigned int windowStart, const unsigned int windowEnd);
 void SortOutputRest (const std::string & CurrentChr,

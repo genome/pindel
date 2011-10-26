@@ -42,7 +42,7 @@ OutputSorter::SortAndOutputInversions (std::vector < SPLIT_READ > &Reads, std::v
 {
   LOG_INFO (std::cout << "Sorting and outputing Inversions ..." << std::endl);
   DoSortAndOutputInversions(Reads, Inv, false);
-  LOG_INFO (std::cout << "Inversions (INV): " << NumberOfInvInstances << std::endl << std::endl);
+  LOG_INFO (std::cout << "Inversions (INV): " << g_numberOfInvInstances << std::endl << std::endl);
 }
 
 void
@@ -263,7 +263,6 @@ OutputSorter::ReportIndelEvents (std::vector<Indel4output> &IndelEvents,
 						  IndelEvents[EventIndex].Start,
 						  IndelEvents[EventIndex].End,
 						  RealStart, RealEnd, *InvOutf);
-		  NumberOfInvInstances++;
 		  ReportedEventCount++;
 		}
 	  else
@@ -275,7 +274,6 @@ OutputSorter::ReportIndelEvents (std::vector<Indel4output> &IndelEvents,
 						  IndelEvents[EventIndex].Start,
 						  IndelEvents[EventIndex].End,
 						  RealStart, RealEnd, *InvOutf);
-		  NumberOfInvInstances++;
 		  ReportedEventCount++;
 		}
 	}
