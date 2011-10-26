@@ -1636,32 +1636,27 @@ void SortOutputDI (const unsigned &NumBoxes, const std::string & CurrentChr,
 					IndelEvents.push_back (OneIndelEvent);
 					unsigned int RealStart;
 					unsigned int RealEnd;
-					for (unsigned EventIndex = 0; EventIndex < IndelEvents.size ();
-							 EventIndex++)
-						{
-							if (IndelEvents[EventIndex].End -
-									IndelEvents[EventIndex].Start + 1 >= NumRead2ReportCutOff)
-								{
-									RealStart =
-										GoodIndels[IndelEvents[EventIndex].Start].BPLeft;
-									RealEnd = GoodIndels[IndelEvents[EventIndex].Start].BPRight;
-									if (   (GoodIndels[IndelEvents[EventIndex].Start].IndelSize < BalanceCutoff) 
-					 					|| (ReportEvent(GoodIndels, IndelEvents[EventIndex].Start, IndelEvents[EventIndex].End))) {
-										if (IsInversion(GoodIndels[IndelEvents[EventIndex].Start], CurrentChr )) {
+					for (unsigned EventIndex = 0; EventIndex < IndelEvents.size (); EventIndex++) {
+						if (IndelEvents[EventIndex].End - IndelEvents[EventIndex].Start + 1 >= NumRead2ReportCutOff) {
+							RealStart =	GoodIndels[IndelEvents[EventIndex].Start].BPLeft;
+							RealEnd = GoodIndels[IndelEvents[EventIndex].Start].BPRight;
+							if (  (GoodIndels[IndelEvents[EventIndex].Start].IndelSize < BalanceCutoff) 
+					 			|| (ReportEvent(GoodIndels, IndelEvents[EventIndex].Start, IndelEvents[EventIndex].End)) ) {
 
-											OutputShortInversion(GoodIndels, CurrentChr,IndelEvents[EventIndex].Start,
-											IndelEvents[EventIndex].End,RealStart, RealEnd, InvOutf);
-											// increase the number of inversion instances in the OutputShortInversion itself; it'd add
-											// needless complexity here.
-										}
-										else {
-											OutputDI (GoodIndels, CurrentChr,IndelEvents[EventIndex].Start,
-																IndelEvents[EventIndex].End,
-																RealStart, RealEnd, DIOutf);
-											deletionFileData.increaseNonTemplateSvCounter();
-										}
+								if (IsInversion(GoodIndels[IndelEvents[EventIndex].Start], CurrentChr )) {
+									OutputShortInversion(GoodIndels, CurrentChr,IndelEvents[EventIndex].Start,
+									IndelEvents[EventIndex].End,RealStart, RealEnd, InvOutf);
+									// increase the number of inversion instances in the OutputShortInversion itself; it'd add
+									// needless complexity here.
 								}
+								else {
+									OutputDI (GoodIndels, CurrentChr,IndelEvents[EventIndex].Start, IndelEvents[EventIndex].End,
+									RealStart, RealEnd, DIOutf);
+									deletionFileData.increaseNonTemplateSvCounter();
+								}
+							}
 						}
+					}
 				}												// if (!Deletions[Box_index].empty())
 		}														// for (unsigned Box_index = 0; Box_index < NumBoxes; Box_index++)
 	LOG_INFO(std::cout << "deletions with non-template sequences: " << deletionFileData.getNonTemplateSvCounter() <<
