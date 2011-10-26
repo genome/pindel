@@ -38,7 +38,7 @@
 #include "search_deletions_nt.h"
 #include "search_inversions.h"
 #include "search_inversions_nt.h"
-#include "search_short_insertions.h"
+//#include "search_short_insertions.h"
 #include "search_tandem_duplications.h"
 #include "search_tandem_duplications_nt.h"
 #include "search_deletions.h"
@@ -47,7 +47,6 @@
 #include "search_variant.h"
 #include "searchshortinsertions.h"
 #include "searchdeletions.h"
-#include "tag_collection.h"
 #include "logdef.h"
 
 /*v EWL update 0.2.4g, September 7th 2011, more efficient tag processing */

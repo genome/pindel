@@ -32,8 +32,6 @@
 #include "khash.h"
 #include "sam.h"
 
-#include "tag_collection.h"
-
 extern std::set<std::string> g_sampleNames; // EWL: could make this a singleton instead
 
 /*
