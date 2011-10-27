@@ -73,14 +73,6 @@ KSORT_INIT_GENERIC (uint32_t) KHASH_MAP_INIT_STR (read_name, bam1_t *)
 		 };
 
 void
-ReadInOneChr (std::ifstream & inf_Seq, std::string & TheInput, const std::string & ChrName)
-{
-	RefReader* rr = new RefReader(inf_Seq, TheInput);
-	rr->ReadChr(ChrName);
-	delete rr;
-}
-
-void
 GetOneChrSeq (std::ifstream & fastaFile, std::string & chromosomeSequence, bool WhetherBuildUp)
 {
 	RefReader* rr = new RefReader(fastaFile, chromosomeSequence );
@@ -119,14 +111,11 @@ ReadInRead (std::ifstream & inf_ReadSeq, const std::string & FragName,
 						const unsigned int lowerBinBorder, const unsigned int upperBinBorder)
 {
 	LOG_INFO(std::cout << "Scanning and processing reads anchored in " << FragName << std::endl);
-	//short ADDITIONAL_MISMATCH = 1;
 	SPLIT_READ Temp_One_Read;
-	//NumberOfReadsPerBuffer;
 	std::vector < SPLIT_READ > BufferReads;
 	g_reportLength = 0;
 	LOG_DEBUG(std::cout << LeftReads.size() << std::endl);
 	std::string TempQC, TempLine, TempStr, TempFragName;
-	//int TempInt;
 
 	inf_ReadSeq.clear ();
 	inf_ReadSeq.seekg (0);
@@ -179,24 +168,15 @@ ReadInRead (std::ifstream & inf_ReadSeq, const std::string & FragName,
 
 					Temp_One_Read.MAX_SNP_ERROR =
 						(short) (Temp_One_Read.UnmatchedSeq.size () * Seq_Error_Rate);
-
-//std::cout << "build_record | Temp_One_Read.UnmatchedSeq.size (): " << Temp_One_Read.UnmatchedSeq.size ()
-//           << " Seq_Error_Rate: " << Seq_Error_Rate << " Temp_One_Read.MAX_SNP_ERROR: "
-//           << Temp_One_Read.MAX_SNP_ERROR << std::endl;
 					Temp_One_Read.TOTAL_SNP_ERROR_CHECKED =
 						Temp_One_Read.MAX_SNP_ERROR + ADDITIONAL_MISMATCH + 1;
 					Temp_One_Read.TOTAL_SNP_ERROR_CHECKED_Minus =
 						Temp_One_Read.MAX_SNP_ERROR + ADDITIONAL_MISMATCH;
 					Temp_One_Read.MinClose = 8;
-						//short (log ((double) (Temp_One_Read.InsertSize * 3)) / log (4.0) +
-						//			 0.8) + 3;
-					//Temp_One_Read.IndelSize = 0;
 					Temp_One_Read.Found = false;
-					if (Temp_One_Read.MatchedD == Plus)
-						{
-							g_InWinPlus++;
-							//Temp_One_Read.UnmatchedSeq = ReverseComplement(Temp_One_Read.UnmatchedSeq);
-						}
+					if (Temp_One_Read.MatchedD == Plus) {
+						g_InWinPlus++;
+					}
 					else
 						g_InWinMinus++;				// this seems to be going correctly
 					if (Temp_One_Read.MatchedRelPos > CONS_Chr_Size)
@@ -335,12 +315,10 @@ ReadInRead (std::ifstream & inf_ReadSeq, const std::string & FragName,
                          << Temp_One_Read.MS << "\t"
                          << Temp_One_Read.InsertSize << "\t" << Temp_One_Read.Tag << std::endl << std::endl);
 		FirstChr = false;
-			//g_reportLength = Temp_One_Read.UnmatchedSeq.size();
 		}
 	showReadStats(Reads);	
 
 
-	//inf_ReadSeq.close();
 	if (Reads.size () == 0)
 		return 0;
 	LOG_DEBUG(std::cout << LeftReads.size() << std::endl);
@@ -371,7 +349,6 @@ ReadInBamReads (const char *bam_path, const std::string & FragName,
 	int tid;
 	tid = bam_get_tid (header, FragName.c_str ());
 	//kai does the below line in readinreads. dunno why yet
-	//g_sampleNames.clear();
 
 
 	fetch_func_data data;
@@ -386,8 +363,6 @@ ReadInBamReads (const char *bam_path, const std::string & FragName,
 	data.InsertSize = InsertSize;
 	data.Tag = Tag;
 	data.readBuffer=&readBuffer;
-	//ADDITIONAL_MISMATCH = 1;
-	//Seq_Error_Rate = 0.05;
 	bam_fetch (fp, idx, tid, binStart, binEnd, &data, fetch_func);
 	showReadStats(LeftReads);
 
@@ -513,8 +488,6 @@ build_record (const bam1_t * mapped_read, const bam1_t * unmapped_read,
 
 	SPLIT_READ Temp_One_Read;
 	fetch_func_data *data_for_bam = (fetch_func_data *) data;
-	//std::vector < SPLIT_READ > *LeftReads =
-	//	(std::vector < SPLIT_READ > *)data_for_bam->LeftReads;
 	bam_header_t *header = (bam_header_t *) data_for_bam->header;
 	std::string CurrentChr = *(std::string *) data_for_bam->CurrentChr;
 	std::string Tag = (std::string) data_for_bam->Tag;
@@ -622,23 +595,15 @@ build_record (const bam1_t * mapped_read, const bam1_t * unmapped_read,
 	Temp_One_Read.MAX_SNP_ERROR =
 		(short) trunc((double)0.5+Temp_One_Read.UnmatchedSeq.size () * Seq_Error_Rate);
 
-//std::cout << "build_record | Temp_One_Read.UnmatchedSeq.size (): " << Temp_One_Read.UnmatchedSeq.size ()
-  //         << " Seq_Error_Rate: " << Seq_Error_Rate << "Official: " << std::setprecision(20) << Seq_Error_Rate //* Temp_One_Read.UnmatchedSeq.size () << "  Temp_One_Read.MAX_SNP_ERROR: "
-      //     << Temp_One_Read.MAX_SNP_ERROR << std::endl;
 	Temp_One_Read.TOTAL_SNP_ERROR_CHECKED =
 		Temp_One_Read.MAX_SNP_ERROR + ADDITIONAL_MISMATCH + 1;
 	Temp_One_Read.TOTAL_SNP_ERROR_CHECKED_Minus =
 		Temp_One_Read.MAX_SNP_ERROR + ADDITIONAL_MISMATCH;
 	Temp_One_Read.MinClose = 8;
-		//short (log ((double) (Temp_One_Read.InsertSize * 3)) / log (4.0) + 0.8) +
-		//3;
-	//MinClose = short(log((double)(Temp_One_Read.InsertSize * 3))/log(4.0) + 0.8) + 3;// + MAX_SNP_ERROR;//atoi(argv[1]);
-	//MinFar_I = MinClose + 1;//atoi(argv[2]);
-	if (Temp_One_Read.MatchedD == Plus)
-		{
-			g_InWinPlus++;
-			//Temp_One_Read.UnmatchedSeq = ReverseComplement(Temp_One_Read.UnmatchedSeq);
-		}
+
+	if (Temp_One_Read.MatchedD == Plus) {
+		g_InWinPlus++;
+	}
 	else
 		g_InWinMinus++;
 	if (Temp_One_Read.MatchedRelPos > CONS_Chr_Size)

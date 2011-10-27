@@ -38,10 +38,8 @@
 #include "search_deletions_nt.h"
 #include "search_inversions.h"
 #include "search_inversions_nt.h"
-//#include "search_short_insertions.h"
 #include "search_tandem_duplications.h"
 #include "search_tandem_duplications_nt.h"
-//#include "search_deletions.h"
 #include "read_buffer.h"
 #include "farend_searcher.h"
 #include "search_variant.h"
@@ -56,14 +54,6 @@ int findParameter(std::string name);
 
 int g_binIndex = -1; // global variable for the bin index, as I cannot easily pass an extra parameter to the diverse functions
 int g_maxPos = -1; // to calculate which is the last position in the chromosome, and hence to calculate the number of bins
-
-// TODO: Ask Kai whether this can be removed
-//end charris add
-//#include <omp.h>
-
-
-// TODO: Ask Kai whether this can be removed
-//unsigned int DSizeArray[15];
 
 std::set<std::string> g_sampleNames;
 
@@ -96,7 +86,6 @@ float ExtraDistanceRate = 0.1;
 double Const_Log_T = 0.0;
 double Const_S = 0.0;
 double LOG14 = log10(0.25);
-//double Const_I = 0.0; // TODO: Ask Kai whether this can be removed
 unsigned int BoxSize = 10000; // 10k is fine
 const double Min_Filter_Ratio = 0.5;
 unsigned int SPACERSIZE = 1;
@@ -129,14 +118,6 @@ unsigned int g_InWinPlus = 0;
 unsigned int g_InWinMinus = 0;
 unsigned int g_CloseMappedPlus = 0;
 unsigned int g_CloseMappedMinus = 0;
-
-// TODO: Ask Kai whether this can be removed
-//short MAX_SNP_ERROR = 2;
-
-//short TOTAL_SNP_ERROR_CHECKED = MAX_SNP_ERROR + ADDITIONAL_MISMATCH + 1;
-//short TOTAL_SNP_ERROR_CHECKED_Minus = MAX_SNP_ERROR + ADDITIONAL_MISMATCH;
-
-//short MAX_ALLOWED_MISMATCHES = TOTAL_SNP_ERROR_CHECKED_Minus + 5;
 
 std::vector<Parameter *> parameters;
 
@@ -554,9 +535,6 @@ bool isReadsFileParam(Parameter * param) {
 
 /* 'printHelp' prints all parameters available. */
 void printHelp() {
-	// TODO: Ask Kai whether this can be removed
-	//cout << "Please specify input, either bam configure file and/or pindel input format" << endl;
-	//cout.width(0);
 	std::cout << std::endl
 			<< "Program:   pindel (detection of indels and structural variations)"
 			<< std::endl;
@@ -570,8 +548,7 @@ void printHelp() {
 			<< std::endl << std::endl;
 
 	std::cout << "Required parameters:" << std::endl;
-	// TODO: Ask Kai whether this can be removed
-	//parameters[1]->describe();
+
 	for (unsigned int i = 0; i < parameters.size(); i++) {
 		if (parameters[i]->isRequired() || isReadsFileParam(parameters[i])) {
 			parameters[i]->describe();
@@ -1155,9 +1132,6 @@ int main(int argc, char *argv[]) {
 						currentState.CurrentChr, currentState.Reads,
 						currentState.lowerBinBorder,
 						currentState.upperBinBorder);
-//if (currentState.Reads.size()>17800)				std::cout << "DEBUG-00 " << currentState.Reads[ 17641 ].UP_Close[0].AbsLoc << std::endl;
-//if (currentState.Reads.size()>17800)				std::cout << "DEBUG00 " << currentState.Reads[ 17642 ].UP_Close[0].AbsLoc << std::endl;
-//if (currentState.Reads.size()>17800)				std::cout << "DEBUG01 " << currentState.Reads[ 17643 ].UP_Close[0].AbsLoc << std::endl;
 				if (ReturnFromReadingReads == 1) {
 					LOG_ERROR(std::cout << "malformed record detected!" << std::endl);
 					return 1;
@@ -1171,15 +1145,12 @@ int main(int argc, char *argv[]) {
 				(std::cout << "There are " << currentState.Reads. size()
 						<< " reads for this chromosome region." << std::endl); // what region?
 			
-//if (currentState.Reads.size()>17800) std::cout << "DEBUG02 " << currentState.Reads[ 17643 ].UP_Close[0].AbsLoc << std::endl;
-			//TODO: to remove the following 3 lines?
 			unsigned int Num_Left;
 			Num_Left = currentState.Reads.size();
 			Const_Log_T = log10((double) Num_Left);
 
 			Time_Load_E = time(NULL);
 			/* 3.2.1 preparation ends */
-//if (currentState.Reads.size()>17800) std::cout << "DEBUG03 " << currentState.Reads[ 17643 ].UP_Close[0].AbsLoc << std::endl;
 #pragma omp parallel default(shared) 
 {
 #pragma omp for   
@@ -1194,7 +1165,6 @@ int main(int argc, char *argv[]) {
 
 			(std::cout << "Far end searching completed for this window." << std::endl);
 
-//			returnValue = searchDeletions(currentState, NumBoxes);
 			SearchDeletions searchD;
 			searchD.Search(currentState, NumBoxes);
 
@@ -1210,10 +1180,8 @@ int main(int argc, char *argv[]) {
 				returnValue = searchInversionsNT(currentState, NumBoxes);
 			}
 
-			//returnValue = searchShortInsertions(currentState, NumBoxes);
 			SearchShortInsertions searchSI;
 			searchSI.Search(currentState, NumBoxes);
-//if (currentState.Reads.size()>17800) std::cout << "DEBUG03 " << currentState.Reads[ 17643 ].UP_Close[0].AbsLoc << std::endl;
 			/* 3.2.8 report starts */
 			int TotalNumReads = currentState.Reads.size();
 			if (ReportCloseMappedRead) {
@@ -1409,12 +1377,6 @@ std::string ReverseComplement(const std::string & InputPattern) {
 	return OutputPattern;
 }
 
-// TODO: Ask Kai whether this can be removed
-//const short MAX_SNP_ERROR = 2;
-//const short ADDITIONAL_MISMATCH = 2;
-//const short TOTAL_SNP_ERROR_CHECKED = MAX_SNP_ERROR + ADDITIONAL_MISMATCH + 1;
-
-
 std::string Cap2Low(const std::string & input) {
 	std::string output = input;
 	for (unsigned int i = 0; i < output.size(); i++) {
@@ -1438,21 +1400,17 @@ bool ReportEvent(const std::vector<SPLIT_READ> &Deletions,
 		Max_Length = (short) (ReadLength * (1 - Min_Filter_Ratio) - 0.5) - 1;
 		if (Deletions[i].BP <= Min_Length) {
 			LeftMin = true;
-			//break; // TODO: Ask Kai whether this can be removed
 		}
 		if (Deletions[i].ReadLength - Deletions[i].BP - Deletions[i].NT_size
 				<= Min_Length) {
 			RightMin = true;
-			//break; // TODO: Ask Kai whether this can be removed
 		}
 		if (Deletions[i].BP >= Max_Length) {
 			LeftMax = true;
-			//break; // TODO: Ask Kai whether this can be removed
 		}
 		if (Deletions[i].ReadLength - Deletions[i].BP - Deletions[i].NT_size
 				>= Max_Length) {
 			RightMax = true;
-			//break; // TODO: Ask Kai whether this can be removed
 		}
 	}
 
@@ -1485,10 +1443,7 @@ void GetRealStart4Insertion(const std::string & TheInput,
 		unsigned int &RealEnd) {
 	unsigned int IndelSize = InsertedStr.size();
 	unsigned int PosIndex = RealStart + g_SpacerBeforeAfter;
-	// TODO: Ask Kai whether this can be removed
-	//unsigned int Start = PosIndex + 1;
 
-	//unsigned int End = RealEnd + g_SpacerBeforeAfter - 1;
 	for (int i = IndelSize - 1; i >= 0; i--) {
 		if (TheInput[PosIndex] == InsertedStr[i])
 			PosIndex--;
@@ -1561,17 +1516,13 @@ void GetCloseEnd(const std::string & CurrentChr, SPLIT_READ & Temp_One_Read) {
 		PD[CheckIndex].reserve(3 * Temp_One_Read.InsertSize);
 	}
 	std::vector<UniquePoint> UP;
-	// TODO: Ask Kai whether this can be removed
-	//char Direction;
 	int Start, End;
 	short BP_Start; // = MinClose;
 	short BP_End; // = ReadLength - MinClose;
 
 	Temp_One_Read.UP_Close.clear();
-	//MinClose = short(log((double)(Temp_One_Read.InsertSize * 3))/log(4.0) + 0.8) + 3;
 	BP_Start = Temp_One_Read.MinClose;
 	BP_End = Temp_One_Read.ReadLengthMinus;
-	// TODO: Ask Kai whether this can be removed
     
 		if (Temp_One_Read.MatchedD == Plus) {
 			CurrentReadSeq = ReverseComplement(Temp_One_Read.UnmatchedSeq);
@@ -1580,12 +1531,10 @@ void GetCloseEnd(const std::string & CurrentChr, SPLIT_READ & Temp_One_Read) {
 			LeftChar = CurrentReadSeq[0];
 			if (LeftChar != 'N') {
 				{
-					// #pragma omp for
 					for (int pos = Start; pos < End; pos++) {
 						if (CurrentChr[pos] == LeftChar) {
 							PD[0].push_back(pos);
 						} 
-                        //else PD[1].push_back(pos);
 					}
 				}
 			} 
@@ -1593,7 +1542,6 @@ void GetCloseEnd(const std::string & CurrentChr, SPLIT_READ & Temp_One_Read) {
 			   CheckLeft_Close(Temp_One_Read, CurrentChr, CurrentReadSeq, PD,
 					BP_Start, BP_End, FirstBase, UP); // LengthStr
 			if (UP.empty()) {} 
-            //else if (UP[UP.size() - 1].LengthStr + Temp_One_Read.MinClose >= Temp_One_Read.ReadLength) {} 
             else {
                 Temp_One_Read.Used = false;
                 Temp_One_Read.UP_Close.swap(UP);
@@ -1609,7 +1557,6 @@ void GetCloseEnd(const std::string & CurrentChr, SPLIT_READ & Temp_One_Read) {
 					if (CurrentChr[pos] == RightChar) {
 						PD[0].push_back(pos);
 					} 
-                    //else PD[1].push_back(pos);
 				}
 			}
  
@@ -1617,19 +1564,13 @@ void GetCloseEnd(const std::string & CurrentChr, SPLIT_READ & Temp_One_Read) {
 			CheckRight_Close(Temp_One_Read, CurrentChr, CurrentReadSeq, PD,
 					BP_Start, BP_End, FirstBase, UP);
 			LOG_DEBUG(std::cout << UP.size() << std::endl);
-			//Direction = '+';
 			if (UP.empty()) {} 
-            //else if (UP[UP.size() - 1].LengthStr + Temp_One_Read.MinClose >= Temp_One_Read.ReadLength) {} 
             else {
                 Temp_One_Read.Used = false;
                 Temp_One_Read.UP_Close.swap(UP);
                 UP.clear();
 			}
 		}
-
-	// TODO: Ask Kai whether this can be removed
-	//if (!Temp_One_Read.UP_Close.empty())
-	//   CleanUniquePoints(Temp_One_Read.UP_Close);
 	return;
 }
 
@@ -1641,10 +1582,6 @@ void CheckBoth(const SPLIT_READ & OneRead, const std::string & TheInput,
 		std::vector<UniquePoint> &UP) {
 	int Sum;
 
-//std::cout << "CheckBoth::CurrentLength: " << CurrentLength << std::endl;
-//for (short i = 0; i <= OneRead.MAX_SNP_ERROR; i++) {
-//	std::cout << "CB." << CurrentLength << "[" << i << "] = +" << PD_Plus[i].size() << "/-" << PD_Minus[i].size() << std::endl;
-//}
 	if (CurrentLength >= BP_Start && CurrentLength <= BP_End) {
 		// put it to LeftUP if unique
 		for (short i = 0; i <= OneRead.MAX_SNP_ERROR; i++) {
@@ -1695,10 +1632,6 @@ void CheckBoth(const SPLIT_READ & OneRead, const std::string & TheInput,
 		}
 		const char CurrentChar = CurrentReadSeq[CurrentLength];
 		const char CurrentCharRC = Convert2RC4N[(short) CurrentChar];
-		// TODO: Ask Kai whether this can be removed
-		//const int SizeOfCurrent = Left_PD.size();
-		// TODO: Ask Kai whether this can be removed
-		//if (TOTAL_SNP_ERROR_CHECKED_Minus)
 		{
 			unsigned int pos;
 			int SizeOfCurrent;
@@ -1798,8 +1731,6 @@ void CheckBoth(const SPLIT_READ & OneRead, const std::string & TheInput,
 void CleanUniquePoints(std::vector<UniquePoint> &Input_UP) {
 	std::vector<UniquePoint> TempUP; //vector <UniquePoint> UP_Close; UP_Far
 	UniquePoint LastUP = Input_UP[Input_UP.size() - 1];
-	// TODO: Ask Kai whether this can be removed
-	//TempUP.push_back(LastUP);
 	char LastDirection = LastUP.Direction;
 	char LastStrand = LastUP.Strand;
 	unsigned int Terminal;

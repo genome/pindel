@@ -37,54 +37,7 @@ RefReader::~RefReader()
 {
 }
 
-void
-RefReader::ReadChr(const std::string & ChrName)
-{
-	TheInput->clear ();
-	char TempChar;
-	std::string TempLine, TempChrName;
-	*inf_Seq >> TempChar;
-	if (TempChar != '>')
-		{
-			LOG_WARN(std::cout << "Please use fasta format for the reference file." << std::endl);
-			TheInput->clear ();
-			return;
-		}
-	while (*inf_Seq >> TempChrName)
-		{
-			LOG_INFO(std::cout << "Processing chromosome " << TempChrName << std::endl);
-			if (!TheInput->empty ())
-				{
-					LOG_INFO(std::cout << "Skip the rest of chromosomes.\n");
-					break;
-				}
-			if (TempChrName == ChrName)
-				{
-					std::getline (*inf_Seq, TempLine);
-					CopyThisSeq();
-				}
-			else
-				{
-					std::getline (*inf_Seq, TempLine);
-					SkipThisSeq();
-				}
-		}
-	LOG_INFO(std::cout << ChrName << "\t" << TheInput->size () << "\t");
-	if (!TheInput->empty ())
-		{
-			std::string Spacer = "";
-			for (unsigned i = 0; i < g_SpacerBeforeAfter; i++)
-				Spacer += "N";
-			*TheInput = Spacer + *TheInput + Spacer;
-		}
-	LOG_INFO(std::cout << TheInput->size () << std::endl);
 
-	// EWL280311: reset file for to allow re-reading for the next chromosome
-	inf_Seq->clear ();
-	inf_Seq->seekg (0);
-
-	return;
-}
 
 void 
 RefReader::ReadSeq(bool WhetherBuildUp)
@@ -113,12 +66,12 @@ RefReader::ReadSeq(bool WhetherBuildUp)
 void
 RefReader::SkipThisSeq()
 {
-	char TempChar;
-	// Skip until the next sequence start.
-	while (*inf_Seq >> TempChar)
-		{
-			if (TempChar == '>') break; 
-		}
+	        char TempChar;
+        // Skip until the next sequence start.
+	        while (*inf_Seq >> TempChar)
+	                {
+	                        if (TempChar == '>') break; 
+	                }
 }
 
 void
