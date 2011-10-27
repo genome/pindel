@@ -16,7 +16,7 @@ COVERAGE=$(abspath ./coverage.xml)
 COLOUSINGBD15_ARGS=-p COLO-829_20-p_ok.txt -f hs_ref_chr20.fa -l -k -B 100 -u 0.05 -x 5\
 		   -b COLO-829.20.BreakDancer.sv -c 20:0-1,500,000 \
 		   -o $(DST)/colousingbd15
-COLOWOBD15_ARGS=-p COLO-829_20-p_ok.txt -f hs_ref_chr20.fa -l -k -B 100 -u 0.05 -c -x 5 -c 20:0-1,500,000 \
+COLOWOBD15_ARGS=-p COLO-829_20-p_ok.txt -f hs_ref_chr20.fa -l -k -B 100 -u 0.05 -x 5 -c 20:0-1,500,000 \
 	        -o $(DST)/colowobd15
 SIM1CHRVS20305_ARGS=-i sim1chrVs2.conf -f sim1chrVs2.fa -c ALL \
 		    -o $(DST)/sim1chrVs20305
