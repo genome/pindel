@@ -1506,7 +1506,7 @@ void GetCloseEnd(const std::string & CurrentChr, SPLIT_READ & Temp_One_Read) {
 
 	Temp_One_Read.ReadLength = Temp_One_Read.UnmatchedSeq.size();
 	Temp_One_Read.ReadLengthMinus = Temp_One_Read.ReadLength - 1;
-	char LeftChar, RightChar;
+
 	std::string CurrentReadSeq;
 	std::vector<unsigned int> PD[Temp_One_Read.TOTAL_SNP_ERROR_CHECKED];
 	if (Temp_One_Read.InsertSize > g_maxInsertSize) { 
@@ -1523,11 +1523,11 @@ void GetCloseEnd(const std::string & CurrentChr, SPLIT_READ & Temp_One_Read) {
 	Temp_One_Read.UP_Close.clear();
 	BP_Start = Temp_One_Read.MinClose;
 	BP_End = Temp_One_Read.ReadLengthMinus;
-    
 		if (Temp_One_Read.MatchedD == Plus) {
 			CurrentReadSeq = ReverseComplement(Temp_One_Read.UnmatchedSeq);
 			Start = Temp_One_Read.MatchedRelPos + g_SpacerBeforeAfter;
 			End = Start + 3 * Temp_One_Read.InsertSize;
+		  	char LeftChar;
 			LeftChar = CurrentReadSeq[0];
 			if (LeftChar != 'N') {
 				{
@@ -1551,6 +1551,7 @@ void GetCloseEnd(const std::string & CurrentChr, SPLIT_READ & Temp_One_Read) {
 			CurrentReadSeq = Temp_One_Read.UnmatchedSeq;
 			End = Temp_One_Read.MatchedRelPos + g_SpacerBeforeAfter;
 			Start = End - 3 * Temp_One_Read.InsertSize;
+			char RightChar;
 			RightChar = CurrentReadSeq[Temp_One_Read.ReadLengthMinus];
 			if (RightChar != 'N') {
 				for (int pos = Start; pos < End; pos++) {

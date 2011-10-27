@@ -14,7 +14,7 @@ COVFILES=$(SRCDIR)/pindel.cpp.gcov $(SRCDIR)/searcher.cpp.gcov \
 	 $(SRCDIR)/parameter.cpp.gcov
 COVERAGE=$(abspath ./coverage.xml)
 COLOUSINGBD15_ARGS=-p COLO-829_20-p_ok.txt -f hs_ref_chr20.fa -l -k -B 100 -u 0.05 -x 5\
-		   -b COLO-829.20.BreakDancer.sv -c 20:0-1,500,000 \
+		   -b COLO-829.20.BreakDancer.sv -Q colo_bd_out.txt -c 20:0-1,500,000 \
 		   -o $(DST)/colousingbd15
 COLOWOBD15_ARGS=-p COLO-829_20-p_ok.txt -f hs_ref_chr20.fa -l -k -B 100 -u 0.05 -x 5 -c 20:0-1,500,000 \
 	        -o $(DST)/colowobd15
@@ -57,7 +57,7 @@ assemble-coverage:
 	$(PINDEL_DBG) -T 1 $(SIM1CHRVS20305_ARGS) > cover-sim1chrVs20305.log
 	$(PINDEL_DBG) -T 1 $(COLOWOBD15_ARGS) > cover-colowobd15.log
 	$(PINDEL_DBG) -T 1 $(COLOUSINGBD15_ARGS) > cover-colousingbd15.log
-	$(PINDEL_DBG) -h
+	$(PINDEL_DBG) -h > /dev/null
 
 clean:
 	-rm -rf $(DST) $(COVDST) $(COVERAGE) gmon.out *.log *.order *.sum
