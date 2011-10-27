@@ -151,15 +151,13 @@ OutputTDs (const std::vector < SPLIT_READ > &TDs,
 			<< " " << NumSupportPerTag[i].NumMinus
 			<< " " << NumSupportPerTag[i].NumUMinus;
 	TDOutf << std::endl;
-
-	//DeletionOutf << TheInput.substr(Deletions[C_S].Left - g_reportLength + Deletions[C_S].BP + 1, g_reportLength * 2) << endl;// << endl;// g_reportLength                 
+                
 	TDOutf << TheInput.substr (TDs[C_S].BPRight + g_SpacerBeforeAfter - g_reportLength + 1, g_reportLength);	// << endl;// 
 	if (TDs[C_S].NT_size)
 		{
 			for (short i = 0; i < TDs[C_S].NT_size; i++)
 				TDOutf << " ";
 		}
-	//g_reportLength 
 	TDOutf << Cap2Low (TheInput.
 										 substr (TDs[C_S].BPLeft + g_SpacerBeforeAfter,
 														 g_reportLength)) << std::endl;
@@ -171,28 +169,18 @@ OutputTDs (const std::vector < SPLIT_READ > &TDs,
 
 			for (int i = 0; i < SpaceBeforeReadSeq; i++)
 				TDOutf << " ";
-			//short SpaceBeforeD =
-			//	g_reportLength + g_reportLength - g_SpacerBeforeAfter -
-			//	TDs[GoodIndex].ReadLength;
 			if (TDs[GoodIndex].MatchedD == Minus)
 				{
 					TDOutf << TDs[GoodIndex].UnmatchedSeq << std::endl;
-					//for (int i = 0; i < GapSize; i++) TDOutf << " ";    
-					//TDOutf << TDs[GoodIndex].UnmatchedSeq.substr(TDs[GoodIndex].BP + 1, TDs[GoodIndex].ReadLength - TDs[GoodIndex].BP);// << endl;
 				}
 			else
 				{
 					TDOutf << ReverseComplement (TDs[GoodIndex].UnmatchedSeq) << std::endl;
-					//for (int i = 0; i < GapSize; i++) TDOutf << " ";  
-					//TDOutf << ReverseComplement(TDs[GoodIndex].UnmatchedSeq).substr(TDs[GoodIndex].BP + 1, TDs[GoodIndex].ReadLength - TDs[GoodIndex].BP);// << endl;
 				}
-			//for (int i = 0; i < SpaceBeforeD; i++) TDOutf << " ";
 			TDOutf << "\t" << TDs[GoodIndex].MatchedD << "\t"
 				<< TDs[GoodIndex].MatchedRelPos
 				<< "\t" << TDs[GoodIndex].MS
 				<< "\t" << TDs[GoodIndex].Tag << "\t" << TDs[GoodIndex].Name << std::endl;
-			//<< "\t" << TDs[C_S].BPLeft
-			//<< "\t" << TDs[C_S].BPRight << endl; 
 		}
 }
 
@@ -204,17 +192,11 @@ OutputDeletions (const std::vector < SPLIT_READ > &Deletions,
 								 const unsigned int &RealStart,
 								 const unsigned int &RealEnd, std::ofstream & DeletionOutf)
 {
-	//short ReadLength = Deletions[C_S].ReadLength;
-	//short ReadLengthMinus = ReadLength - 1;
 	LOG_DEBUG(std::cout << "d_1" << std::endl);
 	unsigned int NumberOfReads = C_E - C_S + 1;
-	//float LeftScore = 0;
-	//float RightScore = 0;
 	unsigned int LeftS = 1;
 	unsigned int RightS = 1;
-	//int LeftNum = 0;
 	unsigned int LeftUNum = 0;
-	//int RightNum = 0;
 	unsigned int RightUNum = 0;
 	LOG_DEBUG(std::cout << "d_2" << std::endl);
 	SupportPerSample NumSupportPerTag[g_sampleNames.size ()];
@@ -249,10 +231,8 @@ OutputDeletions (const std::vector < SPLIT_READ > &Deletions,
 			Num_U_Reads +=
 				NumSupportPerTag[i].NumUPlus + NumSupportPerTag[i].NumUMinus;
 		}
-	//  << "\t" << Num_U_Reads
 	LOG_DEBUG(std::cout << "d_5" << std::endl);
 	unsigned int EasyScore = LeftS * RightS;
-	//double PreciseScore = (LeftScore + RightScore) * (-1);
 	short GapSize = 0;
 	if (Deletions[C_S].IndelSize < 14)
 		GapSize = Deletions[C_S].IndelSize;

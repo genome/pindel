@@ -34,7 +34,6 @@ if (Temp_One_Read.UP_Far.size()>0 ) { std::cout << "KAI1108 UP_Far.size() == " <
 
 
 	//std::cout << "SearchCenter: " << SearchCenter << " ChromLen: " << chromosome.size() << " Range: " << Range << std::endl << Temp_One_Read << std::endl;
-    short BP_Start = 10;//short(log((double)(Range))/log(4.0) + 0.8) + 3;  // required minimum length of match
 	//Temp_One_Read->MinClose + (UseRangeIndex ? RangeIndex : 0);
 	short BP_End = Temp_One_Read.ReadLengthMinus; // matched far end should be between BP_Start and BP_End bases long (including BP_Start and End)
 	std::vector<UniquePoint> UP; // temporary container for unique far ends
@@ -67,7 +66,7 @@ if (Temp_One_Read.UP_Far.size()>0 ) { std::cout << "KAI1108 UP_Far.size() == " <
 			}
       } 
 	}
-
+	short BP_Start = 10;
    if (PD_Minus[0].size() + PD_Plus[0].size() > 0) { // skip all reads starting with 'N'
 	   CheckBoth(Temp_One_Read, chromosome, Temp_One_Read.UnmatchedSeq, PD_Plus, PD_Minus, BP_Start, BP_End, FirstBase, UP);
 	}

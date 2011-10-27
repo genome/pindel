@@ -179,8 +179,6 @@ struct SPLIT_READ {
 	std::string InsertedStr;
 	std::string NT_str;
 	unsigned short NT_size;
-	//string NT_2str;
-	//short NT_2size;
 	bool Used;
 	short CloseEndLength;
 	bool Found;
@@ -195,7 +193,7 @@ struct SPLIT_READ {
 	friend std::ostream& operator<<(std::ostream& os, const SPLIT_READ& splitRead);
 
 private:
-	unsigned int MaxEndSize( const std::vector<UniquePoint> upVector) const;
+	unsigned int MaxEndSize( const std::vector<UniquePoint>& upVector) const;
 
 };
 
@@ -361,8 +359,6 @@ void CheckBoth(const SPLIT_READ & OneRead, const std::string & TheInput,
 		const std::vector<unsigned int> PD_Minus[], const short &BP_Start,
 		const short &BP_End, const short &CurrentLength,
 		std::vector<UniquePoint> &UP);
-
-//void ProcessLIs(vector <SPLIT_READ> & LIs, ofstream & LIoutputfile);
 void GetIndelTypeAndRealStart(const std::string & TheInput,
 		const unsigned int &BPLeft, const unsigned int &IndelSize,
 		const std::string & IndelStr, std::string & IndelType,

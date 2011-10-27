@@ -52,12 +52,9 @@ void BDData::loadChromosome( const std::string& chromosomeName, const unsigned i
 		m_currentChrName = chromosomeName;
 
 	  	// create a new array to house the breakdancer data pertaining to the current chromosome
-		if (m_breakDancerMask != NULL) {
-			delete[] m_breakDancerMask;
-		}
+		delete[] m_breakDancerMask; // removing NULL is also safe
 
-   	m_breakDancerMask = new int[ chromosomeSize ];
-		
+   	m_breakDancerMask = new int[ chromosomeSize ];	
    
    	// set all positions to 0 (=not covered by any breakdancer reads) by default
    	for (unsigned i = 0; i < chromosomeSize; i++) {

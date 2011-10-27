@@ -147,15 +147,7 @@ int Min_Perfect_Match_Around_BP = 3; // user                   //#
 int MIN_IndelSize_NT = 50; //user            //#
 int MIN_IndelSize_Inversion = 50; //user       //#
 double Seq_Error_Rate = 0.05; // user            //#
-// TODO: Ask Kai whether this can be removed
-//float Seq_Error_Rate_1 = 0.05;                         //# 
-//float Seq_Error_Rate_2 = 0.02;                         //#
-//float Seq_Error_Rate_3 = 0.00;                         //#
 unsigned int BalanceCutoff = 0; //                    //#
-// TODO: Ask Kai whether this can be removed
-//short RangeMaxSensivity = 9;       // 3                //#
-//short RangeMediumSensivity = 9;    // 5                //# 
-//short RangeLowSensivity = 7;                           //#
 bool Analyze_INV = true; //# user
 bool Analyze_TD = true; //# user
 bool Analyze_LI = true; //user
@@ -170,8 +162,6 @@ bool ReportCloseMappedRead = false; // user
 const bool ReportSVReads = false;
 const bool ReportLargeInterChrSVReads = false;
 const unsigned short Indel_SV_cutoff = 50;
-// TODO: Ask Kai whether this can be removed
-//bool RemoveDuplicates = false;
 double FLOAT_WINDOW_SIZE = 10.0;
 int WINDOW_SIZE = 10000000;
 const int AROUND_REGION_BUFFER = 10000; // how much earlier reads should be selected if only a region of the chromosome needs be specified.
@@ -196,7 +186,7 @@ bool SPLIT_READ::hasCloseEnd() const
 	return !UP_Close.empty();
 }
 
-unsigned int SPLIT_READ::MaxEndSize( const std::vector<UniquePoint> upVector) const
+unsigned int SPLIT_READ::MaxEndSize( const std::vector<UniquePoint>& upVector) const
 {
 	if (upVector.size() == 0 ) {
 		return 0;
@@ -234,7 +224,6 @@ void reportBreakDancerEvent( const std::string& chromosomeName, const int leftPo
 	                          const int svSize, const std::string& svType, const int svCounter)
 {
 	if (doOutputBreakdancerEvents() && g_bdData.isBreakDancerEvent( leftPosition, rightPosition) ) {
-		//std::cout << "Entering reportBreakDancerEvent: inner loop\n";
 		outputBreakDancerEvent(chromosomeName, leftPosition,rightPosition, svSize, svType, svCounter); 
 	} 
 }
@@ -255,12 +244,6 @@ std::string TempLine_DB_Unique;
 
 std::vector<Region>
 Merge(const std::vector<Region> &AllRegions);
-
-//static struct option long_options[] = { { "fasta", required_argument, 0, 'f' },
-//		{ "config-file", required_argument, 0, 'i' }, { "pindel-file",
-//				required_argument, 0, 'p' }, { "output-prefix",
-//				required_argument, 0, 'o' }, { "chromosome", required_argument,
-//				0, 'c' }, { "breakdancer", required_argument, 0, 'b' }, };
 
 bool readTransgressesBinBoundaries(SPLIT_READ & read,
 		const unsigned int &upperBinBorder) {
