@@ -268,8 +268,7 @@ OutputDeletions (const std::vector < SPLIT_READ > &Deletions,
 			<< " " << NumSupportPerTag[i].NumMinus
 			<< " " << NumSupportPerTag[i].NumUMinus;
 	DeletionOutf << std::endl;
-	LOG_DEBUG(std::cout << "d_7" << std::endl);
-	//DeletionOutf << TheInput.substr(Deletions[C_S].Left - g_reportLength + Deletions[C_S].BP + 1, g_reportLength * 2) << endl;// << endl;// g_reportLength                 
+	LOG_DEBUG(std::cout << "d_7" << std::endl);                
 	DeletionOutf << TheInput.substr (Deletions[C_S].Left - g_reportLength + Deletions[C_S].BP + 1, g_reportLength);	// << endl;// g_reportLength    
 	if (Deletions[C_S].IndelSize >= 14)
 		{
@@ -319,8 +318,6 @@ OutputDeletions (const std::vector < SPLIT_READ > &Deletions,
 				<< "\t" << Deletions[GoodIndex].MS
 				<< "\t" << Deletions[GoodIndex].Tag
 				<< "\t" << Deletions[GoodIndex].Name << std::endl;
-			//<< "\t" << Deletions[C_S].BPLeft
-			//<< "\t" << Deletions[C_S].BPRight << endl; 
 		}
 }
 
@@ -365,13 +362,9 @@ OutputInversions (const std::vector < SPLIT_READ > &Inv,
 			RightNT_str = Inv[RightNT_index].NT_str;
 		}
 	unsigned int NumberOfReads = C_E - C_S + 1;
-	//float LeftScore = 0;
-	//float RightScore = 0;
 	unsigned int LeftS = 1;
 	unsigned int RightS = 1;
-	//int LeftNum = 0;
 	unsigned int LeftUNum = 0;
-	//int RightNum = 0;
 	unsigned int RightUNum = 0;
 
 	SupportPerSample NumSupportPerTag[g_sampleNames.size ()];
@@ -402,16 +395,8 @@ OutputInversions (const std::vector < SPLIT_READ > &Inv,
 			Num_U_Reads +=
 				NumSupportPerTag[i].NumUPlus + NumSupportPerTag[i].NumUMinus;
 		}
-	//  << "\t" << Num_U_Reads
-	//  << "\t" << NumU_SupSamples
 
 	unsigned int EasyScore = LeftS * RightS;
-	//double PreciseScore = (LeftScore + RightScore) * (-1);
-	//short GapSize = 0;
-	//if (Inv[C_S].IndelSize < 14)
-	//	GapSize = Inv[C_S].IndelSize;
-	//else
-	//	GapSize = 13 + (int) log10 (Inv[C_S].IndelSize - 10);
 	CurrentChrMask[Inv[C_S].BPLeft + g_SpacerBeforeAfter] = 'B';
 	CurrentChrMask[Inv[C_S].BPRight + g_SpacerBeforeAfter] = 'B';
    reportBreakDancerEvent(Inv[C_S].FragName, Inv[C_S].BPLeft, Inv[C_S].BPRight+2, Inv[C_S].IndelSize, "INV", g_numberOfInvInstances);
@@ -436,8 +421,7 @@ OutputInversions (const std::vector < SPLIT_READ > &Inv,
 			<< " " << NumSupportPerTag[i].NumUMinus;
 	InvOutf << std::endl;
 
-	short SpaceBeforeReadSeq;
-	//DeletionOutf << TheInput.substr(Deletions[C_S].Left - g_reportLength + Deletions[C_S].BP + 1, g_reportLength * 2) << endl;// << endl;// g_reportLength                 
+	short SpaceBeforeReadSeq;               
 	InvOutf << TheInput.substr (Inv[C_S].BPLeft + g_SpacerBeforeAfter - g_reportLength, g_reportLength);	//;// << endl;// g_reportLength  
 	LOG_DEBUG(std::cout << Inv[C_S].NT_size << "\t" << Inv[C_S].NT_2size << std::endl);
 	if (LeftNT_size)
@@ -518,17 +502,11 @@ OutputSIs (const std::vector < SPLIT_READ > &SIs,
 					 const unsigned int &C_E,
 					 const unsigned int &RealStart,
 					 const unsigned int &RealEnd, std::ofstream & SIsOutf)
-{
-	//short ReadLength = SIs[C_S].ReadLength;
-	//short ReadLengthMinus = ReadLength - 1;               
+{            
 	unsigned int NumberOfReads = C_E - C_S + 1;
-	//float LeftScore = 0;
-	//float RightScore = 0;
 	unsigned int LeftS = 1;
 	unsigned int RightS = 1;
-	//int LeftNum = 0;
 	unsigned int LeftUNum = 0;
-	//int RightNum = 0;
 	unsigned int RightUNum = 0;
 
 	SupportPerSample NumSupportPerTag[g_sampleNames.size ()];
@@ -558,11 +536,8 @@ OutputSIs (const std::vector < SPLIT_READ > &SIs,
 			Num_U_Reads +=
 				NumSupportPerTag[i].NumUPlus + NumSupportPerTag[i].NumUMinus;
 		}
-	//  << "\t" << Num_U_Reads
-	//  << "\t" << NumU_SupSamples
 
 	unsigned int EasyScore = LeftS * RightS;
-	//double PreciseScore = (LeftScore + RightScore) * (-1);
 	std::string CurrentReadSeq;
 
 	CurrentChrMask[SIs[C_S].BPLeft + g_SpacerBeforeAfter] = 'B';
@@ -626,16 +601,10 @@ OutputDI (const std::vector < SPLIT_READ > &DI,
 					const unsigned int &RealStart,
 					const unsigned int &RealEnd, std::ofstream & DeletionOutf)
 {
-	//short ReadLength = DI[C_S].ReadLength;
-	//short ReadLengthMinus = ReadLength - 1;
 	unsigned int NumberOfReads = C_E - C_S + 1;
-	//float LeftScore = 0;
-	//float RightScore = 0;
 	unsigned int LeftS = 1;
 	unsigned int RightS = 1;
-	//int LeftNum = 0;
 	unsigned int LeftUNum = 0;
-	//int RightNum = 0;
 	unsigned int RightUNum = 0;
 
 	SupportPerSample NumSupportPerTag[g_sampleNames.size ()];
@@ -666,23 +635,15 @@ OutputDI (const std::vector < SPLIT_READ > &DI,
 			Num_U_Reads +=
 				NumSupportPerTag[i].NumUPlus + NumSupportPerTag[i].NumUMinus;
 		}
-	//  << "\t" << Num_U_Reads
 
 	unsigned int EasyScore = LeftS * RightS;
-	//double PreciseScore = (LeftScore + RightScore) * (-1);
-	//short GapSize =0;
-	//if (DI[C_S].IndelSize < 14) GapSize = DI[C_S].IndelSize;
-	//else GapSize = 13 + (int)log10(Deletions[C_S].IndelSize - 10);
 	CurrentChrMask[DI[C_S].BPLeft + g_SpacerBeforeAfter] = 'B';
 	CurrentChrMask[DI[C_S].BPRight + g_SpacerBeforeAfter] = 'B';
-	//CurrentChrMask[RealStart + g_SpacerBeforeAfter] = 'B';
-	//CurrentChrMask[RealStart + g_SpacerBeforeAfter] = 'B'; 
    reportBreakDancerEvent(DI[C_S].FragName, DI[C_S].BPLeft+1, DI[C_S].BPRight+1, DI[C_S].IndelSize, "D", deletionFileData.getSvIndex());
 	DeletionOutf <<
 		"####################################################################################################"
 		<< std::endl;
-	DeletionOutf << deletionFileData.getSvIndex() << "\tD " << DI[C_S].IndelSize << "\tNT " << DI[C_S].NT_size << " \"" << DI[C_S].NT_str << "\"" << "\tChrID " << DI[C_S].FragName << "\tBP " << DI[C_S].BPLeft + 1 << "\t" << DI[C_S].BPRight + 1 << "\tBP_range " << DI[C_S].BPLeft + 1 << "\t" << DI[C_S].BPRight + 1 << "\tSupports " << NumberOfReads << "\t" << Num_U_Reads << "\t+ " << LeftS - 1 << "\t" << LeftUNum << "\t- " << RightS - 1 << "\t" << RightUNum << "\tS1 " << EasyScore;	// << "\tS2 0.0";// << PreciseScore << "\t"; 
-	//EWL070111 << "\tS2 " << PreciseScore; 
+	DeletionOutf << deletionFileData.getSvIndex() << "\tD " << DI[C_S].IndelSize << "\tNT " << DI[C_S].NT_size << " \"" << DI[C_S].NT_str << "\"" << "\tChrID " << DI[C_S].FragName << "\tBP " << DI[C_S].BPLeft + 1 << "\t" << DI[C_S].BPRight + 1 << "\tBP_range " << DI[C_S].BPLeft + 1 << "\t" << DI[C_S].BPRight + 1 << "\tSupports " << NumberOfReads << "\t" << Num_U_Reads << "\t+ " << LeftS - 1 << "\t" << LeftUNum << "\t- " << RightS - 1 << "\t" << RightUNum << "\tS1 " << EasyScore;	
 
 	int SUM_MS = 0;
 	for (unsigned int i = C_S; i <= C_E; i++)
@@ -698,9 +659,7 @@ OutputDI (const std::vector < SPLIT_READ > &DI,
 			<< " " << NumSupportPerTag[i].NumUPlus
 			<< " " << NumSupportPerTag[i].NumMinus
 			<< " " << NumSupportPerTag[i].NumUMinus;
-	DeletionOutf << std::endl;
-
-	//DeletionOutf << TheInput.substr(DI[C_S].Left - g_reportLength + DI[C_S].BP + 1, 2 * g_reportLength) << endl;       
+	DeletionOutf << std::endl;      
 	DeletionOutf << TheInput.substr (DI[C_S].Left - g_reportLength + DI[C_S].BP + 1, g_reportLength);	// << endl;// g_reportLength    
 
 	for (short i = 0; i < DI[C_S].NT_size; i++)
@@ -713,21 +672,14 @@ OutputDI (const std::vector < SPLIT_READ > &DI,
 
 			for (int i = 0; i < SpaceBeforeReadSeq; i++)
 				DeletionOutf << " ";
-			//short SpaceBeforeD = g_reportLength + g_reportLength - SpaceBeforeReadSeq - Deletions[GoodIndex].ReadLength;
 			if (DI[GoodIndex].MatchedD == Minus)
 				{
 					DeletionOutf << DI[GoodIndex].UnmatchedSeq << "\t";
-					//for (int i = 0; i < GapSize; i++) DeletionOutf << " ";    
-					//DeletionOutf << Deletions[GoodIndex].UnmatchedSeq.substr(Deletions[GoodIndex].BP + 1, Deletions[GoodIndex].ReadLength - Deletions[GoodIndex].BP);// << endl;
 				}
 			else
 				{
-					DeletionOutf << ReverseComplement (DI[GoodIndex].
-																						 UnmatchedSeq) << "\t";
-					//for (int i = 0; i < GapSize; i++) DeletionOutf << " ";  
-					//DeletionOutf << ReverseComplement(Deletions[GoodIndex].UnmatchedSeq).substr(Deletions[GoodIndex].BP + 1, Deletions[GoodIndex].ReadLength - Deletions[GoodIndex].BP);// << endl;
+					DeletionOutf << ReverseComplement (DI[GoodIndex].UnmatchedSeq) << "\t";
 				}
-			//for (int i = 0; i < SpaceBeforeD; i++) DeletionOutf << " ";
 			DeletionOutf << "\t" << DI[GoodIndex].MatchedD << "\t" << DI[GoodIndex].
 				MatchedRelPos << "\t" << DI[GoodIndex].MS << "\t" << DI[GoodIndex].
 				Tag << "\t" << DI[GoodIndex].Name << std::endl;
@@ -744,7 +696,6 @@ SortOutputSI (const unsigned &NumBoxes, const std::string & CurrentChr,
 	short CompareResult;
 	unsigned Temp4Exchange;
 
-	//vector <SPLIT_READ> InputIndels; 
 	std::vector < SPLIT_READ > GoodIndels;
 	unsigned int GoodNum;
 	std::vector < Indel4output > IndelEvents;
@@ -753,20 +704,14 @@ SortOutputSI (const unsigned &NumBoxes, const std::string & CurrentChr,
 		{
 			if (SIs[Box_index].size () >= NumRead2ReportCutOff)
 				{
-					//InputIndels.clear();
 					SIsNum = SIs[Box_index].size ();
 					LOG_DEBUG(std::cout << "SIsNum " << SIsNum << std::endl);
-					//for (int i = 0; i < SIsNum; i++) {
-					//  InputIndels.push_back(Reads[SIs[Box_index][i]]);
-					//}
 					for (unsigned int First = 0; First < SIsNum - 1; First++)
 						{
-							//if (InputIndels[First].Unique) 
 							{
 								for (unsigned int Second = First + 1; Second < SIsNum;
 										 Second++)
 									{
-										//if (InputIndels[Second].Unique) 
 										{
 											if (Reads[SIs[Box_index][First]].ReadLength ==
 													Reads[SIs[Box_index][Second]].ReadLength)
@@ -794,27 +739,13 @@ SortOutputSI (const unsigned &NumBoxes, const std::string & CurrentChr,
 														{
 															CompareResult = 1;
 														}
-													//else { // InputIndels[First].BPRight == InputIndels[Second].BPRight
-													//    short Compare2Str = CompareTwoString(InputIndels[First].InsertedStr, InputIndels[Second].InsertedStr );
-													//if (Compare2Str > 0) CompareResult = 1;
-													//else if (Compare2Str == 0) CompareResult = 2;
-													//else continue;
-
-													//}
-													//else if (InputIndels[First].MatchedRelPos == InputIndels[Second].MatchedRelPos) {
-													//  if (InputIndels[First].UnmatchedSeq == InputIndels[Second].UnmatchedSeq) {
-													//    InputIndels[Second].Unique = false;
-													//  }
-													//}
 												}
-											//CompareResult = CompareTwoReads(InputIndels[First], InputIndels[Second]);
 											if (CompareResult == 1)
 												{
 													Temp4Exchange = SIs[Box_index][First];
 													SIs[Box_index][First] = SIs[Box_index][Second];
 													SIs[Box_index][Second] = Temp4Exchange;
 												}
-											//else if (CompareResult == 2) InputIndels[Second].Unique = false;
 										}
 									}
 							}
@@ -825,7 +756,6 @@ SortOutputSI (const unsigned &NumBoxes, const std::string & CurrentChr,
 
 					for (unsigned int First = 0; First < SIsNum; First++)
 						{
-							//if (InputIndels[First].Unique) 
 							GoodIndels.push_back (Reads[SIs[Box_index][First]]);
 						}
 
@@ -841,14 +771,12 @@ SortOutputSI (const unsigned &NumBoxes, const std::string & CurrentChr,
 					OneIndelEvent.IndelStr = GoodIndels[0].InsertedStr;
 					OneIndelEvent.BPLeft = GoodIndels[0].BPLeft;
 					OneIndelEvent.BPRight = GoodIndels[0].BPRight;
-					//OneIndelEvent.IndelStr = GoodIndels[0].InsertedStr;
 					OneIndelEvent.WhetherReport = true;
 					for (unsigned int GoodIndex = 1; GoodIndex < GoodNum; GoodIndex++)
 						{
 							if (GoodIndels[GoodIndex].BPLeft == OneIndelEvent.BPLeft
 									&& GoodIndels[GoodIndex].IndelSize ==
 									OneIndelEvent.IndelSize)
-								//&& OneIndelEvent.IndelStr == GoodIndels[GoodIndex].InsertedStr )
 
 								OneIndelEvent.End = GoodIndex;
 							else
@@ -868,11 +796,8 @@ SortOutputSI (const unsigned &NumBoxes, const std::string & CurrentChr,
 									OneIndelEvent.BPRight = GoodIndels[GoodIndex].BPRight;
 									OneIndelEvent.IndelSize = GoodIndels[GoodIndex].IndelSize;
 									OneIndelEvent.IndelStr = GoodIndels[GoodIndex].InsertedStr;
-									//OneIndelEvent.IndelStr = GoodIndels[GoodIndex].InsertedStr;
 								}
 						}
-
-					//if (OneIndelEvent.End - OneIndelEvent.Start + 1 >= NumRead2ReportCutOff) 
 					OneIndelEvent.RealStart = OneIndelEvent.BPLeft;
 					OneIndelEvent.RealEnd = OneIndelEvent.BPRight;
 
@@ -1167,29 +1092,22 @@ SortOutputD (const unsigned &NumBoxes, const std::string & CurrentChr,
 	unsigned Temp4Exchange;
 
 	unsigned int GoodNum;
-	//vector <SPLIT_READ> InputIndels;
 	std::vector < SPLIT_READ > GoodIndels;
 	std::vector < Indel4output > IndelEvents;
 
 	for (unsigned Box_index = 0; Box_index < NumBoxes; Box_index++)
 		{
 			LOG_DEBUG(std::cout << Box_index << "\t" << NumBoxes << "\t" << Deletions[Box_index].size() << std::endl);
-			//if (Deletions[Box_index].size() >= NumRead2ReportCutOff)
-			//   cout << Box_index << "\t" << Deletions[Box_index].size() << endl;
 			if (Deletions[Box_index].size () >= NumRead2ReportCutOff)
 				{
 					DeletionsNum = Deletions[Box_index].size ();
 
 					for (unsigned int First = 0; First < DeletionsNum - 1; First++)
 						{
-							//if (InputIndels[First].Unique) 
-							//cout << DeletionsNum << " First " << First << endl;
 							{
 								for (unsigned int Second = First + 1; Second < DeletionsNum;
 										 Second++)
 									{
-										//if (InputIndels[Second].Unique) 
-										//cout << DeletionsNum << " Second " << Second << endl;
 										{
 											if (Reads[Deletions[Box_index][First]].ReadLength ==
 													Reads[Deletions[Box_index][Second]].ReadLength)
@@ -1221,15 +1139,6 @@ SortOutputD (const unsigned &NumBoxes, const std::string & CurrentChr,
 														{
 															CompareResult = 1;
 														}
-													//else CompareResult = 2;
-													//else {
-													//  if (InputIndels[First].MatchedRelPos == InputIndels[Second].MatchedRelPos) {
-													//    if (InputIndels[First].UnmatchedSeq == InputIndels[Second].UnmatchedSeq) {
-													//      InputIndels[Second].Unique = false;
-													//    }
-													//      
-													//  }
-													//}
 												}
 											if (CompareResult == 1)
 												{
@@ -1238,31 +1147,20 @@ SortOutputD (const unsigned &NumBoxes, const std::string & CurrentChr,
 														Deletions[Box_index][Second];
 													Deletions[Box_index][Second] = Temp4Exchange;
 												}
-											//else if (CompareResult == 2) {
-											//  Temp4Exchange = InputIndels[First + 1];
-											//   InputIndels[First + 1] = InputIndels[Second];
-											//   InputIndels[Second] = Temp4Exchange;
-											//}
 										}
 									}
 							}
 						}
 					GoodIndels.clear ();
 					IndelEvents.clear ();
-					//for (int i = 0 ; i < DeletionsNum; i ++) {
-					//  InputIndels.push_back(Reads[Deletions[Box_index][i]]);
-					//}Reads[Deletions[Box_index][First]]
-					//cout << "GoodIndels" << endl;
 					for (unsigned int First = 0; First < DeletionsNum; First++)
 						{
-							//if (InputIndels[First].Unique) 
 							GoodIndels.push_back (Reads[Deletions[Box_index][First]]);
 						}
 
 					GoodNum = GoodIndels.size ();
 					LOG_DEBUG(std::cout << Box_index << " box read size " << GoodNum << std::endl);
 					if (GoodNum == 0) continue;
-					//    cout << GoodNum << endl;
 					Indel4output OneIndelEvent;
 					OneIndelEvent.Start = 0;
 					OneIndelEvent.End = 0;
@@ -1526,7 +1424,6 @@ void SortOutputDI (const unsigned &NumBoxes, const std::string & CurrentChr,
 								for (unsigned int Second = First + 1; Second < DINum;
 										 Second++)
 									{
-										//if (InputIndels[Second].Unique) 
 										{
 											if (Reads[DI[Box_index][First]].ReadLength ==
 													Reads[DI[Box_index][Second]].ReadLength)
@@ -1655,13 +1552,6 @@ SortOutputLI (const std::string & CurrentChr, std::vector < SPLIT_READ > &Reads,
 
 	std::cout << "LI: maxInsertSize: " << g_maxInsertSize << std::endl;
 
-//return;
-	// find LI combinations
- //	try
-  	//{
-	/*	uint8_t *plus_LI_Pos = new uint8_t[CurrentChr.size () + 1];
-		uint8_t *minus_LI_Pos = new uint8_t[CurrentChr.size () + 1];
-		int32_t *EventIndex_Pos = new int32_t[CurrentChr.size () + 1];*/
 	unsigned int absStartLIWindow = g_SpacerBeforeAfter + windowStart;
 	unsigned int absEndLIWindow = g_SpacerBeforeAfter + windowEnd;
 
@@ -1678,26 +1568,7 @@ std::cout << "SBA: " << g_SpacerBeforeAfter << " WS " << windowStart << " Total:
 	ShiftedVector< uint8_t > plus_LI_Pos( absStartBuffered , absEndBuffered , 0 );
 	ShiftedVector< uint8_t > minus_LI_Pos( absStartBuffered , absEndBuffered , 0 );
 	ShiftedVector< int32_t > EventIndex_Pos( absStartBuffered , absEndBuffered , -1 );
-/*std::string s;
-std::cout << "Alloc0" << CurrentChr.size() << std::endl;
-std::cin >> s;
-	std::vector< uint8_t > plus_LI_Pos(CurrentChr.size () + 1, 0 );
-std::cout << "Alloc1\n";
-std::cin >> s;
-	std::vector< uint8_t > minus_LI_Pos(CurrentChr.size () + 1, 0 );
-std::cout << "Alloc2\n";
-std::cin >> s;
-	std::vector< int > EventIndex_Pos(CurrentChr.size () + 1, -1 );
-std::cout << "Alloc3\n";
-std::cin >> s;*/
 
-	/*for (unsigned i = 0; i < CurrentChr.size () + 1; i++)
-		{
-			plus_LI_Pos[i] = 0;
-			minus_LI_Pos[i] = 0;
-			EventIndex_Pos[i] = -1;
-		}
-*/
 	for (unsigned Index = 0; Index < Reads.size (); Index++)
 		{
 			if (Reads[Index].Found || Reads[Index].Used
@@ -1721,8 +1592,7 @@ std::cin >> s;*/
 	bool SkipThis;
 	int LI_Positions_Size = 0;
 	bool SkipPlus;
-	//for (unsigned int Index_Minus = g_SpacerBeforeAfter;
-	//		 Index_Minus < CurrentChr.size () - g_SpacerBeforeAfter; Index_Minus++)
+
 	for (unsigned int Index_Minus = absStartBuffered;
 			 Index_Minus < absEndBuffered; Index_Minus++)
 		{
@@ -1763,20 +1633,11 @@ std::cin >> s;*/
 								{
 									temp_LI_pos.Plus_Pos = Index_Plus;
 									temp_LI_pos.Minus_Pos = Index_Minus;
-									// The following two were changed to assignents from comparisons
-									// IS THAT CORRECT? (RWWH 20110523)
-									// TODO Kai check if the CurrentChrMask really should be set
-									// to 'B' here.
-									// CurrentChrMask[Index_Plus] = 'B';
-									// CurrentChrMask[Index_Minus] = 'B';
-									//cout << Index_Plus << "\t" << (short)plus_LI_Pos[Index_Plus] << "\t" 
-									//     << Index_Minus << "\t" << (short)minus_LI_Pos[Index_Minus] << endl;
 									temp_LI_pos.WhetherReport = false;
 									LI_Positions.push_back (temp_LI_pos);
 									EventIndex_Pos[Index_Plus] = LI_Positions_Size;
 									EventIndex_Pos[Index_Minus] = LI_Positions_Size;
 									LI_Positions_Size++;
-									//Index_Minus += 30;
 								}
 						}
 				}
@@ -1788,7 +1649,6 @@ std::cin >> s;*/
 
 	for (unsigned Index = 0; Index < Reads.size (); Index++)
 		{
-			//UP_Close_index = Reads[Index].UP_Close.size() - 1;
 			if (Reads[Index].Used || !Reads[Index].UP_Far.empty ())
 				continue;
 			temp_AbsLoc =
@@ -1837,7 +1697,6 @@ std::cin >> s;*/
 					temp_Minus_Reads.
 						push_back (Reads[LI_Positions[LI_index].Minus_Reads[i]]);
 				}
-			//CheckConsistancy(temp_Minus_Reads);
 			for (unsigned int i = 0; i < LI_Positions[LI_index].Minus_Reads.size (); i++)
 				{
 					UP_Close_index = temp_Minus_Reads[i].UP_Close.size () - 1;
@@ -1854,7 +1713,6 @@ std::cin >> s;*/
 					temp_Plus_Reads.
 						push_back (Reads[LI_Positions[LI_index].Plus_Reads[i]]);
 				}
-			//CheckConsistancy(temp_Plus_Reads);
 			for (unsigned int i = 0; i < LI_Positions[LI_index].Plus_Reads.size (); i++)
 				{
 					UP_Close_index = temp_Plus_Reads[i].UP_Close.size () - 1;
@@ -1907,7 +1765,6 @@ std::cin >> s;*/
 
 			if (SupportedByOneSample && PositiveBool >= 3)
 				{
-					//if (LI_Positions[LI_index].WhetherReport) 
 					{
 					   reportBreakDancerEvent(temp_Plus_Reads[0].FragName, LI_Positions[LI_index].
 							Plus_Pos - g_SpacerBeforeAfter + 1, LI_Positions[LI_index].Minus_Pos -
@@ -1948,7 +1805,6 @@ std::cin >> s;*/
 						LargeInsertionOutf <<
 							"--------------------------------------------------------" <<
 							std::endl;
-						//LargeInsertionOutf << "-\t" << minus_LI_Pos[Index_Minus].NumReads << endl;
 						LargeInsertionOutf << Cap2Low (CurrentChr.
 																					 substr (LI_Positions[LI_index].
 																									 Minus_Pos - g_reportLength,
@@ -1974,22 +1830,8 @@ std::cin >> s;*/
 					}
 
 				}
-
-			//LI_Positions[LI_index].WhetherReport = true; 
 		}
-	// output
-/*	delete[]plus_LI_Pos;
-	delete[]minus_LI_Pos;
-	delete[]EventIndex_Pos;*/
 	LOG_INFO(std::cout << "Breakpoints for large insertions (LI): " << Count_LI << std::endl << std::endl);
- //	}
-  /* catch (std::bad_alloc& ba)
-   {
-    	std::cerr << "bad_alloc caught in SortOutputLI: " << ba.what() << std::endl;
-		exit(EXIT_FAILURE);
-   }*/
-
-
 }
 
 
@@ -2022,13 +1864,6 @@ std::cout << "SBA: " << g_SpacerBeforeAfter << " WS " << windowStart << " Total:
 	ShiftedVector< uint8_t > plus_LI_Pos( absStartBuffered , absEndBuffered , 0 );
 	ShiftedVector< uint8_t > minus_LI_Pos( absStartBuffered , absEndBuffered , 0 );
 
-	//uint8_t *plus_LI_Pos = new uint8_t[CurrentChr.size () + 1];
-	//uint8_t *minus_LI_Pos = new uint8_t[CurrentChr.size () + 1];
-	/*for (unsigned i = 0; i < CurrentChr.size () + 1; i++)
-		{
-			plus_LI_Pos[i] = 0;
-			minus_LI_Pos[i] = 0;
-		}*/
 	for (unsigned Index = 0; Index < Reads.size (); Index++)
 		{
 			if (Reads[Index].Found || Reads[Index].Used

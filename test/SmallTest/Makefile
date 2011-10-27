@@ -57,7 +57,7 @@ assemble-coverage:
 	$(PINDEL_DBG) -T 1 $(SIM1CHRVS20305_ARGS) > cover-sim1chrVs20305.log
 	$(PINDEL_DBG) -T 1 $(COLOWOBD15_ARGS) > cover-colowobd15.log
 	$(PINDEL_DBG) -T 1 $(COLOUSINGBD15_ARGS) > cover-colousingbd15.log
-	$(PINDEL_DBG) -h > /dev/null
+	#$(PINDEL_DBG) -h > /dev/null
 
 clean:
 	-rm -rf $(DST) $(COVDST) $(COVERAGE) gmon.out *.log *.order *.sum

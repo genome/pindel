@@ -1,8 +1,6 @@
 #include <fstream>
 #include "bddata.h"	
 
-
-
 BDData::BDData()
 {
 	m_breakDancerMask = NULL;
@@ -62,7 +60,6 @@ void BDData::loadChromosome( const std::string& chromosomeName, const unsigned i
    	}
 	
 		// give positions which are covered by a breakdancer read the index of the breakdancer read.
-
 	   for (unsigned i = 1; i < m_bdEvents.size(); i++) {
 			if ( m_bdEvents[i].ChrName_A == chromosomeName && m_bdEvents[i].ChrName_B == chromosomeName ) {
 

@@ -10,8 +10,6 @@ OutputFileData::OutputFileData()
 
 int OutputFileData::getSvIndex() const
 {
-   /*std::cout << "EWL reports TC=" << m_templateCounter << ", NTC=" << m_nonTemplateCounter << 
-     " Total=" << m_templateCounter + m_nonTemplateCounter << std::endl; */
 	return m_templateCounter + m_nonTemplateCounter; 
 }
 
