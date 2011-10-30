@@ -55,7 +55,7 @@ int SearchVariant::Search(ControlState& currentState, const unsigned numBoxes) {
 		}
 		if (bpSum>1000000000) { bpSum -= 1000000000; }
 	}
-	std::cout << "At start of searchdeletions:\n\n";
+	//std::cout << "At start of search deletions:\n\n";
 	std::cout << "Reads already used: " << readsUsed << std::endl;
 	std::cout << "Far ends already mapped " << farEndExists << std::endl;
 	std::cout << "Checksum of far ends: " << bpSum << std::endl;

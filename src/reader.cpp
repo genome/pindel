@@ -333,8 +333,13 @@ ReadInRead (std::ifstream & inf_ReadSeq, const std::string & FragName,
 
 bool
 ReadInBamReads (const char *bam_path, const std::string & FragName,
-								std::string * CurrentChr, std::vector < SPLIT_READ > &LeftReads, 
-								int InsertSize, std::string Tag, int binStart, int binEnd, ReadBuffer& readBuffer)
+                std::string * CurrentChr,
+                std::vector < SPLIT_READ > &LeftReads, 
+                int InsertSize, 
+                std::string Tag, 
+                int binStart, 
+                int binEnd, 
+                ReadBuffer& readBuffer)
 {
 	bamFile fp;
 	fp = bam_open (bam_path, "r");
@@ -363,9 +368,12 @@ ReadInBamReads (const char *bam_path, const std::string & FragName,
 	data.InsertSize = InsertSize;
 	data.Tag = Tag;
 	data.readBuffer=&readBuffer;
+    //std::cout << "before bam fetch " << LeftReads.size() << std::endl;
 	bam_fetch (fp, idx, tid, binStart, binEnd, &data, fetch_func);
+    //std::cout << "after bam fetch " << LeftReads.size() << std::endl;
 	showReadStats(LeftReads);
-
+    //std::cout << "after showReadStats " << LeftReads.size() << std::endl;
+    
 	khint_t key;
 	if (kh_size (data.read_to_map_qual) > 0)
 		{
@@ -390,12 +398,23 @@ ReadInBamReads (const char *bam_path, const std::string & FragName,
 
 bool isGoodAnchor( const flagshit *read, const bam1_core_t *bamCore )
 {
+    //std::cout << "isGoodAnchor" << std::endl;
 	int maxEdits = int (bamCore->l_qseq * MaximumAllowedMismatchRate) + 1;
 	unsigned int mappingQuality = bamCore->qual;
-
+    /*
+    std::cout << "mapped " << read->mapped << "\t"
+              << "mappingQuality " << mappingQuality << "\t"
+              << "g_minimalAnchorQuality " << g_minimalAnchorQuality << "\t"
+              << "unique " << read->unique << "\t"
+              << "sw " << read->sw << "\t"
+              << "read->unique || read->sw " << (read->unique || read->sw) << "\t"
+              << "suboptimal " << read->suboptimal << "\t"
+              << "edits " << read->edits << "\t"
+              << "maxEdits " << maxEdits << std::endl;
+     */
 	return ( read->mapped &&
 				( mappingQuality >= g_minimalAnchorQuality ) &&
-            ( read->unique || read->sw ) &&
+            //( read->unique || read->sw ) &&
 				( ! read->suboptimal ) &&
 				( read->edits <= maxEdits ) 
           );
@@ -403,10 +422,11 @@ bool isGoodAnchor( const flagshit *read, const bam1_core_t *bamCore )
 
 bool isWeirdRead( const flagshit *read, const bam1_t * bamOfRead )
 {
+    //std::cout << "isWeirdRead" << std::endl;
 	if ( ! read->mapped ) {
 		return true;
 	}
-
+    
 	uint32_t *cigar_pointer = bam1_cigar (bamOfRead);
 	int cigarMismatchedBases = bam_cigar2mismatch (&bamOfRead->core, cigar_pointer);
 
@@ -422,13 +442,14 @@ fetch_func (const bam1_t * b1, void *data)
 {
 
 	g_NumReadScanned++;
+    //std::cout << "g_NumReadScanned " << g_NumReadScanned << std::endl;
 	fetch_func_data *data_for_bam = (fetch_func_data *) data;
 	khash_t (read_name) * read_to_map_qual =
 		(khash_t (read_name) *) data_for_bam->read_to_map_qual;
 	flagshit *b1_flags = data_for_bam->b1_flags;
 	flagshit *b2_flags = data_for_bam->b2_flags;
 	const std::string CurrentChr = *(std::string *) data_for_bam->CurrentChr;
-
+    //std::cout << "1" << std::endl;
 	SPLIT_READ Temp_One_Read;
 	const bam1_core_t *b1_core;
 	bam1_t *b2;
@@ -438,7 +459,9 @@ fetch_func (const bam1_t * b1, void *data)
 	//    if(!(b1_core->flag & BAM_FPROPER_PAIR)) { 
 	//            return 0;
 	//NO BUENO!        }
+    //std::cout << "2" << std::endl;
 	khint_t key = kh_get (read_name, read_to_map_qual, bam1_qname (b1));
+    //std::cout << "2a" << std::endl;
 	if (key == kh_end (read_to_map_qual)) {
 		int ret=0;
 		key = kh_put (read_name, read_to_map_qual, strdup (bam1_qname (b1)), &ret);
@@ -454,18 +477,21 @@ fetch_func (const bam1_t * b1, void *data)
 		kh_del (read_name, read_to_map_qual, key);
 		std::string c_sequence;
 	}
-
+    //std::cout << "3" << std::endl;
 	parse_flags_and_tags (b1, b1_flags);
 	parse_flags_and_tags (b2, b2_flags);
 	//read_name = bam1_qname(b1); 
-
+    //std::cout << "4" << std::endl;
 	if (isGoodAnchor( b1_flags, b1_core ) && isWeirdRead( b2_flags, b2 ) ) {
+        //std::cout << "condition 1" << std::endl;
 		build_record (b1, b2, data);
 	}
 	if (isGoodAnchor( b2_flags, b2_core ) && isWeirdRead( b1_flags, b1 ) ) {
+        //std::cout << "condition 2" << std::endl;
 		build_record (b2, b1, data);
 	}
 	bam_destroy1 (b2);
+    //std::cout << "5" << std::endl;
 	return 0;
 }
 
@@ -485,7 +511,7 @@ void
 build_record (const bam1_t * mapped_read, const bam1_t * unmapped_read,
 							void *data)
 {
-
+    //std::cout << "build_record g_NumReadScanned " << g_NumReadScanned << std::endl;
 	SPLIT_READ Temp_One_Read;
 	fetch_func_data *data_for_bam = (fetch_func_data *) data;
 	bam_header_t *header = (bam_header_t *) data_for_bam->header;
@@ -610,7 +636,9 @@ build_record (const bam1_t * mapped_read, const bam1_t * unmapped_read,
 		Temp_One_Read.MatchedRelPos = CONS_Chr_Size;
 	if (Temp_One_Read.MatchedRelPos < 1)
 		Temp_One_Read.MatchedRelPos = 0;
+    //std::cout << "before data_for_bam" << std::endl;
 	data_for_bam->readBuffer->addRead(Temp_One_Read);
+    //std::cout << "after data_for_bam" << std::endl;
 	return;
 }
 

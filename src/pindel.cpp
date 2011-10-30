@@ -1307,8 +1307,8 @@ int main(int argc, char *argv[]) {
 			AllLoadings += (unsigned int) difftime(Time_Load_E, Time_Load_S);
 			AllSortReport += (unsigned int) difftime(Time_Sort_E, Time_Load_E);
 			currentState.Reads.clear();
-			(std::cout << "I have " << currentState.FutureReads. size()
-					<< " reads saved for the next cycle." << std::endl);
+			(std::cout << "There are " << currentState.FutureReads. size()
+					<< " reads saved for the next cycle.\n" << std::endl);
 			currentState.Reads.swap(currentState.FutureReads);
 
 			} else {
