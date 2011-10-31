@@ -47,8 +47,8 @@
 #include "searchdeletions.h"
 #include "logdef.h"
 
-/*v EWL update 0.2.4g, September 7th 2011, more efficient tag processing */
-const std::string Pindel_Version_str = "Pindel version 0.2.4g, September 7th 2011.";
+/*v Kai Ye update 0.2.4h, Oct 31 2011, update for MOSAIK */
+const std::string Pindel_Version_str = "Pindel version 0.2.4h, Oct 31 2011.";
 
 int findParameter(std::string name);
 
