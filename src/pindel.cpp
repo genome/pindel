@@ -318,7 +318,7 @@ void defineParameters(std::string & WhichChr) {
 					&par.pindelFileName,
 					"-p",
 					"--pindel-file",
-					"the Pindel input file; \neither this or a bam configure file is required",
+					"the Pindel input file; either this or a bam configuration file is required",
 					false, ""));
 	parameters. push_back(
 			new StringParameter(
