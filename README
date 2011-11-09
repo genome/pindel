@@ -16,7 +16,7 @@ If you make the Pindel project the first time, it will create a Makefile.local.
 It will try to be smart and generate this file with the correct location of
 samtools if you specify it on the make commandline.
 
-make SAMTOOLS=~/samtools-0.1.16
+make SAMTOOLS=~/samtools-0.1.18
 
 The Makefile.local also includes a couple of options for the different tests.
 The *_TIME options define the max execution time for the jobs in the acceptance
