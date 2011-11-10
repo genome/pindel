@@ -7,6 +7,9 @@
 	e.m.w.lameijer@lumc.nl
 	+31(0)71-526 9745
 
+	Version 0.2.0 [November 10th, 2011. The support of an indel, previously called "DP" is now more appropriately called "AD". 
+					    Also, genotypes are somewhat more correctly indicated with . and 1/. 
+                                            Also, replaces -1 by . to indicate unknown number of fields in the declarations in the header
 	Version 0.1.9 [August 19th, 2011. To save memory, now reads in chromosomes only when needed, so doesn't put the entire genome in memory at once. 
 	Version 0.1.8 [July 27th, 2011. END-position now proper according to VCF rules (so for deletion: start+length+1, for SI: start+1), mentioning -d] */
 
@@ -344,7 +347,7 @@ void createHeader(ofstream &outFile, const string& sourceProgram, const string& 
    // info fields (selected from http://www.1000genomes.org/wiki/Analysis/Variant%20Call%20Format/VCF%20%28Variant%20Call%20Format%29%20version%204.0/encoding-structural-variants)
    outFile << "##INFO=<ID=END,Number=1,Type=Integer,Description=\"End position of the variant described in this record\">" << endl;
    outFile << "##INFO=<ID=HOMLEN,Number=1,Type=Integer,Description=\"Length of base pair identical micro-homology at event breakpoints\">" << endl;
-   outFile << "##INFO=<ID=HOMSEQ,Number=-1,Type=String,Description=\"Sequence of base pair identical micro-homology at event breakpoints\">" << endl;
+   outFile << "##INFO=<ID=HOMSEQ,Number=.,Type=String,Description=\"Sequence of base pair identical micro-homology at event breakpoints\">" << endl;
    outFile << "##INFO=<ID=SVLEN,Number=1,Type=Integer,Description=\"Difference in length between REF and ALT alleles\">" << endl;
    outFile << "##INFO=<ID=SVTYPE,Number=1,Type=String,Description=\"Type of structural variant\">" << endl;
 	outFile << "##INFO=<ID=NTLEN,Number=.,Type=Integer,Description=\"Number of bases inserted in place of deleted code\">" << endl;
@@ -355,13 +358,12 @@ void createHeader(ofstream &outFile, const string& sourceProgram, const string& 
    //outFile << "##ALT=<ID=INV,Description=\"Inversion\">" << endl;
    //outFile << "##ALT=<ID=CNV,Description=\"Copy number variable region\">" << endl;
    outFile << "##FORMAT=<ID=GT,Number=1,Type=String,Description=\"Genotype\">" << endl;
-   outFile << "##FORMAT=<ID=DP,Number=1,Type=Integer,Description=\"Read Depth\">" << endl;
-   outFile << "##FORMAT=<ID=SR,Number=1,Type=Integer,Description=\"Number of supporting reads\">" << endl; // To INFO?
+   outFile << "##FORMAT=<ID=AD,Number=1,Type=Integer,Description=\"Allele depth, how many reads support this allele\">" << endl;
 
    // headers of columns
    outFile << "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO";
    if (samples.size()>0) {
-      outFile << "\tFORMAT";
+     outFile << "\tFORMAT"; 
       for (set<string>::iterator counter=samples.begin(); counter!=samples.end(); counter++ ) {
          outFile << "\t" << *counter;
       }
@@ -455,8 +457,14 @@ void Genotype::fuse( const Genotype& gt )
 
 ostream& operator<<(ostream& os, const Genotype& gt)
 {
-  os << gt.d_genFirstChromosome << "/" << gt.d_genSecondChromosome << ":" << ( gt.d_readDepthPlus + gt.d_readDepthMinus );
-  return os;
+	if (gt.d_genFirstChromosome==0 && gt.d_genSecondChromosome==0) {
+		os << ".";
+	} 
+	else { // at least one genotype is 1
+		os << "1/.";
+	}
+	os << ":" << ( gt.d_readDepthPlus + gt.d_readDepthMinus );
+	return os;
 }
 
 
@@ -693,7 +701,7 @@ ostream& operator<<(ostream& os, const SVData& svd)
 	}
 	
 
-   os << "\tGT:DP";
+   os << "\tGT:AD";
 
    for (int counter=0; counter<svd.d_format.size(); counter++ ) {
       os << "\t" << svd.d_format[ counter ];
@@ -1188,12 +1196,7 @@ int main(int argc, char* argv[])
 		cout << "Sorting completed" << endl;
 	   for (int svIndex=0; svIndex<svs.size(); svIndex++ ) {
 			if ( (svIndex+1)<svs.size() && ( svs[ svIndex ] == svs[ svIndex+1 ] ) ) {
-			//cout << "Fusion!\n";
-			//cout << svs[ svIndex ];
-			//cout << svs[ svIndex+1 ];
 				svs[ svIndex+1 ].fuse( svs[ svIndex ]);	
-			//cout << "results in: \n";
-  			//cout << svs[ svIndex+1 ];
 			} else {
 				if ( throughFilter( svs[ svIndex ]) ) {  vcfFile << svs[ svIndex ]; }
 				else { 
