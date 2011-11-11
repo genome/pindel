@@ -466,7 +466,7 @@ void defineParameters(std::string & WhichChr) {
 					"-Q",
 					"--output_of_breakdancer_events",
 					"If breakdancer input is used, you can specify a filename here to write the confirmed breakdancer "
-               "events with their exact breakpoints to "
+               "events with their exact breakpoints to " "The list of BreakDancer calls with Pindel support information. Format: chr   Loc_left   Loc_right   size   type   index. " "            For example, \"1	72766323 	72811840 	45516	D	11970\" means the deletion event chr1:72766323-72811840 of size 45516 is reported as an event with index 11970 in Pindel report of deletion. "
 					"", false, ""));
 
 }
