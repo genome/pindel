@@ -1389,9 +1389,10 @@ void OutputShortInversion (const std::vector < SPLIT_READ > &supportingReads,
 bool IsInversion( const SPLIT_READ& read, const std::string& chromosome )
 {
 	if (read.IndelSize == read.NT_size ) {
-		std::string replacedString = chromosome.substr( read.BPLeft, read.NT_size );
+		std::string replacedString = chromosome.substr( g_SpacerBeforeAfter + 1 + read.BPLeft, read.NT_size );
+//std::cout << "my string is " << read.NT_str << ", the replaced string is " << ReverseComplement(replacedString) << "\n";
 		if ( ReverseComplement( replacedString ) == read.NT_str ) {
-			std::cout << "Found a tiny inversion!\n";
+	//		std::cout << "Found a tiny inversion!\n";
 			return true;
 		}
 	}
