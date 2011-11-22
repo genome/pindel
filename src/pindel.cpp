@@ -407,8 +407,7 @@ void defineParameters(std::string & WhichChr) {
 	parameters. push_back(
 			new StringParameter(
 					&par.breakdancerFileName,
-					"-b",
-					"--breakdancer",
+   					"--breakdancer",
 					"Pindel is able to use calls from other SV methods such as BreakDancer to further increase sensitivity and specificity.                    BreakDancer result or calls from any methods must in the format:   ChrA LocA stringA ChrB LocB stringB other",
 					false, ""));
 

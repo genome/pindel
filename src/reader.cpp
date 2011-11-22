@@ -414,7 +414,7 @@ bool isGoodAnchor( const flagshit *read, const bam1_core_t *bamCore )
      */
 	return ( read->mapped &&
 				( mappingQuality >= g_minimalAnchorQuality ) &&
-            //( read->unique || read->sw ) &&
+                ( read->unique || read->sw ) &&
 				( ! read->suboptimal ) &&
 				( read->edits <= maxEdits ) 
           );
@@ -665,6 +665,8 @@ parse_flags_and_tags (const bam1_t * b, flagshit * flags)
 				}
 
 		}
+    else flags->unique = 1;
+    /*
 	s = NULL;
 	s = bam_aux_get (b, "MF");
 	if (s != 0)
@@ -681,6 +683,7 @@ parse_flags_and_tags (const bam1_t * b, flagshit * flags)
 				}
 			flags->suboptimal = 0;
 		}
+     */
 	s = NULL;
 	s = bam_aux_get (b, "X0");
 	if (s != 0)
@@ -689,6 +692,7 @@ parse_flags_and_tags (const bam1_t * b, flagshit * flags)
 		}
 	s = NULL;
 	s = bam_aux_get (b, "X1");
+    
 	if (s != 0)
 		{
 			int sub_hits = bam_aux2i (s);
@@ -702,6 +706,8 @@ parse_flags_and_tags (const bam1_t * b, flagshit * flags)
 					flags->suboptimal = 1;
 				}
 		}
+    else flags->suboptimal = 0;
+    
 	if (xt_code == 'M' || mf_code == 130)
 		{
 			flags->sw = 1;
