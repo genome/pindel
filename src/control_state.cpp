@@ -1,9 +1,9 @@
-/* 
- * This File is part of Pindel; a program to locate genomic variation. 
+/*
+ * This File is part of Pindel; a program to locate genomic variation.
  * https://trac.nbic.nl/pindel/
- * 
+ *
  *   Copyright (C) 2011 Kai Ye
- * 
+ *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
  *   the Free Software Foundation, either version 3 of the License, or
@@ -21,26 +21,28 @@
 // Pindel header files
 #include "control_state.h"
 
-ControlState::ControlState() {
-	BAMDefined = false;
-	PindelReadDefined = false;
-	BreakDancerDefined = false;
-	loopOverAllChromosomes = false;
-	SpecifiedChrVisited = false;
+ControlState::ControlState()
+{
+   BAMDefined = false;
+   PindelReadDefined = false;
+   BreakDancerDefined = false;
+   loopOverAllChromosomes = false;
+   SpecifiedChrVisited = false;
 
-	lowerBinBorder = 0;
-	upperBinBorder = 0;
-	startOfRegion = 0;
-	endOfRegion = 0;
-	endRegionPlusBuffer = 0;
-	regionStartDefined = false;
-	regionEndDefined = false;
-	CountFarEnd = 0;
-	CountFarEndPlus = 0;
-	CountFarEndMinus = 0;
+   lowerBinBorder = 0;
+   upperBinBorder = 0;
+   startOfRegion = 0;
+   endOfRegion = 0;
+   endRegionPlusBuffer = 0;
+   regionStartDefined = false;
+   regionEndDefined = false;
+   CountFarEnd = 0;
+   CountFarEndPlus = 0;
+   CountFarEndMinus = 0;
 
 }
 
-ControlState::~ControlState() {
-	// TODO Auto-generated destructor stub
+ControlState::~ControlState()
+{
+   // TODO Auto-generated destructor stub
 }

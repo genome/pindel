@@ -1,9 +1,9 @@
-/* 
- * This File is part of Pindel; a program to locate genomic variation. 
+/*
+ * This File is part of Pindel; a program to locate genomic variation.
  * https://trac.nbic.nl/pindel/
- * 
+ *
  *   Copyright (C) 2011 Kai Ye
- * 
+ *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
  *   the Free Software Foundation, either version 3 of the License, or
@@ -25,58 +25,66 @@
 #include "pindel.h"
 #include "reporter.h"
 
-SearchShortInsertions::SearchShortInsertions() {
-	typeOfVariant = "short insertions";
+SearchShortInsertions::SearchShortInsertions()
+{
+   typeOfVariant = "short insertions";
 }
 
-SearchShortInsertions::~SearchShortInsertions() {
+SearchShortInsertions::~SearchShortInsertions()
+{
 
 }
 
 bool SearchShortInsertions::decisionBranch1(ControlState& currentState,
-		unsigned ReadIndex, unsigned int CloseIndex, int FarIndex) {
-	return currentState.Reads[ReadIndex].UP_Far[FarIndex]. AbsLoc
-			== currentState.Reads[ReadIndex].UP_Close[CloseIndex].AbsLoc + 1
-			&& currentState.Reads[ReadIndex].UP_Close[CloseIndex].LengthStr
-					+ currentState.Reads[ReadIndex].UP_Far[FarIndex]. LengthStr
-					< currentState.Reads[ReadIndex].ReadLength;
+      unsigned ReadIndex, unsigned int CloseIndex, int FarIndex)
+{
+   return currentState.Reads[ReadIndex].UP_Far[FarIndex]. AbsLoc
+          == currentState.Reads[ReadIndex].UP_Close[CloseIndex].AbsLoc + 1
+          && currentState.Reads[ReadIndex].UP_Close[CloseIndex].LengthStr
+          + currentState.Reads[ReadIndex].UP_Far[FarIndex]. LengthStr
+          < currentState.Reads[ReadIndex].ReadLength;
 }
 
 bool SearchShortInsertions::decisionBranch2(ControlState& currentState,
-		unsigned ReadIndex, unsigned int CloseIndex, int FarIndex) {
-	return currentState.Reads[ReadIndex]. UP_Close[CloseIndex].AbsLoc
-			== currentState.Reads[ReadIndex].UP_Far[FarIndex]. AbsLoc + 1
-			&& currentState.Reads[ReadIndex]. UP_Far[FarIndex].LengthStr
-					+ currentState.Reads[ReadIndex]. UP_Close[CloseIndex].LengthStr
-					< currentState.Reads[ReadIndex].ReadLength;
+      unsigned ReadIndex, unsigned int CloseIndex, int FarIndex)
+{
+   return currentState.Reads[ReadIndex]. UP_Close[CloseIndex].AbsLoc
+          == currentState.Reads[ReadIndex].UP_Far[FarIndex]. AbsLoc + 1
+          && currentState.Reads[ReadIndex]. UP_Far[FarIndex].LengthStr
+          + currentState.Reads[ReadIndex]. UP_Close[CloseIndex].LengthStr
+          < currentState.Reads[ReadIndex].ReadLength;
 }
 
 unsigned int SearchShortInsertions::calculateIndelSize(
-		ControlState& currentState, unsigned ReadIndex) {
-	return currentState.Reads[ReadIndex].ReadLengthMinus
-			- (currentState.Reads[ReadIndex].Right
-					- currentState.Reads[ReadIndex].Left);
+   ControlState& currentState, unsigned ReadIndex)
+{
+   return currentState.Reads[ReadIndex].ReadLengthMinus
+          - (currentState.Reads[ReadIndex].Right
+             - currentState.Reads[ReadIndex].Left);
 }
 
 std::string SearchShortInsertions::getInsertedStr1(ControlState& currentState,
-		unsigned ReadIndex) {
-	return ReverseComplement(currentState.Reads[ReadIndex]. UnmatchedSeq). substr(
-			currentState.Reads[ReadIndex].BP + 1,
-			currentState.Reads[ReadIndex]. IndelSize);
+      unsigned ReadIndex)
+{
+   return ReverseComplement(currentState.Reads[ReadIndex]. UnmatchedSeq). substr(
+             currentState.Reads[ReadIndex].BP + 1,
+             currentState.Reads[ReadIndex]. IndelSize);
 }
 
 std::string SearchShortInsertions::getInsertedStr2(ControlState& currentState,
-		unsigned ReadIndex) {
-	return currentState.Reads[ReadIndex].UnmatchedSeq. substr(
-			currentState.Reads[ReadIndex].BP + 1,
-			currentState.Reads[ReadIndex]. IndelSize);
+      unsigned ReadIndex)
+{
+   return currentState.Reads[ReadIndex].UnmatchedSeq. substr(
+             currentState.Reads[ReadIndex].BP + 1,
+             currentState.Reads[ReadIndex]. IndelSize);
 }
 
 void SearchShortInsertions::outputResults(ControlState& currentState,
-		std::vector<unsigned> Vars[], const unsigned NumBoxes) {
-	std::ofstream SIoutputfile(currentState.SIOutputFilename.c_str(),
-			std::ios::app);
-	SortOutputSI(NumBoxes, currentState.CurrentChr, currentState.Reads, Vars,
-			SIoutputfile);
-	SIoutputfile.close();
+      std::vector<unsigned> Vars[], const unsigned NumBoxes)
+{
+   std::ofstream SIoutputfile(currentState.SIOutputFilename.c_str(),
+                              std::ios::app);
+   SortOutputSI(NumBoxes, currentState.CurrentChr, currentState.Reads, Vars,
+                SIoutputfile);
+   SIoutputfile.close();
 }

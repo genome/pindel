@@ -1,9 +1,9 @@
-/* 
- * This File is part of Pindel; a program to locate genomic variation. 
+/*
+ * This File is part of Pindel; a program to locate genomic variation.
  * https://trac.nbic.nl/pindel/
- * 
+ *
  *   Copyright (C) 2011 Kai Ye
- * 
+ *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
  *   the Free Software Foundation, either version 3 of the License, or
@@ -27,10 +27,10 @@
 #include "logdef.h"
 #include "refreader.h"
 
-RefReader::RefReader(std::ifstream & inf_Seq_in, std::string & TheInput_in) 
+RefReader::RefReader(std::ifstream & inf_Seq_in, std::string & TheInput_in)
 {
-  inf_Seq = &inf_Seq_in;
-  TheInput = &TheInput_in;
+   inf_Seq = &inf_Seq_in;
+   TheInput = &TheInput_in;
 }
 
 RefReader::~RefReader()
@@ -39,75 +39,70 @@ RefReader::~RefReader()
 
 
 
-void 
+void
 RefReader::ReadSeq(bool WhetherBuildUp)
 {
-	TheInput->clear ();
-	std::string TempLine, TempChrName;
+   TheInput->clear ();
+   std::string TempLine, TempChrName;
 
-	if (WhetherBuildUp)
-		{
-			CopyThisSeq();
-		}
-	else
-		{
-			SkipThisSeq();
-		}
+   if (WhetherBuildUp) {
+      CopyThisSeq();
+   }
+   else {
+      SkipThisSeq();
+   }
 
-	if (!TheInput->empty ())
-		{
-			std::string Spacer = "";
-			for (unsigned i = 0; i < g_SpacerBeforeAfter; i++)
-				Spacer += "N";
-			*TheInput = Spacer + *TheInput + Spacer;
-		}
+   if (!TheInput->empty ()) {
+      std::string Spacer = "";
+      for (unsigned i = 0; i < g_SpacerBeforeAfter; i++) {
+         Spacer += "N";
+      }
+      *TheInput = Spacer + *TheInput + Spacer;
+   }
 }
 
 void
 RefReader::SkipThisSeq()
 {
-	        char TempChar;
-        // Skip until the next sequence start.
-	        while (*inf_Seq >> TempChar)
-	                {
-	                        if (TempChar == '>') break; 
-	                }
+   char TempChar;
+   // Skip until the next sequence start.
+   while (*inf_Seq >> TempChar) {
+      if (TempChar == '>') {
+         break;
+      }
+   }
 }
 
 void
 RefReader::CopyThisSeq()
 {
-	char TempChar;
-	while (*inf_Seq >> TempChar)
-		{
-			if (TempChar != '\n' && TempChar != '\r')
-				{
-					if (TempChar == '>')
-						{
-							break;
-						}
-					else
-						{
-							if ('a' <= TempChar && TempChar <= 'z')
-								TempChar = TempChar + ('A' - 'a');
-							switch (TempChar)
-								{
-								case 'A':
-									*TheInput += 'A';
-									break;	// 00000000
-								case 'C':
-									*TheInput += 'C';
-									break;	// 00010000
-								case 'G':
-									*TheInput += 'G';
-									break;	// 00100000
-								case 'T':
-									*TheInput += 'T';
-									break;	// 00110000
-								default:
-									*TheInput += 'N';	// 01000000
-								}
-						}						// else TempChar
-				}
-		}
+   char TempChar;
+   while (*inf_Seq >> TempChar) {
+      if (TempChar != '\n' && TempChar != '\r') {
+         if (TempChar == '>') {
+            break;
+         }
+         else {
+            if ('a' <= TempChar && TempChar <= 'z') {
+               TempChar = TempChar + ('A' - 'a');
+            }
+            switch (TempChar) {
+            case 'A':
+               *TheInput += 'A';
+               break;	// 00000000
+            case 'C':
+               *TheInput += 'C';
+               break;	// 00010000
+            case 'G':
+               *TheInput += 'G';
+               break;	// 00100000
+            case 'T':
+               *TheInput += 'T';
+               break;	// 00110000
+            default:
+               *TheInput += 'N';	// 01000000
+            }
+         }						// else TempChar
+      }
+   }
 }

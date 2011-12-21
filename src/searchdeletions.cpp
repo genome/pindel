@@ -1,9 +1,9 @@
-/* 
- * This File is part of Pindel; a program to locate genomic variation. 
+/*
+ * This File is part of Pindel; a program to locate genomic variation.
  * https://trac.nbic.nl/pindel/
- * 
+ *
  *   Copyright (C) 2011 Kai Ye
- * 
+ *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
  *   the Free Software Foundation, either version 3 of the License, or
@@ -25,56 +25,64 @@
 #include "pindel.h"
 #include "reporter.h"
 
-SearchDeletions::SearchDeletions() {
-	typeOfVariant = "deletions";
+SearchDeletions::SearchDeletions()
+{
+   typeOfVariant = "deletions";
 }
 
-SearchDeletions::~SearchDeletions() {
+SearchDeletions::~SearchDeletions()
+{
 
 }
 
 bool SearchDeletions::decisionBranch1(ControlState& currentState,
-		unsigned ReadIndex, unsigned int CloseIndex, int FarIndex) {
-	return currentState.Reads[ReadIndex].UP_Far[FarIndex]. LengthStr
-			+ currentState.Reads[ReadIndex].UP_Close[CloseIndex]. LengthStr
-			== currentState.Reads[ReadIndex].ReadLength
-			&& currentState.Reads[ReadIndex].UP_Far[FarIndex]. AbsLoc
-					> currentState.Reads[ReadIndex].UP_Close[CloseIndex]. AbsLoc
-							+ 1;
+                                      unsigned ReadIndex, unsigned int CloseIndex, int FarIndex)
+{
+   return currentState.Reads[ReadIndex].UP_Far[FarIndex]. LengthStr
+          + currentState.Reads[ReadIndex].UP_Close[CloseIndex]. LengthStr
+          == currentState.Reads[ReadIndex].ReadLength
+          && currentState.Reads[ReadIndex].UP_Far[FarIndex]. AbsLoc
+          > currentState.Reads[ReadIndex].UP_Close[CloseIndex]. AbsLoc
+          + 1;
 }
 
 bool SearchDeletions::decisionBranch2(ControlState& currentState,
-		unsigned ReadIndex, unsigned int CloseIndex, int FarIndex) {
-	return currentState.Reads[ReadIndex].UP_Close[CloseIndex]. LengthStr
-			+ currentState.Reads[ReadIndex].UP_Far[FarIndex]. LengthStr
-			== currentState.Reads[ReadIndex].ReadLength
-			&& currentState.Reads[ReadIndex]. UP_Close[CloseIndex].AbsLoc
-					> currentState.Reads[ReadIndex].UP_Far[FarIndex]. AbsLoc
-							+ 1;
+                                      unsigned ReadIndex, unsigned int CloseIndex, int FarIndex)
+{
+   return currentState.Reads[ReadIndex].UP_Close[CloseIndex]. LengthStr
+          + currentState.Reads[ReadIndex].UP_Far[FarIndex]. LengthStr
+          == currentState.Reads[ReadIndex].ReadLength
+          && currentState.Reads[ReadIndex]. UP_Close[CloseIndex].AbsLoc
+          > currentState.Reads[ReadIndex].UP_Far[FarIndex]. AbsLoc
+          + 1;
 }
 
 unsigned int SearchDeletions::calculateIndelSize(ControlState& currentState,
-		unsigned ReadIndex) {
-	return (currentState.Reads[ReadIndex].Right
-			- currentState.Reads[ReadIndex].Left)
-			- currentState.Reads[ReadIndex].ReadLengthMinus;
+      unsigned ReadIndex)
+{
+   return (currentState.Reads[ReadIndex].Right
+           - currentState.Reads[ReadIndex].Left)
+          - currentState.Reads[ReadIndex].ReadLengthMinus;
 }
 
 std::string SearchDeletions::getInsertedStr1(ControlState& currentState,
-		unsigned ReadIndex) {
-	return "";
+      unsigned ReadIndex)
+{
+   return "";
 }
 
 std::string SearchDeletions::getInsertedStr2(ControlState& currentState,
-		unsigned ReadIndex) {
-	return "";
+      unsigned ReadIndex)
+{
+   return "";
 }
 
 void SearchDeletions::outputResults(ControlState& currentState,
-		std::vector<unsigned> Vars[], const unsigned NumBoxes) {
-	std::ofstream DeletionOutf(currentState.DeletionOutputFilename.c_str(),
-			std::ios::app);
-	SortOutputD(NumBoxes, currentState.CurrentChr, currentState.Reads, Vars,
-			DeletionOutf);
-	DeletionOutf.close();
+                                    std::vector<unsigned> Vars[], const unsigned NumBoxes)
+{
+   std::ofstream DeletionOutf(currentState.DeletionOutputFilename.c_str(),
+                              std::ios::app);
+   SortOutputD(NumBoxes, currentState.CurrentChr, currentState.Reads, Vars,
+               DeletionOutf);
+   DeletionOutf.close();
 }
