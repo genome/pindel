@@ -7,6 +7,7 @@
 	e.m.w.lameijer@lumc.nl
 	+31(0)71-526 9745
 
+Version 0.2.1 [January 3rd, 2012] Now also correctly reads in fasta files which do not only contain uppercase characters. 
 	Version 0.2.0 [November 10th, 2011. The support of an indel, previously called "DP" is now more appropriately called "AD".
 					    Also, genotypes are somewhat more correctly indicated with . and 1/.
                                             Also, replaces -1 by . to indicate unknown number of fields in the declarations in the header
@@ -31,7 +32,7 @@ const int FIRST_SAMPLE_INDEX = 32; // index of first sample name
 
 using namespace std;
 
-string g_versionString = "0.1.9";
+string g_versionString = "0.2.1";
 string g_programName = "pindel2vcf";
 
 bool g_normalBaseArray[256];
@@ -256,6 +257,15 @@ void Parameter::describe() const
 
 vector<Parameter*> parameters;
 
+/** 'convertToUppercase' returns the input string in full uppercase. */
+string convertToUppercase( const string& inputString)
+{
+   string outputString = inputString;
+   for (int i=0; i<outputString.length(); i++ ) {
+      outputString[ i ] = toupper( outputString[ i ] );
+   }
+   return outputString;
+}
 
 /* 'Chromosome' contains a string identifier as well as the base sequence of the chromosome itself. */
 class Chromosome
@@ -271,7 +281,8 @@ public:
       return d_identifier;
    }
    void addBases(const string& bases ) {
-      d_sequence += bases;
+      string uppercaseBases = convertToUppercase( bases );
+      d_sequence += uppercaseBases;
    }
    void makeStrangeBasesN();
    void removeFromMemory() {
