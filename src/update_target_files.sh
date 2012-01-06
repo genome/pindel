@@ -23,8 +23,7 @@ cd $TEST_DIR
                    -c ALL -T 1\
                    -o TargetOutput/sim1chrVs20305 >  ../../../../../small.log
 
-cd -
-cd pindel
+cd ../..
 svn commit --message="Updating results after pindel improvement"
 
 
