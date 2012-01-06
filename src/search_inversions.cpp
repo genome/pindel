@@ -25,7 +25,7 @@
 
 int searchInversions(ControlState& currentState, unsigned NumBoxes)
 {
-
+    //return 0; 
    static int Count_Inv = 0;
    static int Count_Inv_Plus = 0;
    static int Count_Inv_Minus = 0;
@@ -34,7 +34,7 @@ int searchInversions(ControlState& currentState, unsigned NumBoxes)
 
    int CloseIndex = 0;
    int FarIndex = 0;
-
+   // std::cout << "Debug Searching inversions ... " << std::endl;
    LOG_INFO(std::cout << "Searching inversions ... " << std::endl);
    for (unsigned ReadIndex = 0; ReadIndex < currentState.Reads.size(); ReadIndex++) {
       if (currentState.Reads[ReadIndex].Used
@@ -140,6 +140,7 @@ int searchInversions(ControlState& currentState, unsigned NumBoxes)
                   }
                }
             }
+            
             else if (currentState.Reads[ReadIndex]. UP_Far[currentState.Reads[ReadIndex].UP_Far.size()
                      - 1].AbsLoc + MIN_IndelSize_Inversion
                      < currentState.Reads[ReadIndex].UP_Close[0].AbsLoc) {
@@ -171,6 +172,7 @@ int searchInversions(ControlState& currentState, unsigned NumBoxes)
                         }
                         if (currentState.Reads[ReadIndex]. UP_Far[FarIndex].Direction
                               == Plus) {
+                            
                            // anchor inside reversed block.
                            if (currentState.Reads[ReadIndex]. UP_Far[FarIndex].LengthStr
                                  + currentState.Reads[ReadIndex]. UP_Close[CloseIndex]. LengthStr
@@ -230,12 +232,15 @@ int searchInversions(ControlState& currentState, unsigned NumBoxes)
                                  }
                               }
                            }
+                             
                         }
                      }
                   }
                }
             }
+              
          }
+              
          else if (currentState.Reads[ReadIndex].MatchedD == Minus) {
             if (currentState.Reads[ReadIndex]. UP_Close[currentState.Reads[ReadIndex].UP_Close.size()
                   - 1].AbsLoc
@@ -323,6 +328,7 @@ int searchInversions(ControlState& currentState, unsigned NumBoxes)
                   }
                }
             }
+             
             else if (currentState.Reads[ReadIndex].UP_Close[0].AbsLoc
                      + MIN_IndelSize_Inversion
                      < currentState.Reads[ReadIndex].UP_Far[currentState.Reads[ReadIndex]. UP_Far.size()
@@ -355,6 +361,7 @@ int searchInversions(ControlState& currentState, unsigned NumBoxes)
                         }
                         if (currentState.Reads[ReadIndex]. UP_Far[FarIndex].Direction
                               == Minus) {
+                            
                            // anchor inside reversed block.
                            if (currentState.Reads[ReadIndex]. UP_Close[CloseIndex]. LengthStr
                                  + currentState.Reads[ReadIndex]. UP_Far[FarIndex]. LengthStr
@@ -405,11 +412,13 @@ int searchInversions(ControlState& currentState, unsigned NumBoxes)
                                  Count_Inv_Minus++;
                               }
                            }
+                             
                         }
                      }
                   }
                }
             }
+            
          }
       }
    }

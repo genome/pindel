@@ -407,7 +407,6 @@ OutputInversions (const std::vector < SPLIT_READ > &Inv,
       SUM_MS += Inv[i].MS;
    }
    InvOutf << "\tSUM_MS " << SUM_MS;
-
    InvOutf << "\t" << g_sampleNames.
            size () << "\tNumSupSamples " << NumberSupSamples << "\t" <<
            NumU_SupSamples;
@@ -435,9 +434,11 @@ OutputInversions (const std::vector < SPLIT_READ > &Inv,
       if (Inv[GoodIndex].MatchedD == Plus) {
          SpaceBeforeReadSeq = g_reportLength - Inv[GoodIndex].BP - 1;
          InvOutf << std::string( SpaceBeforeReadSeq, ' ' );
-
          if (Inv[GoodIndex].UP_Close[0].AbsLoc < Inv[GoodIndex].UP_Far[0].AbsLoc ) {
+             //std::cout << "seq: \"" << Inv[GoodIndex].UnmatchedSeq << "\" " << Inv[GoodIndex].UnmatchedSeq.size() << std::endl;
+             
             InvOutf << ReverseComplement (Inv[GoodIndex].UnmatchedSeq);
+             
             InvOutf << std::string( Inv[GoodIndex].BP, ' ' );
          }
          else {
@@ -486,6 +487,7 @@ OutputInversions (const std::vector < SPLIT_READ > &Inv,
                   << "\t" << Inv[GoodIndex].Name << std::endl;
       }
    }
+
 }
 
 void

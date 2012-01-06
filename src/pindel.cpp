@@ -1069,9 +1069,11 @@ int main(int argc, char *argv[])
       for (unsigned int i = 0; i < currentState.CurrentChr.size(); i++) {
          CurrentChrMask[i] = 'N';
       }
+       BoxSize = currentState.CurrentChr.size() / 30000;
+       if (BoxSize == 0) BoxSize = 1;
       unsigned NumBoxes = (unsigned) (currentState.CurrentChr.size() * 2
                                       / BoxSize) + 1; // box size
-      (std::cout << NumBoxes << "\t" << BoxSize << std::endl);
+      (std::cout << "NumBoxes: " << NumBoxes << "\tBoxSize: " << BoxSize << std::endl);
 
       /* 3.1 preparation ends */
 
@@ -1120,7 +1122,7 @@ int main(int argc, char *argv[])
          g_CloseMappedMinus = 0;
 
          if (displayedStartOfRegion < displayedEndOfRegion) {
-            (std::cout << "Looking at chromosome " << currentState.WhichChr
+            (std::cout << "\nLooking at chromosome " << currentState.WhichChr
              << " bases " << displayedStartOfRegion << " to "
              << displayedEndOfRegion << "." << std::endl);
          }
@@ -1417,13 +1419,15 @@ std::string Reverse(const std::string & InputPattern)
 }
 
 std::string ReverseComplement(const std::string & InputPattern)
-{
-   std::string OutputPattern = InputPattern;
-   unsigned int LenPattern = InputPattern.size();
-   for (unsigned int j = 0; j < LenPattern; j++)
-      OutputPattern[j] = Convert2RC4N[(unsigned int) InputPattern[LenPattern
-                                      - j - 1]];
-   return OutputPattern;
+{  
+    std::string OutputPattern = InputPattern;
+    
+    unsigned int LenPattern = InputPattern.size();
+    
+    for (unsigned int j = 0; j < LenPattern; j++)
+      OutputPattern[j] = Convert2RC4N[(unsigned int) InputPattern[LenPattern - j - 1]];
+   
+    return OutputPattern;
 }
 
 std::string Cap2Low(const std::string & input)

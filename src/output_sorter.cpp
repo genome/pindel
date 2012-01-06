@@ -170,26 +170,33 @@ OutputSorter::DoSortAndOutputInversions (std::vector<SPLIT_READ> &Reads,
                      MaxSize = GoodIndels[i].IndelSize;
                   }
                }
-
+                //std::cout << "MaxSize " << MaxSize << std::endl;
                // changed BP according to the largest event
                for (unsigned i = OneIndelEvent.Start; i <= OneIndelEvent.End; i++) {
                   if (GoodIndels[i].IndelSize / (float)MaxSize < 0.95 || MaxSize  + 30 > GoodIndels[i].ReadLength + GoodIndels[i].IndelSize) {
                      OneIndelEvent.WhetherReport = false;
-                     std::cout << "Skip one inversion!" << std::endl;
+                     //std::cout << "Skip one inversion 1!" << std::endl;
                      break;
                   }
+                  // if (MaxSize < GoodIndels[i].IndelSize)
+                  //std::cout << "MaxSize " << MaxSize << " > " << GoodIndels[i].IndelSize << std::endl; 
                   short Diff = (MaxSize - GoodIndels[i].IndelSize) / 2;
                   GoodIndels[i].IndelSize = MaxSize;
                   GoodIndels[i].BPLeft = GoodIndels[i].BPLeft - Diff;
                   GoodIndels[i].BPRight = GoodIndels[i].BPRight + Diff;
+                   
                   // for plus
                   if (GoodIndels[i].MatchedD == '+') {
-                     GoodIndels[i].BP = GoodIndels[i].BP - Diff;
+                      //std::cout << GoodIndels[i].BP << " > " << Diff << std::endl;
+                      if (GoodIndels[i].BP > Diff) {
+                          //std::cout << "+ " << GoodIndels[i].BP << " " << Diff << std::endl;
+                          GoodIndels[i].BP = GoodIndels[i].BP - Diff;
+                      }
                   }
                   else {
                      GoodIndels[i].BP = GoodIndels[i].BP + Diff;   // for minus
                   }
-
+                   //if (GoodIndels[i].BP < 0) std::cout << "here " << Diff << " " << GoodIndels[i].BP << std::endl;
                }
                OneIndelEvent.RealStart = GoodIndels[OneIndelEvent.Start].BPLeft; // largest one
                OneIndelEvent.RealEnd = GoodIndels[OneIndelEvent.Start].BPRight;  // largest one
@@ -219,7 +226,7 @@ OutputSorter::DoSortAndOutputInversions (std::vector<SPLIT_READ> &Reads,
          for (unsigned i = OneIndelEvent.Start; i <= OneIndelEvent.End; i++) {
             if (GoodIndels[i].IndelSize / (float)MaxSize < 0.95 || MaxSize  + 30 > GoodIndels[i].ReadLength + GoodIndels[i].IndelSize) {
                OneIndelEvent.WhetherReport = false;
-               std::cout << "Skip one inversion!" << std::endl;
+               //std::cout << "Skip one inversion 2!" << std::endl;
                break;
             }
             short Diff = (MaxSize - GoodIndels[i].IndelSize) / 2;
@@ -228,12 +235,13 @@ OutputSorter::DoSortAndOutputInversions (std::vector<SPLIT_READ> &Reads,
             GoodIndels[i].BPRight = GoodIndels[i].BPRight + Diff;
             // for plus
             if (GoodIndels[i].MatchedD == '+') {
+               if (GoodIndels[i].BP > Diff)  
                GoodIndels[i].BP = GoodIndels[i].BP - Diff;
             }
             else {
                GoodIndels[i].BP = GoodIndels[i].BP + Diff;   // for minus
             }
-
+            //if (GoodIndels[i].BP < 0) std::cout << "there " << Diff << " " << GoodIndels[i].BP << std::endl;
          }
          OneIndelEvent.RealStart = OneIndelEvent.BPLeft;
          OneIndelEvent.RealEnd = OneIndelEvent.BPRight;
@@ -244,6 +252,7 @@ OutputSorter::DoSortAndOutputInversions (std::vector<SPLIT_READ> &Reads,
          if (OneIndelEvent.WhetherReport) {
             IndelEvents.push_back (OneIndelEvent);
          }
+          
          LOG_DEBUG (std::cout << "IndelEvent: " << IndelEvents.size () << std::endl);
 
          if (IndelEvents.size ()) {
@@ -256,7 +265,7 @@ OutputSorter::DoSortAndOutputInversions (std::vector<SPLIT_READ> &Reads,
 
 int OutputSorter::ReportIndelEvents (std::vector<Indel4output> &IndelEvents,
                                  std::vector<SPLIT_READ> &GoodIndels)
-{
+{  
    int ReportedEventCount = 0;
    for (unsigned EventIndex = 0; EventIndex < IndelEvents.size ();
          EventIndex++) {

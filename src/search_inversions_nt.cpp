@@ -25,7 +25,6 @@
 
 int searchInversionsNT(ControlState& currentState, unsigned NumBoxes)
 {
-
    static int Count_Inv_NT = 0;
    static int Count_Inv_NT_Plus = 0;
    static int Count_Inv_NT_Minus = 0;
@@ -34,7 +33,7 @@ int searchInversionsNT(ControlState& currentState, unsigned NumBoxes)
 
    int CloseIndex = 0;
    int FarIndex = 0;
-
+    
    LOG_INFO(std::cout << "Searching inversions with non-template sequence ... "
             << std::endl);
    for (unsigned ReadIndex = 0; ReadIndex < currentState.Reads.size(); ReadIndex++) {
