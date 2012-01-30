@@ -578,6 +578,14 @@ build_record (const bam1_t * mapped_read, const bam1_t * unmapped_read,
    Temp_One_Read.MS = mapped_core->qual;
    //FIXME pass these through from the command line with a struct
    Temp_One_Read.InsertSize = InsertSize;
+	if (InsertSize < 2*length ) {
+		std::cout << "Error: the insert size is only " << InsertSize << " while the read length is " << Temp_One_Read.ReadLength << std::endl;
+      std::cout << "in paired end sequencing, the insert size is the total size of the fragment to be sequenced, with a read length of 100 bp the entire fragment may for example look like\n\n";
+		std::cout << "|----100 bp: first read of the read pair--|-------------------300 bp: unsequenced DNA---------------------|----100 bp: second read of the read pair--|\n";
+      std::cout << "<-----------------------------------------------------------insert size=500 ------------------------------------------------------------------------->\n\n";
+		std::cout << "In the configuration file (the -i option) please check/correct the insert size (second item on each line). If you continue to have problems, please contact us (Kai Ye, k.ye@lumc.nl)\n";
+		exit( EXIT_FAILURE );
+	}
    Temp_One_Read.Tag = Tag;
    if (((mapped_core->tid == unmapped_core->tid) &&
          (mapped_core->pos != unmapped_core->pos)) &&

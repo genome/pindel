@@ -48,7 +48,8 @@
 #include "logdef.h"
 
 /*v Kai Ye update 0.2.4h, Oct 31 2011, update for MOSAIK */
-const std::string Pindel_Version_str = "Pindel version 0.2.4h, Oct 31 2011.";
+/*v EW update 0.2.4j, Pindel will now abort when insert size is set too small. */
+const std::string Pindel_Version_str = "Pindel version 0.2.4j, Jan 30 2012.";
 
 int findParameter(std::string name);
 
