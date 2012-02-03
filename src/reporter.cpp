@@ -34,6 +34,8 @@
 
 OutputFileData deletionFileData;
 
+std::string GetConsensusInsertedStr(const std::vector <SPLIT_READ> & Reads, const int & StartIndex, const int & EndIndex);
+
 /* 'createMaps' (EWL, Aug31st2011) creates maps to get a sample name from an index, and the other way around. */
 void createMaps( 	std::map<std::string,int>& sampleToIndexMap, std::map<int,std::string>& indexToSampleMap )
 {
@@ -545,7 +547,7 @@ OutputSIs (const std::vector < SPLIT_READ > &SIs,
    SIsOutf <<
            "####################################################################################################"
            << std::endl;
-   SIsOutf << NumberOfSIsInstances << "\tI " << SIs[C_S].IndelSize << "\tNT " << SIs[C_S].IndelSize << " \"" << SIs[C_S].InsertedStr << "\"" << "\tChrID " << SIs[C_S].FragName << "\tBP " << SIs[C_S].BPLeft + 1 << "\t" << SIs[C_S].BPRight + 1 << "\tBP_range " << RealStart + 1 << "\t" << RealEnd + 1 << "\tSupports " << NumberOfReads << "\t" << Num_U_Reads << "\t+ " << LeftS - 1 << "\t" << LeftUNum << "\t- " << RightS - 1 << "\t" << RightUNum << "\tS1 " << EasyScore;	//EWL070111  << "\tS2 " << PreciseScore;
+   SIsOutf << NumberOfSIsInstances << "\tI " << SIs[C_S].IndelSize << "\tNT " << SIs[C_S].IndelSize << " \"" << GetConsensusInsertedStr(SIs, C_S, C_E) << "\"" << "\tChrID " << SIs[C_S].FragName << "\tBP " << SIs[C_S].BPLeft + 1 << "\t" << SIs[C_S].BPRight + 1 << "\tBP_range " << RealStart + 1 << "\t" << RealEnd + 1 << "\tSupports " << NumberOfReads << "\t" << Num_U_Reads << "\t+ " << LeftS - 1 << "\t" << LeftUNum << "\t- " << RightS - 1 << "\t" << RightUNum << "\tS1 " << EasyScore;	//EWL070111  << "\tS2 " << PreciseScore;
 
    int SUM_MS = 0;
    for (unsigned int i = C_S; i <= C_E; i++) {
@@ -643,7 +645,8 @@ OutputDI (const std::vector < SPLIT_READ > &DI,
    DeletionOutf <<
                 "####################################################################################################"
                 << std::endl;
-   DeletionOutf << deletionFileData.getSvIndex() << "\tD " << DI[C_S].IndelSize << "\tNT " << DI[C_S].NT_size << " \"" << DI[C_S].NT_str << "\"" << "\tChrID " << DI[C_S].FragName << "\tBP " << DI[C_S].BPLeft + 1 << "\t" << DI[C_S].BPRight + 1 << "\tBP_range " << DI[C_S].BPLeft + 1 << "\t" << DI[C_S].BPRight + 1 << "\tSupports " << NumberOfReads << "\t" << Num_U_Reads << "\t+ " << LeftS - 1 << "\t" << LeftUNum << "\t- " << RightS - 1 << "\t" << RightUNum << "\tS1 " << EasyScore;
+   DeletionOutf << deletionFileData.getSvIndex() << "\tD " << DI[C_S].IndelSize << "\tNT " << DI[C_S].NT_size << " \"" << DI[C_S].NT_str
+<< "\"" << "\tChrID " << DI[C_S].FragName << "\tBP " << DI[C_S].BPLeft + 1 << "\t" << DI[C_S].BPRight + 1 << "\tBP_range " << DI[C_S].BPLeft + 1 << "\t" << DI[C_S].BPRight + 1 << "\tSupports " << NumberOfReads << "\t" << Num_U_Reads << "\t+ " << LeftS - 1 << "\t" << LeftUNum << "\t- " << RightS - 1 << "\t" << RightUNum << "\tS1 " << EasyScore;
 
    int SUM_MS = 0;
    for (unsigned int i = C_S; i <= C_E; i++) {
@@ -2002,4 +2005,26 @@ SortOutputRest (const std::string & CurrentChr, std::vector < SPLIT_READ > &Read
    //delete[]plus_LI_Pos;
    //delete[]minus_LI_Pos;
    LOG_INFO(std::cout << "Other unassigned breakpoints (BP): " << Count_BP << std::endl << std::endl);
+}
+
+std::string GetConsensusInsertedStr(const std::vector <SPLIT_READ> & Reads, const int & StartIndex, const int & EndIndex) {
+    // InsertedStr
+    std::map<std::string,int> NT_str_2_count;
+    std::map<std::string,int>::iterator it;
+    for (int i = StartIndex; i <= EndIndex; i++) {
+        it = NT_str_2_count.find(Reads[i].InsertedStr);
+        if (it == NT_str_2_count.end()) {
+            NT_str_2_count[Reads[i].InsertedStr] = 1;
+        }
+        else it->second++;
+    }
+    int Max = 0;
+    std::string OutputStr = "";
+    for (std::map<std::string,int>::iterator it=NT_str_2_count.begin(); it!=NT_str_2_count.end(); it++ ) {
+        if (it->second > Max) {
+            Max = it->second;
+            OutputStr = it->first;
+        }
+    }
+    return OutputStr;
 }
