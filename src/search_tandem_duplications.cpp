@@ -68,12 +68,15 @@ int searchTandemDuplications(ControlState& currentState, unsigned NumBoxes)
                   if (currentState.Reads[ReadIndex].UP_Far[FarIndex]. Direction
                         == Minus) {
 
-                     if (currentState.Reads[ReadIndex].UP_Far[FarIndex]. LengthStr
-                           + currentState.Reads[ReadIndex]. UP_Close[CloseIndex].LengthStr
+                     if (currentState.Reads[ReadIndex].UP_Far[FarIndex].LengthStr
+                           + currentState.Reads[ReadIndex].UP_Close[CloseIndex].LengthStr
                            == currentState.Reads[ReadIndex].ReadLength
-                           && currentState.Reads[ReadIndex]. UP_Far[FarIndex].AbsLoc
-                           + currentState.Reads[ReadIndex].ReadLength
-                           < currentState.Reads[ReadIndex]. UP_Close[CloseIndex].AbsLoc) {
+                           && currentState.Reads[ReadIndex].UP_Far[FarIndex].AbsLoc
+                           + currentState.Reads[ReadIndex].UP_Far[FarIndex].LengthStr
+                           < currentState.Reads[ReadIndex].UP_Close[CloseIndex].AbsLoc
+                           && currentState.Reads[ReadIndex].UP_Far[FarIndex].AbsLoc
+                           + currentState.Reads[ReadIndex].UP_Close[CloseIndex].LengthStr
+                           < currentState.Reads[ReadIndex].UP_Close[CloseIndex].AbsLoc) {
 
                         currentState.Reads[ReadIndex].Right
                            = currentState.Reads[ReadIndex]. UP_Close[CloseIndex].AbsLoc
@@ -161,7 +164,10 @@ int searchTandemDuplications(ControlState& currentState, unsigned NumBoxes)
                            + currentState.Reads[ReadIndex].UP_Far[FarIndex]. LengthStr
                            == currentState.Reads[ReadIndex].ReadLength
                            && currentState.Reads[ReadIndex]. UP_Close[CloseIndex].AbsLoc
-                           + currentState.Reads[ReadIndex].ReadLength
+                           + currentState.Reads[ReadIndex].UP_Close[CloseIndex].LengthStr
+                           < currentState.Reads[ReadIndex].UP_Far[FarIndex]. AbsLoc
+                           && currentState.Reads[ReadIndex]. UP_Close[CloseIndex].AbsLoc
+                           + currentState.Reads[ReadIndex].UP_Far[FarIndex].LengthStr
                            < currentState.Reads[ReadIndex].UP_Far[FarIndex]. AbsLoc) {
                         currentState.Reads[ReadIndex].Right
                            = currentState.Reads[ReadIndex]. UP_Far[FarIndex].AbsLoc

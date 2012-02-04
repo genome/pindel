@@ -1567,9 +1567,10 @@ void updateReadAfterCloseEndMapping( SPLIT_READ& Temp_One_Read )
    }
 }
 
-void GetCloseEnd(const std::string & CurrentChr, SPLIT_READ & Temp_One_Read)
-{
 
+
+void GetCloseEndInner(const std::string & CurrentChr, SPLIT_READ & Temp_One_Read)
+{
    Temp_One_Read.ReadLength = Temp_One_Read.UnmatchedSeq.size();
    Temp_One_Read.ReadLengthMinus = Temp_One_Read.ReadLength - 1;
 
@@ -1640,6 +1641,17 @@ void GetCloseEnd(const std::string & CurrentChr, SPLIT_READ & Temp_One_Read)
       }
    }
    return;
+}
+
+void GetCloseEnd(const std::string & CurrentChr, SPLIT_READ & Temp_One_Read)
+{
+	std::cout << "Trying to match " << Temp_One_Read.UnmatchedSeq << std::endl;
+	GetCloseEndInner( CurrentChr, Temp_One_Read );
+	if (Temp_One_Read.UP_Close.size()==0) { // no good close ends found
+		Temp_One_Read.UnmatchedSeq = ReverseComplement( Temp_One_Read.UnmatchedSeq );
+		std::cout << "New attempt: Trying to match " << Temp_One_Read.UnmatchedSeq << std::endl;
+		GetCloseEndInner( CurrentChr, Temp_One_Read );
+	}
 }
 
 void CheckBoth(const SPLIT_READ & OneRead, const std::string & TheInput,
@@ -1800,9 +1812,7 @@ void CheckBoth(const SPLIT_READ & OneRead, const std::string & TheInput,
          }
          if (Sum) {
             const short CurrentLengthOutput = CurrentLength + 1;
-            CheckBoth(OneRead, TheInput, CurrentReadSeq, PD_Plus_Output,
-                      PD_Minus_Output, BP_Start, BP_End, CurrentLengthOutput,
-                      UP);
+            CheckBoth(OneRead, TheInput, CurrentReadSeq, PD_Plus_Output, PD_Minus_Output, BP_Start, BP_End, CurrentLengthOutput, UP);
          }
          else {
             return;
