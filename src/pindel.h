@@ -140,7 +140,7 @@ struct SPLIT_READ {
 		IndelSize = 0;
 		Unique = false;
 		score = 0.0;
-		InsertedStr = "";
+		//InsertedStr = "";
 		NT_str = "";
 		NT_size = 0;
 		Used = false;

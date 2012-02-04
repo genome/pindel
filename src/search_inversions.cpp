@@ -103,8 +103,8 @@ int searchInversions(ControlState& currentState, unsigned NumBoxes)
                                  = "";
                               currentState.Reads[ReadIndex].NT_size
                                  = 0;
-                              currentState.Reads[ReadIndex]. InsertedStr
-                                 = "";
+                              //currentState.Reads[ReadIndex]. InsertedStr
+                              //   = "";
                               currentState.Reads[ReadIndex].BPLeft
                                  = currentState.Reads[ReadIndex].UP_Close[CloseIndex].AbsLoc
                                    + 1 - g_SpacerBeforeAfter;
@@ -199,8 +199,8 @@ int searchInversions(ControlState& currentState, unsigned NumBoxes)
                                  = "";
                               currentState.Reads[ReadIndex].NT_size
                                  = 0;
-                              currentState.Reads[ReadIndex]. InsertedStr
-                                 = "";
+                              //currentState.Reads[ReadIndex]. InsertedStr
+                              //   = "";
                               currentState.Reads[ReadIndex].BPRight
                                  = currentState.Reads[ReadIndex].UP_Close[CloseIndex].AbsLoc
                                    - g_SpacerBeforeAfter;
@@ -299,8 +299,8 @@ int searchInversions(ControlState& currentState, unsigned NumBoxes)
                                  = "";
                               currentState.Reads[ReadIndex].NT_size
                                  = 0;
-                              currentState.Reads[ReadIndex]. InsertedStr
-                                 = "";
+                              //currentState.Reads[ReadIndex]. InsertedStr
+                              //   = "";
                               currentState.Reads[ReadIndex].BPLeft
                                  = currentState.Reads[ReadIndex].UP_Far[FarIndex].AbsLoc
                                    - g_SpacerBeforeAfter;
@@ -388,8 +388,8 @@ int searchInversions(ControlState& currentState, unsigned NumBoxes)
                                  = "";
                               currentState.Reads[ReadIndex].NT_size
                                  = 0;
-                              currentState.Reads[ReadIndex]. InsertedStr
-                                 = "";
+                              //currentState.Reads[ReadIndex]. InsertedStr
+                              //   = "";
                               currentState.Reads[ReadIndex].BPLeft
                                  = currentState.Reads[ReadIndex].UP_Close[CloseIndex].AbsLoc
                                    - g_SpacerBeforeAfter;

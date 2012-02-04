@@ -92,7 +92,7 @@ int searchInversionsNT(ControlState& currentState, unsigned NumBoxes)
                           currentState.Reads[ReadIndex]. UnmatchedSeq). substr(
                           currentState.Reads[ReadIndex].BP + 1,
                           currentState.Reads[ReadIndex].NT_size);
-                  currentState.Reads[ReadIndex].InsertedStr = "";
+                  //currentState.Reads[ReadIndex].InsertedStr = "";
                   currentState.Reads[ReadIndex].BPLeft
                      = currentState.Reads[ReadIndex].UP_Close[CloseIndex].AbsLoc
                        + 1 - g_SpacerBeforeAfter;
@@ -160,7 +160,7 @@ int searchInversionsNT(ControlState& currentState, unsigned NumBoxes)
                      = currentState.Reads[ReadIndex].UnmatchedSeq. substr(
                           currentState.Reads[ReadIndex].BP + 1,
                           currentState.Reads[ReadIndex].NT_size);
-                  currentState.Reads[ReadIndex].InsertedStr = "";
+                  //currentState.Reads[ReadIndex].InsertedStr = "";
                   currentState.Reads[ReadIndex].BPRight
                      = currentState.Reads[ReadIndex].UP_Close[CloseIndex].AbsLoc
                        - g_SpacerBeforeAfter;
@@ -231,7 +231,7 @@ int searchInversionsNT(ControlState& currentState, unsigned NumBoxes)
                      = currentState.Reads[ReadIndex].UnmatchedSeq. substr(
                           currentState.Reads[ReadIndex].BP + 1,
                           currentState.Reads[ReadIndex].NT_size);
-                  currentState.Reads[ReadIndex].InsertedStr = "";
+                  //currentState.Reads[ReadIndex].InsertedStr = "";
                   currentState.Reads[ReadIndex].BPLeft
                      = currentState.Reads[ReadIndex].UP_Far[FarIndex].AbsLoc
                        - g_SpacerBeforeAfter;
@@ -297,7 +297,7 @@ int searchInversionsNT(ControlState& currentState, unsigned NumBoxes)
                           currentState.Reads[ReadIndex]. UnmatchedSeq). substr(
                           currentState.Reads[ReadIndex].BP + 1,
                           currentState.Reads[ReadIndex].NT_size);
-                  currentState.Reads[ReadIndex].InsertedStr = "";
+                  //currentState.Reads[ReadIndex].InsertedStr = "";
                   currentState.Reads[ReadIndex].BPLeft
                      = currentState.Reads[ReadIndex].UP_Close[CloseIndex].AbsLoc
                        - g_SpacerBeforeAfter;

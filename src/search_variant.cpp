@@ -138,7 +138,7 @@ int SearchVariant::Search(ControlState& currentState, const unsigned numBoxes)
                         //												currentState.Reads[ReadIndex].BP
                         //														+ 1,
                         //												currentState.Reads[ReadIndex]. IndelSize);
-                        currentState.Reads[ReadIndex].InsertedStr
+                        currentState.Reads[ReadIndex].NT_str
                            = getInsertedStr1(currentState, ReadIndex);
 
                         currentState.Reads[ReadIndex].BPLeft
@@ -238,7 +238,7 @@ int SearchVariant::Search(ControlState& currentState, const unsigned numBoxes)
                         //												currentState.Reads[ReadIndex].BP
                         //														+ 1,
                         //												currentState.Reads[ReadIndex]. IndelSize);
-                        currentState.Reads[ReadIndex].InsertedStr
+                        currentState.Reads[ReadIndex].NT_str
                            = getInsertedStr2(currentState,
                                              ReadIndex);
 

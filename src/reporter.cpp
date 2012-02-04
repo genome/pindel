@@ -765,7 +765,7 @@ SortOutputSI (const unsigned &NumBoxes, const std::string & CurrentChr,
          OneIndelEvent.End = 0;
          OneIndelEvent.Support = OneIndelEvent.End - OneIndelEvent.Start + 1;
          OneIndelEvent.IndelSize = GoodIndels[0].IndelSize;
-         OneIndelEvent.IndelStr = GoodIndels[0].InsertedStr;
+         OneIndelEvent.IndelStr = GoodIndels[0].NT_str;
          OneIndelEvent.BPLeft = GoodIndels[0].BPLeft;
          OneIndelEvent.BPRight = GoodIndels[0].BPRight;
          OneIndelEvent.WhetherReport = true;
@@ -792,7 +792,7 @@ SortOutputSI (const unsigned &NumBoxes, const std::string & CurrentChr,
                OneIndelEvent.BPLeft = GoodIndels[GoodIndex].BPLeft;
                OneIndelEvent.BPRight = GoodIndels[GoodIndex].BPRight;
                OneIndelEvent.IndelSize = GoodIndels[GoodIndex].IndelSize;
-               OneIndelEvent.IndelStr = GoodIndels[GoodIndex].InsertedStr;
+               OneIndelEvent.IndelStr = GoodIndels[GoodIndex].NT_str;
             }
          }
          OneIndelEvent.RealStart = OneIndelEvent.BPLeft;
@@ -2012,9 +2012,9 @@ std::string GetConsensusInsertedStr(const std::vector <SPLIT_READ> & Reads, cons
     std::map<std::string,int> NT_str_2_count;
     std::map<std::string,int>::iterator it;
     for (int i = StartIndex; i <= EndIndex; i++) {
-        it = NT_str_2_count.find(Reads[i].InsertedStr);
+        it = NT_str_2_count.find(Reads[i].NT_str);
         if (it == NT_str_2_count.end()) {
-            NT_str_2_count[Reads[i].InsertedStr] = 1;
+            NT_str_2_count[Reads[i].NT_str] = 1;
         }
         else it->second++;
     }

@@ -94,7 +94,7 @@ int searchTandemDuplications(ControlState& currentState, unsigned NumBoxes)
                            = currentState.Reads[ReadIndex]. UP_Close[CloseIndex].AbsLoc
                              - currentState.Reads[ReadIndex]. UP_Far[FarIndex].AbsLoc
                              + 1;
-                        currentState.Reads[ReadIndex].InsertedStr = "";
+                        //currentState.Reads[ReadIndex].InsertedStr = "";
                         currentState.Reads[ReadIndex].BPRight
                            = currentState.Reads[ReadIndex].UP_Close[CloseIndex].AbsLoc
                              - g_SpacerBeforeAfter;
@@ -185,7 +185,7 @@ int searchTandemDuplications(ControlState& currentState, unsigned NumBoxes)
                            = currentState.Reads[ReadIndex]. UP_Far[FarIndex].AbsLoc
                              - currentState.Reads[ReadIndex]. UP_Close[CloseIndex].AbsLoc
                              + 1;
-                        currentState.Reads[ReadIndex].InsertedStr = "";
+                        //currentState.Reads[ReadIndex].InsertedStr = "";
                         currentState.Reads[ReadIndex].BPRight
                            = currentState.Reads[ReadIndex].UP_Far[FarIndex].AbsLoc
                              - g_SpacerBeforeAfter;

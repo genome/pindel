@@ -86,7 +86,7 @@ int searchIndels(ControlState& currentState, unsigned NumBoxes)
                        currentState.Reads[ReadIndex]. UnmatchedSeq). substr(
                        currentState.Reads[ReadIndex].BP + 1,
                        currentState.Reads[ReadIndex].NT_size);
-               currentState.Reads[ReadIndex].InsertedStr = "";
+               //currentState.Reads[ReadIndex].InsertedStr = "";
 
                currentState.Reads[ReadIndex].IndelSize
                   = (currentState.Reads[ReadIndex].Right
@@ -168,7 +168,7 @@ int searchIndels(ControlState& currentState, unsigned NumBoxes)
                      - currentState.Reads[ReadIndex].Left)
                     - currentState.Reads[ReadIndex].ReadLengthMinus
                     + currentState.Reads[ReadIndex].NT_size;
-               currentState.Reads[ReadIndex].InsertedStr = "";
+               //currentState.Reads[ReadIndex].InsertedStr = "";
                currentState.Reads[ReadIndex].BPLeft
                   = currentState.Reads[ReadIndex].UP_Far[FarIndex].AbsLoc
                     - g_SpacerBeforeAfter;
