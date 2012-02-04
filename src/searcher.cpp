@@ -51,6 +51,7 @@ CheckLeft_Close (const SPLIT_READ & OneRead,
                TempOne.Direction = FORWARD;
                TempOne.Strand = ANTISENSE;
                TempOne.Mismatches = i;
+                  
                if (CheckMismatches(TheInput, OneRead.UnmatchedSeq, TempOne)) {
                   LeftUP.push_back (TempOne);
                   break;
@@ -292,6 +293,7 @@ CheckMismatches (const std::string & TheInput, const std::string & InputReadSeq,
       //cout << "Start: " << Start << endl;
       //cout << "Min_Perfect_Match_Around_BP: " << Min_Perfect_Match_Around_BP << endl;
       if (UP.LengthStr <= Min_Perfect_Match_Around_BP) {
+          //std::cout << "here 1" << std::endl;
          return false;
       }
       BP_On_Read =
@@ -304,6 +306,7 @@ CheckMismatches (const std::string & TheInput, const std::string & InputReadSeq,
                           Min_Perfect_Match_Around_BP);
       //cout << "BP_On_Ref: " << BP_On_Ref << endl;
       if (BP_On_Read != BP_On_Ref) {
+          //std::cout << "here 2" << std::endl;
          return false;
       }
       //cout << "+e" << endl;
@@ -312,6 +315,7 @@ CheckMismatches (const std::string & TheInput, const std::string & InputReadSeq,
       //cout << "-s" << endl;
       Start = UP.AbsLoc + UP.LengthStr - CurrentReadLength;
       if (CurrentReadLength < UP.LengthStr) {
+          //std::cout << "here 3" << std::endl;
          return false;
       }
       BP_On_Read =
@@ -319,12 +323,13 @@ CheckMismatches (const std::string & TheInput, const std::string & InputReadSeq,
                                 Min_Perfect_Match_Around_BP);
       BP_On_Ref = TheInput.substr (UP.AbsLoc, Min_Perfect_Match_Around_BP);
       if (BP_On_Read != BP_On_Ref) {
+          //std::cout << "here 4" << std::endl;
          return false;
       }
       //cout << "-e" << endl;
    }
    //cout << "CheckMismatches3" << endl;
-   short MAX_ALLOWED_MISMATCHES = (short) (CurrentReadSeq.size () * MaximumAllowedMismatchRate + 1);	//
+   short MAX_ALLOWED_MISMATCHES = (short) (CurrentReadSeq.size () * MaximumAllowedMismatchRate);	//
 
    short NumMismatches = 0;			// Match2N[(short)'A'] = 'N';
 
@@ -341,10 +346,12 @@ CheckMismatches (const std::string & TheInput, const std::string & InputReadSeq,
       }
    }
    //cout << "CheckMismatches4" << endl;
-   if (NumMismatches > MAX_ALLOWED_MISMATCHES) {
+    //std::cout << "NumMismatches " << NumMismatches << "\tMAX_ALLOWED_MISMATCHES " << MAX_ALLOWED_MISMATCHES << std::endl;
+   if (NumMismatches >= MAX_ALLOWED_MISMATCHES) {
       return true;
    }
    else {
+      // std::cout << "here 5" << std::endl;
       return false;
    }
 }

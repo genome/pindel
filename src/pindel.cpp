@@ -123,7 +123,7 @@ unsigned int g_CloseMappedMinus = 0;
 std::vector<Parameter *> parameters;
 
 // #########################################################
-int ADDITIONAL_MISMATCH = 2; // user
+int ADDITIONAL_MISMATCH = 3; // user
 unsigned int g_minimalAnchorQuality = 20; // true value set in the defineParameters
 int Min_Perfect_Match_Around_BP = 3; // user                   //#
 int MIN_IndelSize_NT = 50; //user            //#
@@ -1605,6 +1605,9 @@ void GetCloseEndInner(const std::string & CurrentChr, SPLIT_READ & Temp_One_Read
             }
          }
       }
+       //if (Temp_One_Read.Name == "@1-99550/2") {
+       //    std::cout << Temp_One_Read.Name << " PD[0].size() " << PD[0].size() << std::endl;
+       //}
       if (PD[0].size())
          CheckLeft_Close(Temp_One_Read, CurrentChr, CurrentReadSeq, PD,
                          BP_Start, BP_End, FirstBase, UP); // LengthStr
@@ -1645,13 +1648,17 @@ void GetCloseEndInner(const std::string & CurrentChr, SPLIT_READ & Temp_One_Read
 
 void GetCloseEnd(const std::string & CurrentChr, SPLIT_READ & Temp_One_Read)
 {
-	std::cout << "Trying to match " << Temp_One_Read.UnmatchedSeq << std::endl;
+	
 	GetCloseEndInner( CurrentChr, Temp_One_Read );
-	if (Temp_One_Read.UP_Close.size()==0) { // no good close ends found
+    
+    if (Temp_One_Read.UP_Close.size()==0) { // no good close ends found
+        //std::cout << "Trying to match " << Temp_One_Read.UnmatchedSeq << std::endl;
 		Temp_One_Read.UnmatchedSeq = ReverseComplement( Temp_One_Read.UnmatchedSeq );
-		std::cout << "New attempt: Trying to match " << Temp_One_Read.UnmatchedSeq << std::endl;
+		
 		GetCloseEndInner( CurrentChr, Temp_One_Read );
-	}
+        //std::cout << "New attempt: Trying to match " << Temp_One_Read.UnmatchedSeq << "\t"
+        //          << Temp_One_Read.UP_Close.size() << std::endl;
+    }
 }
 
 void CheckBoth(const SPLIT_READ & OneRead, const std::string & TheInput,

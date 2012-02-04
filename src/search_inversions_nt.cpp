@@ -106,8 +106,10 @@ int searchInversionsNT(ControlState& currentState, unsigned NumBoxes)
                                           currentState.FutureReads);
                   }
                   else {
-                     if (currentState.Reads[ReadIndex].NT_size
-                           <= Max_Length_NT) {
+                     if (//currentState.Reads[ReadIndex].NT_size
+                         //  <= Max_Length_NT
+                         1
+                         ) {
                         if (readInSpecifiedRegion(
                                  currentState.Reads[ReadIndex],
                                  currentState.regionStartDefined,
@@ -173,8 +175,9 @@ int searchInversionsNT(ControlState& currentState, unsigned NumBoxes)
                                           currentState.FutureReads);
                   }
                   else {
-                     if (currentState.Reads[ReadIndex].NT_size
-                           <= Max_Length_NT && readInSpecifiedRegion(
+                     if (//currentState.Reads[ReadIndex].NT_size
+                         //  <= Max_Length_NT && 
+                         readInSpecifiedRegion(
                               currentState.Reads[ReadIndex],
                               currentState.regionStartDefined,
                               currentState.regionEndDefined,
@@ -242,8 +245,9 @@ int searchInversionsNT(ControlState& currentState, unsigned NumBoxes)
                                           currentState.FutureReads);
                   }
                   else {
-                     if (currentState.Reads[ReadIndex].NT_size
-                           <= Max_Length_NT && readInSpecifiedRegion(
+                     if (//currentState.Reads[ReadIndex].NT_size
+                         //  <= Max_Length_NT && 
+                         readInSpecifiedRegion(
                               currentState.Reads[ReadIndex],
                               currentState.regionStartDefined,
                               currentState.regionEndDefined,
@@ -308,8 +312,9 @@ int searchInversionsNT(ControlState& currentState, unsigned NumBoxes)
                                           currentState.FutureReads);
                   }
                   else {
-                     if (currentState.Reads[ReadIndex].NT_size
-                           <= Max_Length_NT && readInSpecifiedRegion(
+                     if (//currentState.Reads[ReadIndex].NT_size
+                         //  <= Max_Length_NT && 
+                         readInSpecifiedRegion(
                               currentState.Reads[ReadIndex],
                               currentState.regionStartDefined,
                               currentState.regionEndDefined,

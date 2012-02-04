@@ -608,6 +608,8 @@ build_record (const bam1_t * mapped_read, const bam1_t * unmapped_read,
              "\t" << Temp_One_Read.MS <<
              "\t" << Temp_One_Read.InsertSize <<
              "\t" << Temp_One_Read.Tag << std.endl);
+
+
    g_NumReadInWindow++;
    Temp_One_Read.MAX_SNP_ERROR =
       (short) trunc((double)0.5+Temp_One_Read.UnmatchedSeq.size () * Seq_Error_Rate);

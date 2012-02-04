@@ -109,8 +109,9 @@ int searchTandemDuplicationsNT(ControlState& currentState, unsigned NumBoxes)
                                        currentState.FutureReads);
                }
                else {
-                  if (currentState.Reads[ReadIndex].NT_size
-                        <= Max_Length_NT && readInSpecifiedRegion(
+                  if (//currentState.Reads[ReadIndex].NT_size
+                      //  <= Max_Length_NT && 
+                      readInSpecifiedRegion(
                            currentState.Reads[ReadIndex],
                            currentState.regionStartDefined,
                            currentState.regionEndDefined,
@@ -177,8 +178,9 @@ int searchTandemDuplicationsNT(ControlState& currentState, unsigned NumBoxes)
                                        currentState.FutureReads);
                }
                else {
-                  if (currentState.Reads[ReadIndex].NT_size
-                        <= Max_Length_NT && readInSpecifiedRegion(
+                  if (//currentState.Reads[ReadIndex].NT_size
+                      //  <= Max_Length_NT && 
+                      readInSpecifiedRegion(
                            currentState.Reads[ReadIndex],
                            currentState.regionStartDefined,
                            currentState.regionEndDefined,
