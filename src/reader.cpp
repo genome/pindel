@@ -96,8 +96,8 @@ void showReadStats(const std::vector<SPLIT_READ>& Reads)
             ", + " << g_InWinPlus << " - " << g_InWinMinus << std::endl);
    LOG_INFO(std::cout << "Number of reads where the close end could be mapped:\t" << Reads.size () <<
             ", + " << g_CloseMappedPlus << " - " << g_CloseMappedMinus << std::endl);
-   LOG_INFO(std::cout << "Percentage of reads which could be mapped: + " << std::setprecision(2) << std::fixed << safeDivide( g_CloseMappedPlus * 100.0 , g_InWinPlus ) <<
-            "% - " << safeDivide( g_CloseMappedMinus * 100.0 , g_InWinMinus ) << "%\n");
+   LOG_INFO(std::cout << "Percentage of reads which could be mapped: + " << std::setprecision(2) << std::fixed << safeDivide( (int)(g_CloseMappedPlus * 100.0) , g_InWinPlus ) <<
+            "% - " << safeDivide( (int)(g_CloseMappedMinus * 100.0) , g_InWinMinus ) << "%\n");
    std::cout << std::endl;
    /*LOG_INFO(std::cout << "NumReadStored / NumReadInChr = " <<
       	       safeDivide( Reads.size () * 100.0 , g_NumReadInChr ) <<
@@ -547,7 +547,7 @@ build_record (const bam1_t * mapped_read, const bam1_t * unmapped_read,
    }
    int n_count = 0;
    size_t found = c_sequence.find ('N', 0);
-   int max_ns = length * .10;
+   int max_ns = (int)(length * .10);
    while (found != std::string::npos) {
       n_count++;
       found = c_sequence.find ('N', found + 1);

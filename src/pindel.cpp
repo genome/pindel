@@ -49,7 +49,9 @@
 
 /*v Kai Ye update 0.2.4h, Oct 31 2011, update for MOSAIK */
 /*v EW update 0.2.4j, Pindel will now abort when insert size is set too small. */
-const std::string Pindel_Version_str = "Pindel version 0.2.4j, Jan 30 2012.";
+/*v Kai/EW update 0.2.4k, pindel will now give the consensus inserted sequence instead of always the first one. */
+/*v EW update 0.2.4l, -Werror removed for user convenience, also made some typecasts in reader.cpp explicit; also reset -l and -k options to true by default. */
+const std::string Pindel_Version_str = "Pindel version 0.2.4l, Feb 15 2012.";
 
 int findParameter(std::string name);
 
@@ -402,10 +404,10 @@ void defineParameters(std::string & WhichChr)
          "-l",
          "--report_long_insertions",
          "report insertions of which the full sequence cannot be deduced because of their length "
-         "(default false)", false, false));
+         "(default true)", false, true));
    parameters. push_back(
       new BoolParameter(&Analyze_BP, "-k", "--report_breakpoints",
-                        "report breakpoints " "(default false)", false, false));
+                        "report breakpoints " "(default true)", false, true));
 
    parameters. push_back(
       new BoolParameter(
