@@ -43,9 +43,9 @@ Makefile.local:
 	echo '' >> $@
 	echo '# Acceptance test tuning variables (seconds), set to realistic values for your system' >> $@
 	echo '# Numbers based on running in CI on Intel i7 2.8GHz, 8 cores, 24GB RAM' >> $@
-	echo 'COLOUSINGBD15_TIME=26' >> $@
-	echo 'COLOWOBD15_TIME=30' >> $@
-	echo 'SIM1CHRVS20305_TIME=21' >> $@
+	echo 'COLOUSINGBD15_TIME=31' >> $@
+	echo 'COLOWOBD15_TIME=35' >> $@
+	echo 'SIM1CHRVS20305_TIME=26' >> $@
 	echo 'Created Makefile.local, please review the configuration' && exit 1
 
 # Pseudo targets for configuration
