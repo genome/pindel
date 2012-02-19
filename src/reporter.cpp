@@ -333,6 +333,7 @@ OutputInversions (const std::vector < SPLIT_READ > &Inv,
                   const unsigned int &RealStart,
                   const unsigned int &RealEnd, std::ofstream & InvOutf)
 {
+    //std::cout << "start" << std::endl;
    int LeftNT_index = -1;
    int RightNT_index = -1;
    for (unsigned Index = C_S; Index <= C_E; Index++) {
@@ -393,7 +394,7 @@ OutputInversions (const std::vector < SPLIT_READ > &Inv,
       Num_U_Reads +=
          NumSupportPerTag[i].NumUPlus + NumSupportPerTag[i].NumUMinus;
    }
-
+   //std::cout << "+" << std::endl;
    unsigned int EasyScore = LeftS * RightS;
    CurrentChrMask[Inv[C_S].BPLeft + g_SpacerBeforeAfter] = 'B';
    CurrentChrMask[Inv[C_S].BPRight + g_SpacerBeforeAfter] = 'B';
@@ -453,7 +454,7 @@ OutputInversions (const std::vector < SPLIT_READ > &Inv,
                   << "\t" << Inv[GoodIndex].Name << std::endl;
       }
    }
-
+    //std::cout << "-" << std::endl;
    InvOutf <<
            "----------------------------------------------------------------------------------------------------"
            << std::endl;
@@ -470,8 +471,11 @@ OutputInversions (const std::vector < SPLIT_READ > &Inv,
    }
    InvOutf << TheInput.substr (Inv[C_S].BPRight + 1 + g_SpacerBeforeAfter,
                                g_reportLength) << std::endl;
+    //std::cout << "here" << std::endl;
    for (unsigned int GoodIndex = C_S; GoodIndex <= C_E; GoodIndex++) {
+       //std::cout << GoodIndex << "\t" << C_E << "\t" << Inv[GoodIndex].BP << std::endl;
       if (Inv[GoodIndex].MatchedD == Minus ) {
+          //std::cout << Inv[GoodIndex].BP << "\t<\t" << g_reportLength << std::endl;
          SpaceBeforeReadSeq = g_reportLength - Inv[GoodIndex].BP - 1;
          InvOutf << std::string( SpaceBeforeReadSeq, ' ' );
 
@@ -489,7 +493,7 @@ OutputInversions (const std::vector < SPLIT_READ > &Inv,
                   << "\t" << Inv[GoodIndex].Name << std::endl;
       }
    }
-
+    //std::cout << "end" << std::endl;
 }
 
 void
