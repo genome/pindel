@@ -51,7 +51,8 @@
 /*v EW update 0.2.4j, Pindel will now abort when insert size is set too small. */
 /*v Kai/EW update 0.2.4k, pindel will now give the consensus inserted sequence instead of always the first one. */
 /*v EW update 0.2.4l, -Werror removed for user convenience, also made some typecasts in reader.cpp explicit; also reset -l and -k options to true by default. */
-const std::string Pindel_Version_str = "Pindel version 0.2.4l, Feb 15 2012.";
+/*v Kai update 0.2.4m, removed an error in invertion calling. */
+const std::string Pindel_Version_str = "Pindel version 0.2.4m, Feb 24 2012.";
 
 int findParameter(std::string name);
 
