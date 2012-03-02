@@ -7,6 +7,7 @@
 	e.m.w.lameijer@lumc.nl
 	+31(0)71-526 9745
 
+        Version 0.2.8 [March 2nd, 2012] Now does not skip chromosome when compiling long insertions
 	Version 0.2.7 [March 2nd, 2012] Skip chromosomes in which Pindel has not called any SVs
 	Version 0.2.6 [March 2nd, 2012] Fixed problem in which chromosome was not properly freed from memory 
 	Version 0.2.5 [March 2nd, 2012] Fixed segmentation fault error when there are no reads in a chromosome
@@ -19,7 +20,6 @@
 	Version 0.1.9 [August 19th, 2011. To save memory, now reads in chromosomes only when needed, so doesn't put the entire genome in memory at once.
 	Version 0.1.8 [July 27th, 2011. END-position now proper according to VCF rules (so for deletion: start+length+1, for SI: start+1), mentioning -d] 
 
-	TODO It would definitely be useful to skip chromosomes that are in the reference but are not called by Pindel (like the GL-stuff)
 */
 
 
@@ -42,7 +42,7 @@ const int FIRST_SAMPLE_INDEX = 32; // index of first sample name
 
 using namespace std;
 
-string g_versionString = "0.2.4";
+string g_versionString = "0.2.8";
 string g_programName = "pindel2vcf";
 
 bool g_normalBaseArray[256];
