@@ -1305,11 +1305,11 @@ void OutputShortInversion (const std::vector < SPLIT_READ > &supportingReads,
    CurrentChrMask[supportingReads[ indexOfFirstRead ].BPLeft + g_SpacerBeforeAfter] = 'B';
    CurrentChrMask[supportingReads[ indexOfFirstRead ].BPRight + g_SpacerBeforeAfter] = 'B';
    reportBreakDancerEvent( supportingReads[ indexOfFirstRead ].FragName, supportingReads[indexOfFirstRead].BPLeft+1,
-                           supportingReads[indexOfFirstRead].BPRight+1, supportingReads[indexOfFirstRead].IndelSize, "D", deletionFileData.getSvIndex());
+                           supportingReads[indexOfFirstRead].BPRight+1, supportingReads[indexOfFirstRead].IndelSize, "INV", deletionFileData.getSvIndex());
    InversionOutF <<
                  "####################################################################################################"
                  << std::endl;
-   InversionOutF << g_numberOfInvInstances++ << "\tD " << supportingReads[indexOfFirstRead].IndelSize << "\tNT " << supportingReads[indexOfFirstRead].NT_size << " \"" <<
+   InversionOutF << g_numberOfInvInstances++ << "\tINV " << supportingReads[indexOfFirstRead].IndelSize << "\tNT " << supportingReads[indexOfFirstRead].NT_size << " \"" <<
                  supportingReads[indexOfFirstRead].NT_str << "\"" << "\tChrID " << supportingReads[indexOfFirstRead].FragName << "\tBP " << supportingReads[indexOfFirstRead].BPLeft + 1 <<
                  "\t" << supportingReads[indexOfFirstRead].BPRight + 1 << "\tBP_range " << supportingReads[indexOfFirstRead].BPLeft + 1 << "\t" <<
                  supportingReads[indexOfFirstRead].BPRight + 1 << "\tSupports " << NumberOfReads << "\t" << Num_U_Reads << "\t+ " << LeftS - 1 << "\t" << LeftUNum << "\t- " << RightS - 1 <<
