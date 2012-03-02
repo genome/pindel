@@ -7,6 +7,9 @@
 	e.m.w.lameijer@lumc.nl
 	+31(0)71-526 9745
 
+	Version 0.2.7 [March 2nd, 2012] Skip chromosomes in which Pindel has not called any SVs
+	Version 0.2.6 [March 2nd, 2012] Fixed problem in which chromosome was not properly freed from memory 
+	Version 0.2.5 [March 2nd, 2012] Fixed segmentation fault error when there are no reads in a chromosome
 	Version 0.2.4 [February 6th, 2012] Can save memory at the cost of time by implementing a window-size option.
 	Version 0.2.3 [February 6th, 2012] More memory-efficient by not explicitly storing REF and ALT strings, but by using recalculation instead of storage
 	Version 0.2.1 [January 3rd, 2012] Now also correctly reads in fasta files which do not only contain uppercase characters. 
@@ -14,7 +17,12 @@
 					    Also, genotypes are somewhat more correctly indicated with . and 1/.
                                             Also, replaces -1 by . to indicate unknown number of fields in the declarations in the header
 	Version 0.1.9 [August 19th, 2011. To save memory, now reads in chromosomes only when needed, so doesn't put the entire genome in memory at once.
-	Version 0.1.8 [July 27th, 2011. END-position now proper according to VCF rules (so for deletion: start+length+1, for SI: start+1), mentioning -d] */
+	Version 0.1.8 [July 27th, 2011. END-position now proper according to VCF rules (so for deletion: start+length+1, for SI: start+1), mentioning -d] 
+
+	TODO It would definitely be useful to skip chromosomes that are in the reference but are not called by Pindel (like the GL-stuff)
+*/
+
+
 
 #include <algorithm>
 #include <fstream>
@@ -298,33 +306,46 @@ string convertToUppercase( const string& inputString)
    return outputString;
 }
 
+bool normalBase(char ch )
+{
+   return g_normalBaseArray[ ch ];
+}
+
+void makeStrangeBasesN(string& dna)
+{
+   int chromLength = dna.size();
+   for (int position=0; position<chromLength; position++ ) {
+      if (!normalBase(dna[ position ])) {
+         dna[ position ] ='N';
+      }
+   }
+}
+
 /* 'Chromosome' contains a string identifier as well as the base sequence of the chromosome itself. */
 class Chromosome
 {
 public:
    Chromosome(const string& identifier, const string& fastaFilename) {
       d_identifier = identifier;
-      d_sequence="";
+      d_sequence=NULL;
       d_fastaFilename=fastaFilename;
    }
+   ~Chromosome() { delete d_sequence; }
    const string* getChromPtr();
    const string getID() const {
       return d_identifier;
    }
-   void addBases(const string& bases ) {
-      string uppercaseBases = convertToUppercase( bases );
-      d_sequence += uppercaseBases;
-   }
-   void makeStrangeBasesN();
+
    void removeFromMemory() {
       cout << "Removing chromosome " << d_identifier << " from memory.\n";
-      d_sequence.clear();
+      delete d_sequence;
+		d_sequence=new string("");
    }
 
 private:
    void readFromFile();
    string d_identifier;
-   string d_sequence;
+   string* d_sequence;
    string d_fastaFilename;
 };
 
@@ -339,6 +360,7 @@ void Chromosome::readFromFile()
       exit(EXIT_FAILURE);
    }
    string refLine, refName, currentLine;
+	string tempChromosome = "";
 
    getline(referenceFile,refLine); // FASTA format always has a first line with the name of the reference in it
    // loop over each chromosome
@@ -354,16 +376,18 @@ void Chromosome::readFromFile()
       if (refName == d_identifier ) {
          cout << "Reading chromosome " << refName << " into memory." << endl;
          targetChromosomeRead = true;
-         addBases("N"); // for 1-shift
+         tempChromosome+="N"; // for 1-shift
       }
       getline(referenceFile,currentLine);
       while (!referenceFile.eof() && currentLine[0]!='>') {
          if (refName == d_identifier ) {
-            addBases( currentLine );
+				
+            tempChromosome += convertToUppercase( currentLine );
          }
          getline(referenceFile,currentLine);
       }
-      makeStrangeBasesN();
+      makeStrangeBasesN(tempChromosome);
+		d_sequence = new string( tempChromosome );
       refLine = currentLine;
    }
    while (!referenceFile.eof() && !targetChromosomeRead);
@@ -371,28 +395,16 @@ void Chromosome::readFromFile()
 
 const string* Chromosome::getChromPtr()
 {
-   if (d_sequence=="") { // sequence not read into memory
+   if (d_sequence == NULL) { // sequence not read into memory
       readFromFile();
       //cout << "Have read " << d_sequence;
    }
-   return &d_sequence;
+   return d_sequence;
 }
 
-bool normalBase(char ch )
-{
-   return g_normalBaseArray[ ch ];
-}
 
-void Chromosome::makeStrangeBasesN()
-{
-   int chromLength = d_sequence.size();
-   for (int position=0; position<chromLength; position++ ) {
-      if (!normalBase(d_sequence[ position ])) {
-         d_sequence[ position ] ='N';
-      }
-   }
 
-}
+
 
 /* 'Genome' contains a collection of chromosomes, and returns a pointer to the requested chromosome (the chromosome with the requested ID) */
 class Genome
@@ -960,7 +972,7 @@ string fetchElement( istream& instream, const int index )
    return element;
 }
 
-void getSampleNames(ifstream& svfile, set<string>& sampleNames)
+void getSampleNamesAndChromosomeNames(ifstream& svfile, set<string>& sampleNames, set<string>&chromosomeNames)
 {
    string line;
    while (!svfile.eof()) {
@@ -979,7 +991,12 @@ void getSampleNames(ifstream& svfile, set<string>& sampleNames)
          sampleNames.insert("TOTAL");
          return;
       }
-      string firstSampleName = fetchElement( lineStream, FIRST_SAMPLE_INDEX-2 );
+		string chromosomeName = fetchElement( lineStream, 6 );
+		chromosomeNames.insert( chromosomeName );
+//		cout << "Studying chromosome " << chromosome << endl;
+
+		// 8 = 2+6, so corrects for previous reads
+      string firstSampleName = fetchElement( lineStream, FIRST_SAMPLE_INDEX-8 );
       sampleNames.insert( firstSampleName );
       string newSampleName = fetchElement( lineStream, 5 );
       while (!lineStream.fail()) {
@@ -1000,14 +1017,12 @@ template<class T> void showVector( vector<T> vect )
 
 void showSet( set<string> aSet )
 {
-   cout << "Printing set: " << endl;
 
    set<string>::iterator index;
    int counter=1;
    for (index=aSet.begin(); index!=aSet.end(); index++ ) {
-      cout << counter++ << " " << *index << endl;
+      cout << counter++ << ". " << *index << endl;
    }
-   cout << "End of printing.\n";
 }
 
 
@@ -1395,13 +1410,17 @@ int main(int argc, char* argv[])
    setParameters();
    ofstream vcfFile(par.vcffile.c_str());
    set<string> sampleNames;
+	set<string> chromosomeNames;
    ifstream svfile(par.pindelfile.c_str());
    if (!svfile) {
       cout << "The pindel file (-p) does not exist.\n";
       exit( EXIT_FAILURE );
    }
-   getSampleNames(svfile,sampleNames);
+   getSampleNamesAndChromosomeNames(svfile,sampleNames,chromosomeNames);
+	cout<< "Samples:\n";
    showSet( sampleNames );
+	cout << "Chromosomes in which SVs have been found:\n";
+	showSet( chromosomeNames );
 
    map< string, int > sampleMap;
    makeSampleMap( sampleNames, sampleMap );
@@ -1414,6 +1433,11 @@ int main(int argc, char* argv[])
 // loop over chromosomes
    for (int chromosomeCount=0; chromosomeCount<genome.d_chromosomes.size(); chromosomeCount++ ) {
       par.chromosome = genome.d_chromosomes[ chromosomeCount ].getID();
+		// if no reads have been found for this chromosome, skip it
+		if (chromosomeNames.find(par.chromosome) == chromosomeNames.end() ) {
+			cout << "No reads for chromosome " << par.chromosome << ", skipping it.\n";
+			continue;
+		}
       cout << "Processing chromosome " << par.chromosome << endl;
       // rewind file to start
 		int regionStart = 0;
@@ -1455,11 +1479,13 @@ int main(int argc, char* argv[])
    	         } // if else: whether the SV passes through the filter
    	      } // if else: whether the SV can be fused with the next SV
    	   }  // for: loop over all SVs
-         backupSV = svs[ svs.size()-1 ];
-			backupAvailable = true;
+			if (svs.size()>0) {
+         	backupSV = svs[ svs.size()-1 ];
+				backupAvailable = true;
+			}
 			regionStart += (par.windowSize*1000000);
 		} while (regionEnd<genome.d_chromosomes[ chromosomeCount ].getChromPtr()->size());
-      if ( throughFilter( backupSV) ) {
+      if ( backupAvailable && throughFilter( backupSV) ) {
    	   vcfFile << backupSV;
    	}
       genome.d_chromosomes[ chromosomeCount ].removeFromMemory(); // to prevent memory overload
