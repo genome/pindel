@@ -988,8 +988,10 @@ void getSampleNamesAndChromosomeNames(ifstream& svfile, set<string>& sampleNames
       string svType = fetchElement( lineStream, 2 );
 
       if ( svType.compare("LI")==0 ) {
+			string chromosomeName = fetchElement( lineStream, 2 );
+			chromosomeNames.insert( chromosomeName );
          sampleNames.insert("TOTAL");
-         return;
+			continue;
       }
 		string chromosomeName = fetchElement( lineStream, 6 );
 		chromosomeNames.insert( chromosomeName );
