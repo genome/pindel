@@ -53,7 +53,7 @@
 /*v EW update 0.2.4l, -Werror removed for user convenience, also made some typecasts in reader.cpp explicit; also reset -l and -k options to true by default. */
 /*v Kai update 0.2.4m, removed an error in invertion calling. */
 /* EW update 0.2.4n, improved VCF creator: less memory, more speed, removed bug. */
-/* In progress: update 0.2.4o: does not report short inversions as deletions anymore. */
+/* In progress: update 0.2.4o: does not report short inversions as deletions anymore, also displays the reference for short inversions correctly. */
 const std::string Pindel_Version_str = "Pindel version 0.2.4n, March 2 2012.";
 
 int findParameter(std::string name);

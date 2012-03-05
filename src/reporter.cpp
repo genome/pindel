@@ -1332,10 +1332,7 @@ void OutputShortInversion (const std::vector < SPLIT_READ > &supportingReads,
    InversionOutF << std::endl;
 
    InversionOutF << chromosome.substr (supportingReads[indexOfFirstRead].Left - g_reportLength + supportingReads[indexOfFirstRead].BP + 1, g_reportLength);
-
-   for (short i = 0; i < firstSupportingRead.NT_size; i++) {
-      InversionOutF << Cap2Low( ReverseComplement( chromosome.substr( firstSupportingRead.Left + firstSupportingRead.BP + 1, firstSupportingRead.NT_size )));
-   }
+   InversionOutF << Cap2Low( ReverseComplement( chromosome.substr( firstSupportingRead.Left + firstSupportingRead.BP + 1, firstSupportingRead.NT_size )));
    InversionOutF << chromosome.substr (firstSupportingRead.Left + firstSupportingRead.BP + 1 + firstSupportingRead.IndelSize, g_reportLength) << std::endl;	// ReportLength
    short SpaceBeforeReadSeq;
    for (unsigned int GoodIndex = indexOfFirstRead; GoodIndex <= indexOfLastRead; GoodIndex++) {
