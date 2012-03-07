@@ -368,6 +368,7 @@ ReadInBamReads (const char *bam_path, const std::string & FragName,
    data.readBuffer=&readBuffer;
    //std::cout << "before bam fetch " << LeftReads.size() << std::endl;
    bam_fetch (fp, idx, tid, binStart, binEnd, &data, fetch_func);
+    readBuffer.flush(); 
    //std::cout << "after bam fetch " << LeftReads.size() << std::endl;
    showReadStats(LeftReads);
    //std::cout << "after showReadStats " << LeftReads.size() << std::endl;

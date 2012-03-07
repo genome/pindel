@@ -21,6 +21,8 @@
 // Pindel header files
 #include "pindel.h"
 #include "searcher.h"
+#include <cmath>
+
 
 
 void
@@ -329,7 +331,7 @@ CheckMismatches (const std::string & TheInput, const std::string & InputReadSeq,
       //cout << "-e" << endl;
    }
    //cout << "CheckMismatches3" << endl;
-   short MAX_ALLOWED_MISMATCHES = (short) (CurrentReadSeq.size () * MaximumAllowedMismatchRate);	//
+   float MAX_ALLOWED_MISMATCHES = CurrentReadSeq.size () * MaximumAllowedMismatchRate;	//
 
    short NumMismatches = 0;			// Match2N[(short)'A'] = 'N';
 
@@ -347,7 +349,7 @@ CheckMismatches (const std::string & TheInput, const std::string & InputReadSeq,
    }
    //cout << "CheckMismatches4" << endl;
     //std::cout << "NumMismatches " << NumMismatches << "\tMAX_ALLOWED_MISMATCHES " << MAX_ALLOWED_MISMATCHES << std::endl;
-   if (NumMismatches >= MAX_ALLOWED_MISMATCHES) {
+   if ((float)NumMismatches > MAX_ALLOWED_MISMATCHES) {
       return true;
    }
    else {

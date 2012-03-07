@@ -433,8 +433,8 @@ void defineParameters(std::string & WhichChr)
          &ADDITIONAL_MISMATCH,
          "-a",
          "--additional_mismatch",
-         "Pindel will only map part of a read to the reference genome if there are no other candidate positions with no more than the specified number of mismatches position. The bigger tha value, the more accurate but less sensitive. (default value 1)",
-         false, 1));
+         "Pindel will only map part of a read to the reference genome if there are no other candidate positions with no more than the specified number of mismatches position. The bigger tha value, the more accurate but less sensitive. (default value 2)",
+         false, 2));
 
    parameters. push_back(
       new IntParameter(
@@ -1172,7 +1172,7 @@ int main(int argc, char *argv[])
             }
 
          }
-         readBuffer.flush();
+         //readBuffer.flush();
 
          if (currentState.PindelReadDefined) {
             ReturnFromReadingReads = ReadInRead(
@@ -1190,7 +1190,8 @@ int main(int argc, char *argv[])
          }
          Time_Mine_E = time(NULL);
 
-         if (currentState.Reads.size()) {
+         if (currentState.Reads.size()) 
+         {
             (std::cout << "There are " << currentState.Reads. size()
              << " reads for this chromosome region." << std::endl); // what region?
 
