@@ -433,8 +433,8 @@ void defineParameters(std::string & WhichChr)
          &ADDITIONAL_MISMATCH,
          "-a",
          "--additional_mismatch",
-         "Pindel will only map part of a read to the reference genome if there are no other candidate positions with no more than the specified number of mismatches position. The bigger tha value, the more accurate but less sensitive. (default value 2)",
-         false, 2));
+         "Pindel will only map part of a read to the reference genome if there are no other candidate positions with no more than the specified number of mismatches position. The bigger tha value, the more accurate but less sensitive. (default value 1)",
+         false, 1));
 
    parameters. push_back(
       new IntParameter(
