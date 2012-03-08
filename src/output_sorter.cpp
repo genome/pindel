@@ -35,7 +35,10 @@ OutputSorter::OutputSorter (const unsigned &NumBoxes_in, const std::string & Cur
    InvOutf = &InvOutf_in;
 }
 
-OutputSorter::~OutputSorter () { }
+OutputSorter::~OutputSorter ()
+{
+   delete CurrentChr;
+}
 
 void OutputSorter::SortAndOutputInversions (std::vector < SPLIT_READ > &Reads, std::vector<unsigned> Inv[])
 {
