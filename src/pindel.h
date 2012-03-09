@@ -138,7 +138,8 @@ struct SPLIT_READ {
 		BPLeft = 0;
 		BPRight = 0; 
 		IndelSize = 0;
-		Unique = false;
+		//UniqueAnchor = false;
+        UniqueRead = false;
 		score = 0.0;
 		//InsertedStr = "";
 		NT_str = "";
@@ -174,7 +175,8 @@ struct SPLIT_READ {
 	unsigned int BPLeft;
 	unsigned int BPRight;
 	unsigned int IndelSize;
-	bool Unique;
+	//bool UniqueAnchor;
+    bool UniqueRead;
 	double score;
 	std::string InsertedStr;
 	std::string NT_str;

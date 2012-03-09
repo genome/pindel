@@ -83,9 +83,9 @@ OutputSorter::DoSortAndOutputInversions (std::vector<SPLIT_READ> &Reads,
                LOG_DEBUG (std::cout << InputIndels[First].BPLeft << "\t" << InputIndels[First].BPRight << "\t"
                           InputIndels[Second].BPLeft << "\t" << InputIndels[Second].BPRight << std::endl);
                {
-                  if (Reads[Inv[Box_index][First]].ReadLength ==	Reads[Inv[Box_index][Second]].ReadLength) {
+                  if (Reads[Inv[Box_index][First]].ReadLength == Reads[Inv[Box_index][Second]].ReadLength) {
                      if (Reads[Inv[Box_index][First]].LeftMostPos == Reads[Inv[Box_index][Second]].LeftMostPos) {
-                        Reads[Inv[Box_index][Second]].Unique = false;
+                        Reads[Inv[Box_index][Second]].UniqueRead = false;
                      }
                   }
                   if (Reads[Inv[Box_index][First]].BPLeft + Reads[Inv[Box_index][First]].BPRight < Reads[Inv[Box_index][Second]].BPLeft + Reads[Inv[Box_index][Second]].BPRight) {

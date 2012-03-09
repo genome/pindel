@@ -313,7 +313,8 @@ std::ostream& operator<<(std::ostream& os, const SPLIT_READ& splitRead)
    os << "BPLeft:" << splitRead.BPLeft << std::endl;
    os << "BPRight:" << splitRead.BPRight << std::endl;
    os << "IndelSize:" << splitRead.IndelSize << std::endl;
-   os << "Unique:" << splitRead.Unique << std::endl;
+   //os << "UniqueAnchor:" << splitRead.UniqueAnchor << std::endl;
+   os << "UniqueRead:" << splitRead.UniqueRead << std::endl; 
    os << "score:" << splitRead.score << std::endl;
    //os << "InsertedStr:" << splitRead.InsertedStr << std::endl;
    os << "NT_str:" << splitRead.NT_str  << std::endl;
@@ -1553,8 +1554,8 @@ void updateReadAfterCloseEndMapping( SPLIT_READ& Temp_One_Read )
       g_reportLength = Temp_One_Read.ReadLength;
    }
    Temp_One_Read.Used = false;
-   Temp_One_Read.Unique = true;
-
+   //Temp_One_Read.UniqueAnchor = true;
+   Temp_One_Read.UniqueRead = true;
    LOG_DEBUG(cout << Temp_One_Read.MatchedD << "\t" << Temp_One_Read.UP_Close.size() << "\t");
 
    CleanUniquePoints (Temp_One_Read.UP_Close);

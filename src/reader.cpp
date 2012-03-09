@@ -206,7 +206,8 @@ ReadInRead (std::ifstream & inf_ReadSeq, const std::string & FragName,
                      g_reportLength =
                         BufferReads[BufferReadsIndex].ReadLength;
                   BufferReads[BufferReadsIndex].Used = false;
-                  BufferReads[BufferReadsIndex].Unique = true;
+                  //BufferReads[BufferReadsIndex].UniqueAnchor = true;
+                  BufferReads[BufferReadsIndex].UniqueRead = true; 
                   LOG_DEBUG(std::cout << Temp_One_Read.MatchedD << "\t"
                             << Temp_One_Read.UP_Close.size() << "\t");
                   CleanUniquePoints (BufferReads[BufferReadsIndex].
@@ -263,8 +264,8 @@ ReadInRead (std::ifstream & inf_ReadSeq, const std::string & FragName,
             g_reportLength = BufferReads[BufferReadsIndex].ReadLength;
          }
          BufferReads[BufferReadsIndex].Used = false;
-         BufferReads[BufferReadsIndex].Unique = true;
-
+         //BufferReads[BufferReadsIndex].UniqueAnchor = true;
+         BufferReads[BufferReadsIndex].UniqueRead = true; 
          LOG_DEBUG(std::cout << Temp_One_Read.MatchedD
                    << "\t" << Temp_One_Read.UP_Close.size() << "\t");
 

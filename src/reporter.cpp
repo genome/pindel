@@ -58,13 +58,13 @@ void calculateSupportPerTag( const std::vector< SPLIT_READ >& reads, const unsig
 
       if (reads[readIndex].MatchedD == Plus)	{
          NumSupportPerTag[tagIndex].NumPlus++;
-         if (reads[readIndex].Unique) {
+         if (reads[readIndex].UniqueRead) {
             NumSupportPerTag[tagIndex].NumUPlus++;
          }
       }
       else {
          NumSupportPerTag[tagIndex].NumMinus++;
-         if (reads[readIndex].Unique) {
+         if (reads[readIndex].UniqueRead) {
             NumSupportPerTag[tagIndex].NumUMinus++;
          }
       }
@@ -78,13 +78,13 @@ void calculateSupportPerStrand( const std::vector< SPLIT_READ >& reads, const un
    for (unsigned int readIndex = firstReadIndex; readIndex <= lastReadIndex; readIndex++) {
       if (reads[readIndex].MatchedD == Plus) {
          LeftS++;
-         if (reads[readIndex].Unique) {
+         if (reads[readIndex].UniqueRead) {
             LeftUNum++;
          }
       }
       else {
          RightS++;
-         if (reads[readIndex].Unique) {
+         if (reads[readIndex].UniqueRead) {
             RightUNum++;
          }
       }
@@ -721,7 +721,7 @@ SortOutputSI (const unsigned &NumBoxes, const std::string & CurrentChr,
                            Reads[SIs[Box_index][Second]].ReadLength) {
                         if (Reads[SIs[Box_index][First]].LeftMostPos ==
                               Reads[SIs[Box_index][Second]].LeftMostPos) {
-                           Reads[SIs[Box_index][Second]].Unique = false;
+                           Reads[SIs[Box_index][Second]].UniqueRead = false;
                         }
                      }
 
@@ -899,7 +899,7 @@ SortAndOutputTandemDuplications (const unsigned &NumBoxes, const std::string & C
                            AllReads[TDs[Box_index][Second]].ReadLength) {
                         if (AllReads[TDs[Box_index][First]].LeftMostPos ==
                               AllReads[TDs[Box_index][Second]].LeftMostPos) {
-                           AllReads[TDs[Box_index][Second]].Unique = false;
+                           AllReads[TDs[Box_index][Second]].UniqueRead = false;
                         }
                      }
                      if (AllReads[TDs[Box_index][First]].BPLeft <
@@ -1093,7 +1093,7 @@ SortOutputD (const unsigned &NumBoxes, const std::string & CurrentChr,
                         if (Reads[Deletions[Box_index][First]].
                               LeftMostPos ==
                               Reads[Deletions[Box_index][Second]].LeftMostPos)
-                           Reads[Deletions[Box_index][Second]].Unique =
+                           Reads[Deletions[Box_index][Second]].UniqueRead =
                               false;
                      }
                      if (Reads[Deletions[Box_index][First]].BPLeft <
@@ -1394,7 +1394,7 @@ void SortOutputDI (const unsigned &NumBoxes, const std::string & CurrentChr,
                            Reads[DI[Box_index][Second]].ReadLength) {
                         if (Reads[DI[Box_index][First]].LeftMostPos ==
                               Reads[DI[Box_index][Second]].LeftMostPos) {
-                           Reads[DI[Box_index][Second]].Unique = false;
+                           Reads[DI[Box_index][Second]].UniqueRead = false;
                         }
                      }
                      if (Reads[DI[Box_index][First]].BPLeft <
