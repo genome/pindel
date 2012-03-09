@@ -714,9 +714,8 @@ SortOutputSI (const unsigned &NumBoxes, const std::string & CurrentChr,
          LOG_DEBUG(std::cout << "SIsNum " << SIsNum << std::endl);
          for (unsigned int First = 0; First < SIsNum - 1; First++) {
             {
-               for (unsigned int Second = First + 1; Second < SIsNum;
-                     Second++) {
-                  {
+               for (unsigned int Second = First + 1; Second < SIsNum; Second++) {
+                  {  /* 
                      if (Reads[SIs[Box_index][First]].ReadLength ==
                            Reads[SIs[Box_index][Second]].ReadLength) {
                         if (Reads[SIs[Box_index][First]].LeftMostPos ==
@@ -724,7 +723,7 @@ SortOutputSI (const unsigned &NumBoxes, const std::string & CurrentChr,
                            Reads[SIs[Box_index][Second]].UniqueRead = false;
                         }
                      }
-
+                     */ 
                      if (Reads[SIs[Box_index][First]].BPLeft <
                            Reads[SIs[Box_index][Second]].BPLeft) {
                         continue;
@@ -752,6 +751,19 @@ SortOutputSI (const unsigned &NumBoxes, const std::string & CurrentChr,
                }
             }
          }
+          
+         for (unsigned int First = 0; First < SIsNum - 1; First++) {
+             for (unsigned int Second = First + 1; Second < SIsNum; Second++) {
+                 if (Reads[SIs[Box_index][First]].ReadLength == Reads[SIs[Box_index][Second]].ReadLength) {
+                     if (Reads[SIs[Box_index][First]].LeftMostPos ==
+                         Reads[SIs[Box_index][Second]].LeftMostPos) {
+                         Reads[SIs[Box_index][Second]].UniqueRead = false;
+                     }
+                 }
+             }
+         }
+
+          
          GoodIndels.clear ();
          IndelEvents.clear ();
          LOG_DEBUG(std::cout << GoodIndels.size() << std::endl);
@@ -894,14 +906,14 @@ SortAndOutputTandemDuplications (const unsigned &NumBoxes, const std::string & C
             {
                for (unsigned int Second = First + 1; Second < TDNum;
                      Second++) {
-                  {
+                  {  /*
                      if (AllReads[TDs[Box_index][First]].ReadLength ==
                            AllReads[TDs[Box_index][Second]].ReadLength) {
                         if (AllReads[TDs[Box_index][First]].LeftMostPos ==
                               AllReads[TDs[Box_index][Second]].LeftMostPos) {
                            AllReads[TDs[Box_index][Second]].UniqueRead = false;
                         }
-                     }
+                     }*/
                      if (AllReads[TDs[Box_index][First]].BPLeft <
                            AllReads[TDs[Box_index][Second]].BPLeft) {
                         continue;
@@ -943,6 +955,18 @@ SortAndOutputTandemDuplications (const unsigned &NumBoxes, const std::string & C
                }
             }
          }
+          
+          for (unsigned int First = 0; First < TDNum - 1; First++) {
+              for (unsigned int Second = First + 1; Second < TDNum; Second++) {
+                  if (AllReads[TDs[Box_index][First]].ReadLength == AllReads[TDs[Box_index][Second]].ReadLength) {
+                      if (AllReads[TDs[Box_index][First]].LeftMostPos ==
+                          AllReads[TDs[Box_index][Second]].LeftMostPos) {
+                          AllReads[TDs[Box_index][Second]].UniqueRead = false;
+                      }
+                  }
+              }
+          }
+          
          GoodIndels.clear ();
          IndelEvents.clear ();
 
@@ -1087,7 +1111,7 @@ SortOutputD (const unsigned &NumBoxes, const std::string & CurrentChr,
             {
                for (unsigned int Second = First + 1; Second < DeletionsNum;
                      Second++) {
-                  {
+                  {  /*
                      if (Reads[Deletions[Box_index][First]].ReadLength ==
                            Reads[Deletions[Box_index][Second]].ReadLength) {
                         if (Reads[Deletions[Box_index][First]].
@@ -1095,7 +1119,7 @@ SortOutputD (const unsigned &NumBoxes, const std::string & CurrentChr,
                               Reads[Deletions[Box_index][Second]].LeftMostPos)
                            Reads[Deletions[Box_index][Second]].UniqueRead =
                               false;
-                     }
+                     }*/
                      if (Reads[Deletions[Box_index][First]].BPLeft <
                            Reads[Deletions[Box_index][Second]].BPLeft) {
                         continue;
@@ -1127,6 +1151,16 @@ SortOutputD (const unsigned &NumBoxes, const std::string & CurrentChr,
                }
             }
          }
+          for (unsigned int First = 0; First < DeletionsNum - 1; First++) {
+              for (unsigned int Second = First + 1; Second < DeletionsNum; Second++) {
+                  if (Reads[Deletions[Box_index][First]].ReadLength == Reads[Deletions[Box_index][Second]].ReadLength) {
+                      if (Reads[Deletions[Box_index][First]].LeftMostPos ==
+                          Reads[Deletions[Box_index][Second]].LeftMostPos) {
+                          Reads[Deletions[Box_index][Second]].UniqueRead = false;
+                      }
+                  }
+              }
+          }
          GoodIndels.clear ();
          IndelEvents.clear ();
          for (unsigned int First = 0; First < DeletionsNum; First++) {
@@ -1389,14 +1423,14 @@ void SortOutputDI (const unsigned &NumBoxes, const std::string & CurrentChr,
             {
                for (unsigned int Second = First + 1; Second < DINum;
                      Second++) {
-                  {
+                  {   /*
                      if (Reads[DI[Box_index][First]].ReadLength ==
                            Reads[DI[Box_index][Second]].ReadLength) {
                         if (Reads[DI[Box_index][First]].LeftMostPos ==
                               Reads[DI[Box_index][Second]].LeftMostPos) {
                            Reads[DI[Box_index][Second]].UniqueRead = false;
                         }
-                     }
+                     }*/
                      if (Reads[DI[Box_index][First]].BPLeft <
                            Reads[DI[Box_index][Second]].BPLeft) {
                         continue;
@@ -1435,6 +1469,16 @@ void SortOutputDI (const unsigned &NumBoxes, const std::string & CurrentChr,
                }
             }
          }
+          for (unsigned int First = 0; First < DINum - 1; First++) {
+              for (unsigned int Second = First + 1; Second < DINum; Second++) {
+                  if (Reads[DI[Box_index][First]].ReadLength == Reads[DI[Box_index][Second]].ReadLength) {
+                      if (Reads[DI[Box_index][First]].LeftMostPos ==
+                          Reads[DI[Box_index][Second]].LeftMostPos) {
+                          Reads[DI[Box_index][Second]].UniqueRead = false;
+                      }
+                  }
+              }
+          }
          GoodIndels.clear ();
          IndelEvents.clear ();
 
