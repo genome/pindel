@@ -37,6 +37,7 @@ OutputFileData deletionFileData;
 std::string GetConsensusInsertedStr(const std::vector <SPLIT_READ> & Reads, const int & StartIndex, const int & EndIndex);
 
 /* 'createMaps' (EWL, Aug31st2011) creates maps to get a sample name from an index, and the other way around. */
+
 void createMaps( 	std::map<std::string,int>& sampleToIndexMap, std::map<int,std::string>& indexToSampleMap )
 {
    int counter=0;
@@ -1729,18 +1730,20 @@ SortOutputLI (const std::string & CurrentChr, std::vector < SPLIT_READ > &Reads,
             LargeInsertionOutf << Count_LI++ << "\tLI\tChrID " <<
                                temp_Plus_Reads[0].FragName << "\t" << LI_Positions[LI_index].
                                Plus_Pos - g_SpacerBeforeAfter +
-                               1 << "\t" << temp_Plus_Reads.
+                               1 << "\t+ " << temp_Plus_Reads.
                                size () << "\t" << LI_Positions[LI_index].Minus_Pos -
                                g_SpacerBeforeAfter +
-                               1 << "\t" << temp_Minus_Reads.size () << std::endl;
+                               1 << "\t- " << temp_Minus_Reads.size ();
+             
+            for (unsigned short i = 0; i < g_sampleNames.size (); i++) {
+                LargeInsertionOutf << "\t" << indexToSampleMap[i] 
+                                   << " + " << NumSupportPerTagPlus[i]
+                                   << " - " << NumSupportPerTagMinus[i];
+            }
+            LargeInsertionOutf << std::endl;
 
-            LargeInsertionOutf << (CurrentChr.
-                                   substr (LI_Positions[LI_index].Plus_Pos -
-                                           g_reportLength + 1,
-                                           g_reportLength)) <<
-                               Cap2Low (CurrentChr.
-                                        substr (LI_Positions[LI_index].Plus_Pos + 1,
-                                                g_reportLength)) << std::endl;
+            LargeInsertionOutf << (CurrentChr.substr (LI_Positions[LI_index].Plus_Pos - g_reportLength + 1, g_reportLength)) 
+                               << Cap2Low (CurrentChr.substr (LI_Positions[LI_index].Plus_Pos + 1, g_reportLength)) << std::endl;
             for (unsigned int i = 0; i < temp_Plus_Reads.size (); i++) {
                UP_Close_index = temp_Plus_Reads[i].UP_Close.size () - 1;
                temp_LengthStr =
@@ -1748,9 +1751,12 @@ SortOutputLI (const std::string & CurrentChr, std::vector < SPLIT_READ > &Reads,
                for (int j = 0; j < g_reportLength - temp_LengthStr; j++) {
                   LargeInsertionOutf << " ";
                }
-               LargeInsertionOutf << ReverseComplement (temp_Plus_Reads[i].
-                                  UnmatchedSeq) <<
-                                  std::endl;
+               LargeInsertionOutf << ReverseComplement (temp_Plus_Reads[i].UnmatchedSeq) << "\t"
+                                  << temp_Plus_Reads[i].MatchedD << "\t"
+                                  << temp_Plus_Reads[i].MatchedRelPos << "\t"
+                                  << temp_Plus_Reads[i].MS << "\t"
+                                  << temp_Plus_Reads[i].Tag << "\t" 
+                                  << temp_Plus_Reads[i].Name << std::endl;
             }
 
             LargeInsertionOutf <<
@@ -1773,8 +1779,12 @@ SortOutputLI (const std::string & CurrentChr, std::vector < SPLIT_READ > &Reads,
                      temp_Minus_Reads[i].ReadLength; j++) {
                   LargeInsertionOutf << " ";
                }
-               LargeInsertionOutf << (temp_Minus_Reads[i].
-                                      UnmatchedSeq) << std::endl;
+               LargeInsertionOutf << (temp_Minus_Reads[i].UnmatchedSeq) 
+                                  << temp_Minus_Reads[i].MatchedD << "\t"
+                                  << temp_Minus_Reads[i].MatchedRelPos << "\t"
+                                  << temp_Minus_Reads[i].MS << "\t"
+                                  << temp_Minus_Reads[i].Tag << "\t" 
+                                  << temp_Minus_Reads[i].Name << std::endl;                
             }
          }
 
@@ -1785,12 +1795,16 @@ SortOutputLI (const std::string & CurrentChr, std::vector < SPLIT_READ > &Reads,
 
 
 void
-SortOutputRest (const std::string & CurrentChr, std::vector < SPLIT_READ > &Reads,
-                std::vector < SPLIT_READ > &BP_Reads, std::ofstream & Outf_Rest, const unsigned int windowStart, const unsigned int windowEnd)
+SortOutputRest (const std::string & CurrentChr, 
+                std::vector < SPLIT_READ > &Reads,
+                std::vector < SPLIT_READ > &BP_Reads, 
+                std::ofstream & Outf_Rest, 
+                const unsigned int windowStart, 
+                const unsigned int windowEnd)
 {
    SPLIT_READ one_BP_read;
-   std::string HalfMapped, HalfUnmapped;
-   int HalfMappedIndex, HalfUnmappedIndex;
+   //std::string HalfMapped, HalfUnmapped;
+   //int HalfMappedIndex, HalfUnmappedIndex;
    unsigned UP_Close_index;
    unsigned temp_AbsLoc;
    LOG_DEBUG(std::cout << "1" << std::endl);
@@ -1806,8 +1820,6 @@ SortOutputRest (const std::string & CurrentChr, std::vector < SPLIT_READ > &Read
 
    unsigned int absStartBuffered = absStartBPWindow - BP_BORDER_BUFFER;
    unsigned int absEndBuffered = absEndBPWindow + BP_BORDER_BUFFER;
-
-
 
    std::cout << "SBA: " << g_SpacerBeforeAfter << " WS " << windowStart << " Total: " << g_SpacerBeforeAfter + windowStart - BP_BORDER_BUFFER << std::endl;
    ShiftedVector< uint8_t > plus_LI_Pos( absStartBuffered , absEndBuffered , 0 );
@@ -1837,107 +1849,114 @@ SortOutputRest (const std::string & CurrentChr, std::vector < SPLIT_READ > &Read
    LOG_DEBUG(std::cout << "2" << std::endl);
 
    bool SkipThisPos;
-   for (unsigned int Index = absStartBuffered;
-         Index < absEndBuffered; Index++) {
-      SkipThisPos = false;
-      //for (int MaskIndex = Index + 10; MaskIndex >= Index - 10; MaskIndex--) {
-      //  if (CurrentChrMask[MaskIndex] == 'B') {
-      //    Index = MaskIndex + 10;
-      //    SkipThisPos = true;
-      //    break;
-      //  }
-      //}
-      if (SkipThisPos == true) {
-         continue;
-      }
-      if (plus_LI_Pos[Index] >= NumRead2ReportCutOff_BP) {
-         temp_Rest_pos.Strand = Plus;
-         temp_Rest_pos.Pos = Index;
-         Rest_Positions.push_back (temp_Rest_pos);
-      }
-      if (minus_LI_Pos[Index] >= NumRead2ReportCutOff_BP) {
-         temp_Rest_pos.Strand = Minus;
-         temp_Rest_pos.Pos = Index;
-         Rest_Positions.push_back (temp_Rest_pos);
-      }
+   for (unsigned int Index = absStartBuffered; Index < absEndBuffered; Index++) {
+         SkipThisPos = false;
+         if (SkipThisPos == true) {
+            continue;
+         }
+         if (plus_LI_Pos[Index] >= NumRead2ReportCutOff_BP) {
+            temp_Rest_pos.Strand = Plus;
+            temp_Rest_pos.Pos = Index;
+            Rest_Positions.push_back (temp_Rest_pos);
+         }
+         if (minus_LI_Pos[Index] >= NumRead2ReportCutOff_BP) {
+            temp_Rest_pos.Strand = Minus;
+            temp_Rest_pos.Pos = Index;
+            Rest_Positions.push_back (temp_Rest_pos);
+         }
    }
 
-   // find supporting reads
-   for (unsigned Index = 0; Index < Reads.size (); Index++) {
-      if (Reads[Index].Used || !Reads[Index].UP_Far.empty ()) {
-         continue;
-      }
-      UP_Close_index = Reads[Index].UP_Close.size () - 1;
-      temp_AbsLoc = Reads[Index].UP_Close[UP_Close_index].AbsLoc;
-      for (unsigned Pos_index = 0; Pos_index < Rest_Positions.size ();
+      // find supporting reads
+      for (unsigned Index = 0; Index < Reads.size (); Index++) {
+         if (Reads[Index].Used || !Reads[Index].UP_Far.empty ()) {
+            continue;
+         }
+         UP_Close_index = Reads[Index].UP_Close.size () - 1;
+         temp_AbsLoc = Reads[Index].UP_Close[UP_Close_index].AbsLoc;
+         for (unsigned Pos_index = 0; Pos_index < Rest_Positions.size ();
             Pos_index++) {
-         if (Reads[Index].MatchedD == Rest_Positions[Pos_index].Strand) {
-            if (temp_AbsLoc == Rest_Positions[Pos_index].Pos) {
-               Reads[Index].Used = true;
-               Rest_Positions[Pos_index].Pos_Reads.push_back (Index);	// copy index to save memory
+            if (Reads[Index].MatchedD == Rest_Positions[Pos_index].Strand) {
+               if (temp_AbsLoc == Rest_Positions[Pos_index].Pos) {
+                  Reads[Index].Used = true;
+                  Rest_Positions[Pos_index].Pos_Reads.push_back (Index);	// copy index to save memory
+               }
             }
          }
       }
-   }
 
    LOG_DEBUG(std::cout << "Other unassigned breakpoints (BP): " << Rest_Positions.size() << std::endl << std::endl);
    int Count_BP = 0;
    bool temp_BalancedPlus, temp_BalancedMinus;
    short temp_LengthStr;
-   std::vector < SPLIT_READ > temp_Pos_Reads;
+   //std::vector < SPLIT_READ > temp_Pos_Reads;
+    std::map<std::string,int> sampleToIndexMap;
+    std::map<int,std::string> indexToSampleMap;
+    createMaps( sampleToIndexMap, indexToSampleMap) ;
    for (unsigned LI_index = 0; LI_index < Rest_Positions.size (); LI_index++) {
-      temp_Pos_Reads.clear ();
+      //temp_Pos_Reads.clear ();
       temp_BalancedPlus = false;
       temp_BalancedMinus = false;
       for (unsigned int i = 0; i < Rest_Positions[LI_index].Pos_Reads.size (); i++) {
-         temp_Pos_Reads.
-         push_back (Reads[Rest_Positions[LI_index].Pos_Reads[i]]);
-         UP_Close_index =
-            Reads[Rest_Positions[LI_index].Pos_Reads[i]].UP_Close.size () - 1;
-         temp_LengthStr =
-            Reads[Rest_Positions[LI_index].Pos_Reads[i]].
-            UP_Close[UP_Close_index].LengthStr;
-         if ((float) temp_LengthStr >
-               Reads[Rest_Positions[LI_index].Pos_Reads[i]].ReadLength * 0.5) {
+         SPLIT_READ & CurrentSupportingRead = Reads[Rest_Positions[LI_index].Pos_Reads[i]];  
+         //temp_Pos_Reads.push_back (Reads[Rest_Positions[LI_index].Pos_Reads[i]]);
+         UP_Close_index = CurrentSupportingRead.UP_Close.size () - 1;
+         temp_LengthStr = CurrentSupportingRead.UP_Close[UP_Close_index].LengthStr;
+         if ((float) temp_LengthStr > CurrentSupportingRead.ReadLength * 0.5) {
             temp_BalancedPlus = true;
          }
-         else if ((float) temp_LengthStr <
-                  Reads[Rest_Positions[LI_index].Pos_Reads[i]].ReadLength *
-                  0.5) {
+         else if ((float) temp_LengthStr < CurrentSupportingRead.ReadLength * 0.5) {
             temp_BalancedMinus = true;
          }
       }
       if (temp_BalancedPlus && temp_BalancedMinus) {
          Count_BP++;
+          SupportPerSample NumSupportPerTag[g_sampleNames.size ()];
+          for (unsigned short i = 0; i < g_sampleNames.size (); i++) {
+              NumSupportPerTag[i].NumPlus = 0;
+              NumSupportPerTag[i].NumMinus = 0;
+          }
+
+          //calculateSupportPerTag( DI, C_S, C_E, sampleToIndexMap, NumSupportPerTag);
+
+          for (unsigned int readIndex = 0; readIndex < Rest_Positions[LI_index].Pos_Reads.size(); readIndex++) {
+             SPLIT_READ & CurrentSupportingRead = Reads[Rest_Positions[LI_index].Pos_Reads[readIndex]];
+             std::string currentTag = CurrentSupportingRead.Tag;
+             int tagIndex = sampleToIndexMap[ currentTag ];
+             if (CurrentSupportingRead.MatchedD == Plus)	{
+                NumSupportPerTag[tagIndex].NumPlus++;
+             }
+             else {
+                NumSupportPerTag[tagIndex].NumMinus++;
+             }
+          }
+
+          
+          
+          
          if (Rest_Positions[LI_index].Strand == Plus) {
-            reportBreakDancerEvent(temp_Pos_Reads[0].FragName,  0, 0, -1, "BP", -1);
+            reportBreakDancerEvent(Reads[Rest_Positions[LI_index].Pos_Reads[0]].FragName,  0, 0, -1, "BP", -1);
             Outf_Rest <<
                       "########################################################" <<
                       std::endl;
-            Outf_Rest << "ChrID " << temp_Pos_Reads[0].
-                      FragName << "\t" << Rest_Positions[LI_index].Pos -
-                      g_SpacerBeforeAfter +
-                      1 << "\t" << Rest_Positions[LI_index].Pos_Reads.
-                      size () << "\t+" << std::endl;
+            Outf_Rest << "ChrID " << Reads[Rest_Positions[LI_index].Pos_Reads[0]].FragName 
+                      << "\t" << Rest_Positions[LI_index].Pos - g_SpacerBeforeAfter + 1 
+                      << "\t+ " << Rest_Positions[LI_index].Pos_Reads.size();
+            for (unsigned short SampleIndex = 0; SampleIndex < g_sampleNames.size (); ++SampleIndex) {
+                Outf_Rest << "\t" << indexToSampleMap[SampleIndex] << " " << NumSupportPerTag[SampleIndex].NumPlus;
+            }
+            Outf_Rest << std::endl;
 
-            Outf_Rest << (CurrentChr.
-                          substr (Rest_Positions[LI_index].Pos -
-                                  g_reportLength + 1,
-                                  g_reportLength)) << Cap2Low (CurrentChr.
-                                        substr
-                                        (Rest_Positions
-                                         [LI_index].
-                                         Pos + 1,
-                                         g_reportLength))
+            Outf_Rest << (CurrentChr.substr (Rest_Positions[LI_index].Pos - g_reportLength + 1, g_reportLength)) 
+                      << Cap2Low (CurrentChr.substr(Rest_Positions[LI_index].Pos + 1, g_reportLength))
                       << std::endl;
-            HalfMappedIndex = 0;
-            HalfUnmappedIndex = 0;
-            for (unsigned int i = 0; i < temp_Pos_Reads.size (); i++) {
-               UP_Close_index = temp_Pos_Reads[i].UP_Close.size () - 1;
-               temp_LengthStr =
-                  temp_Pos_Reads[i].UP_Close[UP_Close_index].LengthStr;
-               if (temp_LengthStr >
-                     temp_Pos_Reads[HalfMappedIndex].
+            //HalfMappedIndex = 0;
+            //HalfUnmappedIndex = 0;
+            for (unsigned int i = 0; i < Rest_Positions[LI_index].Pos_Reads.size(); i++) {
+               SPLIT_READ & CurrentSupportingRead = Reads[Rest_Positions[LI_index].Pos_Reads[i]]; 
+               UP_Close_index = CurrentSupportingRead.UP_Close.size () - 1;
+               temp_LengthStr = CurrentSupportingRead.UP_Close[UP_Close_index].LengthStr;
+               /*
+               if (temp_LengthStr > temp_Pos_Reads[HalfMappedIndex].
                      UP_Close[temp_Pos_Reads[HalfMappedIndex].UP_Close.
                               size () - 1].LengthStr) {
                   HalfMappedIndex = i;
@@ -1949,30 +1968,35 @@ SortOutputRest (const std::string & CurrentChr, std::vector < SPLIT_READ > &Read
                               size () - 1].LengthStr) {
                   HalfUnmappedIndex = i;
                }
+                */
                for (int j = 0; j < g_reportLength - temp_LengthStr; j++) {
                   Outf_Rest << " ";
                }
-               Outf_Rest << ReverseComplement (temp_Pos_Reads[i].
+               Outf_Rest << ReverseComplement (CurrentSupportingRead.
                                                UnmatchedSeq) << "\t" <<
-                         temp_Pos_Reads[i].MatchedD << "\t" << temp_Pos_Reads[i].
-                         MatchedRelPos << "\t" << temp_Pos_Reads[i].
-                         MS << "\t" << temp_Pos_Reads[i].
-                         Tag << "\t" << temp_Pos_Reads[i].Name << std::endl;
+                         CurrentSupportingRead.MatchedD << "\t" << CurrentSupportingRead.
+                         MatchedRelPos << "\t" << CurrentSupportingRead.
+                         MS << "\t" << CurrentSupportingRead.
+                         Tag << "\t" << CurrentSupportingRead.Name << std::endl;
                //temp_Pos_Reads[0].
                //BP_Reads.push_back();
             }
 
          }
          else {
-            reportBreakDancerEvent(temp_Pos_Reads[0].FragName,  0,  0, -1, "BP", -1);
+            reportBreakDancerEvent(Reads[Rest_Positions[LI_index].Pos_Reads[0]].FragName,  0,  0, -1, "BP", -1);
             Outf_Rest <<
                       "########################################################" <<
                       std::endl;
-            Outf_Rest << "ChrID " << temp_Pos_Reads[0].
+            Outf_Rest << "ChrID " << Reads[Rest_Positions[LI_index].Pos_Reads[0]].
                       FragName << "\t" << Rest_Positions[LI_index].Pos -
                       g_SpacerBeforeAfter +
-                      1 << "\t" << Rest_Positions[LI_index].Pos_Reads.
-                      size () << "\t-" << std::endl;
+                      1 << "\t- " << Rest_Positions[LI_index].Pos_Reads.
+                      size ();// << "\t" << std::endl;
+            for (unsigned short SampleIndex = 0; SampleIndex < g_sampleNames.size (); ++SampleIndex) {
+                Outf_Rest << "\t" << indexToSampleMap[SampleIndex] << " " << NumSupportPerTag[SampleIndex].NumMinus;
+            } 
+            Outf_Rest << std::endl;
             Outf_Rest << Cap2Low (CurrentChr.
                                   substr (Rest_Positions[LI_index].Pos -
                                           g_reportLength,
@@ -1983,22 +2007,20 @@ SortOutputRest (const std::string & CurrentChr, std::vector < SPLIT_READ > &Read
                                                  Pos,
                                                  g_reportLength))
                       << std::endl;
-            for (unsigned int i = 0; i < temp_Pos_Reads.size (); i++) {
-               UP_Close_index = temp_Pos_Reads[i].UP_Close.size () - 1;
+            for (unsigned int i = 0; i < Rest_Positions[LI_index].Pos_Reads.size (); i++) {
+                SPLIT_READ & CurrentSupportingRead = Reads[Rest_Positions[LI_index].Pos_Reads[i]];
+               UP_Close_index = CurrentSupportingRead.UP_Close.size () - 1;
                temp_LengthStr =
-                  temp_Pos_Reads[i].UP_Close[UP_Close_index].LengthStr;
-               for (int j = 0;
-                     j <
-                     g_reportLength + temp_LengthStr -
-                     temp_Pos_Reads[i].ReadLength; j++) {
+                  CurrentSupportingRead.UP_Close[UP_Close_index].LengthStr;
+               for (int j = 0; j < g_reportLength + temp_LengthStr - CurrentSupportingRead.ReadLength; j++) {
                   Outf_Rest << " ";
                }
-               Outf_Rest << (temp_Pos_Reads[i].UnmatchedSeq)
-                         << "\t" << temp_Pos_Reads[i].MatchedD
-                         << "\t" << temp_Pos_Reads[i].MatchedRelPos
-                         << "\t" << temp_Pos_Reads[i].MS
-                         << "\t" << temp_Pos_Reads[i].Tag
-                         << "\t" << temp_Pos_Reads[i].Name << std::endl;
+               Outf_Rest << (CurrentSupportingRead.UnmatchedSeq)
+                         << "\t" << CurrentSupportingRead.MatchedD
+                         << "\t" << CurrentSupportingRead.MatchedRelPos
+                         << "\t" << CurrentSupportingRead.MS
+                         << "\t" << CurrentSupportingRead.Tag
+                         << "\t" << CurrentSupportingRead.Name << std::endl;
             }
          }
       }
