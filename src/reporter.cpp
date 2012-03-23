@@ -724,6 +724,7 @@ SortOutputSI (const unsigned &NumBoxes, const std::string & CurrentChr,
                         }
                      }
                      */ 
+                      CompareResult = 0;
                      if (Reads[SIs[Box_index][First]].BPLeft <
                            Reads[SIs[Box_index][Second]].BPLeft) {
                         continue;
@@ -741,11 +742,19 @@ SortOutputSI (const unsigned &NumBoxes, const std::string & CurrentChr,
                                  Reads[SIs[Box_index][Second]].IndelSize) {
                            CompareResult = 1;
                         }
+                        else if (Reads[SIs[Box_index][First]].BP > Reads[SIs[Box_index][Second]].BP) {
+                            CompareResult = 1; 
+                            //std::cout << "here" << std::endl;
+                        }
                      }
                      if (CompareResult == 1) {
+                          
+                         // std::cout << "there BoxIndex" << Box_index <<std::endl;
+                        // std::cout << "Before " << SIs[Box_index][First] << " " << SIs[Box_index][Second] << std::endl; 
                         Temp4Exchange = SIs[Box_index][First];
                         SIs[Box_index][First] = SIs[Box_index][Second];
                         SIs[Box_index][Second] = Temp4Exchange;
+                        // std::cout << "After " << SIs[Box_index][First] << " " << SIs[Box_index][Second] << std::endl;
                      }
                   }
                }
@@ -753,10 +762,13 @@ SortOutputSI (const unsigned &NumBoxes, const std::string & CurrentChr,
          }
           
          for (unsigned int First = 0; First < SIsNum - 1; First++) {
+             //std::cout << First << " " << Reads[SIs[Box_index][First]].BPLeft << " " << Reads[SIs[Box_index][First]].IndelSize << " " << Reads[SIs[Box_index][First]].BP << " " << Reads[SIs[Box_index][First]].MatchedD << " " << Reads[SIs[Box_index][First]].Tag << std::endl; 
              for (unsigned int Second = First + 1; Second < SIsNum; Second++) {
                  if (Reads[SIs[Box_index][First]].ReadLength == Reads[SIs[Box_index][Second]].ReadLength) {
                      if (Reads[SIs[Box_index][First]].LeftMostPos ==
-                         Reads[SIs[Box_index][Second]].LeftMostPos) {
+                         Reads[SIs[Box_index][Second]].LeftMostPos || Reads[SIs[Box_index][First]].LeftMostPos + Reads[SIs[Box_index][First]].ReadLength ==
+                         Reads[SIs[Box_index][Second]].LeftMostPos + Reads[SIs[Box_index][Second]].ReadLength) {
+                         if (Reads[SIs[Box_index][First]].MatchedD == Reads[SIs[Box_index][Second]].MatchedD) 
                          Reads[SIs[Box_index][Second]].UniqueRead = false;
                      }
                  }
@@ -914,6 +926,7 @@ SortAndOutputTandemDuplications (const unsigned &NumBoxes, const std::string & C
                            AllReads[TDs[Box_index][Second]].UniqueRead = false;
                         }
                      }*/
+                      CompareResult = 0;
                      if (AllReads[TDs[Box_index][First]].BPLeft <
                            AllReads[TDs[Box_index][Second]].BPLeft) {
                         continue;
@@ -944,7 +957,9 @@ SortAndOutputTandemDuplications (const unsigned &NumBoxes, const std::string & C
                                     NT_size) {
                               CompareResult = 1;
                            }
+                           else if (AllReads[TDs[Box_index][First]].BP > AllReads[TDs[Box_index][Second]].BP) CompareResult = 1; 
                         }
+                        else if (AllReads[TDs[Box_index][First]].BP > AllReads[TDs[Box_index][Second]].BP) CompareResult = 1; 
                      }
                      if (CompareResult == 1) {
                         Temp4Exchange = TDs[Box_index][First];
@@ -960,7 +975,9 @@ SortAndOutputTandemDuplications (const unsigned &NumBoxes, const std::string & C
               for (unsigned int Second = First + 1; Second < TDNum; Second++) {
                   if (AllReads[TDs[Box_index][First]].ReadLength == AllReads[TDs[Box_index][Second]].ReadLength) {
                       if (AllReads[TDs[Box_index][First]].LeftMostPos ==
-                          AllReads[TDs[Box_index][Second]].LeftMostPos) {
+                          AllReads[TDs[Box_index][Second]].LeftMostPos || AllReads[TDs[Box_index][First]].LeftMostPos + AllReads[TDs[Box_index][First]].ReadLength ==
+                          AllReads[TDs[Box_index][Second]].LeftMostPos + AllReads[TDs[Box_index][Second]].ReadLength) {
+                          if (AllReads[TDs[Box_index][First]].MatchedD == AllReads[TDs[Box_index][Second]].MatchedD) 
                           AllReads[TDs[Box_index][Second]].UniqueRead = false;
                       }
                   }
@@ -1120,6 +1137,7 @@ SortOutputD (const unsigned &NumBoxes, const std::string & CurrentChr,
                            Reads[Deletions[Box_index][Second]].UniqueRead =
                               false;
                      }*/
+                      CompareResult = 0;
                      if (Reads[Deletions[Box_index][First]].BPLeft <
                            Reads[Deletions[Box_index][Second]].BPLeft) {
                         continue;
@@ -1140,6 +1158,7 @@ SortOutputD (const unsigned &NumBoxes, const std::string & CurrentChr,
                                  BPRight) {
                            CompareResult = 1;
                         }
+                        else if (Reads[Deletions[Box_index][First]].BP > Reads[Deletions[Box_index][Second]].BP) CompareResult = 1;
                      }
                      if (CompareResult == 1) {
                         Temp4Exchange = Deletions[Box_index][First];
@@ -1155,7 +1174,9 @@ SortOutputD (const unsigned &NumBoxes, const std::string & CurrentChr,
               for (unsigned int Second = First + 1; Second < DeletionsNum; Second++) {
                   if (Reads[Deletions[Box_index][First]].ReadLength == Reads[Deletions[Box_index][Second]].ReadLength) {
                       if (Reads[Deletions[Box_index][First]].LeftMostPos ==
-                          Reads[Deletions[Box_index][Second]].LeftMostPos) {
+                          Reads[Deletions[Box_index][Second]].LeftMostPos || Reads[Deletions[Box_index][First]].LeftMostPos + Reads[Deletions[Box_index][First]].ReadLength ==
+                          Reads[Deletions[Box_index][Second]].LeftMostPos + Reads[Deletions[Box_index][Second]].ReadLength) {
+                          if (Reads[Deletions[Box_index][First]].MatchedD == Reads[Deletions[Box_index][Second]].MatchedD)
                           Reads[Deletions[Box_index][Second]].UniqueRead = false;
                       }
                   }
@@ -1431,6 +1452,7 @@ void SortOutputDI (const unsigned &NumBoxes, const std::string & CurrentChr,
                            Reads[DI[Box_index][Second]].UniqueRead = false;
                         }
                      }*/
+                      CompareResult = 0;
                      if (Reads[DI[Box_index][First]].BPLeft <
                            Reads[DI[Box_index][Second]].BPLeft) {
                         continue;
@@ -1458,6 +1480,7 @@ void SortOutputDI (const unsigned &NumBoxes, const std::string & CurrentChr,
                                     Reads[DI[Box_index][Second]].NT_size) {
                               CompareResult = 1;
                            }
+                           else if (Reads[DI[Box_index][First]].BP > Reads[DI[Box_index][Second]].BP) CompareResult = 1; 
                         }
                      }
                      if (CompareResult == 1) {
@@ -1473,7 +1496,9 @@ void SortOutputDI (const unsigned &NumBoxes, const std::string & CurrentChr,
               for (unsigned int Second = First + 1; Second < DINum; Second++) {
                   if (Reads[DI[Box_index][First]].ReadLength == Reads[DI[Box_index][Second]].ReadLength) {
                       if (Reads[DI[Box_index][First]].LeftMostPos ==
-                          Reads[DI[Box_index][Second]].LeftMostPos) {
+                          Reads[DI[Box_index][Second]].LeftMostPos || Reads[DI[Box_index][First]].LeftMostPos + Reads[DI[Box_index][First]].ReadLength ==
+                          Reads[DI[Box_index][Second]].LeftMostPos + Reads[DI[Box_index][Second]].ReadLength) {
+                          if (Reads[DI[Box_index][First]].MatchedD == Reads[DI[Box_index][Second]].MatchedD)
                           Reads[DI[Box_index][Second]].UniqueRead = false;
                       }
                   }

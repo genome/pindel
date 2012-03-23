@@ -82,12 +82,14 @@ OutputSorter::DoSortAndOutputInversions (std::vector<SPLIT_READ> &Reads,
                   Second++) {
                LOG_DEBUG (std::cout << InputIndels[First].BPLeft << "\t" << InputIndels[First].BPRight << "\t"
                           InputIndels[Second].BPLeft << "\t" << InputIndels[Second].BPRight << std::endl);
-               {
+               {  
+                  /* 
                   if (Reads[Inv[Box_index][First]].ReadLength == Reads[Inv[Box_index][Second]].ReadLength) {
                      if (Reads[Inv[Box_index][First]].LeftMostPos == Reads[Inv[Box_index][Second]].LeftMostPos) {
                         Reads[Inv[Box_index][Second]].UniqueRead = false;
                      }
-                  }
+                  }*/
+                  CompareResult = 0; 
                   if (Reads[Inv[Box_index][First]].BPLeft + Reads[Inv[Box_index][First]].BPRight < Reads[Inv[Box_index][Second]].BPLeft + Reads[Inv[Box_index][Second]].BPRight) {
                      continue;
                   }
@@ -125,7 +127,9 @@ OutputSorter::DoSortAndOutputInversions (std::vector<SPLIT_READ> &Reads,
                                  Reads[Inv[Box_index][Second]].NT_size) {
                            CompareResult = 1;
                         }
+                        else if (Reads[Inv[Box_index][First]].BP > Reads[Inv[Box_index][Second]].BP) CompareResult = 1; 
                      }
+                    else if (Reads[Inv[Box_index][First]].BP > Reads[Inv[Box_index][Second]].BP) CompareResult = 1;
                   }
                   if (CompareResult == 1) {
                      Temp4Exchange = Inv[Box_index][First];
@@ -135,6 +139,19 @@ OutputSorter::DoSortAndOutputInversions (std::vector<SPLIT_READ> &Reads,
                }
             }
          }
+          for (unsigned int First = 0; First < InversionsNum - 1; First++) {
+              for (unsigned int Second = First + 1; Second < InversionsNum; Second++) {
+                  if (Reads[Inv[Box_index][First]].LeftMostPos == Reads[Inv[Box_index][Second]].LeftMostPos || Reads[Inv[Box_index][First]].LeftMostPos + Reads[Inv[Box_index][First]].ReadLength == Reads[Inv[Box_index][Second]].LeftMostPos + Reads[Inv[Box_index][Second]].ReadLength) {
+                      //if (Reads[Inv[Box_index][First]].ReadLength == Reads[Inv[Box_index][Second]].ReadLength) {
+                          //if (Reads[Inv[Box_index][First]].LeftMostPos == Reads[Inv[Box_index][Second]].LeftMostPos) {
+                          if (Reads[Inv[Box_index][First]].MatchedD == Reads[Inv[Box_index][Second]].MatchedD)
+                              Reads[Inv[Box_index][Second]].UniqueRead = false;
+                          //}
+                      //}    
+                  }
+              }
+          }
+
           //std::cout << "in1" << std::endl;
          GoodIndels.clear ();
          IndelEvents.clear ();
