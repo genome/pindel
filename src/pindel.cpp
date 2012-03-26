@@ -53,8 +53,10 @@
 /*v EW update 0.2.4l, -Werror removed for user convenience, also made some typecasts in reader.cpp explicit; also reset -l and -k options to true by default. */
 /*v Kai update 0.2.4m, removed an error in invertion calling. */
 /* EW update 0.2.4n, improved VCF creator: less memory, more speed, removed bug. */
-/* In progress: update 0.2.4o: does not report short inversions as deletions anymore, also displays the reference for short inversions correctly, slightly changed sensitivity, small memory leak fixed. */
-const std::string Pindel_Version_str = "Pindel version 0.2.4o, March 9 2012.";
+/* EW/Kai/Matthijs: update 0.2.4o: does not report short inversions as deletions anymore, also displays the reference for short inversions correctly, slightly changed sensitivity, small memory leak fixed. */
+/* Kai/EW: update 0.2.4p: sorts reads in output, number of unique calls should be correct now, pindel now gives error if using config file that does not exist or has other problems */
+
+const std::string Pindel_Version_str = "Pindel version 0.2.4p, March 26 2012.";
 
 int findParameter(std::string name);
 
@@ -711,6 +713,60 @@ bool isFinishedBAM(const int lastPositionAnalyzed, // in: last position analyzed
    }
 }
 
+bool fileExists(const std::string& filename )
+{
+	std::ifstream test(filename.c_str());
+   bool exists = (bool)test;
+   test.close();
+   return exists;
+}
+
+void readBamConfigFile(std::string& bamConfigFileName, ControlState& currentState )
+{
+	int sampleCounter=0;
+   currentState.config_file.open(par.bamConfigFileName.c_str());
+	if (currentState.config_file) {
+      while (currentState.config_file.good()) {
+         currentState.config_file >> currentState.info.BamFile
+                                  >> currentState.info.InsertSize;
+			if (!currentState.config_file.good()) break;
+			currentState.info.Tag = "";
+			currentState.config_file >> currentState.info.Tag;
+			//std::cout << "Tag is '" << currentState.info.Tag << "'\n";
+         if (currentState.info.Tag=="") { 
+				std::cout << "Missing tag in line '" << currentState.info.BamFile << "\t" << currentState.info.InsertSize << "' in configuration file " << bamConfigFileName << "\n"; 
+				exit(EXIT_FAILURE);
+			}
+        	g_sampleNames.insert( currentState.info.Tag );
+			if (! fileExists( currentState.info.BamFile )) { 
+				std::cout << "I cannot find the file '"<< currentState.info.BamFile << "'. referred to in configuration file '" << bamConfigFileName << "'. Please change the BAM configuration file.\n\n"; 
+				exit(EXIT_FAILURE); 
+			}
+			if (! fileExists( currentState.info.BamFile+".bai" )) { 
+				std::cout << "I cannot find the bam index-file '"<< currentState.info.BamFile << ".bai' that should accompany the file " << currentState.info.BamFile << " mentioned in the configuration file " << bamConfigFileName << ". Please run samtools index on " << 			
+					currentState.info.BamFile << ".\n\n"; 
+				exit(EXIT_FAILURE); 
+			}
+
+         //copy kai and throw crap into useless variable
+        	std::getline(currentState.config_file, currentState.line);
+        	currentState.bams_to_parse.push_back(currentState.info);
+        	sampleCounter++;
+        } // while
+      if (sampleCounter==0) {
+           std::cout << "Could not find any samples in the sample file '" << par.bamConfigFileName 
+					<< "'. Please run Pindel again with a config-file of the specified type (format 'A.bam	<insert-size>	sample_label)\n\n";
+           exit( EXIT_FAILURE );
+         }
+  		}
+	else { 
+		// no config-file defined
+		std::cout << "BAM configuration file '" << par.bamConfigFileName << "' does not exist. Please run Pindel again with an existing config-file (format 'A.bam	insert-size	sample_label')\n\n";
+ 		exit( EXIT_FAILURE );
+	}
+}
+
+
 int init(int argc, char *argv[], ControlState& currentState)
 {
    std::cout << Pindel_Version_str << std::endl;
@@ -755,17 +811,7 @@ int init(int argc, char *argv[], ControlState& currentState)
 
    currentState.BAMDefined = parameters[findParameter("-i")]->isSet();
    if (currentState.BAMDefined) {
-      currentState.config_file.open(par.bamConfigFileName.c_str());
-      while (currentState.config_file.good()) {
-         currentState.config_file >> currentState.info.BamFile
-                                  >> currentState.info.InsertSize >> currentState.info.Tag;
-         g_sampleNames.insert( currentState.info.Tag );
-         //copy kai and throw crap into useless variable
-         std::getline(currentState.config_file, currentState.line);
-         if (currentState.config_file.good()) {
-            currentState.bams_to_parse.push_back(currentState.info);
-         }
-      }
+		readBamConfigFile( par.bamConfigFileName, currentState );
    }
 
    currentState.OutputFolder = par.outputFileName;

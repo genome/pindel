@@ -4,3 +4,7 @@ pindel 0.2.4o, March 9 2012
 3. Kai: what: added sample name and read name to LI/BP output. Why: user request
 4. Eric-Wubbo: what: changed two bugs in the reporting of short inversions: they were erroneously indicated as 'D', and the inverted region was displayed several times (so 5x if it was 5 bases long, making a '25-base' inversion instead of a 5 one). Why: user notified us of small inversions being miscalled as deletions, manual inspection also revealed the other bug.
 5. Kai: what: changed quality check (MAX_ALLOWED_MISMATCHES now float). Is slightly less sensitive when using default parameters, but speed improves. Why: in response to reports that newer versions of pindel were considering many more reads than old versions even while the number of SV-calls stayed almost the same.
+
+pindel 0.2.4p, March 26 2012
+1. Kai: what: added output sorting for reads to fix the 'unique' number that was not reported correctly for some events. Why? unique count (column 19) sometimes showed 0 or other incorrect numbers.
+2. Eric-Wubbo: what: made separate function for reading configuration files. Why: old version did not give clear error messages when confronted with config files which did not exist, were empty, were formatted incorrectly, or when the bam-files called did not exist or did not have accompanying error files. The new version should make it much easier for users (and programmers) to find out why a test or a run go wrong. The new version can also handle it if the final line does not end in a newline.
