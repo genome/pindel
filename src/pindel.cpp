@@ -20,6 +20,7 @@
 
 
 // System header files
+#include <algorithm>
 #include <iostream>
 #include <fstream>
 #include <cmath>
@@ -55,8 +56,9 @@
 /* EW update 0.2.4n, improved VCF creator: less memory, more speed, removed bug. */
 /* EW/Kai/Matthijs: update 0.2.4o: does not report short inversions as deletions anymore, also displays the reference for short inversions correctly, slightly changed sensitivity, small memory leak fixed. */
 /* Kai/EW: update 0.2.4p: sorts reads in output, number of unique calls should be correct now, pindel now gives error if using config file that does not exist or has other problems */
+/* EW: update 0.2.4q: also works with -c all instead of -c ALL */
 
-const std::string Pindel_Version_str = "Pindel version 0.2.4p, March 26 2012.";
+const std::string Pindel_Version_str = "Pindel version 0.2.4q, March 27 2012.";
 
 int findParameter(std::string name);
 
@@ -766,6 +768,14 @@ void readBamConfigFile(std::string& bamConfigFileName, ControlState& currentStat
 	}
 }
 
+std::string uppercase( const std::string& input )
+{
+   std::string output = input;
+   for(unsigned int pos=0; pos<input.length(); pos++ ){
+     output[ pos] = toupper( input[pos] );
+   }
+   return output;
+}
 
 int init(int argc, char *argv[], ControlState& currentState)
 {
@@ -1004,9 +1014,7 @@ int init(int argc, char *argv[], ControlState& currentState)
    }
    currentState.WhichChr = chrName; // removes the region from the 'pure' chromosome name
 
-
-
-   if (currentState.WhichChr.compare("ALL") == 0) {
+   if (uppercase(currentState.WhichChr).compare("ALL") == 0) {
       std::cout << "Looping over all chromosomes." << std::endl;
       currentState.loopOverAllChromosomes = true;
    }
