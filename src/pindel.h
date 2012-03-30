@@ -269,8 +269,8 @@ struct bam_info {
 	std::string Tag;
 };
 
-struct flagshit {
-	flagshit() {
+struct flags_hit {
+	flags_hit() {
 		mapped = false;
 		unique = false;
 		sw = false;
@@ -291,7 +291,7 @@ void
 ReadInOneChr(std::ifstream & inf_Seq, std::string & TheInput,
 		const std::string & ChrName);
 void
-parse_flags_and_tags(const bam1_t * b, flagshit * flags);
+parse_flags_and_tags(const bam1_t * b, flags_hit * flags);
 int32_t
 bam_cigar2len(const bam1_core_t * c, const uint32_t * cigar);
 void

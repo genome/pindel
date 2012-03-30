@@ -63,8 +63,8 @@ struct fetch_func_data {
    std::vector < SPLIT_READ > *LeftReads;
    khash_t (read_name) * read_to_map_qual;
    bam_header_t *header;
-   flagshit *b1_flags;
-   flagshit *b2_flags;
+   flags_hit *b1_flags;
+   flags_hit *b2_flags;
    std::string * CurrentChr;
    std::string Tag;
    int InsertSize;
@@ -361,7 +361,7 @@ ReadInBamReads (const char *bam_path, const std::string & FragName,
    data.LeftReads = &LeftReads;
    data.read_to_map_qual = NULL;
    data.read_to_map_qual = kh_init (read_name);
-   flagshit b1_flags, b2_flags;
+   flags_hit b1_flags, b2_flags;
    data.b1_flags = &b1_flags;
    data.b2_flags = &b2_flags;
    data.InsertSize = InsertSize;
@@ -393,7 +393,7 @@ ReadInBamReads (const char *bam_path, const std::string & FragName,
    return true;
 }
 
-bool isGoodAnchor( const flagshit *read, const bam1_core_t *bamCore )
+bool isGoodAnchor( const flags_hit *read, const bam1_core_t *bamCore )
 {
    //std::cout << "isGoodAnchor" << std::endl;
    int maxEdits = int (bamCore->l_qseq * MaximumAllowedMismatchRate) + 1;
@@ -417,7 +417,7 @@ bool isGoodAnchor( const flagshit *read, const bam1_core_t *bamCore )
           );
 }
 
-bool isWeirdRead( const flagshit *read, const bam1_t * bamOfRead )
+bool isWeirdRead( const flags_hit *read, const bam1_t * bamOfRead )
 {
    //std::cout << "isWeirdRead" << std::endl;
    if ( ! read->mapped ) {
@@ -445,8 +445,8 @@ fetch_func (const bam1_t * b1, void *data)
    fetch_func_data *data_for_bam = (fetch_func_data *) data;
    khash_t (read_name) * read_to_map_qual =
       (khash_t (read_name) *) data_for_bam->read_to_map_qual;
-   flagshit *b1_flags = data_for_bam->b1_flags;
-   flagshit *b2_flags = data_for_bam->b2_flags;
+   flags_hit *b1_flags = data_for_bam->b1_flags;
+   flags_hit *b2_flags = data_for_bam->b2_flags;
    const std::string CurrentChr = *(std::string *) data_for_bam->CurrentChr;
    //std::cout << "1" << std::endl;
    SPLIT_READ Temp_One_Read;
@@ -641,7 +641,7 @@ build_record (const bam1_t * mapped_read, const bam1_t * unmapped_read,
 }
 
 void
-parse_flags_and_tags (const bam1_t * b, flagshit * flags)
+parse_flags_and_tags (const bam1_t * b, flags_hit * flags)
 {
    const bam1_core_t *c = &b->core;
    char xt_code = 0;
