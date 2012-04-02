@@ -42,19 +42,19 @@ OutputSorter::~OutputSorter ()
 
 void OutputSorter::SortAndOutputInversions (std::vector < SPLIT_READ > &Reads, std::vector<unsigned> Inv[])
 {
-   LOG_INFO (std::cout << "Sorting and outputing Inversions ..." << std::endl);
+   LOG_INFO (*logStream << "Sorting and outputing Inversions ..." << std::endl);
    DoSortAndOutputInversions(Reads, Inv, false);
-   LOG_INFO (std::cout << "Inversions (INV): " << g_numberOfInvInstances << std::endl << std::endl);
+   LOG_INFO (*logStream << "Inversions (INV): " << g_numberOfInvInstances << std::endl << std::endl);
 }
 
 void
 OutputSorter::SortAndOutputNonTemplateInversions (std::vector<SPLIT_READ>& Reads, std::vector<unsigned> Inv[])
 {
-   LOG_INFO (std::cout << "Sorting and outputing Inversions with non-template sequence ..." <<
+   LOG_INFO (*logStream << "Sorting and outputing Inversions with non-template sequence ..." <<
              std::endl);
    int Count_INV_NT_output = DoSortAndOutputInversions(Reads, Inv, true);
 
-   LOG_INFO (std::cout << "Inversions with non-template sequence (INV_NT): " <<
+   LOG_INFO (*logStream << "Inversions with non-template sequence (INV_NT): " <<
              Count_INV_NT_output << std::endl << std::endl);
 }
 
@@ -63,7 +63,7 @@ OutputSorter::DoSortAndOutputInversions (std::vector<SPLIT_READ> &Reads,
       std::vector<unsigned> Inv[],
       bool isNonTemplateInversion)
 {
-    //std::cout << "start" << std::endl;
+    //*logStream << "start" << std::endl;
    unsigned int InversionsNum;
    short CompareResult;
    unsigned Temp4Exchange;
@@ -71,16 +71,16 @@ OutputSorter::DoSortAndOutputInversions (std::vector<SPLIT_READ> &Reads,
    std::vector<SPLIT_READ> GoodIndels;
    std::vector<Indel4output> IndelEvents;
    int ReportedEventCount = 0;
-    //std::cout << "start1" << std::endl;
+    //*logStream << "start1" << std::endl;
    for (unsigned Box_index = 0; Box_index < NumBoxes; Box_index++) {
       if (Inv[Box_index].size () >= NumRead2ReportCutOff) {
          InversionsNum = Inv[Box_index].size ();
-         LOG_DEBUG (std::cout << Box_index << "\t" << Inv[Box_index].size () << std::endl);
-          //std::cout << Box_index << std::endl;
+         LOG_DEBUG (*logStream << Box_index << "\t" << Inv[Box_index].size () << std::endl);
+          //*logStream << Box_index << std::endl;
          for (unsigned int First = 0; First < InversionsNum - 1; First++) {
             for (unsigned int Second = First + 1; Second < InversionsNum;
                   Second++) {
-               LOG_DEBUG (std::cout << InputIndels[First].BPLeft << "\t" << InputIndels[First].BPRight << "\t"
+               LOG_DEBUG (*logStream << InputIndels[First].BPLeft << "\t" << InputIndels[First].BPRight << "\t"
                           InputIndels[Second].BPLeft << "\t" << InputIndels[Second].BPRight << std::endl);
                {  
                   /* 
@@ -152,20 +152,20 @@ OutputSorter::DoSortAndOutputInversions (std::vector<SPLIT_READ> &Reads,
               }
           }
 
-          //std::cout << "in1" << std::endl;
+          //*logStream << "in1" << std::endl;
          GoodIndels.clear ();
          IndelEvents.clear ();
-          //std::cout << "in2" << std::endl;
+          //*logStream << "in2" << std::endl;
          for (unsigned int First = 0; First < InversionsNum; First++) {
             GoodIndels.push_back (Reads[Inv[Box_index][First]]);
          }
-          //std::cout << "in3" << std::endl;
+          //*logStream << "in3" << std::endl;
          GoodNum = GoodIndels.size ();
-         LOG_DEBUG (std::cout << "GoodNum " << Box_index << " " << GoodNum << std::endl);
+         LOG_DEBUG (*logStream << "GoodNum " << Box_index << " " << GoodNum << std::endl);
          if (GoodNum == 0) {
             continue;
          }
-         LOG_DEBUG (std::cout << GoodNum << std::endl);
+         LOG_DEBUG (*logStream << GoodNum << std::endl);
          Indel4output OneIndelEvent;
          OneIndelEvent.Start = 0;
          OneIndelEvent.End = 0;
@@ -173,9 +173,9 @@ OutputSorter::DoSortAndOutputInversions (std::vector<SPLIT_READ> &Reads,
          OneIndelEvent.BPLeft = GoodIndels[0].BPLeft;
          OneIndelEvent.BPRight = GoodIndels[0].BPRight;
          OneIndelEvent.WhetherReport = true;
-          //std::cout << "in4" << std::endl;
+          //*logStream << "in4" << std::endl;
          for (unsigned int GoodIndex = 1; GoodIndex < GoodNum; GoodIndex++) {
-            LOG_DEBUG (std::cout << GoodIndex <<
+            LOG_DEBUG (*logStream << GoodIndex <<
                        "\t" << GoodIndels[GoodIndex].BPLeft <<
                        "\t" << GoodIndels[GoodIndex].BPRight <<
                        "\t" << OneIndelEvent.BPLeft <<
@@ -192,16 +192,16 @@ OutputSorter::DoSortAndOutputInversions (std::vector<SPLIT_READ> &Reads,
                      MaxSize = GoodIndels[i].IndelSize;
                   }
                }
-                //std::cout << "MaxSize " << MaxSize << std::endl;
+                //*logStream << "MaxSize " << MaxSize << std::endl;
                // changed BP according to the largest event
                for (unsigned i = OneIndelEvent.Start; i <= OneIndelEvent.End; i++) {
                   if (GoodIndels[i].IndelSize / (float)MaxSize < 0.95 || MaxSize  + 30 > GoodIndels[i].ReadLength + GoodIndels[i].IndelSize) {
                      OneIndelEvent.WhetherReport = false;
-                     //std::cout << "Skip one inversion 1!" << std::endl;
+                     //*logStream << "Skip one inversion 1!" << std::endl;
                      break;
                   }
                   // if (MaxSize < GoodIndels[i].IndelSize)
-                  //std::cout << "MaxSize " << MaxSize << " > " << GoodIndels[i].IndelSize << std::endl; 
+                  //*logStream << "MaxSize " << MaxSize << " > " << GoodIndels[i].IndelSize << std::endl; 
                   short Diff = (MaxSize - GoodIndels[i].IndelSize) / 2;
                   GoodIndels[i].IndelSize = MaxSize;
                   GoodIndels[i].BPLeft = GoodIndels[i].BPLeft - Diff;
@@ -209,9 +209,9 @@ OutputSorter::DoSortAndOutputInversions (std::vector<SPLIT_READ> &Reads,
                    
                   // for plus
                   if (GoodIndels[i].MatchedD == '+') {
-                      //std::cout << GoodIndels[i].BP << " > " << Diff << std::endl;
+                      //*logStream << GoodIndels[i].BP << " > " << Diff << std::endl;
                       if (GoodIndels[i].BP > Diff) {
-                          //std::cout << "+ " << GoodIndels[i].BP << " " << Diff << std::endl;
+                          //*logStream << "+ " << GoodIndels[i].BP << " " << Diff << std::endl;
                           GoodIndels[i].BP = GoodIndels[i].BP - Diff;
                       }
                   }
@@ -219,7 +219,7 @@ OutputSorter::DoSortAndOutputInversions (std::vector<SPLIT_READ> &Reads,
                        if (GoodIndels[i].BP + Diff < GoodIndels[i].ReadLengthMinus)
                      GoodIndels[i].BP = GoodIndels[i].BP + Diff;   // for minus
                   }
-                   //if (GoodIndels[i].BP < 0) std::cout << "here " << Diff << " " << GoodIndels[i].BP << std::endl;
+                   //if (GoodIndels[i].BP < 0) *logStream << "here " << Diff << " " << GoodIndels[i].BP << std::endl;
                }
                OneIndelEvent.RealStart = GoodIndels[OneIndelEvent.Start].BPLeft; // largest one
                OneIndelEvent.RealEnd = GoodIndels[OneIndelEvent.Start].BPRight;  // largest one
@@ -234,7 +234,7 @@ OutputSorter::DoSortAndOutputInversions (std::vector<SPLIT_READ> &Reads,
                OneIndelEvent.BPRight = GoodIndels[GoodIndex].BPRight;
             }
          }
-          //std::cout << "in5" << std::endl;
+          //*logStream << "in5" << std::endl;
          // last element
          // change breakpoints
          // step 1 find the largest event
@@ -244,12 +244,12 @@ OutputSorter::DoSortAndOutputInversions (std::vector<SPLIT_READ> &Reads,
                MaxSize = GoodIndels[i].IndelSize;
             }
          }
-          //std::cout << "in6" << std::endl;
+          //*logStream << "in6" << std::endl;
          // changed BP according to the largest event
          for (unsigned i = OneIndelEvent.Start; i <= OneIndelEvent.End; i++) {
             if (GoodIndels[i].IndelSize / (float)MaxSize < 0.95 || MaxSize  + 30 > GoodIndels[i].ReadLength + GoodIndels[i].IndelSize) {
                OneIndelEvent.WhetherReport = false;
-               //std::cout << "Skip one inversion 2!" << std::endl;
+               //*logStream << "Skip one inversion 2!" << std::endl;
                break;
             }
             short Diff = (MaxSize - GoodIndels[i].IndelSize) / 2;
@@ -265,40 +265,40 @@ OutputSorter::DoSortAndOutputInversions (std::vector<SPLIT_READ> &Reads,
                 if (GoodIndels[i].BP + Diff < GoodIndels[i].ReadLengthMinus)
                    GoodIndels[i].BP = GoodIndels[i].BP + Diff;   // for minus
             }
-            //if (GoodIndels[i].BP < 0) std::cout << "there " << Diff << " " << GoodIndels[i].BP << std::endl;
+            //if (GoodIndels[i].BP < 0) *logStream << "there " << Diff << " " << GoodIndels[i].BP << std::endl;
          }
-         // std::cout << "in7" << std::endl;
+         // *logStream << "in7" << std::endl;
          OneIndelEvent.RealStart = OneIndelEvent.BPLeft;
          OneIndelEvent.RealEnd = OneIndelEvent.BPRight;
          OneIndelEvent.Support = OneIndelEvent.End - OneIndelEvent.Start + 1;
-         LOG_DEBUG (std::cout << OneIndelEvent.Support
+         LOG_DEBUG (*logStream << OneIndelEvent.Support
                     << "\t" << OneIndelEvent.Start
                     << "\t" << OneIndelEvent.End << std::endl);
          if (OneIndelEvent.WhetherReport) {
             IndelEvents.push_back (OneIndelEvent);
          }
-          //std::cout << "in8" << std::endl;
-         LOG_DEBUG (std::cout << "IndelEvent: " << IndelEvents.size () << std::endl);
+          //*logStream << "in8" << std::endl;
+         LOG_DEBUG (*logStream << "IndelEvent: " << IndelEvents.size () << std::endl);
 
          if (IndelEvents.size ()) {
             ReportedEventCount += ReportIndelEvents (IndelEvents, GoodIndels);
          }
-          //std::cout << "in9" << std::endl;
+          //*logStream << "in9" << std::endl;
       }
    }
-    //std::cout << "end" << std::endl;
+    //*logStream << "end" << std::endl;
    return ReportedEventCount;
 }
 
 int OutputSorter::ReportIndelEvents (std::vector<Indel4output> &IndelEvents,
                                  std::vector<SPLIT_READ> &GoodIndels)
 {  
-    //std::cout << "ReportIndelEvents" << std::endl;
+    //*logStream << "ReportIndelEvents" << std::endl;
    int ReportedEventCount = 0;
    for (unsigned EventIndex = 0; EventIndex < IndelEvents.size ();
          EventIndex++) {
-       //std::cout << EventIndex << std::endl;
-      LOG_DEBUG (std::cout << IndelEvents[EventIndex].Start <<
+       //*logStream << EventIndex << std::endl;
+      LOG_DEBUG (*logStream << IndelEvents[EventIndex].Start <<
                  "\t" << IndelEvents[EventIndex].End <<
                  "\t" << IndelEvents[EventIndex].Support << std::endl);
       unsigned int RealStart = IndelEvents[EventIndex].RealStart;
@@ -306,26 +306,26 @@ int OutputSorter::ReportIndelEvents (std::vector<Indel4output> &IndelEvents,
       if (IndelEvents[EventIndex].Support < NumRead2ReportCutOff) {
          continue;
       }
-      // std::cout << "ReportIndelEvents 1" << std::endl;
+      // *logStream << "ReportIndelEvents 1" << std::endl;
       if (GoodIndels[IndelEvents[EventIndex].Start].IndelSize <
             BalanceCutoff) {
-          //std::cout << "ReportIndelEvents 2" << std::endl;
+          //*logStream << "ReportIndelEvents 2" << std::endl;
          OutputInversions (GoodIndels, *CurrentChr,
                            IndelEvents[EventIndex].Start,
                            IndelEvents[EventIndex].End,
                            RealStart, RealEnd, *InvOutf);
-         // std::cout << "ReportIndelEvents 2'" << std::endl;
+         // *logStream << "ReportIndelEvents 2'" << std::endl;
          ReportedEventCount++;
       }
       else if (ReportEvent
                (GoodIndels, IndelEvents[EventIndex].Start,
                 IndelEvents[EventIndex].End)) {
-                  // std::cout << "ReportIndelEvents 3" << std::endl;
+                  // *logStream << "ReportIndelEvents 3" << std::endl;
          OutputInversions (GoodIndels, *CurrentChr,
                            IndelEvents[EventIndex].Start,
                            IndelEvents[EventIndex].End,
                            RealStart, RealEnd, *InvOutf);
-                  // std::cout << "ReportIndelEvents 3'" << std::endl;
+                  // *logStream << "ReportIndelEvents 3'" << std::endl;
          ReportedEventCount++;
       }
    }

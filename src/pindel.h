@@ -71,6 +71,7 @@ extern int g_binIndex;
 extern int WINDOW_SIZE;
 extern unsigned int g_minimalAnchorQuality;
 extern int g_maxInsertSize;
+extern std::ostream* logStream;
 
 /*
  * For search functions

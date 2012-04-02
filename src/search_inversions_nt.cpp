@@ -34,7 +34,7 @@ int searchInversionsNT(ControlState& currentState, unsigned NumBoxes)
    int CloseIndex = 0;
    int FarIndex = 0;
     
-   LOG_INFO(std::cout << "Searching inversions with non-template sequence ... "
+   LOG_INFO(*logStream << "Searching inversions with non-template sequence ... "
             << std::endl);
    for (unsigned ReadIndex = 0; ReadIndex < currentState.Reads.size(); ReadIndex++) {
       if (currentState.Reads[ReadIndex].Used
@@ -333,7 +333,7 @@ int searchInversionsNT(ControlState& currentState, unsigned NumBoxes)
          }
       }
    }
-   LOG_INFO(std::cout << "Total: " << Count_Inv_NT << "\t+" << Count_Inv_NT_Plus
+   LOG_INFO(*logStream << "Total: " << Count_Inv_NT << "\t+" << Count_Inv_NT_Plus
             << "\t-" << Count_Inv_NT_Minus << std::endl);
    std::ofstream InversionOutf(currentState.InversionOutputFilename.c_str(),
                                std::ios::app);

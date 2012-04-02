@@ -34,9 +34,9 @@ int searchInversions(ControlState& currentState, unsigned NumBoxes)
 
    int CloseIndex = 0;
    int FarIndex = 0;
-    //std::cout << "Debug Searching inversions ... " << std::endl;
-   LOG_INFO(std::cout << "Searching inversions ... " << std::endl);
-    //std::cout << "start" << std::endl;
+    //*logStream << "Debug Searching inversions ... " << std::endl;
+   LOG_INFO(*logStream << "Searching inversions ... " << std::endl);
+    //*logStream << "start" << std::endl;
    for (unsigned ReadIndex = 0; ReadIndex < currentState.Reads.size(); ReadIndex++) {
       if (currentState.Reads[ReadIndex].Used
             || currentState.Reads[ReadIndex].UP_Far.empty()) {
@@ -423,8 +423,8 @@ int searchInversions(ControlState& currentState, unsigned NumBoxes)
          }
       }
    }
-    //std::cout << "end" << std::endl;
-   LOG_INFO(std::cout << "Total: " << Count_Inv << "\t+" << Count_Inv_Plus << "\t-"
+    //*logStream << "end" << std::endl;
+   LOG_INFO(*logStream << "Total: " << Count_Inv << "\t+" << Count_Inv_Plus << "\t-"
             << Count_Inv_Minus << std::endl);
    std::ofstream InversionOutf(currentState.InversionOutputFilename.c_str(),
                                std::ios::app);

@@ -34,7 +34,7 @@ int searchIndels(ControlState& currentState, unsigned NumBoxes)
 
    std::vector<unsigned> DI[NumBoxes];
 
-   LOG_INFO(std::cout << "Searching deletion-insertions ... " << std::endl);
+   LOG_INFO(*logStream << "Searching deletion-insertions ... " << std::endl);
 
    for (unsigned ReadIndex = 0; ReadIndex < currentState.Reads.size(); ReadIndex++) {
       if (currentState.Reads[ReadIndex].Used
@@ -211,7 +211,7 @@ int searchIndels(ControlState& currentState, unsigned NumBoxes)
          }
       }
    }
-   LOG_INFO(std::cout << "Total: " << Count_DI << "\t+" << Count_DI_Plus << "\t-"
+   LOG_INFO(*logStream << "Total: " << Count_DI << "\t+" << Count_DI_Plus << "\t-"
             << Count_DI_Minus << std::endl);
    std::ofstream DeletionOutf(currentState.DeletionOutputFilename.c_str(),
                               std::ios::app);

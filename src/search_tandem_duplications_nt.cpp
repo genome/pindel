@@ -35,7 +35,7 @@ int searchTandemDuplicationsNT(ControlState& currentState, unsigned NumBoxes)
    int CloseIndex = 0;
    int FarIndex = 0;
 
-   LOG_INFO(std::cout
+   LOG_INFO(*logStream
             << "Searching tandem duplication events with non-template sequence ... "
             << std::endl);
    for (unsigned ReadIndex = 0; ReadIndex < currentState.Reads.size(); ReadIndex++) {
@@ -198,7 +198,7 @@ int searchTandemDuplicationsNT(ControlState& currentState, unsigned NumBoxes)
          }
       }
    }
-   LOG_INFO(std::cout << "Total: " << Count_TD_NT << "\t+" << Count_TD_NT_Plus << "\t-"
+   LOG_INFO(*logStream << "Total: " << Count_TD_NT << "\t+" << Count_TD_NT_Plus << "\t-"
             << Count_TD_NT_Minus << std::endl);
    std::ofstream TDOutf(currentState.TDOutputFilename.c_str(), std::ios::app);
    SortAndOutputTandemDuplications(NumBoxes, currentState.CurrentChr,

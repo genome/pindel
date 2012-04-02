@@ -62,14 +62,14 @@ int SearchVariant::Search(ControlState& currentState, const unsigned numBoxes)
          bpSum -= 1000000000;
       }
    }
-   //std::cout << "At start of search deletions:\n\n";
-   std::cout << "Reads already used: " << readsUsed << std::endl;
-   std::cout << "Far ends already mapped " << farEndExists << std::endl;
-   std::cout << "Checksum of far ends: " << bpSum << std::endl;
+   //*logStream << "At start of search deletions:\n\n";
+   *logStream << "Reads already used: " << readsUsed << std::endl;
+   *logStream << "Far ends already mapped " << farEndExists << std::endl;
+   *logStream << "Checksum of far ends: " << bpSum << std::endl;
 
 // <-EW150811 DEBUG
 
-   LOG_INFO(std::cout << "Searching " << typeOfVariant << " ... " << std::endl);
+   LOG_INFO(*logStream << "Searching " << typeOfVariant << " ... " << std::endl);
    for (unsigned ReadIndex = 0; ReadIndex < currentState.Reads.size(); ReadIndex++) {
       if (currentState.Reads[ReadIndex].Used
             || currentState.Reads[ReadIndex].UP_Far.empty()) {
@@ -278,7 +278,7 @@ int SearchVariant::Search(ControlState& currentState, const unsigned numBoxes)
          }
       }
    }
-   LOG_INFO(std::cout << "Total: " << Count_Var << "\t+" << Count_Var_Plus << "\t-"
+   LOG_INFO(*logStream << "Total: " << Count_Var << "\t+" << Count_Var_Plus << "\t-"
             << Count_Var_Minus << std::endl);
 
 //	std::ofstream SIoutputfile(currentState.SIOutputFilename.c_str(),
