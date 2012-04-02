@@ -12,3 +12,4 @@ pindel 0.2.4p, March 26 2012
 pindel 0.2.4q, March 27 2012
 1. Eric-Wubbo: ensured that -c all also works (why: question on seq-answers of someone who could not run pindel because using -c all; now compare ucase-version of c-argument to all)
 2. Eric-Wubbo: for Jan's work on the grid (data size reduction), reimplemented the -S option that only reports close ends and skips SV finding.
+3. Eric-Wubbo: for Jan's work on the grid, added -L option to redirect output to log file when so desired.
