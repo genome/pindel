@@ -47,9 +47,9 @@ void BDData::loadBDFile(const std::string& filename)
 void BDData::loadChromosome( const std::string& chromosomeName, const unsigned int chromosomeSize )
 {
    if (m_currentChrName != chromosomeName ) { // so don't overwrite current chromosome data if not necessary
-
+       //std::cout << "Before " << m_currentChrName << " " << chromosomeName << std::endl;
       m_currentChrName = chromosomeName;
-
+       //std::cout << "After " << m_currentChrName << " " << chromosomeName << std::endl;
       // create a new array to house the breakdancer data pertaining to the current chromosome
       delete[] m_breakDancerMask; // removing NULL is also safe
 
@@ -86,6 +86,7 @@ void BDData::loadChromosome( const std::string& chromosomeName, const unsigned i
 void BDData::getCorrespondingEvents( const SPLIT_READ& read, std::vector<unsigned int>& complementaryPositions ) const
 {
    if (m_breakDancerMask == NULL || m_currentChrName != read.FragName ) {
+       //std::cout <<  m_currentChrName << " " << read.FragName  << std::endl;
       std::cout << "Error: chromosome data has not been set with BDData::setChromosome\n";
       exit(EXIT_FAILURE);
    }

@@ -1132,7 +1132,7 @@ int main(int argc, char *argv[])
     
     
     /* Start of shortcut to assembly */ // currentState.inf_AssemblyInput.open(par.inf_AssemblyInputFilename.c_str());
-    std::cout << "here " << par.AssemblyInputDefined << std::endl;
+    //std::cout << "here " << par.AssemblyInputDefined << std::endl;
     if (par.AssemblyInputDefined) {
         
         std::cout << "Entering assembly mode ..." << std::endl;
@@ -1185,7 +1185,7 @@ int main(int argc, char *argv[])
         g_maxPos = 0;
         (*logStream << "Chromosome Size: " << CONS_Chr_Size << std::endl);
         CurrentChrMask.resize(currentState.CurrentChrSeq.size());
-        g_bdData.loadChromosome( currentState.CurrentChrSeq, currentState.CurrentChrSeq.size() );
+        g_bdData.loadChromosome( currentState.CurrentChrName, currentState.CurrentChrSeq.size() );
         for (unsigned int i = 0; i < currentState.CurrentChrSeq.size(); i++) {
             CurrentChrMask[i] = 'N';
         }
