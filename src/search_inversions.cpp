@@ -428,7 +428,7 @@ int searchInversions(ControlState& currentState, unsigned NumBoxes)
             << Count_Inv_Minus << std::endl);
    std::ofstream InversionOutf(currentState.InversionOutputFilename.c_str(),
                                std::ios::app);
-   SortOutputInv(NumBoxes, currentState.CurrentChr, currentState.Reads, Inv,
+   SortOutputInv(NumBoxes, currentState.CurrentChrSeq, currentState.Reads, Inv,
                  InversionOutf);
    for (unsigned int i = 0; i < NumBoxes; i++) {
       Inv[i].clear();

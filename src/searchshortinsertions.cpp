@@ -84,7 +84,7 @@ void SearchShortInsertions::outputResults(ControlState& currentState,
 {
    std::ofstream SIoutputfile(currentState.SIOutputFilename.c_str(),
                               std::ios::app);
-   SortOutputSI(NumBoxes, currentState.CurrentChr, currentState.Reads, Vars,
+   SortOutputSI(NumBoxes, currentState.CurrentChrSeq, currentState.Reads, Vars,
                 SIoutputfile);
    SIoutputfile.close();
 }

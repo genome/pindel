@@ -104,7 +104,7 @@ private:
 	bool d_isSet;
 	static const int d_DESCRIBE_WIDTH = 11;
 	static const int d_MAX_LINE_WIDTH = 80;
-  const std::string getWord (std::string & line) const;
+  const std::string getWord (std::string & line, bool& getLineEnd) const;
 	const std::string makeNiceLine (const std::string & rawDescription) const;
 	const std::string describeTab () const
 	{															//return string(' ',d_DESCRIBE_WIDTH);  // TODO: Ask Kai whether this can be removed

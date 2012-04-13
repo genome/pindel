@@ -43,10 +43,17 @@ Parameter::Parameter (const std::string & shortName, const std::string & longNam
 
 /* 'getWord' removes the first word from the line, a bit like perl's unshift. */
 const std::string
-Parameter::getWord (std::string & line) const
+Parameter::getWord (std::string & line, bool& forceLineEnd) const
 {
+    forceLineEnd = false;
    std::string head, tail;
    size_t endPos = line.find (" ");
+   size_t returnPos = line.find("\n");
+    if (returnPos<endPos) {
+        endPos=returnPos;
+        forceLineEnd=true;
+        
+    }
    if (endPos == line.npos) {
       head = line;
       tail = "";
@@ -61,16 +68,17 @@ Parameter::getWord (std::string & line) const
 }
 
 /* 'makeNiceLine' adds \n's on the right position of the description to get it fitting nicely in a window. */
-const std::string
-Parameter::makeNiceLine (const std::string & rawDescription) const
+const std::string Parameter::makeNiceLine (const std::string & rawDescription) const
 {
    std::string neatLine = describeTab ();
    std::string words = rawDescription;
    const size_t LIMIT = d_MAX_LINE_WIDTH - d_DESCRIBE_WIDTH;
    size_t lineSize = 0;
    while (words.size () > 0) {
-      std::string newWord = getWord (words);
-      if (newWord.size () + lineSize > LIMIT) {
+       bool forceLineEnd = false;
+      std::string newWord = getWord (words, forceLineEnd);
+      // if (forceLineEnd) { while (newWord[newWord.length()-1]==' ') { newWord=newWord.substr(0,newWord.length()-1); }}; // working on this later. April 11 2012
+      if (newWord.size () + lineSize > LIMIT || forceLineEnd) {
          neatLine += '\n';
          neatLine += describeTab ();
          lineSize = 0;

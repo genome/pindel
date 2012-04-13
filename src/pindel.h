@@ -285,6 +285,23 @@ struct flags_hit {
 	bool suboptimal;
 };
 
+typedef struct {
+	std::string referenceFileName;
+	std::string pindelFileName;
+	std::string bamConfigFileName;
+	std::string outputFileName;
+	std::string breakdancerFileName;
+	std::string breakDancerOutputFilename;
+	std::string logFilename;
+    std::string inf_AssemblyInputFilename; // 
+    std::string SearchRegion;
+    bool AssemblyInputDefined; // 
+    int numThreads;
+    bool showHelp;
+    bool reportOnlyCloseMappedReads;
+} ParCollection;
+
+
 /*
  * Function definitions
  */

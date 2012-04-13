@@ -217,7 +217,7 @@ int searchIndels(ControlState& currentState, unsigned NumBoxes)
                               std::ios::app);
    std::ofstream inversionsOutf(currentState.InversionOutputFilename.c_str(),
                                 std::ios::app);
-   SortOutputDI(NumBoxes, currentState.CurrentChr, currentState.Reads, DI,
+   SortOutputDI(NumBoxes, currentState.CurrentChrSeq, currentState.Reads, DI,
                 DeletionOutf, inversionsOutf);
    DeletionOutf.close();
    for (unsigned int i = 0; i < NumBoxes; i++) {

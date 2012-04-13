@@ -54,10 +54,11 @@ public:
 
 	bool SpecifiedChrVisited;
 	std::ifstream inf_Seq;
+    std::ifstream inf_AssemblyInput;
 	std::ifstream inf_Pindel_Reads;
 	std::string bam_file;
 	std::string OutputFolder;
-	std::string WhichChr;
+	std::string TargetChrName;
 	std::string line;
 	std::vector<bam_info> bams_to_parse;
 	std::ifstream config_file;
@@ -69,6 +70,7 @@ public:
 	bool BAMDefined;
 	bool PindelReadDefined;
 	bool BreakDancerDefined;
+    
 
 	std::string SIOutputFilename;
 	std::string DeletionOutputFilename;
@@ -77,9 +79,10 @@ public:
 	std::string LargeInsertionOutputFilename;
 	std::string RestOutputFilename;
 	std::string breakDancerOutputFilename;
+    
 
 	bool loopOverAllChromosomes;
-	std::string CurrentChr;
+	std::string CurrentChrSeq;
 	std::string CurrentChrName;
 
 	std::vector<SPLIT_READ> InputReads, Reads, FutureReads;

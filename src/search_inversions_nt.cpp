@@ -337,7 +337,7 @@ int searchInversionsNT(ControlState& currentState, unsigned NumBoxes)
             << "\t-" << Count_Inv_NT_Minus << std::endl);
    std::ofstream InversionOutf(currentState.InversionOutputFilename.c_str(),
                                std::ios::app);
-   SortOutputInv_NT(NumBoxes, currentState.CurrentChr, currentState.Reads,
+   SortOutputInv_NT(NumBoxes, currentState.CurrentChrSeq, currentState.Reads,
                     Inv_NT, InversionOutf);
    for (unsigned int i = 0; i < NumBoxes; i++) {
       Inv_NT[i].clear();

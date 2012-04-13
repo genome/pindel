@@ -225,7 +225,7 @@ int searchTandemDuplications(ControlState& currentState, unsigned NumBoxes)
    LOG_INFO(*logStream << "Total: " << Count_TD << "\t+" << Count_TD_Plus << "\t-"
             << Count_TD_Minus << std::endl);
    std::ofstream TDOutf(currentState.TDOutputFilename.c_str(), std::ios::app);
-   SortAndOutputTandemDuplications(NumBoxes, currentState.CurrentChr,
+   SortAndOutputTandemDuplications(NumBoxes, currentState.CurrentChrSeq,
                                    currentState.Reads, TD, TDOutf, false);
    for (unsigned int i = 0; i < NumBoxes; i++) {
       TD[i].clear();

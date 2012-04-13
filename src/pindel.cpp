@@ -47,6 +47,7 @@
 #include "searchshortinsertions.h"
 #include "searchdeletions.h"
 #include "logdef.h"
+#include "assembly.h"
 
 /*v Kai Ye update 0.2.4h, Oct 31 2011, update for MOSAIK */
 /*v EW update 0.2.4j, Pindel will now abort when insert size is set too small. */
@@ -57,6 +58,7 @@
 /* EW/Kai/Matthijs: update 0.2.4o: does not report short inversions as deletions anymore, also displays the reference for short inversions correctly, slightly changed sensitivity, small memory leak fixed. */
 /* Kai/EW: update 0.2.4p: sorts reads in output, number of unique calls should be correct now, pindel now gives error if using config file that does not exist or has other problems */
 /* EW: update 0.2.4q: also works with -c all instead of -c ALL */
+/* Kai: update 0.2.4q: use ChrName and ChrSeq for clarity; start to include assembly */
 
 const std::string Pindel_Version_str = "Pindel version 0.2.4q, March 27 2012.";
 std::ostream* logStream;
@@ -72,19 +74,10 @@ short Before, After;
 
 BDData g_bdData;
 
-typedef struct {
-	std::string referenceFileName;
-	std::string pindelFileName;
-	std::string bamConfigFileName;
-	std::string outputFileName;
-	std::string breakdancerFileName;
-	std::string breakDancerOutputFilename;
-	std::string logFilename;
-    int numThreads;
-    bool showHelp;
-    bool reportOnlyCloseMappedReads;
-} ParCollection;
+
 ParCollection par;
+
+
 
 unsigned int CountIndels = 0;
 const int alphs = 4;
@@ -232,6 +225,8 @@ struct Region {
     unsigned end;
 };
 
+
+
 short WhetherRemoveDuplicates;
 
 std::string TempLine_DB_Unique;
@@ -332,7 +327,7 @@ std::ostream& operator<<(std::ostream& os, const SPLIT_READ& splitRead)
 
 /* 'defineParameters' defines the parameters to be used by Pindel. Takes the variables from the calling function as argument for those variables which
  do not need to be stored in the par structure. */
-void defineParameters(std::string & WhichChr)
+void defineParameters()
 {
     parameters. push_back(
         new StringParameter(&par.referenceFileName, "-f", "--fasta",
@@ -356,11 +351,11 @@ void defineParameters(std::string & WhichChr)
                             "Output prefix;", true, ""));
     parameters. push_back(
         new StringParameter(
-            &WhichChr,
+            &par.SearchRegion,
             "-c",
             "--chromosome",
-            "Which chr/fragment. Pindel will process reads for one chromosome each time. ChrName must be the same as in reference sequence and in read file. '-c ALL' will make Pindel loop over all chromosomes. The search for indels and SVs can also be limited to a specific region; -c 20:10,000,000 will only look for indels and SVs after position 10,000,000 = [10M, end], -c 20:5,000,000-15,000,000 will report indels in the range between and including the bases at position 5,000,000 and 15,000,000 = [5M, 15M]",
-            true, ""));
+            "Which chr/fragment. Pindel will process reads for one chromosome each time. ChrName must be the same as in reference sequence and in read file. '-c ALL' will make Pindel loop over all chromosomes. The search for indels and SVs can also be limited to a specific region; -c 20:10,000,000 will only look for indels and SVs after position 10,000,000 = [10M, end], -c 20:5,000,000-15,000,000 will report indels in the range between and including the bases at position 5,000,000 and 15,000,000 = [5M, 15M]. (default ALL)",
+            false, "ALL"));
 
     parameters. push_back(
         new BoolParameter(&par.showHelp, "-h", "--help",
@@ -492,6 +487,16 @@ void defineParameters(std::string & WhichChr)
             "--anchor_quality",
             "the minimal mapping quality of the reads Pindel uses as anchor "
             "(default 20)", false, 20));
+    parameters. push_back(
+        new StringParameter(
+            &par.inf_AssemblyInputFilename,
+            "-z",
+            "--input_SV_Calls_for_assembly",
+            "A filename of a list of SV calls for assembling breakpoints \n"
+            "Types: DEL, INS, DUP, INV, CTX and ITX \n"    
+            "File format: Type chrA posA Confidence_Range_A chrB posB Confidence_Range_B \n"
+            "Example: DEL chr1 10000 50 chr2 20000 100 "                
+            "", false, ""));
     parameters. push_back(
         new StringParameter(
             &par.breakDancerOutputFilename,
@@ -805,7 +810,7 @@ int init(int argc, char *argv[], ControlState& currentState )
     }
 
     // define all the parameters you have
-    defineParameters(currentState.WhichChr);
+    defineParameters();
 
     // now read the parameters from the command line
     readParameters(argc, argv);
@@ -861,7 +866,10 @@ int init(int argc, char *argv[], ControlState& currentState )
         g_bdData.loadBDFile(par.breakdancerFileName);
     }
 
-
+    par.AssemblyInputDefined = parameters[findParameter("-z")]->isSet();
+    if (par.AssemblyInputDefined) {
+        currentState.inf_AssemblyInput.open(par.inf_AssemblyInputFilename.c_str());
+    }
 
     omp_set_num_threads(par.numThreads);
 
@@ -1033,19 +1041,19 @@ int init(int argc, char *argv[], ControlState& currentState )
     currentState.endOfRegion = -1;
     bool correctParse = false;
     std::string chrName;
-    parseRegion(currentState.WhichChr, currentState.regionStartDefined, currentState.regionEndDefined, currentState.startOfRegion,
+    parseRegion(par.SearchRegion, currentState.regionStartDefined, currentState.regionEndDefined, currentState.startOfRegion,
                 currentState.endOfRegion, chrName, correctParse);
     if (!correctParse) {
-        LOG_ERROR(*logStream << "I cannot parse the region '" << currentState.WhichChr
+        LOG_ERROR(*logStream << "I cannot parse the region '" << par.SearchRegion
                   << "'. Please give region in the format -c ALL, -c <chromosome_name> "
                   "(for example -c 20) or -c <chromosome_name>:<start_position>[-<end_position>], for example -c II:1,000 or "
                   "-c II:1,000-50,000. If an end position is specified, it must be larger than the start position."
                   << std::endl);
         exit ( EXIT_FAILURE);
     }
-    currentState.WhichChr = chrName; // removes the region from the 'pure' chromosome name
+    currentState.TargetChrName = chrName; // removes the region from the 'pure' chromosome name
 
-    if (uppercase(currentState.WhichChr).compare("ALL") == 0) {
+    if (uppercase(currentState.TargetChrName).compare("ALL") == 0 && par.AssemblyInputDefined == false) {
         *logStream << "Looping over all chromosomes." << std::endl;
         currentState.loopOverAllChromosomes = true;
     }
@@ -1121,6 +1129,29 @@ int main(int argc, char *argv[])
     }
 
     std::string emptystr;
+    
+    
+    /* Start of shortcut to assembly */ // currentState.inf_AssemblyInput.open(par.inf_AssemblyInputFilename.c_str());
+    std::cout << "here " << par.AssemblyInputDefined << std::endl;
+    if (par.AssemblyInputDefined) {
+        
+        std::cout << "Entering assembly mode ..." << std::endl;
+        doAssembly(currentState, par);
+        /*
+        // step 1: define output file
+        std:string AssemblyOutputFilename = inf_AssemblyInputFilename + "_ASM";
+        std::ofstream AssemblyOutput(AssemblyOutputFilename.c_str()); 
+        
+        // step 1: get whole genome as vector of chr
+        
+        // step 2: get a list of breakpoints 
+         */
+        
+        std::cout << "Leaving assembly mode and terminating this run." << std::endl;
+        exit(EXIT_SUCCESS);
+    }
+    
+    /* End of shortcut to assembly */
 
 
     /* 3 loop over chromosomes. this is the most outer loop in the main function. */
@@ -1136,31 +1167,31 @@ int main(int argc, char *argv[])
         // dangerous, there may be no other elements on the fasta header line
         std::getline(currentState.inf_Seq, emptystr);
         if (currentState.loopOverAllChromosomes) {
-            GetOneChrSeq(currentState.inf_Seq, currentState.CurrentChr, true);
-            currentState.WhichChr = currentState.CurrentChrName;
+            GetOneChrSeq(currentState.inf_Seq, currentState.CurrentChrSeq, true);
+            //currentState.WhichChr = currentState.CurrentChrName;
         }
-        else if (currentState.CurrentChrName == currentState.WhichChr) {   // just one chr and this is the correct one
-            GetOneChrSeq(currentState.inf_Seq, currentState.CurrentChr, true);
+        else if (currentState.CurrentChrName == currentState.TargetChrName) {   // just one chr and this is the correct one
+            GetOneChrSeq(currentState.inf_Seq, currentState.CurrentChrSeq, true);
             currentState.SpecifiedChrVisited = true;
         }
         else {   // not build up sequence
-            GetOneChrSeq(currentState.inf_Seq, currentState.CurrentChr, false);
+            GetOneChrSeq(currentState.inf_Seq, currentState.CurrentChrSeq, false);
             (*logStream << "Skipping chromosome: " << currentState.CurrentChrName
              << std::endl);
             continue;
         }
 
-        CONS_Chr_Size = currentState.CurrentChr.size() - 2 * g_SpacerBeforeAfter;
+        CONS_Chr_Size = currentState.CurrentChrSeq.size() - 2 * g_SpacerBeforeAfter;
         g_maxPos = 0;
         (*logStream << "Chromosome Size: " << CONS_Chr_Size << std::endl);
-        CurrentChrMask.resize(currentState.CurrentChr.size());
-        g_bdData.loadChromosome( currentState.WhichChr, currentState.CurrentChr.size() );
-        for (unsigned int i = 0; i < currentState.CurrentChr.size(); i++) {
+        CurrentChrMask.resize(currentState.CurrentChrSeq.size());
+        g_bdData.loadChromosome( currentState.CurrentChrSeq, currentState.CurrentChrSeq.size() );
+        for (unsigned int i = 0; i < currentState.CurrentChrSeq.size(); i++) {
             CurrentChrMask[i] = 'N';
         }
-        BoxSize = currentState.CurrentChr.size() / 30000;
+        BoxSize = currentState.CurrentChrSeq.size() / 30000;
         if (BoxSize == 0) BoxSize = 1;
-        unsigned NumBoxes = (unsigned) (currentState.CurrentChr.size() * 2
+        unsigned NumBoxes = (unsigned) (currentState.CurrentChrSeq.size() * 2
                                         / BoxSize) + 1; // box size
         (*logStream << "NumBoxes: " << NumBoxes << "\tBoxSize: " << BoxSize << std::endl);
 
@@ -1198,7 +1229,7 @@ int main(int argc, char *argv[])
         if ( currentState.regionEndDefined && displayedEndOfRegion > currentState.endOfRegion ) {
             displayedEndOfRegion = currentState.endOfRegion;
         }
-        ReadBuffer readBuffer( BUFFER_SIZE, currentState.Reads, currentState.CurrentChr );
+        ReadBuffer readBuffer( BUFFER_SIZE, currentState.Reads, currentState.CurrentChrSeq );
         // loop over one chromosome
         do {
 
@@ -1211,7 +1242,7 @@ int main(int argc, char *argv[])
             g_CloseMappedMinus = 0;
 
             if (displayedStartOfRegion < displayedEndOfRegion) {
-                (*logStream << "\nLooking at chromosome " << currentState.WhichChr
+                (*logStream << "\nLooking at chromosome " << currentState.CurrentChrName
                  << " bases " << displayedStartOfRegion << " to "
                  << displayedEndOfRegion << "." << std::endl);
             }
@@ -1232,7 +1263,8 @@ int main(int argc, char *argv[])
                     *logStream << "Insertsize in bamreads: " << currentState.bams_to_parse[i].InsertSize << std::endl;
                     ReturnFromReadingReads = ReadInBamReads(
                                                  currentState.bams_to_parse[i].BamFile.c_str(),
-                                                 currentState.WhichChr, &currentState.CurrentChr,
+                                                 currentState.CurrentChrName, 
+                                                 &currentState.CurrentChrSeq,
                                                  currentState.Reads,
                                                  currentState.bams_to_parse[i].InsertSize,
                                                  currentState.bams_to_parse[i].Tag,
@@ -1246,7 +1278,7 @@ int main(int argc, char *argv[])
                     }
                     else if (currentState.Reads.size() == 0) {
                         LOG_ERROR(*logStream << "No currentState.Reads for "
-                                  << currentState.WhichChr << " found in "
+                                  << currentState.CurrentChrName << " found in "
                                   << currentState.bams_to_parse[i].BamFile
                                   << std::endl);
                     }
@@ -1259,8 +1291,8 @@ int main(int argc, char *argv[])
 
             if (currentState.PindelReadDefined) {
                 ReturnFromReadingReads = ReadInRead(
-                                             currentState.inf_Pindel_Reads, currentState.WhichChr,
-                                             currentState.CurrentChr, currentState.Reads,
+                                             currentState.inf_Pindel_Reads, currentState.CurrentChrName,
+                                             currentState.CurrentChrSeq, currentState.Reads,
                                              currentState.lowerBinBorder,
                                              currentState.upperBinBorder);
                 if (ReturnFromReadingReads == 1) {
@@ -1308,7 +1340,7 @@ int main(int argc, char *argv[])
                     {
                         #pragma omp for
                         for (int readIndex= 0; readIndex < (int)currentState.Reads.size(); readIndex++ ) {
-                            SearchFarEnd( currentState.CurrentChr, currentState.Reads[readIndex] );
+                            SearchFarEnd( currentState.CurrentChrSeq, currentState.Reads[readIndex] );
                         }
                     }
 
@@ -1414,7 +1446,7 @@ int main(int argc, char *argv[])
                         std::ofstream LargeInsertionOutf(
                             currentState.LargeInsertionOutputFilename. c_str(),
                             std::ios::app);
-                        SortOutputLI(currentState.CurrentChr, currentState.Reads,
+                        SortOutputLI(currentState.CurrentChrSeq, currentState.Reads,
                                      LargeInsertionOutf, currentState.lowerBinBorder, currentState.upperBinBorder);
                         LargeInsertionOutf.close();
                         Time_LI_E = time(NULL);
@@ -1432,7 +1464,7 @@ int main(int argc, char *argv[])
                         Time_BP_S = time(NULL);
                         std::ofstream RestOutf(currentState.RestOutputFilename.c_str(),
                                                std::ios::app);
-                        SortOutputRest(currentState.CurrentChr, currentState.Reads,
+                        SortOutputRest(currentState.CurrentChrSeq, currentState.Reads,
                                        BP_Reads, RestOutf, currentState.lowerBinBorder, currentState.upperBinBorder);
                         RestOutf.close();
                         Time_BP_E = time(NULL);
@@ -1476,7 +1508,7 @@ int main(int argc, char *argv[])
                         currentState.lowerBinBorder,
                         currentState.regionEndDefined,
                         currentState.endRegionPlusBuffer,
-                        currentState.CurrentChr.size())));
+                        currentState.CurrentChrSeq.size())));
 
         // Pindel: stop loop if the lowerBinBorder is past the last read, or past the endRegionPlusBuffer
         /* 3.2 apply sliding windows to input datasets ends */
@@ -1662,7 +1694,7 @@ void updateReadAfterCloseEndMapping( SPLIT_READ& Temp_One_Read )
 
 
 
-void GetCloseEndInner(const std::string & CurrentChr, SPLIT_READ & Temp_One_Read)
+void GetCloseEndInner(const std::string & CurrentChrSeq, SPLIT_READ & Temp_One_Read)
 {
     Temp_One_Read.ReadLength = Temp_One_Read.UnmatchedSeq.size();
     Temp_One_Read.ReadLengthMinus = Temp_One_Read.ReadLength - 1;
@@ -1692,7 +1724,7 @@ void GetCloseEndInner(const std::string & CurrentChr, SPLIT_READ & Temp_One_Read
         if (LeftChar != 'N') {
             {
                 for (int pos = Start; pos < End; pos++) {
-                    if (CurrentChr[pos] == LeftChar) {
+                    if (CurrentChrSeq[pos] == LeftChar) {
                         PD[0].push_back(pos);
                     }
                 }
@@ -1702,7 +1734,7 @@ void GetCloseEndInner(const std::string & CurrentChr, SPLIT_READ & Temp_One_Read
         //    logStream << Temp_One_Read.Name << " PD[0].size() " << PD[0].size() << std::endl;
         //}
         if (PD[0].size())
-            CheckLeft_Close(Temp_One_Read, CurrentChr, CurrentReadSeq, PD,
+            CheckLeft_Close(Temp_One_Read, CurrentChrSeq, CurrentReadSeq, PD,
                             BP_Start, BP_End, FirstBase, UP); // LengthStr
         if (UP.empty()) {}
         else {
@@ -1719,14 +1751,14 @@ void GetCloseEndInner(const std::string & CurrentChr, SPLIT_READ & Temp_One_Read
         RightChar = CurrentReadSeq[Temp_One_Read.ReadLengthMinus];
         if (RightChar != 'N') {
             for (int pos = Start; pos < End; pos++) {
-                if (CurrentChr[pos] == RightChar) {
+                if (CurrentChrSeq[pos] == RightChar) {
                     PD[0].push_back(pos);
                 }
             }
         }
 
         LOG_DEBUG(*logStream << "1\t" << PD[0].size() << "\t" << PD[1].size() << std::endl);
-        CheckRight_Close(Temp_One_Read, CurrentChr, CurrentReadSeq, PD,
+        CheckRight_Close(Temp_One_Read, CurrentChrSeq, CurrentReadSeq, PD,
                          BP_Start, BP_End, FirstBase, UP);
         LOG_DEBUG(*logStream << UP.size() << std::endl);
         if (UP.empty()) {}
@@ -1739,16 +1771,16 @@ void GetCloseEndInner(const std::string & CurrentChr, SPLIT_READ & Temp_One_Read
     return;
 }
 
-void GetCloseEnd(const std::string & CurrentChr, SPLIT_READ & Temp_One_Read)
+void GetCloseEnd(const std::string & CurrentChrSeq, SPLIT_READ & Temp_One_Read)
 {
 
-    GetCloseEndInner( CurrentChr, Temp_One_Read );
+    GetCloseEndInner( CurrentChrSeq, Temp_One_Read );
 
     if (Temp_One_Read.UP_Close.size()==0) { // no good close ends found
         //*logStream << "Trying to match " << Temp_One_Read.UnmatchedSeq << std::endl;
         Temp_One_Read.UnmatchedSeq = ReverseComplement( Temp_One_Read.UnmatchedSeq );
 
-        GetCloseEndInner( CurrentChr, Temp_One_Read );
+        GetCloseEndInner( CurrentChrSeq, Temp_One_Read );
         //*logStream << "New attempt: Trying to match " << Temp_One_Read.UnmatchedSeq << "\t"
         //          << Temp_One_Read.UP_Close.size() << std::endl;
     }

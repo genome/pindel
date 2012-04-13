@@ -82,7 +82,7 @@ void SearchDeletions::outputResults(ControlState& currentState,
 {
    std::ofstream DeletionOutf(currentState.DeletionOutputFilename.c_str(),
                               std::ios::app);
-   SortOutputD(NumBoxes, currentState.CurrentChr, currentState.Reads, Vars,
+   SortOutputD(NumBoxes, currentState.CurrentChrSeq, currentState.Reads, Vars,
                DeletionOutf);
    DeletionOutf.close();
 }

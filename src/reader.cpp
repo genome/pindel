@@ -55,7 +55,7 @@ struct fetch_func_data {
       header = NULL;
       b1_flags = NULL;
       b2_flags = NULL;
-      CurrentChr = NULL;
+      CurrentChrSeq = NULL;
       Tag = "";
       InsertSize = 0;
    }
@@ -65,7 +65,7 @@ struct fetch_func_data {
    bam_header_t *header;
    flags_hit *b1_flags;
    flags_hit *b2_flags;
-   std::string * CurrentChr;
+   std::string * CurrentChrSeq;
    std::string Tag;
    int InsertSize;
 };
@@ -332,7 +332,7 @@ ReadInRead (std::ifstream & inf_ReadSeq, const std::string & FragName,
 
 bool
 ReadInBamReads (const char *bam_path, const std::string & FragName,
-                std::string * CurrentChr,
+                std::string * CurrentChrSeq,
                 std::vector < SPLIT_READ > &LeftReads,
                 int InsertSize,
                 std::string Tag,
@@ -357,7 +357,7 @@ ReadInBamReads (const char *bam_path, const std::string & FragName,
 
    fetch_func_data data;
    data.header = header;
-   data.CurrentChr = CurrentChr;
+   data.CurrentChrSeq = CurrentChrSeq;
    data.LeftReads = &LeftReads;
    data.read_to_map_qual = NULL;
    data.read_to_map_qual = kh_init (read_name);
@@ -447,7 +447,7 @@ fetch_func (const bam1_t * b1, void *data)
       (khash_t (read_name) *) data_for_bam->read_to_map_qual;
    flags_hit *b1_flags = data_for_bam->b1_flags;
    flags_hit *b2_flags = data_for_bam->b2_flags;
-   const std::string CurrentChr = *(std::string *) data_for_bam->CurrentChr;
+   const std::string CurrentChrSeq = *(std::string *) data_for_bam->CurrentChrSeq;
    //*logStream << "1" << std::endl;
    SPLIT_READ Temp_One_Read;
    const bam1_core_t *b1_core;
@@ -513,7 +513,7 @@ build_record (const bam1_t * mapped_read, const bam1_t * unmapped_read,
    SPLIT_READ Temp_One_Read;
    fetch_func_data *data_for_bam = (fetch_func_data *) data;
    bam_header_t *header = (bam_header_t *) data_for_bam->header;
-   std::string CurrentChr = *(std::string *) data_for_bam->CurrentChr;
+   std::string CurrentChrSeq = *(std::string *) data_for_bam->CurrentChrSeq;
    std::string Tag = (std::string) data_for_bam->Tag;
    int InsertSize = (int) data_for_bam->InsertSize;
 
