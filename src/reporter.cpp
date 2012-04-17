@@ -274,8 +274,8 @@ OutputDeletions (const std::vector < SPLIT_READ > &Deletions,
                    << " " << NumSupportPerTag[i].NumUMinus;
    DeletionOutf << std::endl;
    LOG_DEBUG(*logStream << "d_7" << std::endl);
-std::cout << "@@@reportlength " << g_reportLength << "Left= " << Deletions[C_S].Left << " BP= " << Deletions[C_S].BP << " indelsize=" << Deletions[C_S].IndelSize << " RIght=" << Deletions[C_S].Right 
-			<< "Readlength= " << Deletions[C_S].ReadLength << " Gapsize=" << GapSize << std::endl;
+//std::cout << "@@@reportlength " << g_reportLength << "Left= " << Deletions[C_S].Left << " BP= " << Deletions[C_S].BP << " indelsize=" << Deletions[C_S].IndelSize << " RIght=" << Deletions[C_S].Right 
+//			<< "Readlength= " << Deletions[C_S].ReadLength << " Gapsize=" << GapSize << std::endl;
    DeletionOutf << TheInput.substr (Deletions[C_S].Left - g_reportLength + Deletions[C_S].BP + 1, g_reportLength);	// << endl;// g_reportLength
    if (Deletions[C_S].IndelSize >= 14) {
       DeletionOutf << Cap2Low (TheInput.substr (Deletions[C_S].Left + Deletions[C_S].BP + 1, 5)) << "<" << Deletions[C_S].IndelSize - 10 << ">" << 
