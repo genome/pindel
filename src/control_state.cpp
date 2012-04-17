@@ -25,7 +25,9 @@ ControlState::ControlState()
 {
    BAMDefined = false;
    PindelReadDefined = false;
+	pindelConfigDefined = false;
    BreakDancerDefined = false;
+
    loopOverAllChromosomes = false;
    SpecifiedChrVisited = false;
 

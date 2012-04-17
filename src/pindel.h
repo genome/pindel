@@ -287,8 +287,9 @@ struct flags_hit {
 
 typedef struct {
 	std::string referenceFileName;
-	std::string pindelFileName;
+	std::string pindelFilename;
 	std::string bamConfigFileName;
+	std::string pindelConfigFilename;
 	std::string outputFileName;
 	std::string breakdancerFileName;
 	std::string breakDancerOutputFilename;

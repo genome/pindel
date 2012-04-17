@@ -59,8 +59,9 @@ public:
 	std::string bam_file;
 	std::string OutputFolder;
 	std::string TargetChrName;
-	std::string line;
+//	std::string line;
 	std::vector<bam_info> bams_to_parse;
+	std::vector<std::string> pindelfilesToParse;
 	std::ifstream config_file;
 	bam_info info;
 
@@ -70,6 +71,7 @@ public:
 	bool BAMDefined;
 	bool PindelReadDefined;
 	bool BreakDancerDefined;
+	bool pindelConfigDefined;
     
 
 	std::string SIOutputFilename;

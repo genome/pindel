@@ -334,17 +334,24 @@ void defineParameters()
                             "the reference genome sequences in fasta format", true, ""));
     parameters. push_back(
         new StringParameter(
-            &par.pindelFileName,
+            &par.pindelFilename,
             "-p",
             "--pindel-file",
-            "the Pindel input file; either this or a bam configuration file is required",
+            "the Pindel input file; either this, a pindel configuration file (consisting of multiple pindel filenames) or a bam configuration file is required",
             false, ""));
     parameters. push_back(
         new StringParameter(
             &par.bamConfigFileName,
             "-i",
             "--config-file",
-            "the bam config file; either this or a pindel input file is required. Per line: path and file name of bam, insert size and sample tag.     For example: /data/tumour.bam  400  tumour",
+            "the bam config file; either this, a pindel input file, or a pindel config file is required. Per line: path and file name of bam, insert size and sample tag.     For example: /data/tumour.bam  400  tumour",
+            false, ""));
+    parameters. push_back(
+        new StringParameter(
+            &par.pindelConfigFilename,
+            "-P",
+            "--pindel-config-file",
+            "the pindel config file, containing the names of all Pindel files that need to be sampled; either this, a bam config file or a pindel input file is required. Per line: path and file name of pindel input. Example: /data/tumour.txt",
             false, ""));
     parameters. push_back(
         new StringParameter(&par.outputFileName, "-o", "--output-prefix",
@@ -633,11 +640,12 @@ bool checkParameters()
         } //if
     }
     // here handle the tricky fact that at least one of -i or -p needs be set; both are not required.
-    bool hasBam = parameters[findParameter("-i")]->isSet();
-    bool hasPin = parameters[findParameter("-p")]->isSet();
-    if (!hasBam && !hasPin) {
+	bool hasBam = parameters[findParameter("-i")]->isSet();
+	bool hasPin = parameters[findParameter("-p")]->isSet();
+	bool hasPinConfig = parameters[findParameter("-P")]->isSet();
+    if (!hasBam && !hasPin && !hasPinConfig) {
         LOG_ERROR(*logStream
-                  << "Bam and/or pindel input file required, use -p and/or -i to designate input file(s)."
+                  << "Bam and/or pindel input file required, use -p, -P and/or -i to designate input file(s)."
                   << std::endl);
         return false;
     }
@@ -775,12 +783,13 @@ void readBamConfigFile(std::string& bamConfigFileName, ControlState& currentStat
             }
 
             //copy kai and throw crap into useless variable
-            std::getline(currentState.config_file, currentState.line);
+				std::string restOfLine;
+            std::getline(currentState.config_file, restOfLine);
             currentState.bams_to_parse.push_back(currentState.info);
             sampleCounter++;
         } // while
         if (sampleCounter==0) {
-            *logStream << "Could not find any samples in the sample file '" << par.bamConfigFileName
+            *logStream << "Could not find any samples in the sample file '" << bamConfigFileName
                       << "'. Please run Pindel again with a config-file of the specified type (format 'A.bam	<insert-size>	sample_label)\n\n";
             exit( EXIT_FAILURE );
         }
@@ -791,6 +800,40 @@ void readBamConfigFile(std::string& bamConfigFileName, ControlState& currentStat
         exit( EXIT_FAILURE );
     }
 }
+
+void readPindelConfigFile(std::string& pindelConfigFilename, std::vector<std::string>& pindelfilesToParse )
+{
+	int sampleCounter=0;
+   std::ifstream pindelConfigFile( pindelConfigFilename.c_str() );
+	if (pindelConfigFile) {
+		while (pindelConfigFile.good()) {
+			std::string pindelFilename;
+			pindelConfigFile >> pindelFilename;
+			if (!pindelConfigFile.good()) break;
+
+			if (! fileExists( pindelFilename )) {
+				*logStream << "I cannot find the file '"<< pindelFilename << "'. referred to in configuration file '" << pindelConfigFilename << "'. Please change the Pindel-configurationfile.\n\n";
+				exit(EXIT_FAILURE);
+			}
+
+			std::string restOfLine;
+			std::getline( pindelConfigFile, restOfLine);
+			pindelfilesToParse.push_back( pindelFilename );
+			sampleCounter++;
+		} // while
+		if (sampleCounter==0) {
+			*logStream << "Could not find any samples in the sample file '" << pindelConfigFilename
+                      << "'. Please run Pindel again with a config-file of the specified type (format 'coloA.pindel_input<newline>colo_tumor.pindel_input<newline>...')\n\n";
+			exit( EXIT_FAILURE );
+		}
+	}
+	else {
+		// no config-file defined
+		*logStream << "Pindel configuration file '" << pindelConfigFilename << "' does not exist. Please run Pindel again with an existing config-file (format 'coloA.pindel_input<newline>colo_tumor.pindel_input<newline>...')\n\n";
+		exit( EXIT_FAILURE );
+	}
+}
+
 
 std::string uppercase( const std::string& input )
 {
@@ -849,9 +892,12 @@ int init(int argc, char *argv[], ControlState& currentState )
 
     currentState.PindelReadDefined = parameters[findParameter("-p")]->isSet();
     if (currentState.PindelReadDefined) {
-        currentState.inf_Pindel_Reads.open(par.pindelFileName.c_str());
+        currentState.inf_Pindel_Reads.open(par.pindelFilename.c_str());
     }
-
+	currentState.pindelConfigDefined = parameters[findParameter("-P")]->isSet();
+	if (currentState.pindelConfigDefined) {
+		readPindelConfigFile( par.pindelConfigFilename, currentState.pindelfilesToParse );
+	}
     currentState.BAMDefined = parameters[findParameter("-i")]->isSet();
     if (currentState.BAMDefined) {
         readBamConfigFile( par.bamConfigFileName, currentState );
@@ -1100,6 +1146,20 @@ void SearchFarEnd( const std::string& chromosome, SPLIT_READ& read)
     }
 }
 
+void readInPindelReads( std::ifstream& pindelFile, const std::string& pindelFilename, ControlState& currentState )
+{
+	int ReturnFromReadingReads = ReadInRead(  pindelFile, currentState.CurrentChrName,
+                                             currentState.CurrentChrSeq, currentState.Reads,
+                                             currentState.lowerBinBorder,
+                                             currentState.upperBinBorder);
+	if (ReturnFromReadingReads == 1) {
+		LOG_ERROR(*logStream << "malformed record detected in " << pindelFilename << std::endl);
+		exit( EXIT_FAILURE );
+	}
+	else if (currentState.Reads.size() == 0) {
+		LOG_ERROR(*logStream << "No reads found in " << pindelFilename << std::endl);
+	}
+}
 
 int main(int argc, char *argv[])
 {
@@ -1287,21 +1347,18 @@ int main(int argc, char *argv[])
                 }
 
             }
+				if (currentState.pindelConfigDefined) {
+				   g_reportLength = 0;		
+					for (unsigned int fileIndex=0; fileIndex<currentState.pindelfilesToParse.size(); fileIndex++ ) {
+						std::ifstream currentPindelfile( currentState.pindelfilesToParse[ fileIndex ].c_str() );
+						readInPindelReads( currentPindelfile, currentState.pindelfilesToParse[ fileIndex ].c_str(), currentState );
+					}
+				}
             //readBuffer.flush();
 
             if (currentState.PindelReadDefined) {
-                ReturnFromReadingReads = ReadInRead(
-                                             currentState.inf_Pindel_Reads, currentState.CurrentChrName,
-                                             currentState.CurrentChrSeq, currentState.Reads,
-                                             currentState.lowerBinBorder,
-                                             currentState.upperBinBorder);
-                if (ReturnFromReadingReads == 1) {
-                    LOG_ERROR(*logStream << "malformed record detected!" << std::endl);
-                    return 1;
-                }
-                else if (currentState.Reads.size() == 0) {
-                    LOG_ERROR(*logStream << "No reads found!?" << std::endl);
-                }
+					   g_reportLength = 0;
+					readInPindelReads( currentState.inf_Pindel_Reads, par.pindelFilename, currentState );
             }
             Time_Mine_E = time(NULL);
 

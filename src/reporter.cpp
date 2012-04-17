@@ -274,22 +274,16 @@ OutputDeletions (const std::vector < SPLIT_READ > &Deletions,
                    << " " << NumSupportPerTag[i].NumUMinus;
    DeletionOutf << std::endl;
    LOG_DEBUG(*logStream << "d_7" << std::endl);
+std::cout << "@@@reportlength " << g_reportLength << "Left= " << Deletions[C_S].Left << " BP= " << Deletions[C_S].BP << " indelsize=" << Deletions[C_S].IndelSize << " RIght=" << Deletions[C_S].Right 
+			<< "Readlength= " << Deletions[C_S].ReadLength << " Gapsize=" << GapSize << std::endl;
    DeletionOutf << TheInput.substr (Deletions[C_S].Left - g_reportLength + Deletions[C_S].BP + 1, g_reportLength);	// << endl;// g_reportLength
    if (Deletions[C_S].IndelSize >= 14) {
-      DeletionOutf << Cap2Low (TheInput.
-                               substr (Deletions[C_S].Left +
-                                       Deletions[C_S].BP + 1,
-                                       5)) << "<" << Deletions[C_S].
-                   IndelSize -
-                   10 << ">" << Cap2Low (TheInput.
-                                         substr (Deletions[C_S].Right -
-                                               Deletions[C_S].ReadLength +
-                                               Deletions[C_S].BP - 3, 5));
+      DeletionOutf << Cap2Low (TheInput.substr (Deletions[C_S].Left + Deletions[C_S].BP + 1, 5)) << "<" << Deletions[C_S].IndelSize - 10 << ">" << 
+										 Cap2Low (TheInput.substr (Deletions[C_S].Right - Deletions[C_S].ReadLength + Deletions[C_S].BP - 3, 5));
    }
-   else
-      DeletionOutf << Cap2Low (TheInput.
-                               substr (Deletions[C_S].Left + Deletions[C_S].BP +
-                                       1, GapSize));
+   else {
+      DeletionOutf << Cap2Low (TheInput.substr (Deletions[C_S].Left + Deletions[C_S].BP + 1, GapSize));
+	}
    DeletionOutf << TheInput.substr (Deletions[C_S].Left + Deletions[C_S].BP + 1 + Deletions[C_S].IndelSize, g_reportLength - GapSize) << std::endl;	// g_reportLength
    short SpaceBeforeReadSeq;
    for (unsigned int GoodIndex = C_S; GoodIndex <= C_E; GoodIndex++) {
@@ -432,8 +426,7 @@ OutputInversions (const std::vector < SPLIT_READ > &Inv,
    InvOutf <<
            Cap2Low (ReverseComplement
                     (TheInput.
-                     substr (Inv[C_S].BPRight + 1 + g_SpacerBeforeAfter - g_reportLength,
-                             g_reportLength))) << std::endl;
+                     substr (Inv[C_S].BPRight + 1 + g_SpacerBeforeAfter - g_reportLength, g_reportLength))) << std::endl;
    for (unsigned int GoodIndex = C_S; GoodIndex <= C_E; GoodIndex++) {
       if (Inv[GoodIndex].MatchedD == Plus) {
          SpaceBeforeReadSeq = g_reportLength - Inv[GoodIndex].BP - 1;
@@ -470,8 +463,7 @@ OutputInversions (const std::vector < SPLIT_READ > &Inv,
          InvOutf << " ";
       }
    }
-   InvOutf << TheInput.substr (Inv[C_S].BPRight + 1 + g_SpacerBeforeAfter,
-                               g_reportLength) << std::endl;
+   InvOutf << TheInput.substr (Inv[C_S].BPRight + 1 + g_SpacerBeforeAfter, g_reportLength) << std::endl;
     //*logStream << "here" << std::endl;
    for (unsigned int GoodIndex = C_S; GoodIndex <= C_E; GoodIndex++) {
        //*logStream << GoodIndex << "\t" << C_E << "\t" << Inv[GoodIndex].BP << std::endl;
