@@ -103,7 +103,7 @@ unsigned int NumberOfDeletionsInstances = 0;
 unsigned int NumberOfDIInstances = 0;
 unsigned int g_numberOfInvInstances = 0;
 unsigned int NumberOfTDInstances = 0;
-short g_reportLength = 80;
+short g_reportLength = 1;
 char Match[256];
 char Match2N[256];
 char Convert2RC[256];
