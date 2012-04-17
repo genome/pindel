@@ -115,7 +115,7 @@ ReadInRead (std::ifstream & inf_ReadSeq, const std::string & FragName,
    LOG_INFO(*logStream << "Scanning and processing reads anchored in " << FragName << std::endl);
    SPLIT_READ Temp_One_Read;
    std::vector < SPLIT_READ > BufferReads;
-
+//g_reportLength=0;
    LOG_DEBUG(*logStream << LeftReads.size() << std::endl);
    std::string TempQC, TempLine, TempStr, TempFragName;
 

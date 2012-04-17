@@ -103,7 +103,7 @@ unsigned int NumberOfDeletionsInstances = 0;
 unsigned int NumberOfDIInstances = 0;
 unsigned int g_numberOfInvInstances = 0;
 unsigned int NumberOfTDInstances = 0;
-short g_reportLength = 80;
+short g_reportLength = 100;
 char Match[256];
 char Match2N[256];
 char Convert2RC[256];
@@ -1163,7 +1163,6 @@ void readInPindelReads( std::ifstream& pindelFile, const std::string& pindelFile
 
 int main(int argc, char *argv[])
 {
-
     //TODO: These are counters that are only used in individual steps. They should be moved to separate functions later.
 
 
@@ -1347,8 +1346,7 @@ int main(int argc, char *argv[])
                 }
 
             }
-				if (currentState.pindelConfigDefined) {
-				   g_reportLength = 0;		
+				if (currentState.pindelConfigDefined) {	
 					for (unsigned int fileIndex=0; fileIndex<currentState.pindelfilesToParse.size(); fileIndex++ ) {
 						std::ifstream currentPindelfile( currentState.pindelfilesToParse[ fileIndex ].c_str() );
 						readInPindelReads( currentPindelfile, currentState.pindelfilesToParse[ fileIndex ].c_str(), currentState );
@@ -1357,7 +1355,6 @@ int main(int argc, char *argv[])
             //readBuffer.flush();
 
             if (currentState.PindelReadDefined) {
-					   g_reportLength = 0;
 					readInPindelReads( currentState.inf_Pindel_Reads, par.pindelFilename, currentState );
             }
             Time_Mine_E = time(NULL);
