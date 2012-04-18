@@ -20,19 +20,20 @@
 
 #include "control_state.h"
 #include "pindel.h"
+#include <vector>
+#include <map>
+#include <string>
 
 #ifndef ASSEMBLY_H
 #define	ASSEMBLY_H
 
-void doAssembly (ControlState & CurrentState, ParCollection & par);
-
 struct Chromosome {
     Chromosome() {
         ChrName = "";
-        Seq = ""; 
+        ChrSeq = ""; 
     }
     std::string ChrName;
-    std::string Seq;
+    std::string ChrSeq;
 };
 
 struct Assembly {
@@ -54,4 +55,7 @@ struct Assembly {
     unsigned CI_B;
 };
 
+void doAssembly (ControlState & CurrentState, ParCollection & par);
+short getWholeGenome(ControlState & CurrentState, std::vector <Chromosome> & AllChromosomes) ;
+short AssembleOneSV(const std::vector <Chromosome> & AllChromosomes, std::map<std::string,int> & ChrName2Index, ControlState & CurrentState, ParCollection & par, const Assembly & OneSV, std::ofstream & ASM_Output);
 #endif /* ASSEMBLY_H */

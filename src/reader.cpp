@@ -38,11 +38,14 @@
 #include "reader.h"
 #include "logdef.h"
 #include "refreader.h"
-
+#include "control_state.h"
+#include "read_buffer.h"
 // Static function declaration
 
 static int fetch_func (const bam1_t * b1, void *data);
 int32_t bam_cigar2mismatch( const bam1_core_t *readCore, const uint32_t *cigar);
+
+const int BUFFER_SIZE = 50000;
 
 // Reader (BamReader and PindelReader)
 
@@ -751,4 +754,66 @@ int32_t bam_cigar2mismatch( const bam1_core_t *readCore, const uint32_t *cigar)
       }
    }
    return numberOfMismatches;
+}
+
+short getReads(ControlState& currentState, ParCollection & par) {
+    short ReturnFromReadingReads;
+    ReadBuffer readBuffer(BUFFER_SIZE, currentState.Reads, currentState.CurrentChrSeq);
+    if (currentState.BAMDefined) {
+        ReturnFromReadingReads = 0;
+        for (unsigned int i = 0; i < currentState.bams_to_parse.size(); i++) {
+            *logStream << "Insertsize in bamreads: " << currentState.bams_to_parse[i].InsertSize << std::endl;
+            ReturnFromReadingReads = ReadInBamReads(
+                                                    currentState.bams_to_parse[i].BamFile.c_str(),
+                                                    currentState.CurrentChrName, 
+                                                    &currentState.CurrentChrSeq,
+                                                    currentState.Reads,
+                                                    currentState.bams_to_parse[i].InsertSize,
+                                                    currentState.bams_to_parse[i].Tag,
+                                                    currentState.lowerBinBorder,
+                                                    currentState.upperBinBorder, readBuffer );
+            if (ReturnFromReadingReads == 0) {
+                LOG_ERROR(*logStream << "Bam read failed: "
+                          << currentState.bams_to_parse[i].BamFile
+                          << std::endl);
+                return 1;
+            }
+            else if (currentState.Reads.size() == 0) {
+                LOG_ERROR(*logStream << "No currentState.Reads for "
+                          << currentState.CurrentChrName << " found in "
+                          << currentState.bams_to_parse[i].BamFile
+                          << std::endl);
+            }
+            (*logStream << "BAM file index\t" << i << "\t"
+             << currentState.Reads.size() << std::endl);
+        }
+        
+    }
+    if (currentState.pindelConfigDefined) {	
+        for (unsigned int fileIndex=0; fileIndex<currentState.pindelfilesToParse.size(); fileIndex++ ) {
+            std::ifstream currentPindelfile( currentState.pindelfilesToParse[ fileIndex ].c_str() );
+            readInPindelReads( currentPindelfile, currentState.pindelfilesToParse[ fileIndex ].c_str(), currentState );
+        }
+    }
+    //readBuffer.flush();
+    
+    if (currentState.PindelReadDefined) {
+        readInPindelReads( currentState.inf_Pindel_Reads, par.pindelFilename, currentState );
+    }
+    return 0;
+}
+
+void readInPindelReads( std::ifstream& pindelFile, const std::string& pindelFilename, ControlState& currentState )
+{
+	int ReturnFromReadingReads = ReadInRead(  pindelFile, currentState.CurrentChrName,
+                                            currentState.CurrentChrSeq, currentState.Reads,
+                                            currentState.lowerBinBorder,
+                                            currentState.upperBinBorder);
+	if (ReturnFromReadingReads == 1) {
+		LOG_ERROR(*logStream << "malformed record detected in " << pindelFilename << std::endl);
+		exit( EXIT_FAILURE );
+	}
+	else if (currentState.Reads.size() == 0) {
+		LOG_ERROR(*logStream << "No reads found in " << pindelFilename << std::endl);
+	}
 }

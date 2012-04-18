@@ -83,7 +83,7 @@ unsigned int CountIndels = 0;
 const int alphs = 4;
 const char alphabet[alphs] = { 'A', 'C', 'G', 'T' };
 
-const int BUFFER_SIZE = 50000;
+
 
 unsigned long long int TheMax = 0;
 const short MAX_MISMATCHES = 4;
@@ -1146,20 +1146,7 @@ void SearchFarEnd( const std::string& chromosome, SPLIT_READ& read)
     }
 }
 
-void readInPindelReads( std::ifstream& pindelFile, const std::string& pindelFilename, ControlState& currentState )
-{
-	int ReturnFromReadingReads = ReadInRead(  pindelFile, currentState.CurrentChrName,
-                                             currentState.CurrentChrSeq, currentState.Reads,
-                                             currentState.lowerBinBorder,
-                                             currentState.upperBinBorder);
-	if (ReturnFromReadingReads == 1) {
-		LOG_ERROR(*logStream << "malformed record detected in " << pindelFilename << std::endl);
-		exit( EXIT_FAILURE );
-	}
-	else if (currentState.Reads.size() == 0) {
-		LOG_ERROR(*logStream << "No reads found in " << pindelFilename << std::endl);
-	}
-}
+
 
 int main(int argc, char *argv[])
 {
@@ -1288,7 +1275,7 @@ int main(int argc, char *argv[])
         if ( currentState.regionEndDefined && displayedEndOfRegion > currentState.endOfRegion ) {
             displayedEndOfRegion = currentState.endOfRegion;
         }
-        ReadBuffer readBuffer( BUFFER_SIZE, currentState.Reads, currentState.CurrentChrSeq );
+        
         // loop over one chromosome
         do {
 
@@ -1314,8 +1301,9 @@ int main(int argc, char *argv[])
             if (Time_Load_S == 0) {
                 Time_Load_S = time(NULL);
             }
-            short ReturnFromReadingReads;
-
+            //short ReturnFromReadingReads;
+            getReads(currentState, par); 
+            /*
             if (currentState.BAMDefined) {
                 ReturnFromReadingReads = 0;
                 for (unsigned int i = 0; i < currentState.bams_to_parse.size(); i++) {
@@ -1346,17 +1334,18 @@ int main(int argc, char *argv[])
                 }
 
             }
-				if (currentState.pindelConfigDefined) {	
-					for (unsigned int fileIndex=0; fileIndex<currentState.pindelfilesToParse.size(); fileIndex++ ) {
-						std::ifstream currentPindelfile( currentState.pindelfilesToParse[ fileIndex ].c_str() );
-						readInPindelReads( currentPindelfile, currentState.pindelfilesToParse[ fileIndex ].c_str(), currentState );
-					}
+            if (currentState.pindelConfigDefined) {	
+				for (unsigned int fileIndex=0; fileIndex<currentState.pindelfilesToParse.size(); fileIndex++ ) {
+					std::ifstream currentPindelfile( currentState.pindelfilesToParse[ fileIndex ].c_str() );
+					readInPindelReads( currentPindelfile, currentState.pindelfilesToParse[ fileIndex ].c_str(), currentState );
 				}
+			}
             //readBuffer.flush();
 
             if (currentState.PindelReadDefined) {
 					readInPindelReads( currentState.inf_Pindel_Reads, par.pindelFilename, currentState );
             }
+            */
             Time_Mine_E = time(NULL);
 
             if (currentState.Reads.size() ) {
@@ -2044,3 +2033,5 @@ void CleanUniquePoints(std::vector<UniquePoint> &Input_UP)
     Input_UP.clear();
     Input_UP = TempUP;
 }
+
+

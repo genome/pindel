@@ -77,6 +77,7 @@ void
 RefReader::CopyThisSeq()
 {
    char TempChar;
+   short Diff2UpperCase = 'A' - 'a';
    while (*inf_Seq >> TempChar) {
       if (TempChar != '\n' && TempChar != '\r') {
          if (TempChar == '>') {
@@ -84,7 +85,7 @@ RefReader::CopyThisSeq()
          }
          else {
             if ('a' <= TempChar && TempChar <= 'z') {
-               TempChar = TempChar + ('A' - 'a');
+               TempChar = TempChar + Diff2UpperCase;
             }
             switch (TempChar) {
             case 'A':

@@ -22,6 +22,8 @@
 #define	READER_H
 
 #include "read_buffer.h"
+#include "control_state.h"
+
 
 void GetOneChrSeq (std::ifstream & inf_Seq, std::string & CurrentChr,
 									 bool WhetherBuildUp);
@@ -33,5 +35,8 @@ short ReadInRead (std::ifstream & inf_Seq,
 									const std::string & CurrentFrag,
 									std::vector < SPLIT_READ > &Reads, const unsigned int lowerBinBorder,
 									const unsigned int upperBinBorder);
+
+short getReads(ControlState& currentState, ParCollection & par);
+void readInPindelReads( std::ifstream& pindelFile, const std::string& pindelFilename, ControlState& currentState );
 
 #endif /* READER_H */

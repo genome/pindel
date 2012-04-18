@@ -71,7 +71,7 @@ int main (int argc, char *argv[])
 {
    if (argc != 7) {
       cout << "Welcome to sam2pindel.\n\n"
-           << "5 parameters are required here:\n"
+           << "6 parameters are required here:\n"
            << "1. Input sam file or - for cin.\n"
            << "2. Output for pindel.\n"
            << "3. insert size.\n"
