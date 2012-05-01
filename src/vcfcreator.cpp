@@ -7,7 +7,12 @@
 	e.m.w.lameijer@lumc.nl
 	+31(0)71-526 9745
 
-        Version 0.2.8 [March 2nd, 2012] Now does not skip chromosome when compiling long insertions
+BUGS: -c option does not work properly
+	Version 0.3.2 [May 1st, 2012] Adds -sb and -ss options to allow users to only count samples with sufficient individual support. 
+	Version 0.3.1 [March 27th, 2012] -c option now works!
+	Version 0.3.0 [March 27th, 2012] now also works correctly for small inversions (as NT is then only "TG", gave wrong code, ACA ATGTGTG instead of ACA ATG
+	Version 0.2.9 [March 27th, 2012] Adds an option for counting samples only if they are balanced with at least N reads on each side
+   Version 0.2.8 [March 2nd, 2012] Now does not skip chromosome when compiling long insertions
 	Version 0.2.7 [March 2nd, 2012] Skip chromosomes in which Pindel has not called any SVs
 	Version 0.2.6 [March 2nd, 2012] Fixed problem in which chromosome was not properly freed from memory 
 	Version 0.2.5 [March 2nd, 2012] Fixed segmentation fault error when there are no reads in a chromosome
@@ -42,7 +47,7 @@ const int FIRST_SAMPLE_INDEX = 32; // index of first sample name
 
 using namespace std;
 
-string g_versionString = "0.2.8";
+string g_versionString = "0.3.2";
 string g_programName = "pindel2vcf";
 
 bool g_normalBaseArray[256];
@@ -92,6 +97,8 @@ struct ParameterCollection {
    int regionEnd;
    int maxHomopolyRepeats;
    int maxHomopolyLength;
+	bool onlyBalancedSamples;
+	int minimumStrandSupport;
    bool showHelp;
 } par;
 
@@ -615,7 +622,7 @@ public:
       return d_svlen;
    }
    bool bothStrands() const;
-   int getNumSupportSamples() const;
+	int getNumSupportSamples(const bool onlyBalancedSamples, const int minimumStrandSupport) const;
    int getNumSupportReads() const;
    int detectHomoPolyRepeats(const int maxHPlen) const;
    string getChromosome() const {
@@ -790,15 +797,24 @@ bool SVData::bothStrands() const
    return ( strandPlus && strandMinus );
 }
 
-int SVData::getNumSupportSamples() const
+int SVData::getNumSupportSamples(const bool onlyBalancedSamples, const int minimumStrandSupport) const
 {
-   int numSamples = 0;
+   int numSupportingSamples = 0;
    for (int sampleIndex=0; sampleIndex<d_format.size(); sampleIndex++ ) {
-      if ( d_format[ sampleIndex ].getTotalReads() > 0 ) {
-         numSamples++;
-      }
+		int plusSupport = d_format[ sampleIndex ].getReadDepthPlus();
+		int minSupport = d_format[ sampleIndex ].getReadDepthMinus();
+		if (onlyBalancedSamples) {
+			if (plusSupport>=minimumStrandSupport && minSupport>=minimumStrandSupport ) {
+				numSupportingSamples++;
+			}
+		}
+		else { // Sample does not need to be balanced
+			if (plusSupport>=minimumStrandSupport || minSupport>=minimumStrandSupport ) {
+				numSupportingSamples++;
+			}	
+		}
    }
-   return numSamples;
+   return numSupportingSamples;
 }
 
 int SVData::getNumSupportReads() const
@@ -1032,7 +1048,7 @@ void showSet( set<string> aSet )
 
 
 /* 'convertIndelToSVdata' converts insertions and deletions to nicely formatted SV-data. */
-void convertIndelToSVdata( ifstream& svfile, map< string, int>& sampleMap, Genome& genome, SVData& svd)
+void convertIndelToSVdata( ifstream& svfile, map< string, int>& sampleMap, Genome& genome, SVData& svd, const string& targetChromosomeID)
 {
    string line;
 	svd.setGenome( genome );
@@ -1058,7 +1074,7 @@ void convertIndelToSVdata( ifstream& svfile, map< string, int>& sampleMap, Genom
          exit(EXIT_FAILURE);
       }
       svd.setChromosome( chromosomeID );
-      if (chromosomeID!=par.chromosome) {
+      if (chromosomeID!=targetChromosomeID) {
          return;
       }
       int beforeStartPos = atoi( fetchElement( lineStream, 1 ).c_str() );
@@ -1076,26 +1092,44 @@ void convertIndelToSVdata( ifstream& svfile, map< string, int>& sampleMap, Genom
    // get number(s) of NT bases added (two numbers for inversions!)
    string numNTaddedStr = fetchElement( lineStream, 2 ); // to 5
    int numNTadded = atoi( numNTaddedStr.c_str() ); // should get first number
+	bool simpleInversion = false;
    int numNTinvAdded=-1;
+	//cout << "Printing " << numNTaddedStr << endl;
    if ( svType.compare("INV") == 0 ) { // two numbers separated by : instead of one
-      int separatorPos = numNTaddedStr.find(":");
-      string secondNumber = numNTaddedStr.substr(separatorPos+1);
-      numNTinvAdded = atoi( secondNumber.c_str() );
+		//cout << "Found ':' at position " << numNTaddedStr.find(":") << endl;
+      if (numNTaddedStr.find(":")==string::npos) {
+			//cout << "Found simple inversion!\n";
+         simpleInversion = true;
+      }
+      else { 
+         int separatorPos = numNTaddedStr.find(":");
+         string secondNumber = numNTaddedStr.substr(separatorPos+1);
+         numNTinvAdded = atoi( secondNumber.c_str() );
+      }
    }
 
    string ntAdded = fetchElement( lineStream, 1 ); // to 6
    string ntInvAdded = "";
+
+	// basically, there are two type of inversions: 
+	//	a) The 'alternatively called small deletions' INV 2 NT 2 "TG"
+	// b) the regular inversions INV98 NT 0:60 "":"GCT"
    if ( svType.compare("INV") == 0 ) {
-      int separatorPos = ntAdded.find(":");
-      ntInvAdded = ntAdded.substr( separatorPos+2, numNTinvAdded ); // erases ""
-		svd.setSecondNT( ntInvAdded );
-      ntAdded = ntAdded.substr(0,separatorPos);
+		if (ntAdded.find(":")==string::npos ) {
+			simpleInversion = true;
+		}
+      else {
+			int separatorPos = ntAdded.find(":");
+	      ntInvAdded = ntAdded.substr( separatorPos+2, numNTinvAdded ); // erases ""
+			svd.setSecondNT( ntInvAdded );
+	      ntAdded = ntAdded.substr(0,separatorPos);
+		}
    }
    ntAdded.erase(0,1); // erases opening "
    ntAdded.erase(numNTadded); // erases closing "
-	svd.setNT( ntAdded );
+	if (!simpleInversion) { svd.setNT( ntAdded ); }
    string chromosomeID = fetchElement( lineStream, 2); // now at position 8
-   if (chromosomeID!=par.chromosome) {
+   if (chromosomeID!=targetChromosomeID) {
       return;
    }
    const string* reference = genome.getChromosome( chromosomeID );
@@ -1138,7 +1172,12 @@ void convertIndelToSVdata( ifstream& svfile, map< string, int>& sampleMap, Genom
    }
    else if ( svType.compare("INV") == 0 ) {
       svd.setSVtype("INV");
-      svd.setReplace( numNTadded, numNTinvAdded );
+      if (simpleInversion) {
+			svd.setReplace( 0, 0 );
+		}
+		else {
+         svd.setReplace( numNTadded, numNTinvAdded );
+      }
    }
    string sampleName = fetchElement( lineStream, 18);
    int plusSupport = atoi( fetchElement( lineStream, 1 ).c_str()); // now at position 33, total +supports sample 1; for unique support 1->2
@@ -1233,6 +1272,10 @@ void createParameters()
       new IntParameter( &par.maxHomopolyRepeats, "-lr", "--max_homopolymer_repeats", "Filters out all homopolymers of more than X repetitions (default infinite)", false, -1 ) );
    parameters.push_back(
       new IntParameter( &par.maxHomopolyLength, "-ll", "--max_homopolymer_length", "The maximum size of a repeating unit to be considered a homopolymer, use with the option -lr. (default infinite)", false, -1 ) );
+	parameters.push_back(
+      new BoolParameter( &par.onlyBalancedSamples, "-sb", "--only_balanced_samples", "Only count a sample as supporting an event if it is supported by reads on both strands, minimum reads per strand given by the -ss parameter. (default false)", false, 0 ) );
+	parameters.push_back(
+		new IntParameter( &par.minimumStrandSupport, "-ss", "--minimum_strand_support", "Only count a sample as supporting an event if at least one of its strands is supported by X reads (default 1)", false, 1 ) );
    parameters.push_back(
       new BoolParameter( &par.showHelp, "-h", "--help", "Print the help of this converter", false, false ) );
 }
@@ -1354,7 +1397,7 @@ bool throughFilter(SVData sv)
    if ( par.bothstrands && !sv.bothStrands() ) {
       return false;
    }
-   if ( ( par.minsuppSamples > 1 ) && ( sv.getNumSupportSamples() < par.minsuppSamples ) ) {
+   if ( ( par.minsuppSamples > 1 ) && ( sv.getNumSupportSamples(par.onlyBalancedSamples, par.minimumStrandSupport) < par.minsuppSamples ) ) {
       return false;
    }
    if ( ( par.minsuppReads > 1 ) && ( sv.getNumSupportReads() < par.minsuppReads ) ) {
@@ -1372,6 +1415,7 @@ bool throughFilter(SVData sv)
          return false;
       }
    }
+	
    // all filters passed
    return true;
 }
@@ -1395,6 +1439,66 @@ void initBaseArray()
    g_normalBaseArray['G'] = true;
    g_normalBaseArray['T'] = true;
    g_normalBaseArray['N'] = true;
+}
+
+void reportSVsInChromosome(const string& chromosomeID, const set<string>& chromosomeNames, const set<string>& sampleNames, ifstream& svfile, map< string, int >& sampleMap, Genome& genome, ofstream& vcfFile )
+{
+		// if no reads have been found for this chromosome, skip it
+		if (chromosomeNames.find(chromosomeID) == chromosomeNames.end() ) {
+			cout << "No reads for chromosome " << chromosomeID << ", skipping it.\n";
+			return;
+		}
+      cout << "Processing chromosome " << chromosomeID << endl;
+      // rewind file to start
+		int regionStart = 0;
+		int regionEnd = 0;
+		SVData backupSV(sampleNames.size() );
+		bool backupAvailable = false;
+      do {
+			regionEnd = regionStart + par.windowSize*1000000;
+			cout << "Reading region " << regionStart << "-" << regionEnd << endl;
+	      svfile.clear();
+   	   svfile.seekg(0);
+   	   int counter=0;
+   	   vector<SVData> svs;
+			if (backupAvailable) { svs.push_back( backupSV ); }
+   	   while (!svfile.eof()) {
+   	      SVData svd( sampleNames.size() );
+   	      convertIndelToSVdata( svfile, sampleMap, genome, svd, chromosomeID);
+   	      if (!svfile.eof() && ( chromosomeID=="" || (svd.getChromosome()==chromosomeID && svd.getPosition()>=regionStart && svd.getPosition()<regionEnd)) ) {
+   	         svs.push_back( svd );
+   	      }
+   	      counter++;
+//if (counter%10==0) cout << "At counter " << counter << " pos " << svd.getPosition() << endl;
+     		}
+
+	      cout << "Total reads: " << svs.size() << endl;
+   		sort ( svs.begin(), svs.end() );
+      	cout << "Sorting completed" << endl;
+			// now output the SVs
+	      for (int svIndex=0; svIndex<svs.size(); svIndex++ ) { 
+   	      if ( (svIndex+1)<svs.size() && ( svs[ svIndex ] == svs[ svIndex+1 ] ) ) {
+   	         svs[ svIndex+1 ].fuse( svs[ svIndex ]);
+   	      }
+   	      else { // if not fused with the next element, output this element (unless it's the last element, then it must be saved)
+   	         if ( svIndex!=svs.size()-1 && throughFilter( svs[ svIndex ]) ) {
+   	            vcfFile << svs[ svIndex ];
+   	         }
+   	         else  { //empty
+
+   	         } // if else: whether the SV passes through the filter
+   	      } // if else: whether the SV can be fused with the next SV
+   	   }  // for: loop over all SVs
+			if (svs.size()>0) {
+         	backupSV = svs[ svs.size()-1 ];
+				backupAvailable = true;
+			}
+			regionStart += (par.windowSize*1000000);
+		} while (regionEnd<genome.getChromosome( chromosomeID )->size());
+      if ( backupAvailable && throughFilter( backupSV) ) {
+   	   vcfFile << backupSV;
+   	}
+
 }
 
 int main(int argc, char* argv[])
@@ -1431,67 +1535,15 @@ int main(int argc, char* argv[])
    // read in reference
    Genome genome;
    readReference(par.reference,genome);
-
-// loop over chromosomes
+	
+	if (par.chromosome != "" ) {
+		// a specific chromosome has been specified
+		reportSVsInChromosome( par.chromosome, chromosomeNames, sampleNames, svfile, sampleMap, genome, vcfFile );
+	}
    for (int chromosomeCount=0; chromosomeCount<genome.d_chromosomes.size(); chromosomeCount++ ) {
-      par.chromosome = genome.d_chromosomes[ chromosomeCount ].getID();
-		// if no reads have been found for this chromosome, skip it
-		if (chromosomeNames.find(par.chromosome) == chromosomeNames.end() ) {
-			cout << "No reads for chromosome " << par.chromosome << ", skipping it.\n";
-			continue;
-		}
-      cout << "Processing chromosome " << par.chromosome << endl;
-      // rewind file to start
-		int regionStart = 0;
-		int regionEnd = 0;
-		SVData backupSV(sampleNames.size() );
-		bool backupAvailable = false;
-      do {
-			regionEnd = regionStart + par.windowSize*1000000;
-			cout << "Reading region " << regionStart << "-" << regionEnd << endl;
-	      svfile.clear();
-   	   svfile.seekg(0);
-   	   int counter=0;
-   	   vector<SVData> svs;
-			if (backupAvailable) { svs.push_back( backupSV ); }
-   	   while (!svfile.eof()) {
-   	      SVData svd( sampleNames.size() );
-   	      convertIndelToSVdata( svfile, sampleMap, genome, svd);
-   	      if (!svfile.eof() && ( par.chromosome=="" || (svd.getChromosome()==par.chromosome && svd.getPosition()>=regionStart && svd.getPosition()<regionEnd)) ) {
-   	         svs.push_back( svd );
-   	      }
-   	      counter++;
-//if (counter%10==0) cout << "At counter " << counter << " pos " << svd.getPosition() << endl;
-     		}
-
-	      cout << "Total reads: " << svs.size() << endl;
-   		sort ( svs.begin(), svs.end() );
-      	cout << "Sorting completed" << endl;
-			// now output the SVs
-	      for (int svIndex=0; svIndex<svs.size(); svIndex++ ) { 
-   	      if ( (svIndex+1)<svs.size() && ( svs[ svIndex ] == svs[ svIndex+1 ] ) ) {
-   	         svs[ svIndex+1 ].fuse( svs[ svIndex ]);
-   	      }
-   	      else { // if not fused with the next element, output this element (unless it's the last element, then it must be saved)
-   	         if ( svIndex!=svs.size()-1 && throughFilter( svs[ svIndex ]) ) {
-   	            vcfFile << svs[ svIndex ];
-   	         }
-   	         else  { //empty
-
-   	         } // if else: whether the SV passes through the filter
-   	      } // if else: whether the SV can be fused with the next SV
-   	   }  // for: loop over all SVs
-			if (svs.size()>0) {
-         	backupSV = svs[ svs.size()-1 ];
-				backupAvailable = true;
-			}
-			regionStart += (par.windowSize*1000000);
-		} while (regionEnd<genome.d_chromosomes[ chromosomeCount ].getChromPtr()->size());
-      if ( backupAvailable && throughFilter( backupSV) ) {
-   	   vcfFile << backupSV;
-   	}
+      reportSVsInChromosome( genome.d_chromosomes[ chromosomeCount ].getID(), chromosomeNames, sampleNames, svfile, sampleMap, genome, vcfFile );
       genome.d_chromosomes[ chromosomeCount ].removeFromMemory(); // to prevent memory overload
-   } // loop over chromosomes
+   } 
 }
 
-
+//(const string& chromosomeID, const set<string>& chromosomeNames, const set<string>& sampleNames, ifstream& svfile, const map< string, int >& sampleMap, const Genome& genome, ofstream& vcfFile )

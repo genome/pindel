@@ -14,3 +14,4 @@ pindel 0.2.4q, March 27 2012
 2. Eric-Wubbo: for Jan's work on the grid (data size reduction), reimplemented the -S option that only reports close ends and skips SV finding.
 3. Eric-Wubbo: for Jan's work on the grid, added -L option to redirect output to log file when so desired.
 4. Eric-Wubbo: added -P option for Jan's work on the grid
+5. Eric-Wubbo: updated pindel2vcf to version 0.3.2; now it is possible to add requirements to samples to count towards reporting a SV (-ss and -sb parameters)
