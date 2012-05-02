@@ -8,6 +8,7 @@
 	+31(0)71-526 9745
 
 BUGS: -c option does not work properly
+	Version 0.3.3 [May 2nd, 2012] Debugged -sb/-ss option: now works if 1 sample is selected
 	Version 0.3.2 [May 1st, 2012] Adds -sb and -ss options to allow users to only count samples with sufficient individual support. 
 	Version 0.3.1 [March 27th, 2012] -c option now works!
 	Version 0.3.0 [March 27th, 2012] now also works correctly for small inversions (as NT is then only "TG", gave wrong code, ACA ATGTGTG instead of ACA ATG
@@ -47,7 +48,7 @@ const int FIRST_SAMPLE_INDEX = 32; // index of first sample name
 
 using namespace std;
 
-string g_versionString = "0.3.2";
+string g_versionString = "0.3.3";
 string g_programName = "pindel2vcf";
 
 bool g_normalBaseArray[256];
@@ -1261,7 +1262,7 @@ void createParameters()
    parameters.push_back(
       new BoolParameter( &par.bothstrands, "-b", "--both_strands_supported", "Only report events that are detected on both strands (default false)", false, false ) );
    parameters.push_back(
-      new IntParameter( &par.minsuppSamples, "-m", "--min_supporting_samples", "The minimum number of samples an event needs to occur in to be reported (default 1)", false, 1 ) );
+      new IntParameter( &par.minsuppSamples, "-m", "--min_supporting_samples", "The minimum number of samples an event needs to occur in with sufficient support to be reported (default 0)", false, 1 ) );
    parameters.push_back(
       new IntParameter( &par.minsuppReads, "-e", "--min_supporting_reads", "The minimum number of supporting reads required for an event to be reported (default 1)", false, 1 ) );
    parameters.push_back(
@@ -1397,10 +1398,10 @@ bool throughFilter(SVData sv)
    if ( par.bothstrands && !sv.bothStrands() ) {
       return false;
    }
-   if ( ( par.minsuppSamples > 1 ) && ( sv.getNumSupportSamples(par.onlyBalancedSamples, par.minimumStrandSupport) < par.minsuppSamples ) ) {
+   if ( ( par.minsuppSamples >= 1 ) && ( sv.getNumSupportSamples(par.onlyBalancedSamples, par.minimumStrandSupport) < par.minsuppSamples ) ) {
       return false;
    }
-   if ( ( par.minsuppReads > 1 ) && ( sv.getNumSupportReads() < par.minsuppReads ) ) {
+   if ( ( par.minsuppReads >= 1 ) && ( sv.getNumSupportReads() < par.minsuppReads ) ) {
       return false;
    }
    if ( ( par.regionStart > 0 ) && ( sv.getPosition() < par.regionStart ) ) {
