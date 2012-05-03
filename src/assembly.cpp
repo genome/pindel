@@ -101,6 +101,7 @@ short getWholeGenome(ControlState & CurrentState, std::vector <Chromosome> & All
             if (TempChar != '\n' && TempChar != '\r') {
                 if (TempChar == '>') {
                     OneChr.ChrSeq = Spacer + OneChr.ChrSeq + Spacer;
+                    std::cout << OneChr.ChrName << " " << OneChr.ChrSeq.size() << std::endl;
                     AllChromosomes.push_back(OneChr);
                     OneChr.ChrSeq = "";
                     OneChr.ChrName = "";
@@ -132,6 +133,7 @@ short getWholeGenome(ControlState & CurrentState, std::vector <Chromosome> & All
         }
     }
     OneChr.ChrSeq = Spacer + OneChr.ChrSeq + Spacer;
+    std::cout << OneChr.ChrName << " " << OneChr.ChrSeq.size() << std::endl;
     AllChromosomes.push_back(OneChr);
     CurrentState.inf_Seq.close();
     return 0;
