@@ -461,8 +461,8 @@ void defineParameters()
             "-m",
             "--min_perfect_match_around_BP",
             "at the point where the read is split into two, there should at least be "
-            "this number of perfectly matching bases between read and reference (default value 5)",
-            false, 5));
+            "this number of perfectly matching bases between read and reference (default value 3)",
+            false, 3));
     parameters. push_back(
         new IntParameter(&MIN_IndelSize_NT, "-n", "--min_NT_size",
                          "only report inserted (NT) sequences in deletions greater than this size "

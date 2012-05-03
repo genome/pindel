@@ -240,7 +240,7 @@ short AssembleOneSV(const std::vector <Chromosome> & AllChromosomes, std::map<st
 
 void CombineAndSort(const std::vector <Chromosome> & AllChromosomes, std::map<std::string,int> &ChrName2Index, ControlState & CurrentState, ParCollection & par, const Assembly & OneSV, std::vector <SPLIT_READ> & output_reads, const unsigned & lowerBinBorder, const unsigned & upperBinBorder, const bool & First) {
     
-    const unsigned AssemblyCutOff = 3;
+    const unsigned AssemblyCutOff = 2;
     const char Plus = '+';
     const char Minus = '-';
     unsigned WindowSize = (CurrentState.upperBinBorder - CurrentState.lowerBinBorder) * 3;
