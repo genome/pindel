@@ -341,7 +341,7 @@ ReadInBamReads (const char *bam_path, const std::string & FragName,
                 int binEnd,
                 ReadBuffer& readBuffer)
 {  
-    std::cout << FragName << " " << (* CurrentChrSeq).size() << " " << (* CurrentChrSeq).substr(10000000, 10) << " " << binStart << " " << binEnd << std::endl; 
+   // std::cout << FragName << " " << (* CurrentChrSeq).size() << " " << (* CurrentChrSeq).substr(10000000, 10) << " " << binStart << " " << binEnd << std::endl; 
    bamFile fp;
    fp = bam_open (bam_path, "r");
    assert (fp);
