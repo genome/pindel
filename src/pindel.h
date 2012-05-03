@@ -118,6 +118,7 @@ struct UniquePoint {
 struct SPLIT_READ {
 	SPLIT_READ() {
 		FragName = "";
+        FarFragName = "";
 		Name = "";
 		UnmatchedSeq = "";
 		HalfMapped = "";
@@ -127,6 +128,7 @@ struct SPLIT_READ {
 		MS = 0;
 		InsertSize = 0;
 		Tag = "";
+        Thickness = 0;
 		ReadLength = 0;
 		ReadLengthMinus = 0;
 		MAX_SNP_ERROR = 0;
@@ -151,6 +153,7 @@ struct SPLIT_READ {
 		LeftMostPos = 0;
 	}
 	std::string FragName;
+    std::string FarFragName;
 	std::string Name;
 	std::string UnmatchedSeq;
 	std::string HalfMapped;
@@ -160,6 +163,7 @@ struct SPLIT_READ {
 	short MS;
 	short InsertSize;
 	std::string Tag;
+    unsigned Thickness;
 	std::vector<UniquePoint> UP_Close; // partial alignment of the unmapped reads close to the mapped read
 	std::vector<UniquePoint> UP_Far;
 	std::vector<UniquePoint> UP_Far_backup;

@@ -340,7 +340,8 @@ ReadInBamReads (const char *bam_path, const std::string & FragName,
                 int binStart,
                 int binEnd,
                 ReadBuffer& readBuffer)
-{
+{  
+    std::cout << FragName << " " << (* CurrentChrSeq).size() << " " << (* CurrentChrSeq).substr(10000000, 10) << " " << binStart << " " << binEnd << std::endl; 
    bamFile fp;
    fp = bam_open (bam_path, "r");
    assert (fp);
@@ -757,6 +758,7 @@ int32_t bam_cigar2mismatch( const bam1_core_t *readCore, const uint32_t *cigar)
 }
 
 short getReads(ControlState& currentState, ParCollection & par) {
+    std::cout << "getReads " << currentState.CurrentChrName << " " << currentState.CurrentChrSeq.size() << std::endl;
     short ReturnFromReadingReads;
     ReadBuffer readBuffer(BUFFER_SIZE, currentState.Reads, currentState.CurrentChrSeq);
     if (currentState.BAMDefined) {

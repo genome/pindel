@@ -59,6 +59,7 @@
 /* Kai/EW: update 0.2.4p: sorts reads in output, number of unique calls should be correct now, pindel now gives error if using config file that does not exist or has other problems */
 /* EW: update 0.2.4q: also works with -c all instead of -c ALL */
 /* Kai: update 0.2.4q: use ChrName and ChrSeq for clarity; start to include assembly */
+/* Kai: min_perfect_match_around_BP to 5 */
 
 const std::string Pindel_Version_str = "Pindel version 0.2.4q, March 27 2012.";
 std::ostream* logStream;
@@ -130,7 +131,7 @@ std::vector<Parameter *> parameters;
 // #########################################################
 int ADDITIONAL_MISMATCH = 3; // user
 unsigned int g_minimalAnchorQuality = 20; // true value set in the defineParameters
-int Min_Perfect_Match_Around_BP = 3; // user                   //#
+int Min_Perfect_Match_Around_BP = 5; // user                   //#
 int MIN_IndelSize_NT = 50; //user            //#
 int MIN_IndelSize_Inversion = 50; //user       //#
 double Seq_Error_Rate = 0.05; // user            //#
@@ -460,8 +461,8 @@ void defineParameters()
             "-m",
             "--min_perfect_match_around_BP",
             "at the point where the read is split into two, there should at least be "
-            "this number of perfectly matching bases between read and reference (default value 3)",
-            false, 3));
+            "this number of perfectly matching bases between read and reference (default value 5)",
+            false, 5));
     parameters. push_back(
         new IntParameter(&MIN_IndelSize_NT, "-n", "--min_NT_size",
                          "only report inserted (NT) sequences in deletions greater than this size "
@@ -1227,8 +1228,8 @@ int main(int argc, char *argv[])
             continue;
         }
 
-        CONS_Chr_Size = currentState.CurrentChrSeq.size() - 2 * g_SpacerBeforeAfter;
-        g_maxPos = 0;
+        CONS_Chr_Size = currentState.CurrentChrSeq.size() - 2 * g_SpacerBeforeAfter; // #################
+        g_maxPos = 0; // #################
         (*logStream << "Chromosome Size: " << CONS_Chr_Size << std::endl);
         CurrentChrMask.resize(currentState.CurrentChrSeq.size());
         g_bdData.loadChromosome( currentState.CurrentChrName, currentState.CurrentChrSeq.size() );
@@ -1244,7 +1245,7 @@ int main(int argc, char *argv[])
         /* 3.1 preparation ends */
 
         /* 3.2 apply sliding windows to input datasets starts. This is the 2nd level while loop */
-        g_binIndex = 0; // to start with 0...
+        g_binIndex = 0; // to start with 0... 
 
         int startOffSet = 0;
         // if a region has been specified
@@ -1281,11 +1282,11 @@ int main(int argc, char *argv[])
 
             /* 3.2.1 preparation starts */
 
-            g_NumReadInWindow = 0;
-            g_InWinPlus = 0;
-            g_InWinMinus = 0;
-            g_CloseMappedPlus = 0;
-            g_CloseMappedMinus = 0;
+            g_NumReadInWindow = 0; // #################
+            g_InWinPlus = 0; // #################
+            g_InWinMinus = 0; // #################
+            g_CloseMappedPlus = 0; // #################
+            g_CloseMappedMinus = 0; // #################
 
             if (displayedStartOfRegion < displayedEndOfRegion) {
                 (*logStream << "\nLooking at chromosome " << currentState.CurrentChrName
@@ -1835,7 +1836,7 @@ void CheckBoth(const SPLIT_READ & OneRead, const std::string & TheInput,
                const std::vector<unsigned int> PD_Minus[], const short &BP_Start,
                const short &BP_End, const short &CurrentLength,
                std::vector<UniquePoint> &UP)
-{
+{   //std::cout << "in " << CurrentLength << std::endl;
     int Sum;
 
     if (CurrentLength >= BP_Start && CurrentLength <= BP_End) {
@@ -1997,7 +1998,7 @@ void CheckBoth(const SPLIT_READ & OneRead, const std::string & TheInput,
     else {
         return;
     }
-
+//std::cout << "out " << CurrentLength << std::endl;
 }
 
 void CleanUniquePoints(std::vector<UniquePoint> &Input_UP)

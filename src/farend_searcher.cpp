@@ -30,12 +30,18 @@ void SearchFarEndAtPos( const std::string& chromosome, SPLIT_READ& Temp_One_Read
    //if (Temp_One_Read.UP_Far.size()>0 ) {
    //   std::cout << "KAI1108 UP_Far.size() == " << Temp_One_Read.UP_Far.size() << std::endl;
    //}
-
+    //Temp_One_Read.UP_Far.clear();
+    Temp_One_Read.ReadLength = Temp_One_Read.UnmatchedSeq.size();
+    Temp_One_Read.ReadLengthMinus = Temp_One_Read.ReadLength - 1;
    short BP_End = Temp_One_Read.ReadLengthMinus; // matched far end should be between BP_Start and BP_End bases long (including BP_Start and End)
    std::vector<UniquePoint> UP; // temporary container for unique far ends
+    Temp_One_Read.MAX_SNP_ERROR = (short) (Temp_One_Read.UnmatchedSeq.size () * Seq_Error_Rate);
+    Temp_One_Read.TOTAL_SNP_ERROR_CHECKED = Temp_One_Read.MAX_SNP_ERROR + ADDITIONAL_MISMATCH + 1;
+    Temp_One_Read.TOTAL_SNP_ERROR_CHECKED_Minus = Temp_One_Read.MAX_SNP_ERROR + ADDITIONAL_MISMATCH;
    std::vector<unsigned int> PD_Plus[Temp_One_Read.TOTAL_SNP_ERROR_CHECKED];
    std::vector<unsigned int> PD_Minus[Temp_One_Read.TOTAL_SNP_ERROR_CHECKED];
-
+    //std::cout << "In SearchFarEndAtPos " << Temp_One_Read.UnmatchedSeq << " " << Temp_One_Read.MAX_SNP_ERROR << " " << Temp_One_Read.TOTAL_SNP_ERROR_CHECKED << std::endl;
+    //std::cout <<  chromosome.size() << std::endl;
    int Start = SearchCenter - Range - Temp_One_Read.ReadLength;
    int End = SearchCenter + Range + Temp_One_Read.ReadLength;
 
@@ -58,10 +64,13 @@ void SearchFarEndAtPos( const std::string& chromosome, SPLIT_READ& Temp_One_Read
       }
    }
    short BP_Start = 10;
+   // std::cout << " + " << PD_Plus[0].size() << " - " << PD_Minus[0].size() << std::endl;
    if (PD_Minus[0].size() + PD_Plus[0].size() > 0) { // skip all reads starting with 'N'
       CheckBoth(Temp_One_Read, chromosome, Temp_One_Read.UnmatchedSeq, PD_Plus, PD_Minus, BP_Start, BP_End, FirstBase, UP);
    }
-
+    //std::cout << "after CheckBoth" << std::endl;
+    //std::cout << "UP.size() " << UP.size() << " ReadLength: " << Temp_One_Read.UnmatchedSeq.size() 
+    //          << " " << Temp_One_Read.UP_Close[Temp_One_Read.UP_Close.size() - 1].LengthStr << " " << UP[UP.size() - 1].LengthStr << " Sum: " << Temp_One_Read.UP_Close[Temp_One_Read.UP_Close.size() - 1].LengthStr + UP[UP.size() - 1].LengthStr << std::endl;
 
    if (UP.empty()) {}
    else if (UP[UP.size() - 1].LengthStr + Temp_One_Read.UP_Close[Temp_One_Read.UP_Close.size() - 1].LengthStr < Temp_One_Read.ReadLength) { // should put into UP_Far_backup
@@ -78,10 +87,11 @@ void SearchFarEndAtPos( const std::string& chromosome, SPLIT_READ& Temp_One_Read
          Temp_One_Read.UP_Far.swap(UP);
       }
       else {
-         std::cout << "We shouldn't get here: farend_searcher.cpp at line ~516" << std::endl;
+         std::cout << "We shouldn't get here: farend_searcher.cpp at line 90" << std::endl;
       }
    }
    UP.clear();
+   // std::cout << "end of SearchFarEndAtPos" << std::endl; 
 }
 
 FarEndSearcher::~FarEndSearcher()

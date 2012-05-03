@@ -28,7 +28,7 @@ public:
     void GetFarEnd_OtherStrand(const short &RangeIndex);
     void GetFarEnd_SingleStrandUpStream(const short &RangeIndex);
     void GetFarEnd_SingleStrandDownStream(const short &RangeIndex);
-    void SearchFarEndAtPos( const std::string& chromosome, SPLIT_READ& read, const unsigned int searchCenter, const unsigned int range);
+    //void SearchFarEndAtPos( const std::string& chromosome, SPLIT_READ& read, const unsigned int searchCenter, const unsigned int range);
 	virtual ~FarEndSearcher();
 
 private:

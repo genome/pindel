@@ -309,7 +309,7 @@ CheckMismatches (const std::string & TheInput, const std::string & InputReadSeq,
       //cout << "BP_On_Ref: " << BP_On_Ref << endl;
       if (BP_On_Read != BP_On_Ref) {
           //std::cout << "here 2" << std::endl;
-         return false;
+         return false; //#################################
       }
       //cout << "+e" << endl;
    }
@@ -326,7 +326,7 @@ CheckMismatches (const std::string & TheInput, const std::string & InputReadSeq,
       BP_On_Ref = TheInput.substr (UP.AbsLoc, Min_Perfect_Match_Around_BP);
       if (BP_On_Read != BP_On_Ref) {
           //std::cout << "here 4" << std::endl;
-         return false;
+         return false; //#################################
       }
       //cout << "-e" << endl;
    }

@@ -38,6 +38,7 @@ struct Chromosome {
 
 struct Assembly {
     Assembly() {
+        Index = 0;
         Type = "";
         ChrA = "";
         PosA = 0;
@@ -46,6 +47,7 @@ struct Assembly {
         PosB = 0;
         CI_B = 0;        
     }
+    unsigned Index;
     std::string Type;
     std::string ChrA;
     unsigned PosA;
@@ -58,4 +60,9 @@ struct Assembly {
 void doAssembly (ControlState & CurrentState, ParCollection & par);
 short getWholeGenome(ControlState & CurrentState, std::vector <Chromosome> & AllChromosomes) ;
 short AssembleOneSV(const std::vector <Chromosome> & AllChromosomes, std::map<std::string,int> & ChrName2Index, ControlState & CurrentState, ParCollection & par, const Assembly & OneSV, std::ofstream & ASM_Output);
+void CombineAndSort(const std::vector <Chromosome> & AllChromosomes, std::map<std::string,int> &ChrName2Index, ControlState & CurrentState, ParCollection & par, const Assembly & OneSV, std::vector <SPLIT_READ> & output_reads, const unsigned & lowerBinBorder, const unsigned & upperBinBorder, const bool & First);
+void CombineReads(const std::string & CurrentChrSeq, const char & Strand, const std::vector <SPLIT_READ> & input_reads, const std::vector <unsigned int> Index_Of_Useful_Reads, std::vector <SPLIT_READ> & output_reads);
+void OutputCurrentRead(const std::vector <Chromosome> & AllChromosomes, std::map<std::string,int> & ChrName2Index, ControlState & CurrentState, ParCollection & par, const Assembly & OneSV, SPLIT_READ & OneRead, std::ofstream & ASM_Output);
+void TryLI(const std::vector <Chromosome> & AllChromosomes, std::map<std::string,int> & ChrName2Index, ControlState & CurrentState, ParCollection & par, const Assembly & OneSV,  std::vector <SPLIT_READ> & First, std::vector <SPLIT_READ> & Second, std::ofstream & ASM_Output);
+void ReportLI(const std::vector <Chromosome> & AllChromosomes, std::map<std::string,int> & ChrName2Index, ControlState & CurrentState, ParCollection & par, const Assembly & OneSV,  SPLIT_READ & First, SPLIT_READ & Second, const std::string & MergedString, short & OverlapCount, std::ofstream & ASM_Output);
 #endif /* ASSEMBLY_H */
