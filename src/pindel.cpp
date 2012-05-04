@@ -61,7 +61,7 @@
 /* Kai: update 0.2.4q: use ChrName and ChrSeq for clarity; start to include assembly */
 /* Kai: min_perfect_match_around_BP to 5 */
 
-const std::string Pindel_Version_str = "Pindel version 0.2.4q, March 27 2012.";
+const std::string Pindel_Version_str = "Pindel version 0.2.4q, May 4 2012.";
 std::ostream* logStream;
 std::ofstream g_logFile;
 int findParameter(std::string name);
@@ -495,6 +495,13 @@ void defineParameters()
             "--anchor_quality",
             "the minimal mapping quality of the reads Pindel uses as anchor "
             "(default 20)", false, 20));
+    parameters. push_back(
+        new UIntParameter(
+            &NumRead2ReportCutOff,
+            "-M",
+            "--minimum_support_for_event",
+            "Pindel only calls events which have this number or more supporting reads "
+            "(default 3)", false, 3));
     parameters. push_back(
         new StringParameter(
             &par.inf_AssemblyInputFilename,

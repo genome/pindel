@@ -15,3 +15,4 @@ pindel 0.2.4q, March 27 2012
 3. Eric-Wubbo: for Jan's work on the grid, added -L option to redirect output to log file when so desired.
 4. Eric-Wubbo: added -P option for Jan's work on the grid
 5. Eric-Wubbo: updated pindel2vcf to version 0.3.2; now it is possible to add requirements to samples to count towards reporting a SV (-ss and -sb parameters)
+6. Eric-Wubbo: added -M parameter for users to set their own minimum support for events.
