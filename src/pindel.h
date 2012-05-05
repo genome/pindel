@@ -27,6 +27,7 @@
 #include <string>
 #include <vector>
 #include <set>
+#include <map>
 
 // Samtools header files
 #include "khash.h"
@@ -190,7 +191,7 @@ struct SPLIT_READ {
 	short CloseEndLength;
 	bool Found;
 	int LeftMostPos;
-	
+    std::map <std::string, int> ReadCountPerSample;
 
 	unsigned int getLastAbsLocCloseEnd() const;
 	bool goodFarEndFound() const;
