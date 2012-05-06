@@ -485,7 +485,7 @@ void CombineReads(const std::string & CurrentChrSeq, const char & Strand, const 
 void OutputCurrentRead(const std::vector <Chromosome> & AllChromosomes, std::map<std::string,int> & ChrName2Index, ControlState & CurrentState, ParCollection & par, const Assembly & OneSV, SPLIT_READ & OneRead, std::ofstream & ASM_Output) {
     std::cout << "OutputCurrentRead" << std::endl;
     if (OneRead.UP_Far.size()) {
-        ASM_Output << OneSV.Index << " " << OneSV.Type << " " << OneSV.ChrA << " " << OneSV.PosA << " " << OneSV.CI_A << "\t" << OneSV.ChrB << " " << OneSV.PosB << " " << OneSV .CI_B 
+        ASM_Output << OneSV.Index + 1 << " " << OneSV.Type << " " << OneSV.ChrA << " " << OneSV.PosA << " " << OneSV.CI_A << "\t" << OneSV.ChrB << " " << OneSV.PosB << " " << OneSV .CI_B 
         << "\tA " << OneRead.MatchedD << " " << OneRead.MatchedRelPos << " " << OneRead.Thickness << "\t" << OneRead.FragName  
         << " " << OneRead.UP_Close[OneRead.UP_Close.size() - 1].Strand 
         << " " << OneRead.UP_Close[OneRead.UP_Close.size() - 1].Direction 
@@ -499,7 +499,7 @@ void OutputCurrentRead(const std::vector <Chromosome> & AllChromosomes, std::map
         for (std::map<std::string,int>::iterator it = OneRead.ReadCountPerSample.begin(); it != OneRead.ReadCountPerSample.end(); it++ ) {
             ASM_Output << "\t" << (*it).first << " " << (*it).second;
         }
-        ASM_Output << std::endl;
+        ASM_Output << "\t NT_Size: 0\tNT_Str: \"\"" << std::endl;
     }
     else if (OneRead.UP_Far_backup.size()) {
         short NT_Size = OneRead.ReadLength - OneRead.UP_Close[OneRead.UP_Close.size() - 1].LengthStr - OneRead.UP_Far_backup[OneRead.UP_Far_backup.size() - 1].LengthStr;
@@ -510,7 +510,7 @@ void OutputCurrentRead(const std::vector <Chromosome> & AllChromosomes, std::map
         else {
             NT_Str = ReverseComplement(OneRead.UnmatchedSeq).substr(OneRead.UP_Close[OneRead.UP_Close.size() - 1].LengthStr, NT_Size);
         }
-        ASM_Output << OneSV.Index << " " << OneSV.Type << " " << OneSV.ChrA << " " << OneSV.PosA << " " << OneSV.CI_A << "\t" << OneSV.ChrB << " " << OneSV.PosB << " " << OneSV .CI_B 
+        ASM_Output << OneSV.Index + 1 << " " << OneSV.Type << " " << OneSV.ChrA << " " << OneSV.PosA << " " << OneSV.CI_A << "\t" << OneSV.ChrB << " " << OneSV.PosB << " " << OneSV .CI_B 
             << "\tA " << OneRead.MatchedD << " " << OneRead.MatchedRelPos << " " << OneRead.Thickness << "\t" << OneRead.FragName  
             << " " << OneRead.UP_Close[OneRead.UP_Close.size() - 1].Strand 
             << " " << OneRead.UP_Close[OneRead.UP_Close.size() - 1].Direction 
@@ -595,7 +595,7 @@ void ReportLI(const std::vector <Chromosome> & AllChromosomes, std::map<std::str
             short NT_Size = OneRead.ReadLength - OneRead.UP_Close[OneRead.UP_Close.size() - 1].LengthStr - OneRead.UP_Far_backup[OneRead.UP_Far_backup.size() - 1].LengthStr;
             std::string NT_Str = OneRead.UnmatchedSeq.substr(OneRead.UP_Far_backup[OneRead.UP_Far_backup.size() - 1].LengthStr, NT_Size);
             
-            ASM_Output << OneSV.Index << " " << OneSV.Type << " " << OneSV.ChrA << " " << OneSV.PosA << " " << OneSV.CI_A << "\t" << OneSV.ChrB << " " << OneSV.PosB << " " << OneSV .CI_B 
+            ASM_Output << OneSV.Index + 1 << " " << OneSV.Type << " " << OneSV.ChrA << " " << OneSV.PosA << " " << OneSV.CI_A << "\t" << OneSV.ChrB << " " << OneSV.PosB << " " << OneSV .CI_B 
             << "\tLIA " << OneRead.MatchedD << " " << OneRead.MatchedRelPos << " " << OneRead.Thickness << "\t" << OneRead.FragName  
             << " " << OneRead.UP_Close[OneRead.UP_Close.size() - 1].Strand 
             << " " << OneRead.UP_Close[OneRead.UP_Close.size() - 1].Direction 
