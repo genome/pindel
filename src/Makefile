@@ -9,7 +9,8 @@ SOURCES=pindel.cpp reader.cpp reporter.cpp searcher.cpp parameter.cpp \
     output_sorter.cpp farend_searcher.cpp search_variant.cpp \
     searchshortinsertions.cpp searchdeletions.cpp output_file_data.cpp \
     bddata.cpp shifted_vector.cpp read_buffer.cpp assembly.cpp\
-    ifstream_line_reader.cpp gz_line_reader.cpp pindel_read_reader.cpp
+    line_reader.cpp ifstream_line_reader.cpp gz_line_reader.cpp\
+    pindel_read_reader.cpp
  
 all:	pindel pindel-debug
 -include $(SOURCES:.cpp=.d)
