@@ -42,6 +42,8 @@ ControlState::ControlState()
    CountFarEndPlus = 0;
    CountFarEndMinus = 0;
 
+	lineReader = 0;
+	inf_Pindel_Reads = 0;
 }
 
 ControlState::~ControlState()

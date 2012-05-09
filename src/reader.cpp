@@ -40,6 +40,8 @@
 #include "refreader.h"
 #include "control_state.h"
 #include "read_buffer.h"
+#include "line_reader.h"
+#include "pindel_read_reader.h"
 // Static function declaration
 
 static int fetch_func (const bam1_t * b1, void *data);
@@ -111,7 +113,7 @@ void showReadStats(const std::vector<SPLIT_READ>& Reads)
 }
 
 short
-ReadInRead (std::ifstream & inf_ReadSeq, const std::string & FragName,
+ReadInRead (PindelReadReader & inf_ReadSeq, const std::string & FragName,
             const std::string & CurrentChr, std::vector < SPLIT_READ > &Reads,
             const unsigned int lowerBinBorder, const unsigned int upperBinBorder)
 {
@@ -122,12 +124,13 @@ ReadInRead (std::ifstream & inf_ReadSeq, const std::string & FragName,
    LOG_DEBUG(*logStream << LeftReads.size() << std::endl);
    std::string TempQC, TempLine, TempStr, TempFragName;
 
-   inf_ReadSeq.clear ();
-   inf_ReadSeq.seekg (0);
+	inf_ReadSeq.Reset();
+	
    LOG_DEBUG(*logStream << "MINUSEXTRA!" << std::endl);
    int UPCLOSE_COUNTER = 0;
    //loop over all reads in the file
-   while (inf_ReadSeq >> Temp_One_Read.Name) {
+   while (inf_ReadSeq.HasNext()) {
+	   Temp_One_Read = inf_ReadSeq.NextRead();
       if (Temp_One_Read.Name[0] != FirstCharReadName) {
          // !='@'
          LOG_WARN(*logStream << "Something wrong with the read name: " << Temp_One_Read.
@@ -136,12 +139,7 @@ ReadInRead (std::ifstream & inf_ReadSeq, const std::string & FragName,
          return 1;
       }
       g_NumReadScanned++;
-      // get (useless) rest of first line
-      std::getline (inf_ReadSeq, TempLine);
-      inf_ReadSeq >> Temp_One_Read.UnmatchedSeq;
-      std::getline (inf_ReadSeq, TempLine);
 
-      inf_ReadSeq >> Temp_One_Read.MatchedD;
       if (Temp_One_Read.MatchedD != Minus && Temp_One_Read.MatchedD != Plus) {
          LOG_INFO(*logStream << Temp_One_Read.Name << std::endl
                   << Temp_One_Read.UnmatchedSeq << std::endl
@@ -149,12 +147,6 @@ ReadInRead (std::ifstream & inf_ReadSeq, const std::string & FragName,
          LOG_INFO(*logStream << "+/-" << std::endl);
          return 1;
       }
-      //   >> TempInt
-      inf_ReadSeq >> Temp_One_Read.FragName
-                  >> Temp_One_Read.MatchedRelPos
-                  >> Temp_One_Read.MS >> Temp_One_Read.InsertSize >> Temp_One_Read.Tag;
-      std::getline (inf_ReadSeq, TempLine);
-
 
       if ((signed int)Temp_One_Read.MatchedRelPos > g_maxPos) {
          g_maxPos = Temp_One_Read.MatchedRelPos;
@@ -792,25 +784,31 @@ short getReads(ControlState& currentState, ParCollection & par) {
         
     }
     if (currentState.pindelConfigDefined) {	
-        for (unsigned int fileIndex=0; fileIndex<currentState.pindelfilesToParse.size(); fileIndex++ ) {
-            std::ifstream currentPindelfile( currentState.pindelfilesToParse[ fileIndex ].c_str() );
-            readInPindelReads( currentPindelfile, currentState.pindelfilesToParse[ fileIndex ].c_str(), currentState );
-        }
-    }
-    //readBuffer.flush();
-    
-    if (currentState.PindelReadDefined) {
-        readInPindelReads( currentState.inf_Pindel_Reads, par.pindelFilename, currentState );
-    }
+		for (unsigned int fileIndex=0; fileIndex<currentState.pindelfilesToParse.size(); fileIndex++ ) {
+			const std::string &filename = currentState.pindelfilesToParse[fileIndex];
+			currentState.lineReader = getLineReaderByFilename(filename.c_str());
+			currentState.inf_Pindel_Reads = new PindelReadReader(*currentState.lineReader);
+
+			readInPindelReads(*currentState.inf_Pindel_Reads, filename, currentState );
+
+			//
+
+			delete currentState.inf_Pindel_Reads;
+			delete currentState.lineReader;
+		}
+	}
+	if (currentState.PindelReadDefined) {
+		readInPindelReads(*currentState.inf_Pindel_Reads, par.pindelFilename, currentState );
+	}
     return 0;
 }
 
-void readInPindelReads( std::ifstream& pindelFile, const std::string& pindelFilename, ControlState& currentState )
+void readInPindelReads(PindelReadReader &reader, const std::string& pindelFilename, ControlState& currentState )
 {
-	int ReturnFromReadingReads = ReadInRead(  pindelFile, currentState.CurrentChrName,
-                                            currentState.CurrentChrSeq, currentState.Reads,
-                                            currentState.lowerBinBorder,
-                                            currentState.upperBinBorder);
+	int ReturnFromReadingReads = ReadInRead(  reader, currentState.CurrentChrName,
+                                             currentState.CurrentChrSeq, currentState.Reads,
+                                             currentState.lowerBinBorder,
+                                             currentState.upperBinBorder);
 	if (ReturnFromReadingReads == 1) {
 		LOG_ERROR(*logStream << "malformed record detected in " << pindelFilename << std::endl);
 		exit( EXIT_FAILURE );

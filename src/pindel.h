@@ -33,6 +33,9 @@
 #include "khash.h"
 #include "sam.h"
 
+// Forward declarations
+class LineReader;
+
 extern std::set<std::string> g_sampleNames; // EWL: could make this a singleton instead
 
 /*
@@ -403,5 +406,7 @@ bool readInSpecifiedRegion(const SPLIT_READ & read, const bool regionStartDefine
 void reportBreakDancerEvent( const std::string& chromosomeName, const int leftPosition, const int rightPosition, 
 	                          const int svSize, const std::string& svType, const int svCounter);
 void updateReadAfterCloseEndMapping( SPLIT_READ& Temp_One_Read );
+
+LineReader *getLineReaderByFilename(const char *filename);
 
 #endif /* PINDEL_H */

@@ -24,19 +24,20 @@
 #include "read_buffer.h"
 #include "control_state.h"
 
+class PindelReadReader;
 
 void GetOneChrSeq (std::ifstream & inf_Seq, std::string & CurrentChr,
 									 bool WhetherBuildUp);
 bool ReadInBamReads (const char *bam_path, const std::string & FragName,
 								std::string * CurrentChr, std::vector < SPLIT_READ > &LeftReads, 
 								int InsertSize, std::string Tag, int binStart, int binEnd, ReadBuffer& readBuffer);
-short ReadInRead (std::ifstream & inf_Seq,
+short ReadInRead (PindelReadReader & inf_ReadSeq,
 									const std::string & CurrentFragName,
 									const std::string & CurrentFrag,
 									std::vector < SPLIT_READ > &Reads, const unsigned int lowerBinBorder,
 									const unsigned int upperBinBorder);
 
 short getReads(ControlState& currentState, ParCollection & par);
-void readInPindelReads( std::ifstream& pindelFile, const std::string& pindelFilename, ControlState& currentState );
+void readInPindelReads(PindelReadReader &reader, const std::string& pindelFilename, ControlState& currentState );
 
 #endif /* READER_H */

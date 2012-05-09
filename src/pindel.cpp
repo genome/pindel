@@ -48,6 +48,8 @@
 #include "searchdeletions.h"
 #include "logdef.h"
 #include "assembly.h"
+#include "ifstream_line_reader.h"
+#include "gz_line_reader.h"
 
 /*v Kai Ye update 0.2.4h, Oct 31 2011, update for MOSAIK */
 /*v EW update 0.2.4j, Pindel will now abort when insert size is set too small. */
@@ -852,6 +854,20 @@ std::string uppercase( const std::string& input )
     return output;
 }
 
+
+LineReader *getLineReaderByFilename(const char *filename)
+{
+	const std::string strFilename = filename;
+	const size_t len = strFilename.length();
+	const std::string suffix = strFilename.substr(len - 3, 3);
+	
+	if (len > 3 && suffix == ".gz")
+		return new GZLineReader(filename);
+	else
+		return new IfstreamLineReader(filename);
+}
+
+
 int init(int argc, char *argv[], ControlState& currentState )
 {
 
@@ -900,7 +916,8 @@ int init(int argc, char *argv[], ControlState& currentState )
 
     currentState.PindelReadDefined = parameters[findParameter("-p")]->isSet();
     if (currentState.PindelReadDefined) {
-        currentState.inf_Pindel_Reads.open(par.pindelFilename.c_str());
+		currentState.lineReader= getLineReaderByFilename(par.pindelFilename.c_str());
+        currentState.inf_Pindel_Reads = new PindelReadReader(*currentState.lineReader);
     }
 	currentState.pindelConfigDefined = parameters[findParameter("-P")]->isSet();
 	if (currentState.pindelConfigDefined) {

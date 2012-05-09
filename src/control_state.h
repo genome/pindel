@@ -27,6 +27,7 @@
 
 // Pindel header files
 #include "pindel.h"
+#include "pindel_read_reader.h"
 
 struct BreakDancer {
 	BreakDancer() { 
@@ -55,7 +56,8 @@ public:
 	bool SpecifiedChrVisited;
 	std::ifstream inf_Seq;
     std::ifstream inf_AssemblyInput;
-	std::ifstream inf_Pindel_Reads;
+	LineReader *lineReader;
+	PindelReadReader *inf_Pindel_Reads;
 	std::string bam_file;
 	std::string OutputFolder;
 	std::string TargetChrName;
