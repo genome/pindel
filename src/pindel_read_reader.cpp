@@ -21,6 +21,11 @@ PindelReadReader::PindelReadReader(LineReader &_reader):reader(_reader)
 }
 
 
+PindelReadReader::~PindelReadReader()
+{
+}
+
+
 void PindelReadReader::Reset()
 {
 	reader.Reset();

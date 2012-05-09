@@ -30,6 +30,9 @@ class PindelReadReader
 		PindelReadReader(LineReader &_reader);
 		
 		
+		virtual ~PindelReadReader();
+		
+		
 		virtual void Reset();
 			
 			
