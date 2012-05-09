@@ -7,6 +7,7 @@
 //
 
 #include <zlib.h>
+#include <cstring>
 #include "gz_line_reader.h"
 
 using std::string;
