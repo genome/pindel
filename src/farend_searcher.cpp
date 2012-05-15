@@ -73,7 +73,7 @@ void SearchFarEndAtPos( const std::string& chromosome, SPLIT_READ& Temp_One_Read
     //          << " " << Temp_One_Read.UP_Close[Temp_One_Read.UP_Close.size() - 1].LengthStr << " " << UP[UP.size() - 1].LengthStr << " Sum: " << Temp_One_Read.UP_Close[Temp_One_Read.UP_Close.size() - 1].LengthStr + UP[UP.size() - 1].LengthStr << std::endl;
 
    if (UP.empty()) {}
-   else if (UP[UP.size() - 1].LengthStr + Temp_One_Read.UP_Close[Temp_One_Read.UP_Close.size() - 1].LengthStr < Temp_One_Read.ReadLength) { // should put into UP_Far_backup
+   else if (UP[UP.size() - 1].LengthStr + Temp_One_Read.UP_Close[Temp_One_Read.UP_Close.size() - 1].LengthStr < Temp_One_Read.ReadLength && UP[UP.size() - 1].LengthStr > 0 && Temp_One_Read.UP_Close[Temp_One_Read.UP_Close.size() - 1].LengthStr > 0) { // should put into UP_Far_backup
       if (Temp_One_Read.UP_Far_backup.empty()) { // UP_Far_backup is empty, put it straightforwards
          Temp_One_Read.UP_Far_backup.swap(UP);
       }

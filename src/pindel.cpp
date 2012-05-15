@@ -1878,6 +1878,10 @@ void CheckBoth(const SPLIT_READ & OneRead, const std::string & TheInput,
                                               + 1)) {
                     UniquePoint TempOne;
                     TempOne.LengthStr = CurrentLength;
+                    if ((unsigned)TempOne.LengthStr > OneRead.UnmatchedSeq.size() && TempOne.LengthStr < 0) {
+                        std::cout << "TempOne.LengthStr " << TempOne.LengthStr << std::endl;
+                        return;
+                    }
                     if (PD_Plus[i].size() == 1) {
                         TempOne.Direction = FORWARD;
                         TempOne.Strand = SENSE;
