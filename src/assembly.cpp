@@ -514,35 +514,36 @@ void CombineReads(const std::string & CurrentChrSeq, const char & Strand, const 
     for (unsigned pos_index = 0;  pos_index < OutputOneStr.size(); pos_index++) {
         if (OutputOneStr[pos_index] == 'N') Count_N++;
     }
-    if ((float)Count_N >= OutputOneStr.size() * 0.05) return;
-    
-    unsigned Min_Close_Size = 10000;
-    Index2Read4Copy = 0; // if the best one cannot be found due to N or whatever reasons, use the first read as the template for copy.
-    //std::cout << "Original Index2Read4Copy: " << Index2Read4Copy << std::endl;
-    for (unsigned ReadIndex = 0; ReadIndex < Index_Of_Useful_Reads.size(); ReadIndex++) {
-        if (input_reads[Index_Of_Useful_Reads[ReadIndex]].UP_Close.size() < Min_Close_Size && OutputOneStr.find(input_reads[Index_Of_Useful_Reads[ReadIndex]].UnmatchedSeq) !=std::string::npos) { // quick fix here: need more work
-            Min_Close_Size = input_reads[Index_Of_Useful_Reads[ReadIndex]].UP_Close.size();
-            Index2Read4Copy = ReadIndex; // input_reads[Index_Of_Useful_Reads[Index2Read4Copy]]
-            //std::cout << "Changed Index2Read4Copy: " << Index2Read4Copy << std::endl;
+    if ((float)Count_N < OutputOneStr.size() * 0.05) {
+        
+        unsigned Min_Close_Size = 10000;
+        Index2Read4Copy = 0; // if the best one cannot be found due to N or whatever reasons, use the first read as the template for copy.
+        //std::cout << "Original Index2Read4Copy: " << Index2Read4Copy << std::endl;
+        for (unsigned ReadIndex = 0; ReadIndex < Index_Of_Useful_Reads.size(); ReadIndex++) {
+            if (input_reads[Index_Of_Useful_Reads[ReadIndex]].UP_Close.size() < Min_Close_Size && OutputOneStr.find(input_reads[Index_Of_Useful_Reads[ReadIndex]].UnmatchedSeq) !=std::string::npos) { // quick fix here: need more work
+                Min_Close_Size = input_reads[Index_Of_Useful_Reads[ReadIndex]].UP_Close.size();
+                Index2Read4Copy = ReadIndex; // input_reads[Index_Of_Useful_Reads[Index2Read4Copy]]
+                //std::cout << "Changed Index2Read4Copy: " << Index2Read4Copy << std::endl;
+            }
         }
+        //std::cout << "here2" << std::endl;
+        output_one_read = input_reads[Index_Of_Useful_Reads[Index2Read4Copy]];
+        //std::cout << "here2a" << std::endl;
+        output_one_read.UnmatchedSeq = OutputOneStr;
+        //update std::map <std::string, int> ReadCountPerSample;
+        GetReadCountPerSample(input_reads, Index_Of_Useful_Reads, output_one_read);
+        //std::cout << "here2b" << std::endl;
+        //std::cout << "Before: " << output_one_read.UP_Close.size() << std::endl;
+        output_one_read.UP_Close.clear();
+        //std::cout << "here3" << std::endl;
+        output_one_read.Thickness = Index_Of_Useful_Reads.size();
+        //std::cout << "Thickness " << output_one_read.Thickness << std::endl;
+        GetCloseEnd(CurrentChrSeq, output_one_read);
+        //std::cout << "After: " << output_one_read.UP_Close.size() << std::endl;
+        output_reads.push_back(output_one_read);
+        //std::cout << "here4" << std::endl;
+        std::cout << "end of CombineReads" << std::endl;
     }
-    //std::cout << "here2" << std::endl;
-    output_one_read = input_reads[Index_Of_Useful_Reads[Index2Read4Copy]];
-    //std::cout << "here2a" << std::endl;
-    output_one_read.UnmatchedSeq = OutputOneStr;
-    //update std::map <std::string, int> ReadCountPerSample;
-    GetReadCountPerSample(input_reads, Index_Of_Useful_Reads, output_one_read);
-    //std::cout << "here2b" << std::endl;
-    //std::cout << "Before: " << output_one_read.UP_Close.size() << std::endl;
-    output_one_read.UP_Close.clear();
-    //std::cout << "here3" << std::endl;
-    output_one_read.Thickness = Index_Of_Useful_Reads.size();
-    //std::cout << "Thickness " << output_one_read.Thickness << std::endl;
-    GetCloseEnd(CurrentChrSeq, output_one_read);
-    //std::cout << "After: " << output_one_read.UP_Close.size() << std::endl;
-    output_reads.push_back(output_one_read);
-    //std::cout << "here4" << std::endl;
-    std::cout << "end of CombineReads" << std::endl;
 }
 
 void OutputCurrentRead(const std::vector <Chromosome> & AllChromosomes, std::map<std::string,int> & ChrName2Index, ControlState & CurrentState, ParCollection & par, const Assembly & OneSV, SPLIT_READ & OneRead, std::ofstream & ASM_Output) {
