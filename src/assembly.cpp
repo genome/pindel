@@ -179,17 +179,17 @@ short AssembleOneSV(const std::vector <Chromosome> & AllChromosomes, std::map<st
     SearchCenter = OneSV.PosB + g_SpacerBeforeAfter;
     Left = OneSV.PosB + g_SpacerBeforeAfter - OneSV.CI_B;
     Right = OneSV.PosB + g_SpacerBeforeAfter + OneSV.CI_B;
+    
+    for (unsigned ReadIndex = 0; ReadIndex < First.size(); ReadIndex++) {
+        First[ReadIndex].FarFragName = OneSV.ChrB;
+        SearchFarEndAtPos(AllChromosomes[ChrName2Index.find(OneSV.ChrB)->second].ChrSeq, First[ReadIndex], SearchCenter, SearchRange);
+    }
+    
+    CleanUpFarEnd(First, Left, Right);
+    
+    
     for (unsigned ReadIndex = 0; ReadIndex < First.size(); ReadIndex++) {
         if (First[ReadIndex].UP_Close.size()) {
-            if (First[ReadIndex].UP_Close[0].LengthStr < 0 || First[ReadIndex].UP_Close[First[ReadIndex].UP_Close.size() - 1].LengthStr < 0) continue;
-            //std::cout << "First[ReadIndex].UP_Close.size() " << First[ReadIndex].UP_Close[First[ReadIndex].UP_Close.size() - 1].LengthStr << std::endl;
-            First[ReadIndex].FarFragName = OneSV.ChrB;
-            
-            SearchFarEndAtPos(AllChromosomes[ChrName2Index.find(OneSV.ChrB)->second].ChrSeq, First[ReadIndex], SearchCenter, SearchRange);
-            
-            CleanUpFarEnd(First[ReadIndex], Left, Right);
-            
-            
             if (First[ReadIndex].UP_Far.size()) {
                 if (First[ReadIndex].UP_Far[0].LengthStr < 0) continue;
                 //std::cout << "First UP_Far: ";
@@ -198,7 +198,6 @@ short AssembleOneSV(const std::vector <Chromosome> & AllChromosomes, std::map<st
                 if (First[ReadIndex].UP_Far[First[ReadIndex].UP_Far.size() - 1].LengthStr + First[ReadIndex].UP_Close[First[ReadIndex].UP_Close.size() - 1].LengthStr + Max_NT_Size >= First[ReadIndex].ReadLength) OutputCurrentRead(AllChromosomes, ChrName2Index, CurrentState, par, OneSV, First[ReadIndex], ASM_Output);
             }
             else if (First[ReadIndex].UP_Far_backup.size()) {
-                if (First[ReadIndex].UP_Far_backup[0].LengthStr < 0) continue;
                 //std::cout << "First UP_Far_backup ";
                 //std::cout << First[ReadIndex].UP_Far_backup.size() << std::endl; //First[ReadIndex].UP_Far_backup[First[ReadIndex].UP_Far_backup.size() - 1].LengthStr << " " << First[ReadIndex].UP_Close[First[ReadIndex].UP_Close.size() - 1].LengthStr << " " << Max_NT_Size << " " << First[ReadIndex].ReadLength << std::endl;
                 //if (First[ReadIndex].UP_Far_backup[First[ReadIndex].UP_Far_backup.size() - 1].LengthStr + First[ReadIndex].UP_Close[First[ReadIndex].UP_Close.size() - 1].LengthStr + Max_NT_Size >= First[ReadIndex].ReadLength) 
@@ -239,17 +238,15 @@ short AssembleOneSV(const std::vector <Chromosome> & AllChromosomes, std::map<st
     SearchCenter = OneSV.PosA + g_SpacerBeforeAfter;
     Left = OneSV.PosA + g_SpacerBeforeAfter - OneSV.CI_A;
     Right = OneSV.PosA + g_SpacerBeforeAfter + OneSV.CI_A;
+    
+    for (unsigned ReadIndex = 0; ReadIndex < Second.size(); ReadIndex++) {
+        Second[ReadIndex].FarFragName = OneSV.ChrA;
+        SearchFarEndAtPos(AllChromosomes[ChrName2Index.find(OneSV.ChrA)->second].ChrSeq, Second[ReadIndex], SearchCenter, SearchRange);
+    }
+    CleanUpFarEnd(Second, Left, Right);
+    
     for (unsigned ReadIndex = 0; ReadIndex < Second.size(); ReadIndex++) {
         if (Second[ReadIndex].UP_Close.size()) {
-            if (Second[ReadIndex].UP_Close[0].LengthStr < 0 || Second[ReadIndex].UP_Close[Second[ReadIndex].UP_Close.size() - 1].LengthStr < 0) continue;
-            //std::cout << ReadIndex << " Second[ReadIndex].UP_Close[Second[ReadIndex].UP_Close.size() - 1].LengthStr " << Second[ReadIndex].UP_Close[Second[ReadIndex].UP_Close.size() - 1].LengthStr << std::endl;
-            Second[ReadIndex].FarFragName = OneSV.ChrA;
-            
-            SearchFarEndAtPos(AllChromosomes[ChrName2Index.find(OneSV.ChrA)->second].ChrSeq, Second[ReadIndex], SearchCenter, SearchRange);
-            
-            CleanUpFarEnd(Second[ReadIndex], Left, Right);
-            
-            
             if (Second[ReadIndex].UP_Far.size()) {
                 if (Second[ReadIndex].UP_Far[0].LengthStr < 0) continue;
                 //std::cout << "Second UP_Far: " << Second[ReadIndex].UP_Far.size() << std::endl;
@@ -690,15 +687,20 @@ void CleanUpCloseEnd(std::vector <SPLIT_READ> & input, const unsigned & Left, co
     input.swap(output);
 }
 
-void CleanUpFarEnd(SPLIT_READ & input, const unsigned & Left, const unsigned & Right) {
-    if (input.UP_Close[input.UP_Close.size() - 1].AbsLoc >= Left && input.UP_Close[input.UP_Close.size() - 1].AbsLoc <= Right) {
-        
+void CleanUpFarEnd(std::vector <SPLIT_READ> & input, const unsigned & Left, const unsigned & Right) {
+    std::vector <SPLIT_READ> output;
+    for (unsigned ReadIndex = 0; ReadIndex < input.size(); ReadIndex++) {
+        if (input[ReadIndex].UP_Far.size()) {
+           if (input[ReadIndex].UP_Far[input[ReadIndex].UP_Far.size() - 1].AbsLoc >= Left && input[ReadIndex].UP_Far[input[ReadIndex].UP_Far.size() - 1].AbsLoc <= Right) {
+              output.push_back(input[ReadIndex]);
+           }
+        }
+        else if (input[ReadIndex].UP_Far_backup.size()) {
+            if (input[ReadIndex].UP_Far_backup[input[ReadIndex].UP_Far_backup.size() - 1].AbsLoc >= Left && input[ReadIndex].UP_Far_backup[input[ReadIndex].UP_Far_backup.size() - 1].AbsLoc <= Right) {
+                output.push_back(input[ReadIndex]);
+            } 
+        }
+
     }
-    else {
-        std::cout << "Before " << input.UP_Close.size() << std::endl;
-        input.UP_Close.clear();
-        input.UP_Far.clear();
-        input.UP_Far_backup.clear();
-        std::cout << "After " << input.UP_Close.size() << std::endl;
-    }
+    input.swap(output);
 }
