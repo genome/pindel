@@ -165,7 +165,7 @@ short AssembleOneSV(const std::vector <Chromosome> & AllChromosomes, std::map<st
     g_CloseMappedMinus = 0; // #################
     unsigned Left, Right;
     if (OneSV.PosA > OneSV.CI_A + 1000)  
-        CurrentState.lowerBinBorder = OneSV.PosA - OneSV.CI_A - 1000; CurrentState.
+        CurrentState.lowerBinBorder = OneSV.PosA - OneSV.CI_A - 1000; //CurrentState.
     else CurrentState.lowerBinBorder = 1;
     CurrentState.upperBinBorder = OneSV.PosA + OneSV.CI_A + 1000;
     Left = OneSV.PosA + g_SpacerBeforeAfter - OneSV.CI_A;
