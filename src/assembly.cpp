@@ -165,7 +165,7 @@ short AssembleOneSV(const std::vector <Chromosome> & AllChromosomes, std::map<st
     g_CloseMappedMinus = 0; // #################
     unsigned Left, Right;
     if (OneSV.PosA > OneSV.CI_A + 1000)  
-        CurrentState.lowerBinBorder = OneSV.PosA - OneSV.CI_A - 1000;
+        CurrentState.lowerBinBorder = OneSV.PosA - OneSV.CI_A - 1000; CurrentState.
     else CurrentState.lowerBinBorder = 1;
     CurrentState.upperBinBorder = OneSV.PosA + OneSV.CI_A + 1000;
     Left = OneSV.PosA + g_SpacerBeforeAfter - OneSV.CI_A;
@@ -705,12 +705,13 @@ void GetReadCountPerSample(const std::vector <SPLIT_READ> & input_reads, const s
 
 void CleanUpCloseEnd(std::vector <SPLIT_READ> & input, const unsigned & Left, const unsigned & Right) {
     std::vector <SPLIT_READ> output;
+     
+
     for (unsigned ReadIndex = 0; ReadIndex < input.size(); ReadIndex++) {
-        if (input[ReadIndex].UP_Close[input[ReadIndex].UP_Close.size() - 1].AbsLoc >= Left && input[ReadIndex].UP_Close[input[ReadIndex].UP_Close.size() - 1].AbsLoc <= Right) {
-            output.push_back(input[ReadIndex]);
-        }
-        else {
-            //input[ReadIndex].UP_Close.clear();
+        if (input[ReadIndex].UP_Close.size()) {
+            if (input[ReadIndex].UP_Close[input[ReadIndex].UP_Close.size() - 1].AbsLoc >= Left && input[ReadIndex].UP_Close[input[ReadIndex].UP_Close.size() - 1].AbsLoc <= Right) {
+                output.push_back(input[ReadIndex]);
+            }
         }
     }
     input.swap(output);
