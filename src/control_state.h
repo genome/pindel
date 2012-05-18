@@ -56,6 +56,7 @@ public:
 	bool SpecifiedChrVisited;
 	std::ifstream inf_Seq;
     std::ifstream inf_AssemblyInput;
+    std::ifstream inf_GenotypingInput;
 	LineReader *lineReader;
 	PindelReadReader *inf_Pindel_Reads;
 	std::string bam_file;

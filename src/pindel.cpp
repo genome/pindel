@@ -48,6 +48,7 @@
 #include "searchdeletions.h"
 #include "logdef.h"
 #include "assembly.h"
+#include "genotyping.h"
 #include "ifstream_line_reader.h"
 #include "gz_line_reader.h"
 
@@ -515,6 +516,13 @@ void defineParameters()
             "Example: DEL chr1 10000 50 chr2 20000 100 "                
             "", false, ""));
     parameters. push_back(
+            new StringParameter(
+                      &par.inf_GenotypingInputFilename,
+                      "-g",
+                      "--genotyping",
+                      "gentype variants if -i is also turn true."
+                      "", false, ""));
+    parameters. push_back(
         new StringParameter(
             &par.breakDancerOutputFilename,
             "-Q",
@@ -941,6 +949,11 @@ int init(int argc, char *argv[], ControlState& currentState )
     if (par.AssemblyInputDefined) {
         currentState.inf_AssemblyInput.open(par.inf_AssemblyInputFilename.c_str());
     }
+    
+    par.GenotypingInputDefined = parameters[findParameter("-g")]->isSet();
+    if (par.GenotypingInputDefined) {
+        currentState.inf_GenotypingInput.open(par.inf_GenotypingInputFilename.c_str());
+    }
 
     omp_set_num_threads(par.numThreads);
 
@@ -1124,7 +1137,7 @@ int init(int argc, char *argv[], ControlState& currentState )
     }
     currentState.TargetChrName = chrName; // removes the region from the 'pure' chromosome name
 
-    if (uppercase(currentState.TargetChrName).compare("ALL") == 0 && par.AssemblyInputDefined == false) {
+    if (uppercase(currentState.TargetChrName).compare("ALL") == 0 && par.AssemblyInputDefined == false && par.GenotypingInputDefined == false) {
         *logStream << "Looping over all chromosomes." << std::endl;
         currentState.loopOverAllChromosomes = true;
     }
@@ -1201,6 +1214,18 @@ int main(int argc, char *argv[])
 
     std::string emptystr;
     
+    /* Start of shortcut to genotyping */ // currentState.inf_AssemblyInput.open(par.inf_AssemblyInputFilename.c_str());
+    //std::cout << "here " << par.AssemblyInputDefined << std::endl;
+    if (par.GenotypingInputDefined) {
+        
+        std::cout << "Entering genotyping mode ..." << std::endl;
+        doGenotyping(currentState, par);
+       
+        std::cout << "Leaving genotyping mode and terminating this run." << std::endl;
+        exit(EXIT_SUCCESS);
+    }
+    
+    /* End of shortcut to assembly */
     
     /* Start of shortcut to assembly */ // currentState.inf_AssemblyInput.open(par.inf_AssemblyInputFilename.c_str());
     //std::cout << "here " << par.AssemblyInputDefined << std::endl;

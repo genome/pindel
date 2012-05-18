@@ -303,8 +303,10 @@ typedef struct {
 	std::string breakDancerOutputFilename;
 	std::string logFilename;
     std::string inf_AssemblyInputFilename; // 
+    std::string inf_GenotypingInputFilename; // 
     std::string SearchRegion;
     bool AssemblyInputDefined; // 
+    bool GenotypingInputDefined;
     int numThreads;
     bool showHelp;
     bool reportOnlyCloseMappedReads;
