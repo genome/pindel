@@ -43,7 +43,7 @@ void bed_destroy(void *_h);     // destroy the BED data structure
 int bed_overlap(const void *_h, const char *chr, int beg, int end); // test if chr:beg-end overlaps
 
 // This function reads a BAM alignment from one BAM file.
-static int read_bam(void *data, bam1_t *b); // read level filters better go here to avoid pileup
+static int read_bam(aux_t * data, bam1_t *b); // read level filters better go here to avoid pileup
 
 
 int getChromosomeID( bam_header_t *bamHeaderPtr, const std::string & chromosome, const int startPos, const int endPos);

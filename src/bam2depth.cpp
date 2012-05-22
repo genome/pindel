@@ -46,7 +46,7 @@ int bam2depth(const std::string& chromosome, const int startPos, const int endPo
 {
 	// initialize the auxiliary data structures
 	int numberOfBams = listOfFiles.size(); // the number of BAMs on the command line
-    aux_t** auxOfBamfile = calloc( numberOfBams, sizeof (aux_t *) ); // auxOfBamfiles[i] for the i-th input, one pointer per BAM-file
+    aux_t ** auxOfBamfile = calloc( numberOfBams, sizeof (aux_t *) ); // auxOfBamfiles[i] for the i-th input, one pointer per BAM-file
 
     // set the default region
 	int chromosomeID = -1;
@@ -79,7 +79,9 @@ int bam2depth(const std::string& chromosome, const int startPos, const int endPo
 
 	// the core multi-pileup loop
 	bam_mplp_t multiPileup = bam_mplp_init(numberOfBams, read_bam, (void**)auxOfBamfile); // initialization [read_bam is function!)
+    int * coveragePerBam;
 	coveragePerBam = calloc(numberOfBams, sizeof(int)); // coverage_per_bam[i] is the number of covering reads from the i-th BAM // EW: comments are nice, but simpler code and clearer variable names would help a lot already.
+    void * supportingReadsPerPosition;
 	supportingReadsPerPosition = calloc(numberOfBams, sizeof(void*)); // covering_reads_ptr_per_bam[i] points to the array of covering reads (internal in multiPileup)
     std::vector<int> sumOfReadDepths( numberOfBams, 0);
     int position = 0;
