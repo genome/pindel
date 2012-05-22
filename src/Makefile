@@ -4,7 +4,7 @@ include ../Makefile.local
 
 SOURCES=pindel.cpp reader.cpp reporter.cpp searcher.cpp parameter.cpp \
     refreader.cpp control_state.cpp search_deletions_nt.cpp \
-    search_inversions.cpp search_inversions_nt.cpp \
+    search_inversions.cpp search_inversions_nt.cpp bam2depth.cpp\
     search_tandem_duplications.cpp search_tandem_duplications_nt.cpp \
     output_sorter.cpp farend_searcher.cpp search_variant.cpp \
     searchshortinsertions.cpp searchdeletions.cpp output_file_data.cpp \
