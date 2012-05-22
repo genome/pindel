@@ -13,6 +13,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <vector>
 #include "bam.h"
 
 struct aux_t {     // auxiliary data structure
@@ -53,7 +54,7 @@ int bam2depth(const std::string & chromosome,
               const int minBaseQuality, 
               const int minMappingQuality, 
               const std::vector <std::string> & listOfFiles,
-              std::vector < double > & averageCoveragePerBam);
+              std::vector <double> & averageCoveragePerBam);
 
 int getRelativeCoverage(const std::string& chromosomeName, 
                         const int startPos, 
@@ -61,6 +62,6 @@ int getRelativeCoverage(const std::string& chromosomeName,
                         const int minBaseQuality, 
                         const int minMappingQuality, 
                         const std::vector <std::string> & listOfFiles, 
-                        std::vector<double>& standardizedDepthPerBam );
+                        std::vector <double> & standardizedDepthPerBam );
 
 #endif /* BAM2DEPTH_H_ */

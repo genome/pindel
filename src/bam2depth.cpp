@@ -34,7 +34,7 @@ int getChromosomeID( bam_header_t *bamHeaderPtr, const std::string & chromosome,
 {
     int dummyBegin, dummyEnd;
     int chromosomeID;
-    stringstream region;
+    std::stringstream region;
     region << chromosome << ":" << startPos << "-" << endPos;
     bam_parse_region(bamHeaderPtr, region.str().c_str(), &chromosomeID, &dummyBegin, &dummyEnd);
     return chromosomeID;
@@ -45,7 +45,7 @@ int bam2depth(const std::string& chromosome, const int startPos, const int endPo
 )
 {
 	// initialize the auxiliary data structures
-	numberOfBams = listOfFiles.size(); // the number of BAMs on the command line
+	int numberOfBams = listOfFiles.size(); // the number of BAMs on the command line
     aux_t** auxOfBamfile = calloc( numberOfBams, sizeof (aux_t *) ); // auxOfBamfiles[i] for the i-th input, one pointer per BAM-file
 
     // set the default region
@@ -53,14 +53,14 @@ int bam2depth(const std::string& chromosome, const int startPos, const int endPo
 
     bam_header_t *h = 0; // BAM header of the 1st input
     // EW: the below would usually be done in a constructor. There are reasons that C++ was invented.
-	for (fileIndex = 0; fileIndex < numberOfBams; ++fileIndex) {
-		bam_header_t *h_tmp;
+	for (int fileIndex = 0; fileIndex < numberOfBams; ++fileIndex) {
+		bam_header_t * h_tmp;
 		// per bam-file, create an 'aux_t' structure.
-        auxOfBamfile[ fileIndex ] = calloc(1, sizeof( aux_t );
+        auxOfBamfile[ fileIndex ] = calloc(1, sizeof( aux_t *));
         auxOfBamfile[ fileIndex ]->init();
 		auxOfBamfile[ fileIndex ]->fp = bam_open( listOfFiles[ fileIndex ].c_str(), "r"); // open BAM
-		auxOfBamfile[ fileIndex ]->min_mapQ = mapQ;                    // set the mapQ filter
-		htmp = bam_header_read(auxOfBamfile[ fileIndex ]->fp);         // read the BAM header
+		auxOfBamfile[ fileIndex ]->min_mapQ = minMappingQuality;                    // set the mapQ filter
+		h_tmp = bam_header_read(auxOfBamfile[ fileIndex ]->fp);         // read the BAM header
 		if (fileIndex == 0) {
 			h = h_tmp; // keep the header of the 1st BAM
 			// if the command line defines a region, parse it and replace the 'global' begin, end and chromosome_id by those.
@@ -70,9 +70,9 @@ int bam2depth(const std::string& chromosome, const int startPos, const int endPo
         }
         
         // if a region is specified and parsed successfully, set the "iter" of the aux structure
-		if (chromosome_id >= 0) {  
+		if (chromosomeID >= 0) {  
 			bam_index_t *idx = bam_index_load(listOfFiles[ fileIndex ].c_str());  // load the index of the bamfile
-            auxOfBamfile[ fileIndex ]->iter = bam_iter_query(idx, chromosomeId, startPos, endPos); // set the iterator
+            auxOfBamfile[ fileIndex ]->iter = bam_iter_query(idx, chromosomeID, startPos, endPos); // set the iterator
 			bam_index_destroy(idx); // the index is not needed any more; phase out of the memory
 		}
 	}
@@ -88,17 +88,17 @@ int bam2depth(const std::string& chromosome, const int startPos, const int endPo
         if (position >= endPos) break; // out of range; skip
 
 		// EW: if you want to check: fputs(h->target_name[chromosome_id], stdout); printf("\t%d", pos+1); // a customized printf() would be faster
-		for (fileIndex = 0; fileIndex < numberOfBams; fileIndex++) { // base level filters have to go here
+		for (int fileIndex = 0; fileIndex < numberOfBams; fileIndex++) { // base level filters have to go here
             sumOfReadDepths[ fileIndex ] += coveragePerBam[ fileIndex ];
 			for (int supportingReadIndex = 0; supportingReadIndex < coveragePerBam[ fileIndex ]; ++supportingReadIndex) {
 				const bam_pileup1_t *supportingBasePtr = supportingReadsPerPosition[ fileIndex ] + supportingReadIndex; // DON'T modfity covering_reads_ptr_per_bam[][] unless you really know
 				if (supportingBasePtr->is_del || supportingBasePtr->is_refskip) sumOfReadDepths[ fileIndex ]--; // having dels or refskips at chromosome_id:pos
-				else if (bam1_qual(supportingBasePtr->b)[supportingBasePtr->qpos] < baseQ) sumOfReadDepths[ fileIndex ]--; // low base quality
+				else if (bam1_qual(supportingBasePtr->b)[supportingBasePtr->qpos] < minBaseQuality) sumOfReadDepths[ fileIndex ]--; // low base quality
 			}
 		}
 	}
     averageCoveragePerBam.resize( numberOfBams );
-    for (fileIndex=0; fileIndex< numberOfBams; fileIndex++ ) {
+    for (int fileIndex=0; fileIndex< numberOfBams; fileIndex++ ) {
         averageCoveragePerBam[ fileIndex ] = (double)sumOfReadDepths[ fileIndex ] / (endPos - startPos );  
         
         auxOfBamfile[ fileIndex ].destroy();
@@ -130,9 +130,9 @@ int getRelativeCoverage(const std::string & chromosomeName, const int startPos, 
     int chromosomeSize = 100000000; //@@@get this from the chromosome somehow
     int endOfRegionAfterSV = (endPos + regionLength > chromosomeSize ) ? chromosomeSize : endPos + regionLength;
     
-    bam2depth( chromosome, startOfRegionBeforeSV, startPos, minBaseQuality, minMappingQuality, listOfFiles, avgCoverageOfRegionBeforeSV );
-    bam2depth( chromosome, startPos, endPos, minBaseQuality, minMappingQuality, listOfFiles, avgCoverageOfSVRegion );
-    bam2depth( chromosome, endPos, endOfRegionAfterSV, minBaseQuality, minMappingQuality, listOfFiles, avgCoverageOfRegionAfterSV );
+    bam2depth( chromosomeName, startOfRegionBeforeSV, startPos, minBaseQuality, minMappingQuality, listOfFiles, avgCoverageOfRegionBeforeSV );
+    bam2depth( chromosomeName, startPos, endPos, minBaseQuality, minMappingQuality, listOfFiles, avgCoverageOfSVRegion );
+    bam2depth( chromosomeName, endPos, endOfRegionAfterSV, minBaseQuality, minMappingQuality, listOfFiles, avgCoverageOfRegionAfterSV );
     
     for (int fileIndex=0; fileIndex < numberOfBams; fileIndex++ ) {
        if ( avgCoverageOfRegionBeforeSV[ fileIndex ] + avgCoverageOfRegionAfterSV[ fileIndex ] == 0 ) { 
