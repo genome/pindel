@@ -55,11 +55,13 @@ struct RP {
     std::vector <RP_Supports> All_Supporting_RPs;
 };
 
+/*
 struct RD {
     unsigned ReadCountLeft;
     unsigned ReadCountMiddle;
     unsigned ReadCountRight;
 };
+ */
 
 struct Genotyping {
     Genotyping() {
@@ -81,7 +83,7 @@ struct Genotyping {
     unsigned PosB;
     unsigned CI_B;
     SR SR_signals;
-    RD RD_signals;
+    std::vector<double> RD_signals;
     RP RP_signals;
 };
 
@@ -89,7 +91,7 @@ struct Genotyping {
 
 void doGenotyping (ControlState & CurrentState, ParCollection & par);
 
-short GenotypingOneDEL(const std::vector <Chromosome> & AllChromosomes, std::map<std::string,int> & ChrName2Index, ControlState & CurrentState, ParCollection & par, const Genotyping & OneSV, std::ofstream & ASM_Output);
+short GenotypingOneDEL(const std::vector <Chromosome> & AllChromosomes, std::map<std::string,int> & ChrName2Index, ControlState & CurrentState, ParCollection & par, Genotyping & OneSV, std::ofstream & ASM_Output);
 /*
 short getWholeGenome(ControlState & CurrentState, std::vector <Chromosome> & AllChromosomes) ;
 short AssembleOneSV(const std::vector <Chromosome> & AllChromosomes, std::map<std::string,int> & ChrName2Index, ControlState & CurrentState, ParCollection & par, const Assembly & OneSV, std::ofstream & ASM_Output);

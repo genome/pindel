@@ -143,7 +143,7 @@ int bam2depth(const std::string& chromosome, const int startPos, const int endPo
     (or an inversion), 1.0 a heterozygous, deletion, 3.0 a heterozygous duplication, etc. 
 	'internal': takes cleaned data set as argument.
 */
-void getRelativeCoverageInternal(const std::string & chromosomeName, const int chromosomeSize, const int startPos, const int endPos, const int minBaseQuality, 		const int minMappingQuality, const std::vector <std::string> & listOfFiles, std::vector<double> & standardizedDepthPerBam ) 
+void getRelativeCoverageInternal(const std::string & chromosomeName, const int chromosomeSize, const int startPos, const int endPos, const int minBaseQuality, 		const int minMappingQuality, const std::vector <std::string> & listOfFiles, std::vector <double> & standardizedDepthPerBam ) 
 {
     const int PLOIDY = 2;
     int numberOfBams = listOfFiles.size();
@@ -169,10 +169,14 @@ void getRelativeCoverageInternal(const std::string & chromosomeName, const int c
     }
 }
 
-void getRelativeCoverage(const ControlState& allGlobalData, const int startPos, const int endPos, std::vector<double> & standardizedDepthPerBam )
+void getRelativeCoverage(const ControlState& allGlobalData, Genotyping & OneSV)
+                         //const int startPos, const int endPos, std::vector<double> & standardizedDepthPerBam ) RD_signals
 {
-   std::string chromosomeName = allGlobalData.CurrentChrName;
-	int chromosomeSize = allGlobalData.CurrentChrSeq.size()- 2 * g_SpacerBeforeAfter;
+    const int startPos = OneSV.PosA;
+    const int endPos   = OneSV.PosB;
+    
+    std::string chromosomeName = allGlobalData.CurrentChrName;
+	int chromosomeSize = allGlobalData.CurrentChrSeq.size() - 2 * g_SpacerBeforeAfter;
 	const int MIN_BASE_QUALITY_READDEPTH = 0;
 	const int MIN_MAPPING_QUALITY_READDEPTH = 20;
 	std::vector<std::string> listOfFiles;
@@ -181,5 +185,5 @@ void getRelativeCoverage(const ControlState& allGlobalData, const int startPos, 
 		listOfFiles.push_back( bamFileData[ fileIndex ].BamFile );
 	}
 	getRelativeCoverageInternal( chromosomeName, chromosomeSize, startPos, endPos, MIN_BASE_QUALITY_READDEPTH, MIN_MAPPING_QUALITY_READDEPTH, listOfFiles, 	
-		standardizedDepthPerBam );   
+		OneSV.RD_signals);   
 } 

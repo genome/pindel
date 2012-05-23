@@ -21,6 +21,7 @@
 #include <iostream>
 #include <vector>
 #include "genotyping.h"
+#include "bam2depth.h"
 #include "assembly.h"
 #include "reader.h"
 #include "pindel.h"
@@ -93,7 +94,11 @@ void doGenotyping (ControlState & CurrentState, ParCollection & par) {
     }
 }
 
-short GenotypingOneDEL(const std::vector <Chromosome> & AllChromosomes, std::map<std::string,int> &ChrName2Index, ControlState & CurrentState, ParCollection & par, const Genotyping & OneSV, std::ofstream & GT_Output) {
+short GenotypingOneDEL(const std::vector <Chromosome> & AllChromosomes, std::map<std::string,int> &ChrName2Index, ControlState & CurrentState, ParCollection & par, Genotyping & OneSV, std::ofstream & GT_Output) {
+    
+    // get RD signals
+    getRelativeCoverage(CurrentState, OneSV);
+    //CountRP();
     
     /*
     //std::cout << "AssembleOneSV 1" << std::endl;
