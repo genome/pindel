@@ -172,7 +172,7 @@ void getRelativeCoverageInternal(const std::string & chromosomeName, const int c
 void getRelativeCoverage(const ControlState& allGlobalData, const int startPos, const int endPos, std::vector<double> & standardizedDepthPerBam )
 {
    std::string chromosomeName = allGlobalData.CurrentChrName;
-	int chromosomeSize = allGlobalData.CurrentChrSeq.size()-2*g_spacerBeforeAfter;
+	int chromosomeSize = allGlobalData.CurrentChrSeq.size()- 2 * g_SpacerBeforeAfter;
 	const int MIN_BASE_QUALITY_READDEPTH = 0;
 	const int MIN_MAPPING_QUALITY_READDEPTH = 20;
 	std::vector<std::string> listOfFiles;
