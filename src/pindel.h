@@ -273,7 +273,7 @@ struct bam_info {
 		InsertSize = 0;
 		Tag = "";
 	}
-	std::string BamFile;
+	std::string BamFile; // EW: change to FileName?
 	int InsertSize;
 	std::string Tag;
 };
