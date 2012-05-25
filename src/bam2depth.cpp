@@ -11,6 +11,8 @@
 #include <unistd.h>
 #include "bam.h"
 #include "bam2depth.h"
+#include "genotyping.h"
+
 
 struct aux_t {     // auxiliary data structure
 	bamFile fp;      // the file handler
@@ -125,7 +127,7 @@ int bam2depth(const std::string& chromosome, const int startPos, const int endPo
     averageCoveragePerBam.resize( numberOfBams );
     for (int fileIndex=0; fileIndex< numberOfBams; fileIndex++ ) {
         averageCoveragePerBam[ fileIndex ] = (double)sumOfReadDepths[ fileIndex ] / (endPos - startPos );  
-        
+        std::cout << "Read count in fileIndex" << " " << sumOfReadDepths[ fileIndex ] << std::endl;
         auxOfBamfile[ fileIndex ]->destroy();
     }
 	// now destroy everything: a good illustration why destructors were invented
@@ -155,28 +157,45 @@ void getRelativeCoverageInternal(const std::string & chromosomeName, const int c
     int regionLength = endPos - startPos;
     int startOfRegionBeforeSV = (startPos - regionLength >=0) ? startPos - regionLength : 0;
     int endOfRegionAfterSV = (endPos + regionLength > chromosomeSize ) ? chromosomeSize : endPos + regionLength;
+    std::cout << "startOfRegionBeforeSV, Startpos, endpos, endofregionm " << startOfRegionBeforeSV << " " << startPos << " " << endPos << " " << endOfRegionAfterSV << "\n"; 
+    std::cout << "ChrSize " << chromosomeSize << "\n"; 
     
     bam2depth( chromosomeName, startOfRegionBeforeSV, startPos, minBaseQuality, minMappingQuality, listOfFiles, avgCoverageOfRegionBeforeSV );
+    for (int fileIndex=0; fileIndex < numberOfBams; fileIndex++ ) {
+        std::cout << "before " << avgCoverageOfRegionBeforeSV[fileIndex] << " ";
+    }
+    std::cout << std::endl;
     bam2depth( chromosomeName, startPos, endPos, minBaseQuality, minMappingQuality, listOfFiles, avgCoverageOfSVRegion );
+    for (int fileIndex=0; fileIndex < numberOfBams; fileIndex++ ) {
+        std::cout << "in " << avgCoverageOfSVRegion[fileIndex] << " ";
+    }
+    std::cout << std::endl;
     bam2depth( chromosomeName, endPos, endOfRegionAfterSV, minBaseQuality, minMappingQuality, listOfFiles, avgCoverageOfRegionAfterSV );
-    
+    for (int fileIndex=0; fileIndex < numberOfBams; fileIndex++ ) {
+        std::cout << "after " << avgCoverageOfRegionAfterSV[fileIndex] << " ";
+    }
+    std::cout << std::endl;
     for (int fileIndex=0; fileIndex < numberOfBams; fileIndex++ ) {
        if ( avgCoverageOfRegionBeforeSV[ fileIndex ] + avgCoverageOfRegionAfterSV[ fileIndex ] == 0 ) { 
             standardizedDepthPerBam[ fileIndex ] = 2.0; 
-       }// if SV fills entire chromosome/contig 
-       standardizedDepthPerBam[ fileIndex ] = PLOIDY * (2 * avgCoverageOfSVRegion[ fileIndex] ) 
-        / ( avgCoverageOfRegionBeforeSV[ fileIndex ] + avgCoverageOfRegionAfterSV[ fileIndex ] );    
+       } // if SV fills entire chromosome/contig 
+       else {
+           standardizedDepthPerBam[ fileIndex ] = PLOIDY * (2 * avgCoverageOfSVRegion[ fileIndex] ) 
+           / ( avgCoverageOfRegionBeforeSV[ fileIndex ] + avgCoverageOfRegionAfterSV[ fileIndex ] );   
+       } 
     }
 }
 
-void getRelativeCoverage(const ControlState& allGlobalData, Genotyping & OneSV)
+void getRelativeCoverage(const std::string & CurrentChrSeq, const ControlState& allGlobalData, Genotyping & OneSV)
                          //const int startPos, const int endPos, std::vector<double> & standardizedDepthPerBam ) RD_signals
 {
+    std::cout.precision(3);
+    std::cout << "entering getRelativeCoverage" << std::endl;
     const int startPos = OneSV.PosA;
     const int endPos   = OneSV.PosB;
     
     std::string chromosomeName = allGlobalData.CurrentChrName;
-	int chromosomeSize = allGlobalData.CurrentChrSeq.size() - 2 * g_SpacerBeforeAfter;
+	int chromosomeSize = CurrentChrSeq.size() - 2 * g_SpacerBeforeAfter;
 	const int MIN_BASE_QUALITY_READDEPTH = 0;
 	const int MIN_MAPPING_QUALITY_READDEPTH = 20;
 	std::vector<std::string> listOfFiles;
@@ -185,5 +204,12 @@ void getRelativeCoverage(const ControlState& allGlobalData, Genotyping & OneSV)
 		listOfFiles.push_back( bamFileData[ fileIndex ].BamFile );
 	}
 	getRelativeCoverageInternal( chromosomeName, chromosomeSize, startPos, endPos, MIN_BASE_QUALITY_READDEPTH, MIN_MAPPING_QUALITY_READDEPTH, listOfFiles, 	
-		OneSV.RD_signals);   
+		OneSV.RD_signals);  
+    std::cout << OneSV.ChrA << "\t" << OneSV.PosA << "\t" << OneSV.CI_A << "\t"
+              << OneSV.ChrB << "\t" << OneSV.PosB << "\t" << OneSV.CI_B;
+    for (unsigned RD_index = 0; RD_index < OneSV.RD_signals.size(); RD_index++) {
+        std::cout << "\t" << std::fixed << OneSV.RD_signals[RD_index];
+    }
+    std::cout << std::endl;
+    std::cout << "entering getRelativeCoverage" << std::endl;
 } 

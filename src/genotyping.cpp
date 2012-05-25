@@ -51,7 +51,7 @@ void doGenotyping (ControlState & CurrentState, ParCollection & par) {
     
     // step 2. get all SVs
     //CurrentState.inf_AssemblyInput.open(par.inf_AssemblyInputFilename.c_str());
-    std::cout << "\nGet all SVs to assemble..." << std::endl;
+    std::cout << "\nGet all SVs to genotype ..." << std::endl;
     std::vector <Genotyping> AllSV4Genotyping;
     Genotyping OneSV;
     unsigned SV_Count = 0;
@@ -70,9 +70,12 @@ void doGenotyping (ControlState & CurrentState, ParCollection & par) {
                 OneSV.PosB = Exchange;
             }
         }
+        std::cout << OneSV.Type << " " << OneSV.ChrA << " " << OneSV.PosA << " " 
+                  << OneSV.CI_A << " " << OneSV.ChrB << " " << OneSV.PosB << " " 
+                  << OneSV.CI_B << std::endl;
         AllSV4Genotyping.push_back(OneSV);
     }
-    
+    std::cout << "AllSV4Genotyping size " << AllSV4Genotyping.size() << std::endl;
     // step 3 define output
     std::string GT_OutputFileName = CurrentState.OutputFolder + "_GT";
     std::ofstream GT_Output(GT_OutputFileName.c_str());
@@ -97,7 +100,9 @@ void doGenotyping (ControlState & CurrentState, ParCollection & par) {
 short GenotypingOneDEL(const std::vector <Chromosome> & AllChromosomes, std::map<std::string,int> &ChrName2Index, ControlState & CurrentState, ParCollection & par, Genotyping & OneSV, std::ofstream & GT_Output) {
     
     // get RD signals
-    getRelativeCoverage(CurrentState, OneSV);
+    const std::string & CurrentChrSeq = AllChromosomes[ ChrName2Index[ OneSV.ChrA ]].ChrSeq;
+    CurrentState.CurrentChrName = OneSV.ChrA;
+    getRelativeCoverage(CurrentChrSeq, CurrentState, OneSV);
     //CountRP();
     
     /*
