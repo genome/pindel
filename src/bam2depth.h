@@ -21,6 +21,6 @@
 // This function reads a BAM alignment from one BAM file.
 //static int read_bam(aux_t * data, bam1_t *b); // read level filters better go here to avoid pileup
 
-void getRelativeCoverage(const std::string & CurrentChrSeq, const ControlState & allGlobalData, Genotyping & OneSV);
+void getRelativeCoverage(const std::string & CurrentChrSeq, const int chromosomeID, const ControlState& allGlobalData, Genotyping & OneSV);
 
 #endif /* BAM2DEPTH_H_ */

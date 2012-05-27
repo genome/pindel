@@ -70,7 +70,7 @@ void doGenotyping (ControlState & CurrentState, ParCollection & par) {
                 OneSV.PosB = Exchange;
             }
         }
-        std::cout << OneSV.Type << " " << OneSV.ChrA << " " << OneSV.PosA << " " 
+        std::cout << "getting OneSV " << OneSV.Type << " " << OneSV.ChrA << " " << OneSV.PosA << " " 
                   << OneSV.CI_A << " " << OneSV.ChrB << " " << OneSV.PosB << " " 
                   << OneSV.CI_B << std::endl;
         AllSV4Genotyping.push_back(OneSV);
@@ -79,14 +79,27 @@ void doGenotyping (ControlState & CurrentState, ParCollection & par) {
     // step 3 define output
     std::string GT_OutputFileName = CurrentState.OutputFolder + "_GT";
     std::ofstream GT_Output(GT_OutputFileName.c_str());
-    
+    for (unsigned SV_index =0; SV_index < AllSV4Genotyping.size(); SV_index++) {
+        std::cout << "now GenotypingOneDEL OneSV " << SV_index << " " << AllSV4Genotyping[SV_index].Type << " " << AllSV4Genotyping[SV_index].ChrA << " " << AllSV4Genotyping[SV_index].PosA << " " 
+        << AllSV4Genotyping[SV_index].CI_A << " " << AllSV4Genotyping[SV_index].ChrB << " " << AllSV4Genotyping[SV_index].PosB << " " 
+        << AllSV4Genotyping[SV_index].CI_B << std::endl;
+    }
     // step 4 for each variant, do genotyping
     for (unsigned SV_index =0; SV_index < AllSV4Genotyping.size(); SV_index++) {
         // step 4.1 if type == DEL, GenotypeDel
+        for (unsigned index =0; index < AllSV4Genotyping.size(); index++) {
+            std::cout << SV_index << " before GenotypingOneDEL OneSV " << index << " " << AllSV4Genotyping[index].Type << " " << AllSV4Genotyping[index].ChrA << " " << AllSV4Genotyping[index].PosA << " " 
+            << AllSV4Genotyping[index].CI_A << " " << AllSV4Genotyping[index].ChrB << " " << AllSV4Genotyping[index].PosB << " " 
+            << AllSV4Genotyping[index].CI_B << std::endl;
+        }
         if (AllSV4Genotyping[SV_index].Type == "DEL") GenotypingOneDEL(AllChromosomes, ChrName2Index, CurrentState, par, AllSV4Genotyping[SV_index], GT_Output);
         
         
-        
+        for (unsigned index =0; index < AllSV4Genotyping.size(); index++) {
+            std::cout << SV_index << " after GenotypingOneDEL OneSV " << index << " " << AllSV4Genotyping[index].Type << " " << AllSV4Genotyping[index].ChrA << " " << AllSV4Genotyping[index].PosA << " " 
+            << AllSV4Genotyping[index].CI_A << " " << AllSV4Genotyping[index].ChrB << " " << AllSV4Genotyping[index].PosB << " " 
+            << AllSV4Genotyping[index].CI_B << std::endl;
+        }
         // step 4.2 if type == DUP, GenotypeDup
         
         // step 4.3 if type == INV, GenotypeINV
@@ -98,11 +111,16 @@ void doGenotyping (ControlState & CurrentState, ParCollection & par) {
 }
 
 short GenotypingOneDEL(const std::vector <Chromosome> & AllChromosomes, std::map<std::string,int> &ChrName2Index, ControlState & CurrentState, ParCollection & par, Genotyping & OneSV, std::ofstream & GT_Output) {
-    
+    std::cout << "entering GenotypingOneDEL " << OneSV.Type << " " << OneSV.ChrA << " " << OneSV.PosA << " " 
+    << OneSV.CI_A << " " << OneSV.ChrB << " " << OneSV.PosB << " " 
+    << OneSV.CI_B << std::endl;
     // get RD signals
     const std::string & CurrentChrSeq = AllChromosomes[ ChrName2Index[ OneSV.ChrA ]].ChrSeq;
     CurrentState.CurrentChrName = OneSV.ChrA;
-    getRelativeCoverage(CurrentChrSeq, CurrentState, OneSV);
+    getRelativeCoverage(CurrentChrSeq, ChrName2Index[OneSV.ChrA], CurrentState, OneSV);
+    std::cout << "after getRelativeCoverage " << OneSV.Type << " " << OneSV.ChrA << " " << OneSV.PosA << " " 
+    << OneSV.CI_A << " " << OneSV.ChrB << " " << OneSV.PosB << " " 
+    << OneSV.CI_B << std::endl;
     //CountRP();
     
     /*

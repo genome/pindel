@@ -64,30 +64,34 @@ int getChromosomeID( bam_header_t *bamHeaderPtr, const std::string & chromosome,
     std::stringstream region;
     region << chromosome << ":" << startPos << "-" << endPos;
     bam_parse_region(bamHeaderPtr, region.str().c_str(), &chromosomeID, &dummyBegin, &dummyEnd);
+    std::cout << "chromosomeID " << chromosomeID << std::endl; 
     return chromosomeID;
 }
 
-int bam2depth(const std::string& chromosome, const int startPos, const int endPos, const int minBaseQuality, const int minMappingQuality, const std::vector <std::string> & listOfFiles,
+int bam2depth(const std::string& chromosome, int chromosomeID, const int startPos, const int endPos, const int minBaseQuality, const int minMappingQuality, const std::vector <std::string> & listOfFiles,
     std::vector< double > & averageCoveragePerBam
 )
-{
+{   
+    std::cout << "bam2depth 1" << std::endl;
 	// initialize the auxiliary data structures
 	int numberOfBams = listOfFiles.size(); // the number of BAMs on the command line
    aux_t ** auxOfBamfile =(aux_t**) calloc( numberOfBams, sizeof (aux_t *) ); // auxOfBamfiles[i] for the i-th input, one pointer per BAM-file
-
+    std::cout << "bam2depth 2" << std::endl;
     // set the default region
-	int chromosomeID = -1;
-
+	//int chromosomeID = -1;
     bam_header_t *h = 0; // BAM header of the 1st input
     // EW: the below would usually be done in a constructor. There are reasons that C++ was invented.
 	for (int fileIndex = 0; fileIndex < numberOfBams; ++fileIndex) {
-		bam_header_t * h_tmp;
+		//bam_header_t * h_tmp;
 		// per bam-file, create an 'aux_t' structure.
         auxOfBamfile[ fileIndex ] = (aux_t*) calloc(1, sizeof( aux_t *));
         auxOfBamfile[ fileIndex ]->init();
 		auxOfBamfile[ fileIndex ]->fp = bam_open( listOfFiles[ fileIndex ].c_str(), "r"); // open BAM
 		auxOfBamfile[ fileIndex ]->min_mapQ = minMappingQuality;                    // set the mapQ filter
-		h_tmp = bam_header_read(auxOfBamfile[ fileIndex ]->fp);         // read the BAM header
+        /*
+		h_tmp = bam_header_read(auxOfBamfile[ fileIndex ]->fp);  // read the BAM header
+        
+        std::cout << "bam2depth 2g" << std::endl;
 		if (fileIndex == 0) {
 			h = h_tmp; // keep the header of the 1st BAM
 			// if the command line defines a region, parse it and replace the 'global' begin, end and chromosome_id by those.
@@ -95,7 +99,7 @@ int bam2depth(const std::string& chromosome, const int startPos, const int endPo
 		} else { 
            bam_header_destroy(h_tmp); // if not the 1st BAM, trash the header
         }
-        
+         */
         // if a region is specified and parsed successfully, set the "iter" of the aux structure
 		if (chromosomeID >= 0) {  
 			bam_index_t *idx = bam_index_load(listOfFiles[ fileIndex ].c_str());  // load the index of the bamfile
@@ -103,17 +107,21 @@ int bam2depth(const std::string& chromosome, const int startPos, const int endPo
 			bam_index_destroy(idx); // the index is not needed any more; phase out of the memory
 		}
 	}
-
 	// the core multi-pileup loop
+    std::cout << "bam2depth 3" << std::endl;
 	bam_mplp_t multiPileup = bam_mplp_init(numberOfBams, read_bam, (void**)auxOfBamfile); // initialization [read_bam is function!)
+    std::cout << "bam2depth 4" << std::endl;
     int * coveragePerBam =(int *) calloc(numberOfBams, sizeof(int)); // coverage_per_bam[i] is the number of covering reads from the i-th BAM // EW: comments are nice, but simpler code and clearer variable names would help a lot already.
+    std::cout << "bam2depth 5" << std::endl;
     const bam_pileup1_t** supportingReadsPerPosition =(const bam_pileup1_t**) calloc(numberOfBams, sizeof(void*)); // covering_reads_ptr_per_bam[i] points to the array of covering reads (internal in multiPileup)
+    std::cout << "bam2depth 6" << std::endl;
     std::vector<int> sumOfReadDepths( numberOfBams, 0);
+    std::cout << "bam2depth 7" << std::endl;
     int position = 0;
 	while (bam_mplp_auto(multiPileup, &chromosomeID, &position, coveragePerBam, supportingReadsPerPosition) > 0) { // go to the next covered position
 		if (position < startPos) continue; // out of range; skip
         if (position >= endPos) break; // out of range; skip
-
+        std::cout << "bam_mplp_auto 1" << std::endl;
 		// EW: if you want to check: fputs(h->target_name[chromosome_id], stdout); printf("\t%d", pos+1); // a customized printf() would be faster
 		for (int fileIndex = 0; fileIndex < numberOfBams; fileIndex++) { // base level filters have to go here
             sumOfReadDepths[ fileIndex ] += coveragePerBam[ fileIndex ];
@@ -123,20 +131,39 @@ int bam2depth(const std::string& chromosome, const int startPos, const int endPo
 				else if (bam1_qual(supportingBasePtr->b)[supportingBasePtr->qpos] < minBaseQuality) sumOfReadDepths[ fileIndex ]--; // low base quality
 			}
 		}
+        std::cout << "bam_mplp_auto 2" << std::endl;
 	}
+std::cout << "bam2depth 8" << std::endl;
     averageCoveragePerBam.resize( numberOfBams );
     for (int fileIndex=0; fileIndex< numberOfBams; fileIndex++ ) {
         averageCoveragePerBam[ fileIndex ] = (double)sumOfReadDepths[ fileIndex ] / (endPos - startPos );  
-        std::cout << "Read count in fileIndex" << " " << sumOfReadDepths[ fileIndex ] << std::endl;
-        auxOfBamfile[ fileIndex ]->destroy();
+        std::cout << "Read count in fileIndex " << fileIndex << " " << sumOfReadDepths[ fileIndex ] << std::endl;
     }
+    
 	// now destroy everything: a good illustration why destructors were invented
 	free(coveragePerBam); 
     free(supportingReadsPerPosition);
-	bam_mplp_destroy(multiPileup);
-
+	bam_mplp_destroy(multiPileup); // [bam_plp_destroy] memory leak: 3. Continue anyway.
+    /* inside samtools pileup
+     mp_free(multiPileup->mp, multiPileup->dummy);
+     mp_free(multiPileup->mp, multiPileup->head);
+     //if (iter->mp->cnt != 0)
+     //fprintf(stderr, "[bam_plp_destroy] memory leak: %d. Continue anyway.\n", iter->mp->cnt);
+     mp_destroy(multiPileup->mp);
+     if (multiPileup->b) bam_destroy1(multiPileup->b);
+     free(multiPileup->plp);
+     free(multiPileup); 
+    */ 
+    std::cout << "bam2depth 9" << std::endl;
 	bam_header_destroy(h);
-
+    for (int fileIndex=0; fileIndex< numberOfBams; fileIndex++ ) {
+        bam_close(auxOfBamfile[fileIndex]->fp);
+        if (auxOfBamfile[fileIndex]->iter) bam_iter_destroy(auxOfBamfile[fileIndex]->iter);
+        free(auxOfBamfile[fileIndex]);
+        //auxOfBamfile[ fileIndex ]->destroy();
+    }
+    free(auxOfBamfile);
+    std::cout << "bam2depth 10" << std::endl;
 	return 0;
 }
 
@@ -145,7 +172,7 @@ int bam2depth(const std::string& chromosome, const int startPos, const int endPo
     (or an inversion), 1.0 a heterozygous, deletion, 3.0 a heterozygous duplication, etc. 
 	'internal': takes cleaned data set as argument.
 */
-void getRelativeCoverageInternal(const std::string & chromosomeName, const int chromosomeSize, const int startPos, const int endPos, const int minBaseQuality, 		const int minMappingQuality, const std::vector <std::string> & listOfFiles, std::vector <double> & standardizedDepthPerBam ) 
+void getRelativeCoverageInternal(const std::string & chromosomeName, const int chromosomeSize, const int chromosomeID, const int startPos, const int endPos, const int minBaseQuality, 		const int minMappingQuality, const std::vector <std::string> & listOfFiles, std::vector <double> & standardizedDepthPerBam ) 
 {
     const int PLOIDY = 2;
     int numberOfBams = listOfFiles.size();
@@ -159,22 +186,25 @@ void getRelativeCoverageInternal(const std::string & chromosomeName, const int c
     int endOfRegionAfterSV = (endPos + regionLength > chromosomeSize ) ? chromosomeSize : endPos + regionLength;
     std::cout << "startOfRegionBeforeSV, Startpos, endpos, endofregionm " << startOfRegionBeforeSV << " " << startPos << " " << endPos << " " << endOfRegionAfterSV << "\n"; 
     std::cout << "ChrSize " << chromosomeSize << "\n"; 
-    
-    bam2depth( chromosomeName, startOfRegionBeforeSV, startPos, minBaseQuality, minMappingQuality, listOfFiles, avgCoverageOfRegionBeforeSV );
+    std::cout << "1" << std::endl;
+    bam2depth( chromosomeName, chromosomeID, startOfRegionBeforeSV, startPos, minBaseQuality, minMappingQuality, listOfFiles, avgCoverageOfRegionBeforeSV );
     for (int fileIndex=0; fileIndex < numberOfBams; fileIndex++ ) {
         std::cout << "before " << avgCoverageOfRegionBeforeSV[fileIndex] << " ";
     }
     std::cout << std::endl;
-    bam2depth( chromosomeName, startPos, endPos, minBaseQuality, minMappingQuality, listOfFiles, avgCoverageOfSVRegion );
+    std::cout << "2" << std::endl;
+    bam2depth( chromosomeName, chromosomeID, startPos, endPos, minBaseQuality, minMappingQuality, listOfFiles, avgCoverageOfSVRegion );
     for (int fileIndex=0; fileIndex < numberOfBams; fileIndex++ ) {
         std::cout << "in " << avgCoverageOfSVRegion[fileIndex] << " ";
     }
     std::cout << std::endl;
-    bam2depth( chromosomeName, endPos, endOfRegionAfterSV, minBaseQuality, minMappingQuality, listOfFiles, avgCoverageOfRegionAfterSV );
+    std::cout << "3" << std::endl;
+    bam2depth( chromosomeName, chromosomeID, endPos, endOfRegionAfterSV, minBaseQuality, minMappingQuality, listOfFiles, avgCoverageOfRegionAfterSV );
     for (int fileIndex=0; fileIndex < numberOfBams; fileIndex++ ) {
         std::cout << "after " << avgCoverageOfRegionAfterSV[fileIndex] << " ";
     }
     std::cout << std::endl;
+    std::cout << "4" << std::endl;
     for (int fileIndex=0; fileIndex < numberOfBams; fileIndex++ ) {
        if ( avgCoverageOfRegionBeforeSV[ fileIndex ] + avgCoverageOfRegionAfterSV[ fileIndex ] == 0 ) { 
             standardizedDepthPerBam[ fileIndex ] = 2.0; 
@@ -186,9 +216,11 @@ void getRelativeCoverageInternal(const std::string & chromosomeName, const int c
     }
 }
 
-void getRelativeCoverage(const std::string & CurrentChrSeq, const ControlState& allGlobalData, Genotyping & OneSV)
+void getRelativeCoverage(const std::string & CurrentChrSeq, const int chromosomeID, const ControlState& allGlobalData, Genotyping & OneSV)
                          //const int startPos, const int endPos, std::vector<double> & standardizedDepthPerBam ) RD_signals
 {
+    //std::cout << "start " << OneSV.ChrA << "\t" << OneSV.PosA << "\t" << OneSV.CI_A << "\t"
+    //<< OneSV.ChrB << "\t" << OneSV.PosB << "\t" << OneSV.CI_B << std::endl;
     std::cout.precision(3);
     std::cout << "entering getRelativeCoverage" << std::endl;
     const int startPos = OneSV.PosA;
@@ -203,13 +235,15 @@ void getRelativeCoverage(const std::string & CurrentChrSeq, const ControlState& 
 	for (unsigned int fileIndex=0; fileIndex<bamFileData.size(); fileIndex++ ) {
 		listOfFiles.push_back( bamFileData[ fileIndex ].BamFile );
 	}
-	getRelativeCoverageInternal( chromosomeName, chromosomeSize, startPos, endPos, MIN_BASE_QUALITY_READDEPTH, MIN_MAPPING_QUALITY_READDEPTH, listOfFiles, 	
+    std::cout << "before  getRelativeCoverageInternal " << OneSV.ChrA << "\t" << OneSV.PosA << "\t" << OneSV.CI_A << "\t"
+    << OneSV.ChrB << "\t" << OneSV.PosB << "\t" << OneSV.CI_B << std::endl;
+	getRelativeCoverageInternal( chromosomeName, chromosomeSize, chromosomeID, startPos, endPos, MIN_BASE_QUALITY_READDEPTH, MIN_MAPPING_QUALITY_READDEPTH, listOfFiles, 	
 		OneSV.RD_signals);  
-    std::cout << OneSV.ChrA << "\t" << OneSV.PosA << "\t" << OneSV.CI_A << "\t"
+    std::cout << "after  getRelativeCoverageInternal " << OneSV.ChrA << "\t" << OneSV.PosA << "\t" << OneSV.CI_A << "\t"
               << OneSV.ChrB << "\t" << OneSV.PosB << "\t" << OneSV.CI_B;
     for (unsigned RD_index = 0; RD_index < OneSV.RD_signals.size(); RD_index++) {
         std::cout << "\t" << std::fixed << OneSV.RD_signals[RD_index];
     }
     std::cout << std::endl;
-    std::cout << "entering getRelativeCoverage" << std::endl;
+    std::cout << "leaving getRelativeCoverage" << std::endl;
 } 
