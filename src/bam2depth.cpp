@@ -41,9 +41,9 @@ typedef struct {     // auxiliary data structure
 	int min_mapQ;    // mapQ filter
 } aux_t;
 
-void *bed_read(const char *fn); // read a BED or position list file
-void bed_destroy(void *_h);     // destroy the BED data structure
-int bed_overlap(const void *_h, const char *chr, int beg, int end); // test if chr:beg-end overlaps
+//void *bed_read(const char *fn); // read a BED or position list file
+//void bed_destroy(void *_h);     // destroy the BED data structure
+//int bed_overlap(const void *_h, const char *chr, int beg, int end); // test if chr:beg-end overlaps
 
 std::string Spaces(double input);
 
@@ -131,7 +131,7 @@ int bam2depth(const std::string& chromosomeName, const int startPos, const int e
    std::vector<int> sumOfReadDepths( n, 0);
 	while (bam_mplp_auto(mplp, &tid, &pos, n_plp, plp) > 0) { // come to the next covered position
 		if (pos < beg || pos >= end) continue; // out of range; skip
-		if (bed && bed_overlap(bed, h->target_name[tid], pos, pos + 1) == 0) continue; // not in BED; skip
+		//if (bed && bed_overlap(bed, h->target_name[tid], pos, pos + 1) == 0) continue; // not in BED; skip
 		//fputs(h->target_name[tid], stdout); printf("\t%d", pos+1); // a customized printf() would be faster
 		for (i = 0; i < n; ++i) { // base level filters have to go here
 			int j, m = 0;
@@ -159,7 +159,7 @@ int bam2depth(const std::string& chromosomeName, const int startPos, const int e
 		free(data[i]);
 	}
 	free(data); free(reg);
-	if (bed) bed_destroy(bed);
+	//if (bed) bed_destroy(bed);
 	return 0;
 }
 /*
