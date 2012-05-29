@@ -1,5 +1,5 @@
 /* This program demonstrates how to generate pileup from multiple BAMs
- * simutaneously, to achieve random access and to use the BED interface.
+ * simutaneously, to achieve random access.
  * Modified from Heng Li's bam2depth.c inside samtools
  *
  */
@@ -93,7 +93,7 @@ int bam2depth(const std::string& chromosomeName, const int startPos, const int e
 	int i, n, tid, beg, end, pos, *n_plp, baseQ = 0, mapQ = 0;
 	const bam_pileup1_t **plp;
 	char *reg = 0; // specified region
-	void *bed = 0; // BED data structure
+	//void *bed = 0; // BED data structure
 	bam_header_t *h = 0; // BAM header of the 1st input
 	aux_t **data;
 	bam_mplp_t mplp;
