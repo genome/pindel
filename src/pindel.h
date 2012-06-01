@@ -119,6 +119,20 @@ struct UniquePoint {
 	friend std::ostream& operator<<(std::ostream& os, const UniquePoint& up );
 };
 
+struct RP_READ {
+    std::string ReadName;
+    std::string ChrNameA;
+    std::string ChrNameB;
+    char DA;
+    char DB;
+    unsigned PosA;
+    unsigned PosB;
+    short Distance;
+    short MQA;
+    short MQB;
+    std::string Tag;
+};
+
 struct SPLIT_READ {
 	SPLIT_READ() {
 		FragName = "";

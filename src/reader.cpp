@@ -44,7 +44,8 @@
 #include "pindel_read_reader.h"
 // Static function declaration
 
-static int fetch_func (const bam1_t * b1, void *data);
+static int fetch_func_SR (const bam1_t * b1, void *data);
+static int fetch_func_RP (const bam1_t * b1, void *data);
 int32_t bam_cigar2mismatch( const bam1_core_t *readCore, const uint32_t *cigar);
 
 const int BUFFER_SIZE = 50000;
@@ -53,8 +54,8 @@ const int BUFFER_SIZE = 50000;
 
 //init hash/maps for read pairing on the fly
 KSORT_INIT_GENERIC (uint32_t) KHASH_MAP_INIT_STR (read_name, bam1_t *)
-struct fetch_func_data {
-   fetch_func_data () {
+struct fetch_func_data_SR {
+   fetch_func_data_SR () {
       LeftReads = NULL;
       read_to_map_qual = NULL;
       header = NULL;
@@ -73,6 +74,28 @@ struct fetch_func_data {
    std::string * CurrentChrSeq;
    std::string Tag;
    int InsertSize;
+};
+
+struct fetch_func_data_RP {
+    fetch_func_data_RP () {
+        LeftReads = NULL;
+        read_to_map_qual = NULL;
+        header = NULL;
+        b1_flags = NULL;
+        b2_flags = NULL;
+        CurrentChrSeq = NULL;
+        Tag = "";
+        InsertSize = 0;
+    }
+    //ReadBuffer *readBuffer;
+    std::vector < RP_READ > *LeftReads;
+    khash_t (read_name) * read_to_map_qual;
+    bam_header_t *header;
+    flags_hit *b1_flags;
+    flags_hit *b2_flags;
+    std::string * CurrentChrSeq;
+    std::string Tag;
+    int InsertSize;
 };
 
 void
@@ -318,13 +341,69 @@ ReadInRead (PindelReadReader & inf_ReadSeq, const std::string & FragName,
    return 0;
 }
 
+bool ReadInBamReads_RP (const char *bam_path, const std::string & FragName,
+                        std::string * CurrentChrSeq, std::vector <RP_READ> &LeftReads, 
+                        int InsertSize, std::string Tag, int binStart, int binEnd) {
+    // std::cout << FragName << " " << (* CurrentChrSeq).size() << " " << (* CurrentChrSeq).substr(10000000, 10) << " " << binStart << " " << binEnd << std::endl; 
+    bamFile fp;
+    fp = bam_open (bam_path, "r");
+    assert (fp);
+    bam_index_t *idx;
+    idx = bam_index_load (bam_path);	// load BAM index
+    assert (idx);
+    bam_header_t *header = bam_header_read (fp);
+    bam_init_header_hash (header);
+    assert (header);
+    //need thing that converts "tid" to "chromosome name"
+    int tid;
+    tid = bam_get_tid (header, FragName.c_str ());
+    //kai does the below line in readinreads. dunno why yet
+    
+    
+    fetch_func_data_RP data;
+    data.header = header;
+    data.CurrentChrSeq = CurrentChrSeq;
+    data.LeftReads = &LeftReads;
+    data.read_to_map_qual = NULL;
+    data.read_to_map_qual = kh_init (read_name);
+    flags_hit b1_flags, b2_flags;
+    data.b1_flags = &b1_flags;
+    data.b2_flags = &b2_flags;
+    data.InsertSize = InsertSize;
+    data.Tag = Tag;
+    //data.readBuffer=&readBuffer;
+    //*logStream << "before bam fetch " << LeftReads.size() << std::endl;
+    bam_fetch (fp, idx, tid, binStart, binEnd, &data, fetch_func_RP);
+    //readBuffer.flush(); 
+    //*logStream << "after bam fetch " << LeftReads.size() << std::endl;
+    //showReadStats(LeftReads);
+    //*logStream << "after showReadStats " << LeftReads.size() << std::endl;
+    
+    khint_t key;
+    if (kh_size (data.read_to_map_qual) > 0) {
+        for (key = kh_begin (data.read_to_map_qual);
+             key != kh_end (data.read_to_map_qual); ++key) {
+            if (kh_exist (data.read_to_map_qual, key)) {
+                bam_destroy1 (kh_value (data.read_to_map_qual, key));
+                free ((char *) kh_key (data.read_to_map_qual, key));
+            }
+        }
+    }
+    kh_clear (read_name, data.read_to_map_qual);
+    kh_destroy (read_name, data.read_to_map_qual);
+    
+    bam_header_destroy (header);
+    bam_index_destroy (idx);
+    bam_close (fp);
+    return true;
 
+}
 
 
 
 
 bool
-ReadInBamReads (const char *bam_path, const std::string & FragName,
+ReadInBamReads_SR (const char *bam_path, const std::string & FragName,
                 std::string * CurrentChrSeq,
                 std::vector < SPLIT_READ > &LeftReads,
                 int InsertSize,
@@ -349,7 +428,7 @@ ReadInBamReads (const char *bam_path, const std::string & FragName,
    //kai does the below line in readinreads. dunno why yet
 
 
-   fetch_func_data data;
+   fetch_func_data_SR data;
    data.header = header;
    data.CurrentChrSeq = CurrentChrSeq;
    data.LeftReads = &LeftReads;
@@ -362,7 +441,7 @@ ReadInBamReads (const char *bam_path, const std::string & FragName,
    data.Tag = Tag;
    data.readBuffer=&readBuffer;
    //*logStream << "before bam fetch " << LeftReads.size() << std::endl;
-   bam_fetch (fp, idx, tid, binStart, binEnd, &data, fetch_func);
+   bam_fetch (fp, idx, tid, binStart, binEnd, &data, fetch_func_SR);
     readBuffer.flush(); 
    //*logStream << "after bam fetch " << LeftReads.size() << std::endl;
    showReadStats(LeftReads);
@@ -430,13 +509,199 @@ bool isWeirdRead( const flags_hit *read, const bam1_t * bamOfRead )
 
 }
 
+void
+build_record_SR (const bam1_t * mapped_read, const bam1_t * unmapped_read,
+                 void *data)
+{
+    //*logStream << "build_record g_NumReadScanned " << g_NumReadScanned << std::endl;
+    SPLIT_READ Temp_One_Read;
+    fetch_func_data_SR *data_for_bam = (fetch_func_data_SR *) data;
+    bam_header_t *header = (bam_header_t *) data_for_bam->header;
+    std::string CurrentChrSeq = *(std::string *) data_for_bam->CurrentChrSeq;
+    std::string Tag = (std::string) data_for_bam->Tag;
+    int InsertSize = (int) data_for_bam->InsertSize;
+    
+    const bam1_core_t *mapped_core;
+    const bam1_core_t *unmapped_core;
+    mapped_core = &mapped_read->core;
+    unmapped_core = &unmapped_read->core;
+    Temp_One_Read.Name = "@";
+    Temp_One_Read.Name.append ((const char *) bam1_qname (unmapped_read));
+    if (unmapped_core->flag & BAM_FREAD1) {
+        Temp_One_Read.Name.append ("/1");
+    }
+    else if (unmapped_core->flag & BAM_FREAD2) {
+        Temp_One_Read.Name.append ("/2");
+    }
+    std::string c_sequence;
+    int i;
+    uint8_t *s = bam1_seq (unmapped_read);
+    for (i = 0; i < unmapped_core->l_qseq; ++i) {
+        c_sequence.append (1, bam_nt16_rev_table[bam1_seqi (s, i)]);
+    }
+    //rudimentary n filter
+    int length = unmapped_core->l_qseq;
+    while (c_sequence[0] == 'N') {
+        c_sequence.erase (0, 1);
+        length--;
+    }
+    if (c_sequence.size () > 0) {
+        while (c_sequence[length - 1] == 'N') {
+            c_sequence.erase (length - 1, 1);
+            length--;
+        }
+    }
+    int n_count = 0;
+    size_t found = c_sequence.find ('N', 0);
+    int max_ns = (int)(length * .10);
+    while (found != std::string::npos) {
+        n_count++;
+        found = c_sequence.find ('N', found + 1);
+    }
+    if (n_count > max_ns || length < 22) {
+        return;
+    }
+    //rudimentary n filter end
+    Temp_One_Read.ReadLength = length;
+    Temp_One_Read.ReadLengthMinus = length - 1;
+    if (unmapped_core->flag & BAM_FREVERSE) {
+        Temp_One_Read.UnmatchedSeq = ReverseComplement (c_sequence);
+    }
+    else {
+        Temp_One_Read.UnmatchedSeq = c_sequence;
+    }
+    Temp_One_Read.MatchedRelPos = mapped_core->pos;
+    if (mapped_core->flag & BAM_FREVERSE) {
+        Temp_One_Read.MatchedD = '-';
+        uint32_t *cigar_pointer = bam1_cigar (mapped_read);
+        //reusing length to be something else now. eat it.
+        length = bam_cigar2len (mapped_core, cigar_pointer);
+        Temp_One_Read.MatchedRelPos += length;
+    }
+    else {
+        Temp_One_Read.MatchedD = '+';
+    }
+    Temp_One_Read.MS = mapped_core->qual;
+    //FIXME pass these through from the command line with a struct
+    Temp_One_Read.InsertSize = InsertSize;
+	if (InsertSize <= length ) {
+		*logStream << "Error: the insert size is only " << InsertSize << " while the read length is " << Temp_One_Read.ReadLength << std::endl;
+        *logStream << "in paired end sequencing, the insert size is the total size of the fragment to be sequenced, with a read length of 100 bp the entire fragment may for example look like\n\n";
+		*logStream << "|----100 bp: first read of the read pair--|-------------------300 bp: unsequenced DNA---------------------|----100 bp: second read of the read pair--|\n";
+        *logStream << "<-----------------------------------------------------------insert size=500 ------------------------------------------------------------------------->\n\n";
+		*logStream << "In the configuration file (the -i option) please check/correct the insert size (second item on each line). If you continue to have problems, please contact us (Kai Ye, k.ye@lumc.nl)\n";
+		exit( EXIT_FAILURE );
+	}
+    Temp_One_Read.Tag = Tag;
+    if (((mapped_core->tid == unmapped_core->tid) &&
+         (mapped_core->pos != unmapped_core->pos)) &&
+        (abs (mapped_core->isize) < Temp_One_Read.InsertSize)) {
+        if (Temp_One_Read.MatchedD == '+') {
+            Temp_One_Read.MatchedRelPos -= Temp_One_Read.InsertSize;
+        }
+        else {
+            Temp_One_Read.MatchedRelPos += Temp_One_Read.InsertSize;
+        }
+    }
+    
+    Temp_One_Read.FragName = header->target_name[mapped_core->tid];
+    //Temp_One_Read.FragName = FragName;
+    LOG_DEBUG(cout << Temp_One_Read.Name << std::endl
+              << Temp_One_Read.UnmatchedSeq << std::endl);
+    LOG_DEBUG(cout << Temp_One_Read.MatchedD <<
+              "\t" << Temp_One_Read.FragName <<
+              "\t" << Temp_One_Read.MatchedRelPos <<
+              "\t" << Temp_One_Read.MS <<
+              "\t" << Temp_One_Read.InsertSize <<
+              "\t" << Temp_One_Read.Tag << std.endl);
+    
+    
+    g_NumReadInWindow++;
+    Temp_One_Read.MAX_SNP_ERROR =
+    (short) trunc((double)0.5+Temp_One_Read.UnmatchedSeq.size () * Seq_Error_Rate);
+    
+    Temp_One_Read.TOTAL_SNP_ERROR_CHECKED =
+    Temp_One_Read.MAX_SNP_ERROR + ADDITIONAL_MISMATCH + 1;
+    Temp_One_Read.TOTAL_SNP_ERROR_CHECKED_Minus =
+    Temp_One_Read.MAX_SNP_ERROR + ADDITIONAL_MISMATCH;
+    Temp_One_Read.MinClose = 8;
+    
+    if (Temp_One_Read.MatchedD == Plus) {
+        g_InWinPlus++;
+    }
+    else {
+        g_InWinMinus++;
+    }
+    if (Temp_One_Read.MatchedRelPos > CONS_Chr_Size) {
+        Temp_One_Read.MatchedRelPos = CONS_Chr_Size;
+    }
+    if (Temp_One_Read.MatchedRelPos < 1) {
+        Temp_One_Read.MatchedRelPos = 0;
+    }
+    //*logStream << "before data_for_bam" << std::endl;
+    data_for_bam->readBuffer->addRead(Temp_One_Read);
+    //*logStream << "after data_for_bam" << std::endl;
+    return;
+}
+
+void
+build_record_RP (const bam1_t * r1, const bam1_t * r2, void *data)
+{
+    
+    const bam1_core_t * r1_core;
+    const bam1_core_t * r2_core;
+    r1_core = &r1->core;
+    r2_core = &r2->core;
+
+    //*logStream << "build_record g_NumReadScanned " << g_NumReadScanned << std::endl;
+    RP_READ Temp_One_Read;
+    fetch_func_data_RP *data_for_bam = (fetch_func_data_RP *) data;
+    bam_header_t *header = (bam_header_t *) data_for_bam->header;
+    std::string CurrentChrSeq = *(std::string *) data_for_bam->CurrentChrSeq;
+    std::string Tag = (std::string) data_for_bam->Tag;
+    //int InsertSize = (int) data_for_bam->InsertSize;
+    
+
+    Temp_One_Read.ReadName = "";
+    Temp_One_Read.ReadName.append ((const char *) bam1_qname (r2));
+    if (r1_core->flag & BAM_FREVERSE) {
+        Temp_One_Read.DA = '+';
+    }
+    else Temp_One_Read.DA = '-';
+    
+    if (r2_core->flag & BAM_FREVERSE) {
+        Temp_One_Read.DB = '+';
+    }
+    else Temp_One_Read.DB = '-';
+    
+    Temp_One_Read.PosA = r1_core->pos;
+    Temp_One_Read.PosB = r2_core->pos;
+    //std::cout << "build_record_RP " << Temp_One_Read.PosA - Temp_One_Read.PosB << std::endl;
+    //if (Temp_One_Read.PosA > Temp_One_Read.PosB && Temp_One_Read.PosA > 10000 + Temp_One_Read.PosB) 
+    //    std::cout << "build_record_RP " << Temp_One_Read.PosA - Temp_One_Read.PosB << std::endl;
+    //else if (Temp_One_Read.PosB > Temp_One_Read.PosB && Temp_One_Read.PosB > 10000 + Temp_One_Read.PosA) 
+    //    std::cout << "build_record_RP " << Temp_One_Read.PosB - Temp_One_Read.PosA << std::endl;
+    Temp_One_Read.MQA = r1_core->qual;
+    Temp_One_Read.MQB = r2_core->qual;
+    Temp_One_Read.ChrNameA = header->target_name[r1_core->tid];
+    Temp_One_Read.ChrNameB = header->target_name[r2_core->tid];
+    //FIXME pass these through from the command line with a struct
+    Temp_One_Read.Tag = Tag;
+    
+    //*logStream << "before data_for_bam" << std::endl;
+    data_for_bam->LeftReads->push_back(Temp_One_Read);
+    //*logStream << "after data_for_bam" << std::endl;
+    return;
+}
+
+
 static int
-fetch_func (const bam1_t * b1, void *data)
+fetch_func_SR (const bam1_t * b1, void *data)
 {
 
    g_NumReadScanned++;
    //*logStream << "g_NumReadScanned " << g_NumReadScanned << std::endl;
-   fetch_func_data *data_for_bam = (fetch_func_data *) data;
+   fetch_func_data_SR *data_for_bam = (fetch_func_data_SR *) data;
    khash_t (read_name) * read_to_map_qual =
       (khash_t (read_name) *) data_for_bam->read_to_map_qual;
    flags_hit *b1_flags = data_for_bam->b1_flags;
@@ -477,15 +742,76 @@ fetch_func (const bam1_t * b1, void *data)
    //*logStream << "4" << std::endl;
    if (isGoodAnchor( b1_flags, b1_core ) && isWeirdRead( b2_flags, b2 ) ) {
       //*logStream << "condition 1" << std::endl;
-      build_record (b1, b2, data);
+      build_record_SR (b1, b2, data);
    }
    if (isGoodAnchor( b2_flags, b2_core ) && isWeirdRead( b1_flags, b1 ) ) {
       //*logStream << "condition 2" << std::endl;
-      build_record (b2, b1, data);
+      build_record_SR (b2, b1, data);
    }
    bam_destroy1 (b2);
    //*logStream << "5" << std::endl;
    return 0;
+}
+
+static int
+fetch_func_RP (const bam1_t * b1, void *data)
+{
+    
+    g_NumReadScanned++;
+    //*logStream << "g_NumReadScanned " << g_NumReadScanned << std::endl;
+    fetch_func_data_RP *data_for_bam = (fetch_func_data_RP *) data;
+    khash_t (read_name) * read_to_map_qual =
+    (khash_t (read_name) *) data_for_bam->read_to_map_qual;
+    flags_hit *b1_flags = data_for_bam->b1_flags;
+    flags_hit *b2_flags = data_for_bam->b2_flags;
+    const std::string CurrentChrSeq = *(std::string *) data_for_bam->CurrentChrSeq;
+    //*logStream << "1" << std::endl;
+    RP_READ Temp_One_Read;
+    const bam1_core_t *b1_core;
+    bam1_t *b2;
+    bam1_core_t *b2_core;
+    b1_core = &b1->core;
+    std::string read_name = bam1_qname (b1);
+    //    if(!(b1_core->flag & BAM_FPROPER_PAIR)) {
+    //            return 0;
+    //NO BUENO!        }
+    //*logStream << "2" << std::endl;
+    khint_t key = kh_get (read_name, read_to_map_qual, bam1_qname (b1));
+    //*logStream << "2a" << std::endl;
+    if (key == kh_end (read_to_map_qual)) {
+        int ret=0;
+        key = kh_put (read_name, read_to_map_qual, strdup (bam1_qname (b1)), &ret);
+        kh_value (read_to_map_qual, key) = bam_dup1 (b1);
+        return 0;
+    }
+    else {
+        b2 = bam_dup1 (kh_value (read_to_map_qual, key));
+        bam_destroy1 (kh_value (read_to_map_qual, key));
+        b2_core = &b2->core;
+        //this seems stupid, but in order to manage the read names, necessary
+        free ((char *) kh_key (read_to_map_qual, key));
+        kh_del (read_name, read_to_map_qual, key);
+        //std::string c_sequence;
+    }
+    //*logStream << "3" << std::endl;
+    parse_flags_and_tags (b1, b1_flags);
+    parse_flags_and_tags (b2, b2_flags);
+    //read_name = bam1_qname(b1);
+    //*logStream << "4" << std::endl;
+    
+    //if (isGoodAnchor( b1_flags, b1_core ) && isWeirdRead( b2_flags, b2 ) ) {
+        //*logStream << "condition 1" << std::endl;
+    //Min_MQ
+        build_record_RP (b1, b2, data);
+    //}
+    //if (isGoodAnchor( b2_flags, b2_core ) && isWeirdRead( b1_flags, b1 ) ) {
+        //*logStream << "condition 2" << std::endl;
+        //build_record_RP (b2, b1, data);
+    //}
+    bam_destroy1 (b2);
+    //*logStream << "5" << std::endl;
+    
+    return 0;
 }
 
 /* 'isInBin' returns whether the read "read" is in the designated bin. */
@@ -499,140 +825,6 @@ isInBin (const SPLIT_READ & read)
            ((int)read.MatchedRelPos < ((g_binIndex + 1) * WINDOW_SIZE)));
 }
 
-void
-build_record (const bam1_t * mapped_read, const bam1_t * unmapped_read,
-              void *data)
-{
-   //*logStream << "build_record g_NumReadScanned " << g_NumReadScanned << std::endl;
-   SPLIT_READ Temp_One_Read;
-   fetch_func_data *data_for_bam = (fetch_func_data *) data;
-   bam_header_t *header = (bam_header_t *) data_for_bam->header;
-   std::string CurrentChrSeq = *(std::string *) data_for_bam->CurrentChrSeq;
-   std::string Tag = (std::string) data_for_bam->Tag;
-   int InsertSize = (int) data_for_bam->InsertSize;
-
-   const bam1_core_t *mapped_core;
-   const bam1_core_t *unmapped_core;
-   mapped_core = &mapped_read->core;
-   unmapped_core = &unmapped_read->core;
-   Temp_One_Read.Name = "@";
-   Temp_One_Read.Name.append ((const char *) bam1_qname (unmapped_read));
-   if (unmapped_core->flag & BAM_FREAD1) {
-      Temp_One_Read.Name.append ("/1");
-   }
-   else if (unmapped_core->flag & BAM_FREAD2) {
-      Temp_One_Read.Name.append ("/2");
-   }
-   std::string c_sequence;
-   int i;
-   uint8_t *s = bam1_seq (unmapped_read);
-   for (i = 0; i < unmapped_core->l_qseq; ++i) {
-      c_sequence.append (1, bam_nt16_rev_table[bam1_seqi (s, i)]);
-   }
-   //rudimentary n filter
-   int length = unmapped_core->l_qseq;
-   while (c_sequence[0] == 'N') {
-      c_sequence.erase (0, 1);
-      length--;
-   }
-   if (c_sequence.size () > 0) {
-      while (c_sequence[length - 1] == 'N') {
-         c_sequence.erase (length - 1, 1);
-         length--;
-      }
-   }
-   int n_count = 0;
-   size_t found = c_sequence.find ('N', 0);
-   int max_ns = (int)(length * .10);
-   while (found != std::string::npos) {
-      n_count++;
-      found = c_sequence.find ('N', found + 1);
-   }
-   if (n_count > max_ns || length < 22) {
-      return;
-   }
-   //rudimentary n filter end
-   Temp_One_Read.ReadLength = length;
-   Temp_One_Read.ReadLengthMinus = length - 1;
-   if (unmapped_core->flag & BAM_FREVERSE) {
-      Temp_One_Read.UnmatchedSeq = ReverseComplement (c_sequence);
-   }
-   else {
-      Temp_One_Read.UnmatchedSeq = c_sequence;
-   }
-   Temp_One_Read.MatchedRelPos = mapped_core->pos;
-   if (mapped_core->flag & BAM_FREVERSE) {
-      Temp_One_Read.MatchedD = '-';
-      uint32_t *cigar_pointer = bam1_cigar (mapped_read);
-      //reusing length to be something else now. eat it.
-      length = bam_cigar2len (mapped_core, cigar_pointer);
-      Temp_One_Read.MatchedRelPos += length;
-   }
-   else {
-      Temp_One_Read.MatchedD = '+';
-   }
-   Temp_One_Read.MS = mapped_core->qual;
-   //FIXME pass these through from the command line with a struct
-   Temp_One_Read.InsertSize = InsertSize;
-	if (InsertSize < 2*length ) {
-		*logStream << "Error: the insert size is only " << InsertSize << " while the read length is " << Temp_One_Read.ReadLength << std::endl;
-      *logStream << "in paired end sequencing, the insert size is the total size of the fragment to be sequenced, with a read length of 100 bp the entire fragment may for example look like\n\n";
-		*logStream << "|----100 bp: first read of the read pair--|-------------------300 bp: unsequenced DNA---------------------|----100 bp: second read of the read pair--|\n";
-      *logStream << "<-----------------------------------------------------------insert size=500 ------------------------------------------------------------------------->\n\n";
-		*logStream << "In the configuration file (the -i option) please check/correct the insert size (second item on each line). If you continue to have problems, please contact us (Kai Ye, k.ye@lumc.nl)\n";
-		exit( EXIT_FAILURE );
-	}
-   Temp_One_Read.Tag = Tag;
-   if (((mapped_core->tid == unmapped_core->tid) &&
-         (mapped_core->pos != unmapped_core->pos)) &&
-         (abs (mapped_core->isize) < Temp_One_Read.InsertSize)) {
-      if (Temp_One_Read.MatchedD == '+') {
-         Temp_One_Read.MatchedRelPos -= Temp_One_Read.InsertSize;
-      }
-      else {
-         Temp_One_Read.MatchedRelPos += Temp_One_Read.InsertSize;
-      }
-   }
-
-   std::string FragName = header->target_name[mapped_core->tid];
-   Temp_One_Read.FragName = FragName;
-   LOG_DEBUG(cout << Temp_One_Read.Name << std::endl
-             << Temp_One_Read.UnmatchedSeq << std::endl);
-   LOG_DEBUG(cout << Temp_One_Read.MatchedD <<
-             "\t" << Temp_One_Read.FragName <<
-             "\t" << Temp_One_Read.MatchedRelPos <<
-             "\t" << Temp_One_Read.MS <<
-             "\t" << Temp_One_Read.InsertSize <<
-             "\t" << Temp_One_Read.Tag << std.endl);
-
-
-   g_NumReadInWindow++;
-   Temp_One_Read.MAX_SNP_ERROR =
-      (short) trunc((double)0.5+Temp_One_Read.UnmatchedSeq.size () * Seq_Error_Rate);
-
-   Temp_One_Read.TOTAL_SNP_ERROR_CHECKED =
-      Temp_One_Read.MAX_SNP_ERROR + ADDITIONAL_MISMATCH + 1;
-   Temp_One_Read.TOTAL_SNP_ERROR_CHECKED_Minus =
-      Temp_One_Read.MAX_SNP_ERROR + ADDITIONAL_MISMATCH;
-   Temp_One_Read.MinClose = 8;
-
-   if (Temp_One_Read.MatchedD == Plus) {
-      g_InWinPlus++;
-   }
-   else {
-      g_InWinMinus++;
-   }
-   if (Temp_One_Read.MatchedRelPos > CONS_Chr_Size) {
-      Temp_One_Read.MatchedRelPos = CONS_Chr_Size;
-   }
-   if (Temp_One_Read.MatchedRelPos < 1) {
-      Temp_One_Read.MatchedRelPos = 0;
-   }
-   //*logStream << "before data_for_bam" << std::endl;
-   data_for_bam->readBuffer->addRead(Temp_One_Read);
-   //*logStream << "after data_for_bam" << std::endl;
-   return;
-}
 
 void
 parse_flags_and_tags (const bam1_t * b, flags_hit * flags)
@@ -749,19 +941,57 @@ int32_t bam_cigar2mismatch( const bam1_core_t *readCore, const uint32_t *cigar)
    return numberOfMismatches;
 }
 
-short getReads(ControlState& currentState, ParCollection & par) {
+short get_RP_Reads(ControlState& currentState, ParCollection & par) {
     std::cout << "getReads " << currentState.CurrentChrName << " " << currentState.CurrentChrSeq.size() << std::endl;
     short ReturnFromReadingReads;
-    ReadBuffer readBuffer(BUFFER_SIZE, currentState.Reads, currentState.CurrentChrSeq);
+    //ReadBuffer readBuffer(BUFFER_SIZE, currentState.Reads_SR, currentState.CurrentChrSeq);
     if (currentState.BAMDefined) {
         ReturnFromReadingReads = 0;
         for (unsigned int i = 0; i < currentState.bams_to_parse.size(); i++) {
             *logStream << "Insertsize in bamreads: " << currentState.bams_to_parse[i].InsertSize << std::endl;
-            ReturnFromReadingReads = ReadInBamReads(
+            ReturnFromReadingReads = ReadInBamReads_RP(
+                                                       currentState.bams_to_parse[i].BamFile.c_str(),
+                                                       currentState.CurrentChrName, 
+                                                       &currentState.CurrentChrSeq,
+                                                       currentState.Reads_RP,
+                                                       currentState.bams_to_parse[i].InsertSize,
+                                                       currentState.bams_to_parse[i].Tag,
+                                                       currentState.lowerBinBorder,
+                                                       currentState.upperBinBorder);
+            if (ReturnFromReadingReads == 0) {
+                LOG_ERROR(*logStream << "Bam read failed: "
+                          << currentState.bams_to_parse[i].BamFile
+                          << std::endl);
+                return 1;
+            }
+            else if (currentState.Reads_RP.size() == 0) {
+                LOG_ERROR(*logStream << "No currentState.Reads for "
+                          << currentState.CurrentChrName << " found in "
+                          << currentState.bams_to_parse[i].BamFile
+                          << std::endl);
+            }
+            (*logStream << "BAM file index\t" << i << "\t"
+             << currentState.Reads_RP.size() << std::endl);
+        }
+        
+    }
+    return 0;
+
+}
+
+short get_SR_Reads(ControlState& currentState, ParCollection & par) {
+    std::cout << "getReads " << currentState.CurrentChrName << " " << currentState.CurrentChrSeq.size() << std::endl;
+    short ReturnFromReadingReads;
+    ReadBuffer readBuffer(BUFFER_SIZE, currentState.Reads_SR, currentState.CurrentChrSeq);
+    if (currentState.BAMDefined) {
+        ReturnFromReadingReads = 0;
+        for (unsigned int i = 0; i < currentState.bams_to_parse.size(); i++) {
+            *logStream << "Insertsize in bamreads: " << currentState.bams_to_parse[i].InsertSize << std::endl;
+            ReturnFromReadingReads = ReadInBamReads_SR(
                                                     currentState.bams_to_parse[i].BamFile.c_str(),
                                                     currentState.CurrentChrName, 
                                                     &currentState.CurrentChrSeq,
-                                                    currentState.Reads,
+                                                    currentState.Reads_SR,
                                                     currentState.bams_to_parse[i].InsertSize,
                                                     currentState.bams_to_parse[i].Tag,
                                                     currentState.lowerBinBorder,
@@ -772,14 +1002,14 @@ short getReads(ControlState& currentState, ParCollection & par) {
                           << std::endl);
                 return 1;
             }
-            else if (currentState.Reads.size() == 0) {
+            else if (currentState.Reads_SR.size() == 0) {
                 LOG_ERROR(*logStream << "No currentState.Reads for "
                           << currentState.CurrentChrName << " found in "
                           << currentState.bams_to_parse[i].BamFile
                           << std::endl);
             }
             (*logStream << "BAM file index\t" << i << "\t"
-             << currentState.Reads.size() << std::endl);
+             << currentState.Reads_SR.size() << std::endl);
         }
         
     }
@@ -806,14 +1036,14 @@ short getReads(ControlState& currentState, ParCollection & par) {
 void readInPindelReads(PindelReadReader &reader, const std::string& pindelFilename, ControlState& currentState )
 {
 	int ReturnFromReadingReads = ReadInRead(  reader, currentState.CurrentChrName,
-                                             currentState.CurrentChrSeq, currentState.Reads,
+                                             currentState.CurrentChrSeq, currentState.Reads_SR,
                                              currentState.lowerBinBorder,
                                              currentState.upperBinBorder);
 	if (ReturnFromReadingReads == 1) {
 		LOG_ERROR(*logStream << "malformed record detected in " << pindelFilename << std::endl);
 		exit( EXIT_FAILURE );
 	}
-	else if (currentState.Reads.size() == 0) {
+	else if (currentState.Reads_SR.size() == 0) {
 		LOG_ERROR(*logStream << "No reads found in " << pindelFilename << std::endl);
 	}
 }

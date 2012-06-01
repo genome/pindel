@@ -27,8 +27,12 @@
 #include "pindel.h"
 #include "farend_searcher.h"
 #include <map>
+#include <set>
 #include <string>
 #include <utility>
+#include <algorithm>
+#include <math.h>
+
 
 void doGenotyping (ControlState & CurrentState, ParCollection & par) {
     // step 1 load whole genome sequences into memory
@@ -103,16 +107,163 @@ short GenotypingOneDEL(const std::vector <Chromosome> & AllChromosomes, std::map
     const std::string & CurrentChrSeq = AllChromosomes[ ChrName2Index[ OneSV.ChrA ]].ChrSeq;
     CurrentState.CurrentChrName = OneSV.ChrA;
     getRelativeCoverage(CurrentChrSeq, ChrName2Index[OneSV.ChrA], CurrentState, OneSV);
+    GetRP4OnDEL(AllChromosomes, ChrName2Index, CurrentState, par, OneSV, GT_Output);
+    //short AssembleOneSV(const std::vector <Chromosome> & AllChromosomes, std::map<std::string,int> & ChrName2Index, ControlState & CurrentState, ParCollection & par, const Assembly & OneSV, std::ofstream & ASM_Output);
+    //getRP_counts4DEL(CurrentChrSeq, ChrName2Index[OneSV.ChrA], CurrentState, OneSV);
     //std::cout << "after getRelativeCoverage " << OneSV.Type << " " << OneSV.ChrA << " " << OneSV.PosA << " " 
     //<< OneSV.CI_A << " " << OneSV.ChrB << " " << OneSV.PosB << " " 
     //<< OneSV.CI_B << std::endl;
     //CountRP();
     
+    return 0;
+}
+
+void getAverageAndSTDE(const std::vector <unsigned> & Distances, unsigned & Average, unsigned & STDE) {
+    float float_average = 0;
+    unsigned Sum = 0;
+    for (unsigned i = 0; i < Distances.size(); i++) Sum += Distances[i];
+    float_average = (float)Sum / Distances.size();
+    Average = (unsigned) float_average;
+    float Diff = 0;
+    for (unsigned i = 0; i < Distances.size(); i++) Diff += pow(Distances[i] - float_average, 2);
+    STDE = (unsigned)(sqrt(Diff / Distances.size()));
+    std::cout << Average << " " << STDE << std::endl;
+}
+
+void getMAD(const std::vector <unsigned> & Distances, const unsigned & Median, unsigned & MAD) {
+    std::vector <unsigned> Diff;
+    unsigned TempDiff;
+    for (unsigned i = 0; i < Distances.size(); i++) {
+        if (Distances[i] > Median) TempDiff = Distances[i] - Median;
+        else TempDiff = Median - Distances[i];
+        Diff.push_back(TempDiff);
+    }
+    sort(Diff.begin(), Diff.end());
+    MAD = Diff[Diff.size() / 2];
+    std::cout << "MAD: " << Median << " " << MAD << std::endl; 
+}
+
+void CountREF_RP(const std::vector <RP_READ> & Reads_RP, const std::vector <unsigned> & RP_READ_Index, unsigned lower, unsigned upper, unsigned Cutoff, unsigned & CountREF) {
+    CountREF = 0;
+    //std::cout << "lower and upper: " << lower << " " << upper << std::endl;
+    for (unsigned i = 0; i < RP_READ_Index.size(); i++) {
+        if ((unsigned)Reads_RP[RP_READ_Index[i]].Distance <= Cutoff) {
+            //std::cout << "here CountREF_RP " << Reads_RP[RP_READ_Index[i]].Distance << " " << Reads_RP[RP_READ_Index[i]].PosA << " " << Reads_RP[RP_READ_Index[i]].PosB << std::endl;
+            if (Reads_RP[RP_READ_Index[i]].PosA < Reads_RP[RP_READ_Index[i]].PosB) {
+                if (Reads_RP[RP_READ_Index[i]].PosA <= lower && Reads_RP[RP_READ_Index[i]].PosB >= upper) {
+                    CountREF++;
+                }
+            }
+            else {
+                if (Reads_RP[RP_READ_Index[i]].PosB <= lower && Reads_RP[RP_READ_Index[i]].PosA >= upper) {
+                    CountREF++;
+                }
+            }
+        }
+    }
+}
+
+void CountALT_RP(const std::vector <RP_READ> & Reads_RP, const std::vector <unsigned> & RP_READ_Index, unsigned lower, unsigned upper, unsigned Cutoff, unsigned & CountALT) {
+    CountALT = 0;
+    for (unsigned i = 0; i < RP_READ_Index.size(); i++) {
+        if ((unsigned)Reads_RP[RP_READ_Index[i]].Distance > Cutoff) {
+            //std::cout << "here CountALT_RP " << Reads_RP[RP_READ_Index[i]].Distance << " " << Reads_RP[RP_READ_Index[i]].PosA << " " << Reads_RP[RP_READ_Index[i]].PosB << std::endl;
+            if (Reads_RP[RP_READ_Index[i]].PosA < Reads_RP[RP_READ_Index[i]].PosB) {
+                if (Reads_RP[RP_READ_Index[i]].PosA <= lower && Reads_RP[RP_READ_Index[i]].PosB >= upper) {
+                    CountALT++;
+                }
+            }
+            else {
+                if (Reads_RP[RP_READ_Index[i]].PosB <= lower && Reads_RP[RP_READ_Index[i]].PosA >= upper) {
+                    CountALT++;
+                }
+            }
+        }
+    }
+}
+
+void CountRPSupport4DEL(const std::vector <RP_READ> & Reads_RP, const std::vector <unsigned> RP_READ_Index, const Genotyping & OneSV, const unsigned Median, const unsigned MAD, unsigned & CountREF_A, unsigned & CountREF_B, unsigned & CountALT) {
+    unsigned Cutoff = Median + 5 * MAD;
+    std::cout << "Cutoff " << Cutoff << std::endl;
+    CountREF_RP(Reads_RP, RP_READ_Index, OneSV.PosA - OneSV.CI_A, OneSV.PosA + OneSV.CI_A, Cutoff, CountREF_A);
+    CountREF_RP(Reads_RP, RP_READ_Index, OneSV.PosB - OneSV.CI_B, OneSV.PosB + OneSV.CI_B, Cutoff, CountREF_B);
+    CountALT_RP(Reads_RP, RP_READ_Index, OneSV.PosA - OneSV.CI_A, OneSV.PosB + OneSV.CI_B, Cutoff, CountALT);
+    std::cout << "REF A: " << CountREF_A << "\tREF B: " << CountREF_B << "\t ALT: " << CountALT << std::endl;
+    if (CountREF_A + CountREF_B + CountALT)
+        std::cout << "Genotype from RP information " << (float)(CountREF_A + CountREF_B) * 2 / (CountREF_A + CountREF_B + CountALT * 2) << std::endl;
+    else std::cout << "Genotype undefined from RP" << std::endl;
+}
+
+short GetRP4OnDEL(const std::vector <Chromosome> & AllChromosomes, std::map<std::string,int> & ChrName2Index, ControlState & CurrentState, ParCollection & par, const Genotyping & OneSV, std::ofstream & GT_Output) {
+    //std::vector <RP_READ> ALL_RP_reads;
+    short Min_MQ = 20;
+    std::set<std::string> ReadNames;
+    
+    if (CurrentState.CurrentChrName != OneSV.ChrA) {
+        CurrentState.CurrentChrName = OneSV.ChrA;
+        CurrentState.CurrentChrSeq = AllChromosomes[ChrName2Index.find(OneSV.ChrA)->second].ChrSeq; // change later, copying one chrseq for each SV is expensive. 
+    }
+    
+    //unsigned SearchCenter;
+    //unsigned SearchRange;
+    
+    CurrentState.Reads_RP.clear();
+    unsigned Overhead = 1000;
+    if (OneSV.PosA > OneSV.CI_A + Overhead)  
+        CurrentState.lowerBinBorder = OneSV.PosA - OneSV.CI_A - Overhead; //CurrentState.
+    else CurrentState.lowerBinBorder = 1;
+    CurrentState.upperBinBorder = OneSV.PosB + OneSV.CI_B + Overhead;
+    
+    get_RP_Reads(CurrentState, par);
+    //std::cout << "Reads around BP 1 " << CurrentState.Reads_RP.size() << std::endl;
+    
     /*
-    //std::cout << "AssembleOneSV 1" << std::endl;
-    short Max_NT_Size = 30;
-    bool WhetherFirstBP = true;
-    std::vector <SPLIT_READ> First, Second;
+    if (CurrentState.CurrentChrName != OneSV.ChrB) {
+        CurrentState.CurrentChrName = OneSV.ChrB;
+        CurrentState.CurrentChrSeq = AllChromosomes[ChrName2Index.find(OneSV.ChrB)->second].ChrSeq; // change later, copying one chrseq for each SV is expensive. 
+    }
+    
+    if (OneSV.PosB > OneSV.CI_B + Overhead)  
+        CurrentState.lowerBinBorder = OneSV.PosB - OneSV.CI_B - Overhead; //CurrentState.
+    else CurrentState.lowerBinBorder = 1;
+    CurrentState.upperBinBorder = OneSV.PosB + OneSV.CI_B + Overhead;
+    
+    get_RP_Reads(CurrentState, par);
+    */
+    std::cout << "Reads around both breakpoints " << CurrentState.Reads_RP.size() << std::endl;
+    std::vector <unsigned> Distances, RP_READ_Index;
+    unsigned TempDistance;
+    for (unsigned ReadIndex = 0; ReadIndex < CurrentState.Reads_RP.size(); ReadIndex++) {
+        if (CurrentState.Reads_RP[ReadIndex].ChrNameA == CurrentState.Reads_RP[ReadIndex].ChrNameB 
+            && CurrentState.Reads_RP[ReadIndex].ChrNameA == OneSV.ChrA) {
+            if (CurrentState.Reads_RP[ReadIndex].PosA == CurrentState.Reads_RP[ReadIndex].PosB) continue;
+            if (CurrentState.Reads_RP[ReadIndex].MQA >= Min_MQ && CurrentState.Reads_RP[ReadIndex].MQB >= Min_MQ) {
+                RP_READ_Index.push_back(ReadIndex);
+                
+                if (CurrentState.Reads_RP[ReadIndex].PosA > CurrentState.Reads_RP[ReadIndex].PosB) TempDistance = CurrentState.Reads_RP[ReadIndex].PosA - CurrentState.Reads_RP[ReadIndex].PosB;
+                else TempDistance = CurrentState.Reads_RP[ReadIndex].PosB - CurrentState.Reads_RP[ReadIndex].PosA;
+                CurrentState.Reads_RP[ReadIndex].Distance = TempDistance;
+                //if (TempDistance > 10000)
+                //std::cout << CurrentState.Reads_RP[ReadIndex].PosA << " " << CurrentState.Reads_RP[ReadIndex].PosB << " " << TempDistance << std::endl;
+                Distances.push_back(TempDistance);
+                
+            }
+        }
+    }
+    sort(Distances.begin(), Distances.end());
+    //for (unsigned ReadIndex = 0; ReadIndex < Distances.size(); ReadIndex++)
+    //    std::cout << Distances[ReadIndex] << " ";
+    //std::cout << std::endl;
+    unsigned Median = Distances[Distances.size() / 2]; 
+    std::cout << "Insert size = " << Median << std::endl;
+    unsigned Average, STDE;
+    getAverageAndSTDE(Distances, Average, STDE);
+    unsigned MAD;
+    getMAD(Distances, Median, MAD);
+    unsigned CountREF_A, CountREF_B, CountALT;
+    CountRPSupport4DEL(CurrentState.Reads_RP, RP_READ_Index, OneSV, Median, MAD, CountREF_A, CountREF_B, CountALT);
+    /*
+    std::vector <RP_READ> ALL_RP_reads;
     unsigned SearchCenter;
     unsigned SearchRange;
     std::cout << "Current SV: " << OneSV.Index << " " << OneSV.Type << " " << OneSV.ChrA << " " << OneSV.PosA << " " << OneSV.CI_A 
@@ -140,7 +291,7 @@ short GenotypingOneDEL(const std::vector <Chromosome> & AllChromosomes, std::map
     Right = OneSV.PosA + g_SpacerBeforeAfter + OneSV.CI_A;
     
     std::cout << "\nFirst BP\tChrName " << CurrentState.CurrentChrName << "\tRange " << CurrentState.lowerBinBorder << " " << CurrentState.upperBinBorder << std::endl;
-    getReads(CurrentState, par);
+    get_SR_Reads(CurrentState, par);
     
     //std::cout << "First size: " << CurrentState.Reads.size() << std::endl;
     CombineAndSort(AllChromosomes, ChrName2Index, CurrentState, par, OneSV, First, CurrentState.lowerBinBorder, CurrentState.upperBinBorder, WhetherFirstBP);
@@ -203,7 +354,7 @@ short GenotypingOneDEL(const std::vector <Chromosome> & AllChromosomes, std::map
     Right = OneSV.PosB + g_SpacerBeforeAfter + OneSV.CI_B;
     
     std::cout << "\nSecond BP\tChrName " << CurrentState.CurrentChrName << "\tRange " << CurrentState.lowerBinBorder << " " << CurrentState.upperBinBorder << std::endl;    
-    getReads(CurrentState, par);
+    get_SR_Reads(CurrentState, par);
     
     CombineAndSort(AllChromosomes, ChrName2Index, CurrentState, par, OneSV, Second, CurrentState.lowerBinBorder, CurrentState.upperBinBorder, WhetherFirstBP);
     
@@ -249,8 +400,8 @@ short GenotypingOneDEL(const std::vector <Chromosome> & AllChromosomes, std::map
     if (SumSize == 0 && OneSV.ChrA == OneSV.ChrB) {
         TryLI(AllChromosomes, ChrName2Index, CurrentState, par, OneSV, First, Second, ASM_Output);
     }
+
     */
     return 0;
 }
-
 

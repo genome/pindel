@@ -149,11 +149,13 @@ short AssembleOneSV(const std::vector <Chromosome> & AllChromosomes, std::map<st
     std::cout << "Current SV: " << OneSV.Index << " " << OneSV.Type << " " << OneSV.ChrA << " " << OneSV.PosA << " " << OneSV.CI_A 
               << "\t" << OneSV.ChrB << " " << OneSV.PosB << " " << OneSV.CI_B << std::endl;
     // get first BP
-    CurrentState.Reads.clear();
+    CurrentState.Reads_SR.clear();
     //std::cout << "AssembleOneSV 2" << std::endl;
+    if (CurrentState.CurrentChrName != OneSV.ChrA) {
+        CurrentState.CurrentChrName = OneSV.ChrA;
+        CurrentState.CurrentChrSeq = AllChromosomes[ChrName2Index.find(OneSV.ChrA)->second].ChrSeq; // change later, copying one chrseq for each SV is expensive. 
+    }
 
-    CurrentState.CurrentChrName = OneSV.ChrA;
-    CurrentState.CurrentChrSeq = AllChromosomes[ChrName2Index.find(OneSV.ChrA)->second].ChrSeq;
     CONS_Chr_Size = CurrentState.CurrentChrSeq.size() - 2 * g_SpacerBeforeAfter; // #################
     //std::cout << "CONS_Chr_Size " << CONS_Chr_Size << std::endl;
     g_maxPos = 0; // #################
@@ -171,9 +173,9 @@ short AssembleOneSV(const std::vector <Chromosome> & AllChromosomes, std::map<st
     Right = OneSV.PosA + g_SpacerBeforeAfter + OneSV.CI_A;
 
     std::cout << "\nFirst BP\tChrName " << CurrentState.CurrentChrName << "\tRange " << CurrentState.lowerBinBorder << " " << CurrentState.upperBinBorder << std::endl;
-    getReads(CurrentState, par);
+    get_SR_Reads(CurrentState, par);
 
-    //std::cout << "First size: " << CurrentState.Reads.size() << std::endl;
+    //std::cout << "First size: " << CurrentState.Reads_SR.size() << std::endl;
     CombineAndSort(AllChromosomes, ChrName2Index, CurrentState, par, OneSV, First, CurrentState.lowerBinBorder, CurrentState.upperBinBorder, WhetherFirstBP);
 
     CleanUpCloseEnd(First, Left, Right); // vector of reads
@@ -215,7 +217,7 @@ short AssembleOneSV(const std::vector <Chromosome> & AllChromosomes, std::map<st
     
     
     // get second BP
-    CurrentState.Reads.clear();
+    CurrentState.Reads_SR.clear();
     WhetherFirstBP = false;
     CurrentState.CurrentChrName = OneSV.ChrB;
     CurrentState.CurrentChrSeq = AllChromosomes[ChrName2Index.find(OneSV.ChrB)->second].ChrSeq;
@@ -234,7 +236,7 @@ short AssembleOneSV(const std::vector <Chromosome> & AllChromosomes, std::map<st
     Right = OneSV.PosB + g_SpacerBeforeAfter + OneSV.CI_B;
 
     std::cout << "\nSecond BP\tChrName " << CurrentState.CurrentChrName << "\tRange " << CurrentState.lowerBinBorder << " " << CurrentState.upperBinBorder << std::endl;    
-    getReads(CurrentState, par);
+    get_SR_Reads(CurrentState, par);
 
     CombineAndSort(AllChromosomes, ChrName2Index, CurrentState, par, OneSV, Second, CurrentState.lowerBinBorder, CurrentState.upperBinBorder, WhetherFirstBP);
 
@@ -296,25 +298,25 @@ void CombineAndSort(const std::vector <Chromosome> & AllChromosomes, std::map<st
     std::cout << "\nin CombineAndSort..." << std::endl;
     // get reads anchored at plus and minus
     std::vector <int> Plus_Read_Index, Minus_Read_Index;
-    for (unsigned i = 0; i < CurrentState.Reads.size(); i++) {
+    for (unsigned i = 0; i < CurrentState.Reads_SR.size(); i++) {
         if (First) {
-            if (CurrentState.Reads[i].UP_Close[CurrentState.Reads[i].UP_Close.size() - 1].AbsLoc + OneSV.CI_A + CurrentState.Reads[i].ReadLength > g_SpacerBeforeAfter + OneSV.PosA && CurrentState.Reads[i].UP_Close[CurrentState.Reads[i].UP_Close.size() - 1].AbsLoc < g_SpacerBeforeAfter + OneSV.PosA + OneSV.CI_A + CurrentState.Reads[i].ReadLength) {
-                if (CurrentState.Reads[i].MatchedD == Plus) Index_Plus[CurrentState.Reads[i].UP_Close[CurrentState.Reads[i].UP_Close.size() - 1].AbsLoc - OffSet - g_SpacerBeforeAfter].push_back(i);
-                else if (CurrentState.Reads[i].MatchedD == Minus) Index_Minus[CurrentState.Reads[i].UP_Close[CurrentState.Reads[i].UP_Close.size() - 1].AbsLoc - OffSet - g_SpacerBeforeAfter].push_back(i);
+            if (CurrentState.Reads_SR[i].UP_Close[CurrentState.Reads_SR[i].UP_Close.size() - 1].AbsLoc + OneSV.CI_A + CurrentState.Reads_SR[i].ReadLength > g_SpacerBeforeAfter + OneSV.PosA && CurrentState.Reads_SR[i].UP_Close[CurrentState.Reads_SR[i].UP_Close.size() - 1].AbsLoc < g_SpacerBeforeAfter + OneSV.PosA + OneSV.CI_A + CurrentState.Reads_SR[i].ReadLength) {
+                if (CurrentState.Reads_SR[i].MatchedD == Plus) Index_Plus[CurrentState.Reads_SR[i].UP_Close[CurrentState.Reads_SR[i].UP_Close.size() - 1].AbsLoc - OffSet - g_SpacerBeforeAfter].push_back(i);
+                else if (CurrentState.Reads_SR[i].MatchedD == Minus) Index_Minus[CurrentState.Reads_SR[i].UP_Close[CurrentState.Reads_SR[i].UP_Close.size() - 1].AbsLoc - OffSet - g_SpacerBeforeAfter].push_back(i);
             }
         }
         else { // second BP
-            if (CurrentState.Reads[i].UP_Close[CurrentState.Reads[i].UP_Close.size() - 1].AbsLoc + OneSV.CI_B + CurrentState.Reads[i].ReadLength > g_SpacerBeforeAfter + OneSV.PosB && CurrentState.Reads[i].UP_Close[CurrentState.Reads[i].UP_Close.size() - 1].AbsLoc < g_SpacerBeforeAfter+ OneSV.PosB + OneSV.CI_B + CurrentState.Reads[i].ReadLength) {
-                if (CurrentState.Reads[i].MatchedD == Plus) Index_Plus[CurrentState.Reads[i].UP_Close[CurrentState.Reads[i].UP_Close.size() - 1].AbsLoc - OffSet - g_SpacerBeforeAfter].push_back(i);
-                else if (CurrentState.Reads[i].MatchedD == Minus) Index_Minus[CurrentState.Reads[i].UP_Close[CurrentState.Reads[i].UP_Close.size() - 1].AbsLoc - OffSet - g_SpacerBeforeAfter].push_back(i);
+            if (CurrentState.Reads_SR[i].UP_Close[CurrentState.Reads_SR[i].UP_Close.size() - 1].AbsLoc + OneSV.CI_B + CurrentState.Reads_SR[i].ReadLength > g_SpacerBeforeAfter + OneSV.PosB && CurrentState.Reads_SR[i].UP_Close[CurrentState.Reads_SR[i].UP_Close.size() - 1].AbsLoc < g_SpacerBeforeAfter+ OneSV.PosB + OneSV.CI_B + CurrentState.Reads_SR[i].ReadLength) {
+                if (CurrentState.Reads_SR[i].MatchedD == Plus) Index_Plus[CurrentState.Reads_SR[i].UP_Close[CurrentState.Reads_SR[i].UP_Close.size() - 1].AbsLoc - OffSet - g_SpacerBeforeAfter].push_back(i);
+                else if (CurrentState.Reads_SR[i].MatchedD == Minus) Index_Minus[CurrentState.Reads_SR[i].UP_Close[CurrentState.Reads_SR[i].UP_Close.size() - 1].AbsLoc - OffSet - g_SpacerBeforeAfter].push_back(i);
             }
         }
     }
     for (unsigned i = 0; i < WindowSize; i++) if (Index_Plus[i].size() >= AssemblyCutOff || Index_Minus[i].size() >= AssemblyCutOff) {
        std::cout << "Candidate: " << i << " " << i + OffSet << "\t+ " << Index_Plus[i].size() << "\t-" << Index_Minus[i].size() << std::endl;    
        if (Index_Plus[i].size() >= AssemblyCutOff) 
-          CombineReads(CurrentState.CurrentChrSeq, Plus, CurrentState.Reads, Index_Plus[i], output_reads);
-       if (Index_Minus[i].size() >= AssemblyCutOff) CombineReads(CurrentState.CurrentChrSeq, Minus, CurrentState.Reads, Index_Minus[i], output_reads); 
+          CombineReads(CurrentState.CurrentChrSeq, Plus, CurrentState.Reads_SR, Index_Plus[i], output_reads);
+       if (Index_Minus[i].size() >= AssemblyCutOff) CombineReads(CurrentState.CurrentChrSeq, Minus, CurrentState.Reads_SR, Index_Minus[i], output_reads); 
     }
     //std::cout << Plus_Read_Index.size() << " " << Minus_Read_Index.size() << std::endl;
     

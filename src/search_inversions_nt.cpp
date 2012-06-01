@@ -36,89 +36,89 @@ int searchInversionsNT(ControlState& currentState, unsigned NumBoxes)
     
    LOG_INFO(*logStream << "Searching inversions with non-template sequence ... "
             << std::endl);
-   for (unsigned ReadIndex = 0; ReadIndex < currentState.Reads.size(); ReadIndex++) {
-      if (currentState.Reads[ReadIndex].Used
-            || currentState.Reads[ReadIndex].UP_Far.empty()) {
+   for (unsigned ReadIndex = 0; ReadIndex < currentState.Reads_SR.size(); ReadIndex++) {
+      if (currentState.Reads_SR[ReadIndex].Used
+            || currentState.Reads_SR[ReadIndex].UP_Far.empty()) {
          continue;
       }
-      CloseIndex = currentState.Reads[ReadIndex].UP_Close.size() - 1;
-      FarIndex = currentState.Reads[ReadIndex].UP_Far.size() - 1;
-      if (currentState.Reads[ReadIndex].UP_Far[FarIndex].Mismatches
-            + currentState.Reads[ReadIndex].UP_Close[CloseIndex].Mismatches
+      CloseIndex = currentState.Reads_SR[ReadIndex].UP_Close.size() - 1;
+      FarIndex = currentState.Reads_SR[ReadIndex].UP_Far.size() - 1;
+      if (currentState.Reads_SR[ReadIndex].UP_Far[FarIndex].Mismatches
+            + currentState.Reads_SR[ReadIndex].UP_Close[CloseIndex].Mismatches
             > (short) (1
                        + Seq_Error_Rate
-                       * (currentState.Reads[ReadIndex].UP_Far[FarIndex].LengthStr
-                          + currentState.Reads[ReadIndex].UP_Close[CloseIndex]. LengthStr))) {
+                       * (currentState.Reads_SR[ReadIndex].UP_Far[FarIndex].LengthStr
+                          + currentState.Reads_SR[ReadIndex].UP_Close[CloseIndex]. LengthStr))) {
          continue;
       }
-      if (currentState.Reads[ReadIndex].UP_Close[0].Strand
-            != currentState.Reads[ReadIndex].UP_Far[0].Strand
-            && currentState.Reads[ReadIndex].UP_Close[0].Direction
-            == currentState.Reads[ReadIndex].UP_Far[0].Direction) {
-         if (currentState.Reads[ReadIndex].MatchedD == Plus) {
-            if (currentState.Reads[ReadIndex].UP_Far[FarIndex]. Direction
+      if (currentState.Reads_SR[ReadIndex].UP_Close[0].Strand
+            != currentState.Reads_SR[ReadIndex].UP_Far[0].Strand
+            && currentState.Reads_SR[ReadIndex].UP_Close[0].Direction
+            == currentState.Reads_SR[ReadIndex].UP_Far[0].Direction) {
+         if (currentState.Reads_SR[ReadIndex].MatchedD == Plus) {
+            if (currentState.Reads_SR[ReadIndex].UP_Far[FarIndex]. Direction
                   == Plus) {
-               if (currentState.Reads[ReadIndex].UP_Far[FarIndex]. LengthStr
-                     + currentState.Reads[ReadIndex].UP_Close[CloseIndex]. LengthStr
-                     < currentState.Reads[ReadIndex].ReadLength
-                     && currentState.Reads[ReadIndex].UP_Far[FarIndex]. AbsLoc
-                     > currentState.Reads[ReadIndex].UP_Close[CloseIndex]. AbsLoc
+               if (currentState.Reads_SR[ReadIndex].UP_Far[FarIndex]. LengthStr
+                     + currentState.Reads_SR[ReadIndex].UP_Close[CloseIndex]. LengthStr
+                     < currentState.Reads_SR[ReadIndex].ReadLength
+                     && currentState.Reads_SR[ReadIndex].UP_Far[FarIndex]. AbsLoc
+                     > currentState.Reads_SR[ReadIndex].UP_Close[CloseIndex]. AbsLoc
                      + MIN_IndelSize_Inversion
-                     && currentState.Reads[ReadIndex].UP_Far[FarIndex]. LengthStr
-                     + currentState.Reads[ReadIndex].UP_Close[CloseIndex]. LengthStr
+                     && currentState.Reads_SR[ReadIndex].UP_Far[FarIndex]. LengthStr
+                     + currentState.Reads_SR[ReadIndex].UP_Close[CloseIndex]. LengthStr
                      >= Min_Num_Matched_Bases) {
-                  currentState.Reads[ReadIndex].Left
-                     = (currentState.Reads[ReadIndex]. UP_Close[CloseIndex].AbsLoc
+                  currentState.Reads_SR[ReadIndex].Left
+                     = (currentState.Reads_SR[ReadIndex]. UP_Close[CloseIndex].AbsLoc
                         + 1)
-                       - currentState.Reads[ReadIndex].UP_Close[CloseIndex]. LengthStr;
-                  currentState.Reads[ReadIndex].Right
-                     = currentState.Reads[ReadIndex].UP_Far[FarIndex]. AbsLoc
-                       - currentState.Reads[ReadIndex].UP_Far[FarIndex]. LengthStr
-                       + currentState.Reads[ReadIndex].ReadLength;
-                  currentState.Reads[ReadIndex].BP
-                     = currentState.Reads[ReadIndex].UP_Close[CloseIndex]. LengthStr
+                       - currentState.Reads_SR[ReadIndex].UP_Close[CloseIndex]. LengthStr;
+                  currentState.Reads_SR[ReadIndex].Right
+                     = currentState.Reads_SR[ReadIndex].UP_Far[FarIndex]. AbsLoc
+                       - currentState.Reads_SR[ReadIndex].UP_Far[FarIndex]. LengthStr
+                       + currentState.Reads_SR[ReadIndex].ReadLength;
+                  currentState.Reads_SR[ReadIndex].BP
+                     = currentState.Reads_SR[ReadIndex].UP_Close[CloseIndex]. LengthStr
                        - 1;
 
-                  currentState.Reads[ReadIndex].IndelSize
-                     = currentState.Reads[ReadIndex].UP_Far[FarIndex]. AbsLoc
-                       - currentState.Reads[ReadIndex].UP_Close[CloseIndex]. AbsLoc;
+                  currentState.Reads_SR[ReadIndex].IndelSize
+                     = currentState.Reads_SR[ReadIndex].UP_Far[FarIndex]. AbsLoc
+                       - currentState.Reads_SR[ReadIndex].UP_Close[CloseIndex]. AbsLoc;
 
-                  currentState.Reads[ReadIndex].NT_size
-                     = currentState.Reads[ReadIndex].ReadLength
-                       - currentState.Reads[ReadIndex].UP_Far[FarIndex].LengthStr
-                       - currentState.Reads[ReadIndex].UP_Close[CloseIndex].LengthStr; // NT_2str
-                  currentState.Reads[ReadIndex].NT_str
+                  currentState.Reads_SR[ReadIndex].NT_size
+                     = currentState.Reads_SR[ReadIndex].ReadLength
+                       - currentState.Reads_SR[ReadIndex].UP_Far[FarIndex].LengthStr
+                       - currentState.Reads_SR[ReadIndex].UP_Close[CloseIndex].LengthStr; // NT_2str
+                  currentState.Reads_SR[ReadIndex].NT_str
                      = ReverseComplement(
-                          currentState.Reads[ReadIndex]. UnmatchedSeq). substr(
-                          currentState.Reads[ReadIndex].BP + 1,
-                          currentState.Reads[ReadIndex].NT_size);
-                  //currentState.Reads[ReadIndex].InsertedStr = "";
-                  currentState.Reads[ReadIndex].BPLeft
-                     = currentState.Reads[ReadIndex].UP_Close[CloseIndex].AbsLoc
+                          currentState.Reads_SR[ReadIndex]. UnmatchedSeq). substr(
+                          currentState.Reads_SR[ReadIndex].BP + 1,
+                          currentState.Reads_SR[ReadIndex].NT_size);
+                  //currentState.Reads_SR[ReadIndex].InsertedStr = "";
+                  currentState.Reads_SR[ReadIndex].BPLeft
+                     = currentState.Reads_SR[ReadIndex].UP_Close[CloseIndex].AbsLoc
                        + 1 - g_SpacerBeforeAfter;
-                  currentState.Reads[ReadIndex].BPRight
-                     = currentState.Reads[ReadIndex].UP_Far[FarIndex].AbsLoc
+                  currentState.Reads_SR[ReadIndex].BPRight
+                     = currentState.Reads_SR[ReadIndex].UP_Far[FarIndex].AbsLoc
                        - g_SpacerBeforeAfter;
                   if (readTransgressesBinBoundaries(
-                           currentState.Reads[ReadIndex],
+                           currentState.Reads_SR[ReadIndex],
                            currentState.upperBinBorder)) {
-                     saveReadForNextCycle(currentState.Reads[ReadIndex],
-                                          currentState.FutureReads);
+                     saveReadForNextCycle(currentState.Reads_SR[ReadIndex],
+                                          currentState.FutureReads_SR);
                   }
                   else {
-                     if (//currentState.Reads[ReadIndex].NT_size
+                     if (//currentState.Reads_SR[ReadIndex].NT_size
                          //  <= Max_Length_NT
                          1
                          ) {
                         if (readInSpecifiedRegion(
-                                 currentState.Reads[ReadIndex],
+                                 currentState.Reads_SR[ReadIndex],
                                  currentState.regionStartDefined,
                                  currentState.regionEndDefined,
                                  currentState.startOfRegion,
                                  currentState.endOfRegion)) {
-                           Inv_NT[(int) currentState.Reads[ReadIndex]. BPLeft
+                           Inv_NT[(int) currentState.Reads_SR[ReadIndex]. BPLeft
                                   / BoxSize]. push_back(ReadIndex);
-                           currentState.Reads[ReadIndex].Used = true;
+                           currentState.Reads_SR[ReadIndex].Used = true;
                            Count_Inv_NT++;
                            Count_Inv_NT_Plus++;
                         }
@@ -127,65 +127,65 @@ int searchInversionsNT(ControlState& currentState, unsigned NumBoxes)
 
                }
                // anchor inside reversed block.
-               if (currentState.Reads[ReadIndex].UP_Far[FarIndex]. LengthStr
-                     + currentState.Reads[ReadIndex].UP_Close[CloseIndex]. LengthStr
-                     < currentState.Reads[ReadIndex].ReadLength
-                     && currentState.Reads[ReadIndex].UP_Far[FarIndex]. AbsLoc
+               if (currentState.Reads_SR[ReadIndex].UP_Far[FarIndex]. LengthStr
+                     + currentState.Reads_SR[ReadIndex].UP_Close[CloseIndex]. LengthStr
+                     < currentState.Reads_SR[ReadIndex].ReadLength
+                     && currentState.Reads_SR[ReadIndex].UP_Far[FarIndex]. AbsLoc
                      + MIN_IndelSize_Inversion
-                     < currentState.Reads[ReadIndex].UP_Close[CloseIndex]. AbsLoc
-                     && currentState.Reads[ReadIndex].UP_Far[FarIndex]. LengthStr
-                     + currentState.Reads[ReadIndex].UP_Close[CloseIndex]. LengthStr
+                     < currentState.Reads_SR[ReadIndex].UP_Close[CloseIndex]. AbsLoc
+                     && currentState.Reads_SR[ReadIndex].UP_Far[FarIndex]. LengthStr
+                     + currentState.Reads_SR[ReadIndex].UP_Close[CloseIndex]. LengthStr
                      >= Min_Num_Matched_Bases) {
-                  currentState.Reads[ReadIndex].Right
-                     = currentState.Reads[ReadIndex].UP_Close[CloseIndex]. AbsLoc
-                       - currentState.Reads[ReadIndex].UP_Close[CloseIndex]. LengthStr
-                       + currentState.Reads[ReadIndex].ReadLength;
-                  currentState.Reads[ReadIndex].Left
-                     = currentState.Reads[ReadIndex].UP_Far[FarIndex]. AbsLoc
-                       - currentState.Reads[ReadIndex].UP_Far[FarIndex]. LengthStr
+                  currentState.Reads_SR[ReadIndex].Right
+                     = currentState.Reads_SR[ReadIndex].UP_Close[CloseIndex]. AbsLoc
+                       - currentState.Reads_SR[ReadIndex].UP_Close[CloseIndex]. LengthStr
+                       + currentState.Reads_SR[ReadIndex].ReadLength;
+                  currentState.Reads_SR[ReadIndex].Left
+                     = currentState.Reads_SR[ReadIndex].UP_Far[FarIndex]. AbsLoc
+                       - currentState.Reads_SR[ReadIndex].UP_Far[FarIndex]. LengthStr
                        + 1;
-                  currentState.Reads[ReadIndex].BP
-                     = currentState.Reads[ReadIndex].UP_Far[FarIndex]. LengthStr
+                  currentState.Reads_SR[ReadIndex].BP
+                     = currentState.Reads_SR[ReadIndex].UP_Far[FarIndex]. LengthStr
                        - 1;
 
-                  currentState.Reads[ReadIndex].IndelSize
-                     = currentState.Reads[ReadIndex].UP_Close[CloseIndex]. AbsLoc
-                       - currentState.Reads[ReadIndex].UP_Far[FarIndex]. AbsLoc;
+                  currentState.Reads_SR[ReadIndex].IndelSize
+                     = currentState.Reads_SR[ReadIndex].UP_Close[CloseIndex]. AbsLoc
+                       - currentState.Reads_SR[ReadIndex].UP_Far[FarIndex]. AbsLoc;
 
-                  currentState.Reads[ReadIndex].NT_size
-                     = currentState.Reads[ReadIndex].ReadLength
-                       - currentState.Reads[ReadIndex].UP_Far[FarIndex]. LengthStr
-                       - currentState.Reads[ReadIndex].UP_Close[CloseIndex]. LengthStr;
-                  currentState.Reads[ReadIndex].NT_str
-                     = currentState.Reads[ReadIndex].UnmatchedSeq. substr(
-                          currentState.Reads[ReadIndex].BP + 1,
-                          currentState.Reads[ReadIndex].NT_size);
-                  //currentState.Reads[ReadIndex].InsertedStr = "";
-                  currentState.Reads[ReadIndex].BPRight
-                     = currentState.Reads[ReadIndex].UP_Close[CloseIndex].AbsLoc
+                  currentState.Reads_SR[ReadIndex].NT_size
+                     = currentState.Reads_SR[ReadIndex].ReadLength
+                       - currentState.Reads_SR[ReadIndex].UP_Far[FarIndex]. LengthStr
+                       - currentState.Reads_SR[ReadIndex].UP_Close[CloseIndex]. LengthStr;
+                  currentState.Reads_SR[ReadIndex].NT_str
+                     = currentState.Reads_SR[ReadIndex].UnmatchedSeq. substr(
+                          currentState.Reads_SR[ReadIndex].BP + 1,
+                          currentState.Reads_SR[ReadIndex].NT_size);
+                  //currentState.Reads_SR[ReadIndex].InsertedStr = "";
+                  currentState.Reads_SR[ReadIndex].BPRight
+                     = currentState.Reads_SR[ReadIndex].UP_Close[CloseIndex].AbsLoc
                        - g_SpacerBeforeAfter;
-                  currentState.Reads[ReadIndex].BPLeft
-                     = (currentState.Reads[ReadIndex].UP_Far[FarIndex].AbsLoc
+                  currentState.Reads_SR[ReadIndex].BPLeft
+                     = (currentState.Reads_SR[ReadIndex].UP_Far[FarIndex].AbsLoc
                         + 1) - g_SpacerBeforeAfter;
 
                   if (readTransgressesBinBoundaries(
-                           currentState.Reads[ReadIndex],
+                           currentState.Reads_SR[ReadIndex],
                            currentState.upperBinBorder)) {
-                     saveReadForNextCycle(currentState.Reads[ReadIndex],
-                                          currentState.FutureReads);
+                     saveReadForNextCycle(currentState.Reads_SR[ReadIndex],
+                                          currentState.FutureReads_SR);
                   }
                   else {
-                     if (//currentState.Reads[ReadIndex].NT_size
+                     if (//currentState.Reads_SR[ReadIndex].NT_size
                          //  <= Max_Length_NT && 
                          readInSpecifiedRegion(
-                              currentState.Reads[ReadIndex],
+                              currentState.Reads_SR[ReadIndex],
                               currentState.regionStartDefined,
                               currentState.regionEndDefined,
                               currentState.startOfRegion,
                               currentState.endOfRegion)) {
-                        Inv_NT[(int) currentState.Reads[ReadIndex]. BPLeft
+                        Inv_NT[(int) currentState.Reads_SR[ReadIndex]. BPLeft
                                / BoxSize]. push_back(ReadIndex);
-                        currentState.Reads[ReadIndex].Used = true;
+                        currentState.Reads_SR[ReadIndex].Used = true;
                         Count_Inv_NT++;
                         Count_Inv_NT_Plus++;
                      }
@@ -194,68 +194,68 @@ int searchInversionsNT(ControlState& currentState, unsigned NumBoxes)
             }
 
          }
-         else if (currentState.Reads[ReadIndex].MatchedD == Minus) {
-            if (currentState.Reads[ReadIndex].UP_Far[FarIndex]. Direction
+         else if (currentState.Reads_SR[ReadIndex].MatchedD == Minus) {
+            if (currentState.Reads_SR[ReadIndex].UP_Far[FarIndex]. Direction
                   == Minus) {
                // anchor outside reversed block.
-               if (currentState.Reads[ReadIndex].UP_Close[CloseIndex]. LengthStr
-                     + currentState.Reads[ReadIndex].UP_Far[FarIndex]. LengthStr
-                     < currentState.Reads[ReadIndex].ReadLength
-                     && currentState.Reads[ReadIndex]. UP_Close[CloseIndex].AbsLoc
-                     > currentState.Reads[ReadIndex].UP_Far[FarIndex]. AbsLoc
+               if (currentState.Reads_SR[ReadIndex].UP_Close[CloseIndex]. LengthStr
+                     + currentState.Reads_SR[ReadIndex].UP_Far[FarIndex]. LengthStr
+                     < currentState.Reads_SR[ReadIndex].ReadLength
+                     && currentState.Reads_SR[ReadIndex]. UP_Close[CloseIndex].AbsLoc
+                     > currentState.Reads_SR[ReadIndex].UP_Far[FarIndex]. AbsLoc
                      + MIN_IndelSize_Inversion
-                     && currentState.Reads[ReadIndex].UP_Far[FarIndex]. LengthStr
-                     + currentState.Reads[ReadIndex].UP_Close[CloseIndex]. LengthStr
+                     && currentState.Reads_SR[ReadIndex].UP_Far[FarIndex]. LengthStr
+                     + currentState.Reads_SR[ReadIndex].UP_Close[CloseIndex]. LengthStr
                      >= Min_Num_Matched_Bases) {
-                  currentState.Reads[ReadIndex].Left
-                     = currentState.Reads[ReadIndex].UP_Far[FarIndex]. AbsLoc
-                       + currentState.Reads[ReadIndex].UP_Far[FarIndex]. LengthStr
-                       - currentState.Reads[ReadIndex].ReadLength;
-                  currentState.Reads[ReadIndex].Right
-                     = currentState.Reads[ReadIndex].UP_Close[CloseIndex]. AbsLoc
-                       + currentState.Reads[ReadIndex].UP_Close[CloseIndex]. LengthStr
+                  currentState.Reads_SR[ReadIndex].Left
+                     = currentState.Reads_SR[ReadIndex].UP_Far[FarIndex]. AbsLoc
+                       + currentState.Reads_SR[ReadIndex].UP_Far[FarIndex]. LengthStr
+                       - currentState.Reads_SR[ReadIndex].ReadLength;
+                  currentState.Reads_SR[ReadIndex].Right
+                     = currentState.Reads_SR[ReadIndex].UP_Close[CloseIndex]. AbsLoc
+                       + currentState.Reads_SR[ReadIndex].UP_Close[CloseIndex]. LengthStr
                        - 1;
-                  currentState.Reads[ReadIndex].BP
-                     = currentState.Reads[ReadIndex].UP_Far[FarIndex]. LengthStr
+                  currentState.Reads_SR[ReadIndex].BP
+                     = currentState.Reads_SR[ReadIndex].UP_Far[FarIndex]. LengthStr
                        - 1;
 
-                  currentState.Reads[ReadIndex].IndelSize
-                     = currentState.Reads[ReadIndex].UP_Close[CloseIndex]. AbsLoc
-                       - currentState.Reads[ReadIndex].UP_Far[FarIndex]. AbsLoc;
+                  currentState.Reads_SR[ReadIndex].IndelSize
+                     = currentState.Reads_SR[ReadIndex].UP_Close[CloseIndex]. AbsLoc
+                       - currentState.Reads_SR[ReadIndex].UP_Far[FarIndex]. AbsLoc;
 
-                  currentState.Reads[ReadIndex].NT_size
-                     = currentState.Reads[ReadIndex].ReadLength
-                       - currentState.Reads[ReadIndex].UP_Far[FarIndex]. LengthStr
-                       - currentState.Reads[ReadIndex].UP_Close[CloseIndex]. LengthStr;
-                  currentState.Reads[ReadIndex].NT_str
-                     = currentState.Reads[ReadIndex].UnmatchedSeq. substr(
-                          currentState.Reads[ReadIndex].BP + 1,
-                          currentState.Reads[ReadIndex].NT_size);
-                  //currentState.Reads[ReadIndex].InsertedStr = "";
-                  currentState.Reads[ReadIndex].BPLeft
-                     = currentState.Reads[ReadIndex].UP_Far[FarIndex].AbsLoc
+                  currentState.Reads_SR[ReadIndex].NT_size
+                     = currentState.Reads_SR[ReadIndex].ReadLength
+                       - currentState.Reads_SR[ReadIndex].UP_Far[FarIndex]. LengthStr
+                       - currentState.Reads_SR[ReadIndex].UP_Close[CloseIndex]. LengthStr;
+                  currentState.Reads_SR[ReadIndex].NT_str
+                     = currentState.Reads_SR[ReadIndex].UnmatchedSeq. substr(
+                          currentState.Reads_SR[ReadIndex].BP + 1,
+                          currentState.Reads_SR[ReadIndex].NT_size);
+                  //currentState.Reads_SR[ReadIndex].InsertedStr = "";
+                  currentState.Reads_SR[ReadIndex].BPLeft
+                     = currentState.Reads_SR[ReadIndex].UP_Far[FarIndex].AbsLoc
                        - g_SpacerBeforeAfter;
-                  currentState.Reads[ReadIndex].BPRight
-                     = currentState.Reads[ReadIndex].UP_Close[CloseIndex].AbsLoc
+                  currentState.Reads_SR[ReadIndex].BPRight
+                     = currentState.Reads_SR[ReadIndex].UP_Close[CloseIndex].AbsLoc
                        - 1 - g_SpacerBeforeAfter;
                   if (readTransgressesBinBoundaries(
-                           currentState.Reads[ReadIndex],
+                           currentState.Reads_SR[ReadIndex],
                            currentState.upperBinBorder)) {
-                     saveReadForNextCycle(currentState.Reads[ReadIndex],
-                                          currentState.FutureReads);
+                     saveReadForNextCycle(currentState.Reads_SR[ReadIndex],
+                                          currentState.FutureReads_SR);
                   }
                   else {
-                     if (//currentState.Reads[ReadIndex].NT_size
+                     if (//currentState.Reads_SR[ReadIndex].NT_size
                          //  <= Max_Length_NT && 
                          readInSpecifiedRegion(
-                              currentState.Reads[ReadIndex],
+                              currentState.Reads_SR[ReadIndex],
                               currentState.regionStartDefined,
                               currentState.regionEndDefined,
                               currentState.startOfRegion,
                               currentState.endOfRegion)) {
-                        Inv_NT[(int) currentState.Reads[ReadIndex]. BPLeft
+                        Inv_NT[(int) currentState.Reads_SR[ReadIndex]. BPLeft
                                / BoxSize]. push_back(ReadIndex);
-                        currentState.Reads[ReadIndex].Used = true;
+                        currentState.Reads_SR[ReadIndex].Used = true;
 
                         Count_Inv_NT++;
                         Count_Inv_NT_Minus++;
@@ -263,66 +263,66 @@ int searchInversionsNT(ControlState& currentState, unsigned NumBoxes)
                   }
                }
                // anchor inside reversed block.
-               if (currentState.Reads[ReadIndex].UP_Close[CloseIndex]. LengthStr
-                     + currentState.Reads[ReadIndex].UP_Far[FarIndex]. LengthStr
-                     < currentState.Reads[ReadIndex].ReadLength
-                     && currentState.Reads[ReadIndex]. UP_Close[CloseIndex].AbsLoc
+               if (currentState.Reads_SR[ReadIndex].UP_Close[CloseIndex]. LengthStr
+                     + currentState.Reads_SR[ReadIndex].UP_Far[FarIndex]. LengthStr
+                     < currentState.Reads_SR[ReadIndex].ReadLength
+                     && currentState.Reads_SR[ReadIndex]. UP_Close[CloseIndex].AbsLoc
                      + MIN_IndelSize_Inversion
-                     < currentState.Reads[ReadIndex].UP_Far[FarIndex].AbsLoc
-                     && currentState.Reads[ReadIndex].UP_Far[FarIndex]. LengthStr
-                     + currentState.Reads[ReadIndex].UP_Close[CloseIndex]. LengthStr
+                     < currentState.Reads_SR[ReadIndex].UP_Far[FarIndex].AbsLoc
+                     && currentState.Reads_SR[ReadIndex].UP_Far[FarIndex]. LengthStr
+                     + currentState.Reads_SR[ReadIndex].UP_Close[CloseIndex]. LengthStr
                      >= Min_Num_Matched_Bases) {
-                  currentState.Reads[ReadIndex].Right
-                     = currentState.Reads[ReadIndex].UP_Far[FarIndex]. AbsLoc
-                       + currentState.Reads[ReadIndex].UP_Far[FarIndex]. LengthStr
+                  currentState.Reads_SR[ReadIndex].Right
+                     = currentState.Reads_SR[ReadIndex].UP_Far[FarIndex]. AbsLoc
+                       + currentState.Reads_SR[ReadIndex].UP_Far[FarIndex]. LengthStr
                        - 1;
-                  currentState.Reads[ReadIndex].Left
-                     = currentState.Reads[ReadIndex].UP_Close[CloseIndex]. AbsLoc
-                       + currentState.Reads[ReadIndex].UP_Close[CloseIndex]. LengthStr
-                       - currentState.Reads[ReadIndex].ReadLength;
-                  currentState.Reads[ReadIndex].BP
-                     = currentState.Reads[ReadIndex].UP_Close[CloseIndex]. LengthStr
+                  currentState.Reads_SR[ReadIndex].Left
+                     = currentState.Reads_SR[ReadIndex].UP_Close[CloseIndex]. AbsLoc
+                       + currentState.Reads_SR[ReadIndex].UP_Close[CloseIndex]. LengthStr
+                       - currentState.Reads_SR[ReadIndex].ReadLength;
+                  currentState.Reads_SR[ReadIndex].BP
+                     = currentState.Reads_SR[ReadIndex].UP_Close[CloseIndex]. LengthStr
                        - 1;
 
-                  currentState.Reads[ReadIndex].IndelSize
-                     = currentState.Reads[ReadIndex].UP_Far[FarIndex]. AbsLoc
-                       - currentState.Reads[ReadIndex].UP_Close[CloseIndex]. AbsLoc;
+                  currentState.Reads_SR[ReadIndex].IndelSize
+                     = currentState.Reads_SR[ReadIndex].UP_Far[FarIndex]. AbsLoc
+                       - currentState.Reads_SR[ReadIndex].UP_Close[CloseIndex]. AbsLoc;
 
-                  currentState.Reads[ReadIndex].NT_size
-                     = currentState.Reads[ReadIndex].ReadLength
-                       - currentState.Reads[ReadIndex].UP_Far[FarIndex]. LengthStr
-                       - currentState.Reads[ReadIndex].UP_Close[CloseIndex]. LengthStr;
-                  currentState.Reads[ReadIndex].NT_str
+                  currentState.Reads_SR[ReadIndex].NT_size
+                     = currentState.Reads_SR[ReadIndex].ReadLength
+                       - currentState.Reads_SR[ReadIndex].UP_Far[FarIndex]. LengthStr
+                       - currentState.Reads_SR[ReadIndex].UP_Close[CloseIndex]. LengthStr;
+                  currentState.Reads_SR[ReadIndex].NT_str
                      = ReverseComplement(
-                          currentState.Reads[ReadIndex]. UnmatchedSeq). substr(
-                          currentState.Reads[ReadIndex].BP + 1,
-                          currentState.Reads[ReadIndex].NT_size);
-                  //currentState.Reads[ReadIndex].InsertedStr = "";
-                  currentState.Reads[ReadIndex].BPLeft
-                     = currentState.Reads[ReadIndex].UP_Close[CloseIndex].AbsLoc
+                          currentState.Reads_SR[ReadIndex]. UnmatchedSeq). substr(
+                          currentState.Reads_SR[ReadIndex].BP + 1,
+                          currentState.Reads_SR[ReadIndex].NT_size);
+                  //currentState.Reads_SR[ReadIndex].InsertedStr = "";
+                  currentState.Reads_SR[ReadIndex].BPLeft
+                     = currentState.Reads_SR[ReadIndex].UP_Close[CloseIndex].AbsLoc
                        - g_SpacerBeforeAfter;
-                  currentState.Reads[ReadIndex].BPRight
-                     = currentState.Reads[ReadIndex].UP_Far[FarIndex].AbsLoc
+                  currentState.Reads_SR[ReadIndex].BPRight
+                     = currentState.Reads_SR[ReadIndex].UP_Far[FarIndex].AbsLoc
                        - 1 - g_SpacerBeforeAfter;
 
                   if (readTransgressesBinBoundaries(
-                           currentState.Reads[ReadIndex],
+                           currentState.Reads_SR[ReadIndex],
                            currentState.upperBinBorder)) {
-                     saveReadForNextCycle(currentState.Reads[ReadIndex],
-                                          currentState.FutureReads);
+                     saveReadForNextCycle(currentState.Reads_SR[ReadIndex],
+                                          currentState.FutureReads_SR);
                   }
                   else {
-                     if (//currentState.Reads[ReadIndex].NT_size
+                     if (//currentState.Reads_SR[ReadIndex].NT_size
                          //  <= Max_Length_NT && 
                          readInSpecifiedRegion(
-                              currentState.Reads[ReadIndex],
+                              currentState.Reads_SR[ReadIndex],
                               currentState.regionStartDefined,
                               currentState.regionEndDefined,
                               currentState.startOfRegion,
                               currentState.endOfRegion)) {
-                        Inv_NT[(int) currentState.Reads[ReadIndex]. BPLeft
+                        Inv_NT[(int) currentState.Reads_SR[ReadIndex]. BPLeft
                                / BoxSize]. push_back(ReadIndex);
-                        currentState.Reads[ReadIndex].Used = true;
+                        currentState.Reads_SR[ReadIndex].Used = true;
 
                         Count_Inv_NT++;
                         Count_Inv_NT_Minus++;
@@ -337,7 +337,7 @@ int searchInversionsNT(ControlState& currentState, unsigned NumBoxes)
             << "\t-" << Count_Inv_NT_Minus << std::endl);
    std::ofstream InversionOutf(currentState.InversionOutputFilename.c_str(),
                                std::ios::app);
-   SortOutputInv_NT(NumBoxes, currentState.CurrentChrSeq, currentState.Reads,
+   SortOutputInv_NT(NumBoxes, currentState.CurrentChrSeq, currentState.Reads_SR,
                     Inv_NT, InversionOutf);
    for (unsigned int i = 0; i < NumBoxes; i++) {
       Inv_NT[i].clear();

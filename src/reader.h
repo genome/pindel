@@ -28,16 +28,20 @@ class PindelReadReader;
 
 void GetOneChrSeq (std::ifstream & inf_Seq, std::string & CurrentChr,
 									 bool WhetherBuildUp);
-bool ReadInBamReads (const char *bam_path, const std::string & FragName,
+bool ReadInBamReads_SR (const char *bam_path, const std::string & FragName,
 								std::string * CurrentChr, std::vector < SPLIT_READ > &LeftReads, 
 								int InsertSize, std::string Tag, int binStart, int binEnd, ReadBuffer& readBuffer);
+bool ReadInBamReads_RP (const char *bam_path, const std::string & FragName,
+                        std::string * CurrentChr, std::vector <RP_READ> &LeftReads, 
+                        int InsertSize, std::string Tag, int binStart, int binEnd, ReadBuffer& readBuffer);
 short ReadInRead (PindelReadReader & inf_ReadSeq,
 									const std::string & CurrentFragName,
 									const std::string & CurrentFrag,
 									std::vector < SPLIT_READ > &Reads, const unsigned int lowerBinBorder,
 									const unsigned int upperBinBorder);
 
-short getReads(ControlState& currentState, ParCollection & par);
+short get_SR_Reads(ControlState& currentState, ParCollection & par);
+short get_RP_Reads(ControlState& currentState, ParCollection & par);
 void readInPindelReads(PindelReadReader &reader, const std::string& pindelFilename, ControlState& currentState );
 
 #endif /* READER_H */

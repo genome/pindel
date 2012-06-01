@@ -38,45 +38,45 @@ SearchShortInsertions::~SearchShortInsertions()
 bool SearchShortInsertions::decisionBranch1(ControlState& currentState,
       unsigned ReadIndex, unsigned int CloseIndex, int FarIndex)
 {
-   return currentState.Reads[ReadIndex].UP_Far[FarIndex]. AbsLoc
-          == currentState.Reads[ReadIndex].UP_Close[CloseIndex].AbsLoc + 1
-          && currentState.Reads[ReadIndex].UP_Close[CloseIndex].LengthStr
-          + currentState.Reads[ReadIndex].UP_Far[FarIndex]. LengthStr
-          < currentState.Reads[ReadIndex].ReadLength;
+   return currentState.Reads_SR[ReadIndex].UP_Far[FarIndex]. AbsLoc
+          == currentState.Reads_SR[ReadIndex].UP_Close[CloseIndex].AbsLoc + 1
+          && currentState.Reads_SR[ReadIndex].UP_Close[CloseIndex].LengthStr
+          + currentState.Reads_SR[ReadIndex].UP_Far[FarIndex]. LengthStr
+          < currentState.Reads_SR[ReadIndex].ReadLength;
 }
 
 bool SearchShortInsertions::decisionBranch2(ControlState& currentState,
       unsigned ReadIndex, unsigned int CloseIndex, int FarIndex)
 {
-   return currentState.Reads[ReadIndex]. UP_Close[CloseIndex].AbsLoc
-          == currentState.Reads[ReadIndex].UP_Far[FarIndex]. AbsLoc + 1
-          && currentState.Reads[ReadIndex]. UP_Far[FarIndex].LengthStr
-          + currentState.Reads[ReadIndex]. UP_Close[CloseIndex].LengthStr
-          < currentState.Reads[ReadIndex].ReadLength;
+   return currentState.Reads_SR[ReadIndex]. UP_Close[CloseIndex].AbsLoc
+          == currentState.Reads_SR[ReadIndex].UP_Far[FarIndex]. AbsLoc + 1
+          && currentState.Reads_SR[ReadIndex]. UP_Far[FarIndex].LengthStr
+          + currentState.Reads_SR[ReadIndex]. UP_Close[CloseIndex].LengthStr
+          < currentState.Reads_SR[ReadIndex].ReadLength;
 }
 
 unsigned int SearchShortInsertions::calculateIndelSize(
    ControlState& currentState, unsigned ReadIndex)
 {
-   return currentState.Reads[ReadIndex].ReadLengthMinus
-          - (currentState.Reads[ReadIndex].Right
-             - currentState.Reads[ReadIndex].Left);
+   return currentState.Reads_SR[ReadIndex].ReadLengthMinus
+          - (currentState.Reads_SR[ReadIndex].Right
+             - currentState.Reads_SR[ReadIndex].Left);
 }
 
 std::string SearchShortInsertions::getInsertedStr1(ControlState& currentState,
       unsigned ReadIndex)
 {
-   return ReverseComplement(currentState.Reads[ReadIndex]. UnmatchedSeq). substr(
-             currentState.Reads[ReadIndex].BP + 1,
-             currentState.Reads[ReadIndex]. IndelSize);
+   return ReverseComplement(currentState.Reads_SR[ReadIndex]. UnmatchedSeq). substr(
+             currentState.Reads_SR[ReadIndex].BP + 1,
+             currentState.Reads_SR[ReadIndex]. IndelSize);
 }
 
 std::string SearchShortInsertions::getInsertedStr2(ControlState& currentState,
       unsigned ReadIndex)
 {
-   return currentState.Reads[ReadIndex].UnmatchedSeq. substr(
-             currentState.Reads[ReadIndex].BP + 1,
-             currentState.Reads[ReadIndex]. IndelSize);
+   return currentState.Reads_SR[ReadIndex].UnmatchedSeq. substr(
+             currentState.Reads_SR[ReadIndex].BP + 1,
+             currentState.Reads_SR[ReadIndex]. IndelSize);
 }
 
 void SearchShortInsertions::outputResults(ControlState& currentState,
@@ -84,7 +84,7 @@ void SearchShortInsertions::outputResults(ControlState& currentState,
 {
    std::ofstream SIoutputfile(currentState.SIOutputFilename.c_str(),
                               std::ios::app);
-   SortOutputSI(NumBoxes, currentState.CurrentChrSeq, currentState.Reads, Vars,
+   SortOutputSI(NumBoxes, currentState.CurrentChrSeq, currentState.Reads_SR, Vars,
                 SIoutputfile);
    SIoutputfile.close();
 }

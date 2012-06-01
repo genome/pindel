@@ -76,6 +76,8 @@ public:
 	bool BreakDancerDefined;
 	bool pindelConfigDefined;
     
+    short Min_MQ;
+    
 
 	std::string SIOutputFilename;
 	std::string DeletionOutputFilename;
@@ -90,7 +92,8 @@ public:
 	std::string CurrentChrSeq;
 	std::string CurrentChrName;
 
-	std::vector<SPLIT_READ> InputReads, Reads, FutureReads;
+	std::vector<SPLIT_READ> InputReads_SR, Reads_SR, FutureReads_SR;
+    std::vector <RP_READ> Reads_RP;
 
 	int lowerBinBorder;
 	int upperBinBorder;

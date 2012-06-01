@@ -1352,7 +1352,7 @@ int main(int argc, char *argv[])
                 Time_Load_S = time(NULL);
             }
             //short ReturnFromReadingReads;
-            getReads(currentState, par); 
+            get_SR_Reads(currentState, par); 
             /*
             if (currentState.BAMDefined) {
                 ReturnFromReadingReads = 0;
@@ -1398,25 +1398,25 @@ int main(int argc, char *argv[])
             */
             Time_Mine_E = time(NULL);
 
-            if (currentState.Reads.size() ) {
-                (*logStream << "There are " << currentState.Reads. size()
+            if (currentState.Reads_SR.size() ) {
+                (*logStream << "There are " << currentState.Reads_SR. size()
                  << " reads for this chromosome region." << std::endl); // what region?
 
-                int TotalNumReads = currentState.Reads.size();
+                int TotalNumReads = currentState.Reads_SR.size();
                 if (ReportCloseMappedRead || par.reportOnlyCloseMappedReads ) {
                     std::string CloseEndMappedOutputFilename =
                         currentState.OutputFolder + "_CloseEndMapped";
                     std::ofstream CloseEndMappedOutput(
                         CloseEndMappedOutputFilename. c_str(), std::ios::app);
                     for (int Index = 0; Index < TotalNumReads; Index++) {
-                        CloseEndMappedOutput << currentState.Reads[Index].Name
-                                             << "\n" << currentState.Reads[Index].UnmatchedSeq
-                                             << "\n" << currentState.Reads[Index].MatchedD
-                                             << "\t" << currentState.Reads[Index].FragName
-                                             << "\t" << currentState.Reads[Index].MatchedRelPos
-                                             << "\t" << currentState.Reads[Index].MS << "\t"
-                                             << currentState.Reads[Index].InsertSize << "\t"
-                                             << currentState.Reads[Index].Tag << "\n";
+                        CloseEndMappedOutput << currentState.Reads_SR[Index].Name
+                                             << "\n" << currentState.Reads_SR[Index].UnmatchedSeq
+                                             << "\n" << currentState.Reads_SR[Index].MatchedD
+                                             << "\t" << currentState.Reads_SR[Index].FragName
+                                             << "\t" << currentState.Reads_SR[Index].MatchedRelPos
+                                             << "\t" << currentState.Reads_SR[Index].MS << "\t"
+                                             << currentState.Reads_SR[Index].InsertSize << "\t"
+                                             << currentState.Reads_SR[Index].Tag << "\n";
                     }
                 }
                 Time_Load_E = time(NULL);
@@ -1424,7 +1424,7 @@ int main(int argc, char *argv[])
 
 
                     unsigned int Num_Left;
-                    Num_Left = currentState.Reads.size();
+                    Num_Left = currentState.Reads_SR.size();
                     Const_Log_T = log10((double) Num_Left);
 
 
@@ -1432,8 +1432,8 @@ int main(int argc, char *argv[])
                     #pragma omp parallel default(shared)
                     {
                         #pragma omp for
-                        for (int readIndex= 0; readIndex < (int)currentState.Reads.size(); readIndex++ ) {
-                            SearchFarEnd( currentState.CurrentChrSeq, currentState.Reads[readIndex] );
+                        for (int readIndex= 0; readIndex < (int)currentState.Reads_SR.size(); readIndex++ ) {
+                            SearchFarEnd( currentState.CurrentChrSeq, currentState.Reads_SR[readIndex] );
                         }
                     }
 
@@ -1469,18 +1469,18 @@ int main(int argc, char *argv[])
                         std::ofstream SVReadOutput(SVReadOutputFilename.c_str(),
                                                    std::ios::app);
                         for (int Index = 0; Index < TotalNumReads; Index++) {
-                            if (currentState.Reads[Index].IndelSize > Indel_SV_cutoff
-                                    || currentState.Reads[Index].IndelSize == 0)
-                                SVReadOutput << currentState.Reads[Index].Name << "\n"
-                                             << currentState.Reads[Index]. UnmatchedSeq
-                                             << "\n" << currentState.Reads[Index]. MatchedD
-                                             << "\t" << currentState.Reads[Index]. FragName
+                            if (currentState.Reads_SR[Index].IndelSize > Indel_SV_cutoff
+                                    || currentState.Reads_SR[Index].IndelSize == 0)
+                                SVReadOutput << currentState.Reads_SR[Index].Name << "\n"
+                                             << currentState.Reads_SR[Index]. UnmatchedSeq
+                                             << "\n" << currentState.Reads_SR[Index]. MatchedD
+                                             << "\t" << currentState.Reads_SR[Index]. FragName
                                              << "\t"
-                                             << currentState.Reads[Index]. MatchedRelPos
-                                             << "\t" << currentState.Reads[Index]. MS
+                                             << currentState.Reads_SR[Index]. MatchedRelPos
+                                             << "\t" << currentState.Reads_SR[Index]. MS
                                              << "\t"
-                                             << currentState.Reads[Index]. InsertSize
-                                             << "\t" << currentState.Reads[Index].Tag
+                                             << currentState.Reads_SR[Index]. InsertSize
+                                             << "\t" << currentState.Reads_SR[Index].Tag
                                              << "\n";
                         }
                     }
@@ -1492,17 +1492,17 @@ int main(int argc, char *argv[])
                             LargeInterChrSVReadsOutputFilename.c_str(),
                             std::ios::app);
                         for (int Index = 0; Index < TotalNumReads; Index++) {
-                            if (currentState.Reads[Index].IndelSize == 0)
+                            if (currentState.Reads_SR[Index].IndelSize == 0)
                                 LargeInterChrSVReadsOutput
-                                        << currentState.Reads[Index].Name << "\n"
-                                        << currentState.Reads[Index].UnmatchedSeq
-                                        << "\n" << currentState.Reads[Index].MatchedD
-                                        << "\t" << currentState.Reads[Index].FragName
+                                        << currentState.Reads_SR[Index].Name << "\n"
+                                        << currentState.Reads_SR[Index].UnmatchedSeq
+                                        << "\n" << currentState.Reads_SR[Index].MatchedD
+                                        << "\t" << currentState.Reads_SR[Index].FragName
                                         << "\t"
-                                        << currentState.Reads[Index].MatchedRelPos
-                                        << "\t" << currentState.Reads[Index].MS << "\t"
-                                        << currentState.Reads[Index].InsertSize << "\t"
-                                        << currentState.Reads[Index].Tag << "\n";
+                                        << currentState.Reads_SR[Index].MatchedRelPos
+                                        << "\t" << currentState.Reads_SR[Index].MS << "\t"
+                                        << currentState.Reads_SR[Index].InsertSize << "\t"
+                                        << currentState.Reads_SR[Index].Tag << "\n";
                         }
                     }
 
@@ -1511,17 +1511,17 @@ int main(int argc, char *argv[])
                     unsigned Count_Unused = 0;
 
                     for (int Index = TotalNumReads - 1; Index >= 0; Index--) {
-                        if (!currentState.Reads[Index].UP_Far.empty()) {
+                        if (!currentState.Reads_SR[Index].UP_Far.empty()) {
                             Count_Far++;
                         }
-                        if (!currentState.Reads[Index].UP_Far.empty()
-                                || currentState.Reads[Index].Found) {
+                        if (!currentState.Reads_SR[Index].UP_Far.empty()
+                                || currentState.Reads_SR[Index].Found) {
 
                         }
                         else {
                             Count_Unused++;
                         }
-                        if (currentState.Reads[Index].Used) {
+                        if (currentState.Reads_SR[Index].Used) {
                             Count_Used++;
                         }
                     }
@@ -1539,7 +1539,7 @@ int main(int argc, char *argv[])
                         std::ofstream LargeInsertionOutf(
                             currentState.LargeInsertionOutputFilename. c_str(),
                             std::ios::app);
-                        SortOutputLI(currentState.CurrentChrSeq, currentState.Reads,
+                        SortOutputLI(currentState.CurrentChrSeq, currentState.Reads_SR,
                                      LargeInsertionOutf, currentState.lowerBinBorder, currentState.upperBinBorder);
                         LargeInsertionOutf.close();
                         Time_LI_E = time(NULL);
@@ -1557,7 +1557,7 @@ int main(int argc, char *argv[])
                         Time_BP_S = time(NULL);
                         std::ofstream RestOutf(currentState.RestOutputFilename.c_str(),
                                                std::ios::app);
-                        SortOutputRest(currentState.CurrentChrSeq, currentState.Reads,
+                        SortOutputRest(currentState.CurrentChrSeq, currentState.Reads_SR,
                                        BP_Reads, RestOutf, currentState.lowerBinBorder, currentState.upperBinBorder);
                         RestOutf.close();
                         Time_BP_E = time(NULL);
@@ -1571,10 +1571,10 @@ int main(int argc, char *argv[])
 
                 AllLoadings += (unsigned int) difftime(Time_Load_E, Time_Load_S);
                 AllSortReport += (unsigned int) difftime(Time_Sort_E, Time_Load_E);
-                currentState.Reads.clear();
-                (*logStream << "There are " << currentState.FutureReads. size()
+                currentState.Reads_SR.clear();
+                (*logStream << "There are " << currentState.FutureReads_SR. size()
                  << " reads saved for the next cycle.\n" << std::endl);
-                currentState.Reads.swap(currentState.FutureReads);
+                currentState.Reads_SR.swap(currentState.FutureReads_SR);
 
             }
             else {

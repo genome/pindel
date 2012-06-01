@@ -38,31 +38,31 @@ SearchDeletions::~SearchDeletions()
 bool SearchDeletions::decisionBranch1(ControlState& currentState,
                                       unsigned ReadIndex, unsigned int CloseIndex, int FarIndex)
 {
-   return currentState.Reads[ReadIndex].UP_Far[FarIndex]. LengthStr
-          + currentState.Reads[ReadIndex].UP_Close[CloseIndex]. LengthStr
-          == currentState.Reads[ReadIndex].ReadLength
-          && currentState.Reads[ReadIndex].UP_Far[FarIndex]. AbsLoc
-          > currentState.Reads[ReadIndex].UP_Close[CloseIndex]. AbsLoc
+   return currentState.Reads_SR[ReadIndex].UP_Far[FarIndex]. LengthStr
+          + currentState.Reads_SR[ReadIndex].UP_Close[CloseIndex]. LengthStr
+          == currentState.Reads_SR[ReadIndex].ReadLength
+          && currentState.Reads_SR[ReadIndex].UP_Far[FarIndex]. AbsLoc
+          > currentState.Reads_SR[ReadIndex].UP_Close[CloseIndex]. AbsLoc
           + 1;
 }
 
 bool SearchDeletions::decisionBranch2(ControlState& currentState,
                                       unsigned ReadIndex, unsigned int CloseIndex, int FarIndex)
 {
-   return currentState.Reads[ReadIndex].UP_Close[CloseIndex]. LengthStr
-          + currentState.Reads[ReadIndex].UP_Far[FarIndex]. LengthStr
-          == currentState.Reads[ReadIndex].ReadLength
-          && currentState.Reads[ReadIndex]. UP_Close[CloseIndex].AbsLoc
-          > currentState.Reads[ReadIndex].UP_Far[FarIndex]. AbsLoc
+   return currentState.Reads_SR[ReadIndex].UP_Close[CloseIndex]. LengthStr
+          + currentState.Reads_SR[ReadIndex].UP_Far[FarIndex]. LengthStr
+          == currentState.Reads_SR[ReadIndex].ReadLength
+          && currentState.Reads_SR[ReadIndex]. UP_Close[CloseIndex].AbsLoc
+          > currentState.Reads_SR[ReadIndex].UP_Far[FarIndex]. AbsLoc
           + 1;
 }
 
 unsigned int SearchDeletions::calculateIndelSize(ControlState& currentState,
       unsigned ReadIndex)
 {
-   return (currentState.Reads[ReadIndex].Right
-           - currentState.Reads[ReadIndex].Left)
-          - currentState.Reads[ReadIndex].ReadLengthMinus;
+   return (currentState.Reads_SR[ReadIndex].Right
+           - currentState.Reads_SR[ReadIndex].Left)
+          - currentState.Reads_SR[ReadIndex].ReadLengthMinus;
 }
 
 std::string SearchDeletions::getInsertedStr1(ControlState& currentState,
@@ -82,7 +82,7 @@ void SearchDeletions::outputResults(ControlState& currentState,
 {
    std::ofstream DeletionOutf(currentState.DeletionOutputFilename.c_str(),
                               std::ios::app);
-   SortOutputD(NumBoxes, currentState.CurrentChrSeq, currentState.Reads, Vars,
+   SortOutputD(NumBoxes, currentState.CurrentChrSeq, currentState.Reads_SR, Vars,
                DeletionOutf);
    DeletionOutf.close();
 }
