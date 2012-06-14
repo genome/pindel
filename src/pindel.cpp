@@ -1221,7 +1221,7 @@ int main(int argc, char *argv[])
         std::cout << "Entering genotyping mode ..." << std::endl;
         doGenotyping(currentState, par);
        
-        std::cout << "Leaving genotyping mode and terminating this run." << std::endl;
+        std::cout << "\nLeaving genotyping mode and terminating this run." << std::endl;
         exit(EXIT_SUCCESS);
     }
     

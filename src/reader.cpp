@@ -942,13 +942,13 @@ int32_t bam_cigar2mismatch( const bam1_core_t *readCore, const uint32_t *cigar)
 }
 
 short get_RP_Reads(ControlState& currentState, ParCollection & par) {
-    std::cout << "getReads " << currentState.CurrentChrName << " " << currentState.CurrentChrSeq.size() << std::endl;
+    //std::cout << "getReads " << currentState.CurrentChrName << " " << currentState.CurrentChrSeq.size() << std::endl;
     short ReturnFromReadingReads;
     //ReadBuffer readBuffer(BUFFER_SIZE, currentState.Reads_SR, currentState.CurrentChrSeq);
     if (currentState.BAMDefined) {
         ReturnFromReadingReads = 0;
         for (unsigned int i = 0; i < currentState.bams_to_parse.size(); i++) {
-            *logStream << "Insertsize in bamreads: " << currentState.bams_to_parse[i].InsertSize << std::endl;
+            //*logStream << "Insertsize in bamreads: " << currentState.bams_to_parse[i].InsertSize << std::endl;
             ReturnFromReadingReads = ReadInBamReads_RP(
                                                        currentState.bams_to_parse[i].BamFile.c_str(),
                                                        currentState.CurrentChrName, 
@@ -965,13 +965,13 @@ short get_RP_Reads(ControlState& currentState, ParCollection & par) {
                 return 1;
             }
             else if (currentState.Reads_RP.size() == 0) {
-                LOG_ERROR(*logStream << "No currentState.Reads for "
-                          << currentState.CurrentChrName << " found in "
-                          << currentState.bams_to_parse[i].BamFile
-                          << std::endl);
+                //LOG_ERROR(*logStream << "No currentState.Reads for "
+                //          << currentState.CurrentChrName << " found in "
+                //          << currentState.bams_to_parse[i].BamFile
+                //          << std::endl);
             }
-            (*logStream << "BAM file index\t" << i << "\t"
-             << currentState.Reads_RP.size() << std::endl);
+            //(*logStream << "BAM file index\t" << i << "\t"
+            // << currentState.Reads_RP.size() << std::endl);
         }
         
     }

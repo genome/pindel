@@ -28,6 +28,7 @@
 #include "farend_searcher.h"
 #include <map>
 #include <set>
+//#include <pair.h>
 #include <string>
 #include <utility>
 #include <algorithm>
@@ -50,7 +51,26 @@ void doGenotyping (ControlState & CurrentState, ParCollection & par) {
         ChrName2Index[AllChromosomes[i].ChrName] = i;
     }
     
-    
+    std::set<std::string> SampleNameAsSet;
+    std::map<std::string, unsigned> SampleName2IndexAsMap;
+    std::vector<std::string> SampleNameAsVector;
+    for (unsigned BamIndex = 0; BamIndex < CurrentState.bams_to_parse.size(); BamIndex++) {
+        if (SampleNameAsSet.find(CurrentState.bams_to_parse[BamIndex].Tag) == SampleNameAsSet.end()) { // not in the set
+            SampleName2IndexAsMap.insert ( std::pair<std::string,int>(CurrentState.bams_to_parse[BamIndex].Tag, SampleNameAsSet.size() ) );
+            SampleNameAsSet.insert(CurrentState.bams_to_parse[BamIndex].Tag);
+            SampleNameAsVector.push_back(CurrentState.bams_to_parse[BamIndex].Tag);
+        }
+        else {
+            std::cout << "Two BAM files with the same sample name.\n";
+            exit(EXIT_FAILURE);
+        }
+    }
+    std::cout << "There are " << SampleNameAsVector.size() << " samples.\n";
+    std::cout << "Samples:";
+    for (unsigned SampleIndex = 0; SampleIndex < SampleNameAsVector.size(); SampleIndex++) {
+        std::cout << " " << SampleNameAsVector[SampleIndex];
+    }
+    std::cout << std::endl;
     // step 2 load all variants into memory
     
     // step 2. get all SVs
@@ -80,6 +100,13 @@ void doGenotyping (ControlState & CurrentState, ParCollection & par) {
         AllSV4Genotyping.push_back(OneSV);
     }
     std::cout << "\nAllSV4Genotyping size " << AllSV4Genotyping.size() << "\n" << std::endl;
+    
+    std::cout << "Samples:";
+    for (unsigned SampleIndex = 0; SampleIndex < SampleNameAsVector.size(); SampleIndex++) {
+        std::cout << " " << SampleNameAsVector[SampleIndex];
+    }
+    std::cout << "\n\n";
+    
     // step 3 define output
     std::string GT_OutputFileName = CurrentState.OutputFolder + "_GT";
     std::ofstream GT_Output(GT_OutputFileName.c_str());
@@ -88,7 +115,7 @@ void doGenotyping (ControlState & CurrentState, ParCollection & par) {
     for (unsigned SV_index =0; SV_index < AllSV4Genotyping.size(); SV_index++) {
         // step 4.1 if type == DEL, GenotypeDel
 
-        if (AllSV4Genotyping[SV_index].Type == "DEL") GenotypingOneDEL(AllChromosomes, ChrName2Index, CurrentState, par, AllSV4Genotyping[SV_index], GT_Output);
+        if (AllSV4Genotyping[SV_index].Type == "DEL") GenotypingOneDEL(AllChromosomes, ChrName2Index, CurrentState, par, AllSV4Genotyping[SV_index], SampleName2IndexAsMap, GT_Output);
 
         // step 4.2 if type == DUP, GenotypeDup
         
@@ -100,14 +127,14 @@ void doGenotyping (ControlState & CurrentState, ParCollection & par) {
     }
 }
 
-short GenotypingOneDEL(const std::vector <Chromosome> & AllChromosomes, std::map<std::string,int> &ChrName2Index, ControlState & CurrentState, ParCollection & par, Genotyping & OneSV, std::ofstream & GT_Output) {
-    std::cout << "Genotyping " << OneSV.Type << " " << OneSV.ChrA << " " << OneSV.PosA << " " 
+short GenotypingOneDEL(const std::vector <Chromosome> & AllChromosomes, std::map<std::string,int> &ChrName2Index, ControlState & CurrentState, ParCollection & par, Genotyping & OneSV, std::map<std::string, unsigned> & SampleName2IndexAsMap, std::ofstream & GT_Output) {
+    std::cout << "\nGenotyping " << OneSV.Type << " " << OneSV.ChrA << " " << OneSV.PosA << " " 
     << OneSV.CI_A << " " << OneSV.ChrB << " " << OneSV.PosB << " " << OneSV.CI_B << std::endl;
     // get RD signals
     const std::string & CurrentChrSeq = AllChromosomes[ ChrName2Index[ OneSV.ChrA ]].ChrSeq;
     CurrentState.CurrentChrName = OneSV.ChrA;
     getRelativeCoverage(CurrentChrSeq, ChrName2Index[OneSV.ChrA], CurrentState, OneSV);
-    GetRP4OnDEL(AllChromosomes, ChrName2Index, CurrentState, par, OneSV, GT_Output);
+    GetRP4OnDEL(AllChromosomes, ChrName2Index, CurrentState, par, OneSV, SampleName2IndexAsMap, GT_Output);
     //short AssembleOneSV(const std::vector <Chromosome> & AllChromosomes, std::map<std::string,int> & ChrName2Index, ControlState & CurrentState, ParCollection & par, const Assembly & OneSV, std::ofstream & ASM_Output);
     //getRP_counts4DEL(CurrentChrSeq, ChrName2Index[OneSV.ChrA], CurrentState, OneSV);
     //std::cout << "after getRelativeCoverage " << OneSV.Type << " " << OneSV.ChrA << " " << OneSV.PosA << " " 
@@ -127,7 +154,7 @@ void getAverageAndSTDE(const std::vector <unsigned> & Distances, unsigned & Aver
     float Diff = 0;
     for (unsigned i = 0; i < Distances.size(); i++) Diff += pow(Distances[i] - float_average, 2);
     STDE = (unsigned)(sqrt(Diff / Distances.size()));
-    std::cout << Average << " " << STDE << std::endl;
+    //std::cout << Average << " " << STDE << std::endl;
 }
 
 void getMAD(const std::vector <unsigned> & Distances, const unsigned & Median, unsigned & MAD) {
@@ -140,61 +167,68 @@ void getMAD(const std::vector <unsigned> & Distances, const unsigned & Median, u
     }
     sort(Diff.begin(), Diff.end());
     MAD = Diff[Diff.size() / 2];
-    std::cout << "MAD: " << Median << " " << MAD << std::endl; 
+    //std::cout << "MAD: " << Median << " " << MAD << std::endl; 
 }
 
-void CountREF_RP(const std::vector <RP_READ> & Reads_RP, const std::vector <unsigned> & RP_READ_Index, unsigned lower, unsigned upper, unsigned Cutoff, unsigned & CountREF) {
-    CountREF = 0;
+void CountREF_RP(const std::vector <RP_READ> & Reads_RP, const std::vector <unsigned> & RP_READ_Index, unsigned lower, unsigned upper, unsigned Cutoff, unsigned * CountREF, std::map<std::string, unsigned> & SampleName2IndexAsMap) {
+    for (unsigned SampleIndex = 0; SampleIndex < SampleName2IndexAsMap.size(); SampleIndex++)
+       CountREF[SampleIndex] = 0;
     //std::cout << "lower and upper: " << lower << " " << upper << std::endl;
     for (unsigned i = 0; i < RP_READ_Index.size(); i++) {
         if ((unsigned)Reads_RP[RP_READ_Index[i]].Distance <= Cutoff) {
             //std::cout << "here CountREF_RP " << Reads_RP[RP_READ_Index[i]].Distance << " " << Reads_RP[RP_READ_Index[i]].PosA << " " << Reads_RP[RP_READ_Index[i]].PosB << std::endl;
             if (Reads_RP[RP_READ_Index[i]].PosA < Reads_RP[RP_READ_Index[i]].PosB) {
                 if (Reads_RP[RP_READ_Index[i]].PosA <= lower && Reads_RP[RP_READ_Index[i]].PosB >= upper) {
-                    CountREF++;
+                    CountREF[SampleName2IndexAsMap.find(Reads_RP[RP_READ_Index[i]].Tag) -> second]++;
                 }
             }
             else {
                 if (Reads_RP[RP_READ_Index[i]].PosB <= lower && Reads_RP[RP_READ_Index[i]].PosA >= upper) {
-                    CountREF++;
+                    CountREF[SampleName2IndexAsMap.find(Reads_RP[RP_READ_Index[i]].Tag) -> second]++;
                 }
             }
         }
     }
 }
 
-void CountALT_RP(const std::vector <RP_READ> & Reads_RP, const std::vector <unsigned> & RP_READ_Index, unsigned lower, unsigned upper, unsigned Cutoff, unsigned & CountALT) {
-    CountALT = 0;
+void CountALT_RP(const std::vector <RP_READ> & Reads_RP, const std::vector <unsigned> & RP_READ_Index, unsigned lower, unsigned upper, unsigned Cutoff, unsigned * CountALT, std::map<std::string, unsigned> & SampleName2IndexAsMap) {
+    for (unsigned SampleIndex = 0; SampleIndex < SampleName2IndexAsMap.size(); SampleIndex++)
+        CountALT[SampleIndex] = 0;
     for (unsigned i = 0; i < RP_READ_Index.size(); i++) {
         if ((unsigned)Reads_RP[RP_READ_Index[i]].Distance > Cutoff) {
             //std::cout << "here CountALT_RP " << Reads_RP[RP_READ_Index[i]].Distance << " " << Reads_RP[RP_READ_Index[i]].PosA << " " << Reads_RP[RP_READ_Index[i]].PosB << std::endl;
             if (Reads_RP[RP_READ_Index[i]].PosA < Reads_RP[RP_READ_Index[i]].PosB) {
                 if (Reads_RP[RP_READ_Index[i]].PosA <= lower && Reads_RP[RP_READ_Index[i]].PosB >= upper) {
-                    CountALT++;
+                    CountALT[SampleName2IndexAsMap.find(Reads_RP[RP_READ_Index[i]].Tag) -> second]++;
                 }
             }
             else {
                 if (Reads_RP[RP_READ_Index[i]].PosB <= lower && Reads_RP[RP_READ_Index[i]].PosA >= upper) {
-                    CountALT++;
+                    CountALT[SampleName2IndexAsMap.find(Reads_RP[RP_READ_Index[i]].Tag) -> second]++;
                 }
             }
         }
     }
 }
 
-void CountRPSupport4DEL(const std::vector <RP_READ> & Reads_RP, const std::vector <unsigned> RP_READ_Index, const Genotyping & OneSV, const unsigned Median, const unsigned MAD, unsigned & CountREF_A, unsigned & CountREF_B, unsigned & CountALT) {
+void CountRPSupport4DEL(const std::vector <RP_READ> & Reads_RP, const std::vector <unsigned> RP_READ_Index, const Genotyping & OneSV, const unsigned Median, const unsigned MAD, std::map<std::string, unsigned> & SampleName2IndexAsMap) {
     unsigned Cutoff = Median + 5 * MAD;
-    std::cout << "Cutoff " << Cutoff << std::endl;
-    CountREF_RP(Reads_RP, RP_READ_Index, OneSV.PosA - OneSV.CI_A, OneSV.PosA + OneSV.CI_A, Cutoff, CountREF_A);
-    CountREF_RP(Reads_RP, RP_READ_Index, OneSV.PosB - OneSV.CI_B, OneSV.PosB + OneSV.CI_B, Cutoff, CountREF_B);
-    CountALT_RP(Reads_RP, RP_READ_Index, OneSV.PosA - OneSV.CI_A, OneSV.PosB + OneSV.CI_B, Cutoff, CountALT);
-    std::cout << "REF A: " << CountREF_A << "\tREF B: " << CountREF_B << "\t ALT: " << CountALT << std::endl;
-    if (CountREF_A + CountREF_B + CountALT)
-        std::cout << "Genotype from RP information " << (float)(CountREF_A + CountREF_B) * 2 / (CountREF_A + CountREF_B + CountALT * 2) << std::endl;
-    else std::cout << "Genotype undefined from RP" << std::endl;
+    //std::cout << "Cutoff " << Cutoff << std::endl;
+    unsigned CountREF_A[SampleName2IndexAsMap.size()], CountREF_B[SampleName2IndexAsMap.size()], CountALT[SampleName2IndexAsMap.size()];
+    CountREF_RP(Reads_RP, RP_READ_Index, OneSV.PosA - OneSV.CI_A, OneSV.PosA + OneSV.CI_A, Cutoff, CountREF_A, SampleName2IndexAsMap);
+    CountREF_RP(Reads_RP, RP_READ_Index, OneSV.PosB - OneSV.CI_B, OneSV.PosB + OneSV.CI_B, Cutoff, CountREF_B, SampleName2IndexAsMap);
+    CountALT_RP(Reads_RP, RP_READ_Index, OneSV.PosA - OneSV.CI_A, OneSV.PosB + OneSV.CI_B, Cutoff, CountALT, SampleName2IndexAsMap);
+    //std::cout << "REF A: " << CountREF_A << "\tREF B: " << CountREF_B << "\t ALT: " << CountALT << std::endl;
+    std::cout << "Genotype_Based_On_RP:";
+    for (unsigned SampleIndex = 0; SampleIndex < SampleName2IndexAsMap.size(); SampleIndex++) {
+        if (CountREF_A[SampleIndex] + CountREF_B[SampleIndex] + CountALT[SampleIndex])
+            std::cout << " " << (float)(CountREF_A[SampleIndex] + CountREF_B[SampleIndex]) * 2 / (CountREF_A[SampleIndex] + CountREF_B[SampleIndex] + CountALT[SampleIndex] * 2);
+        else std::cout << " -1";// << std::endl;
+    }
+    std::cout << std::endl;
 }
 
-short GetRP4OnDEL(const std::vector <Chromosome> & AllChromosomes, std::map<std::string,int> & ChrName2Index, ControlState & CurrentState, ParCollection & par, const Genotyping & OneSV, std::ofstream & GT_Output) {
+short GetRP4OnDEL(const std::vector <Chromosome> & AllChromosomes, std::map<std::string,int> & ChrName2Index, ControlState & CurrentState, ParCollection & par, const Genotyping & OneSV, std::map<std::string, unsigned> & SampleName2IndexAsMap, std::ofstream & GT_Output) {
     //std::vector <RP_READ> ALL_RP_reads;
     short Min_MQ = 20;
     std::set<std::string> ReadNames;
@@ -217,20 +251,7 @@ short GetRP4OnDEL(const std::vector <Chromosome> & AllChromosomes, std::map<std:
     get_RP_Reads(CurrentState, par);
     //std::cout << "Reads around BP 1 " << CurrentState.Reads_RP.size() << std::endl;
     
-    /*
-    if (CurrentState.CurrentChrName != OneSV.ChrB) {
-        CurrentState.CurrentChrName = OneSV.ChrB;
-        CurrentState.CurrentChrSeq = AllChromosomes[ChrName2Index.find(OneSV.ChrB)->second].ChrSeq; // change later, copying one chrseq for each SV is expensive. 
-    }
-    
-    if (OneSV.PosB > OneSV.CI_B + Overhead)  
-        CurrentState.lowerBinBorder = OneSV.PosB - OneSV.CI_B - Overhead; //CurrentState.
-    else CurrentState.lowerBinBorder = 1;
-    CurrentState.upperBinBorder = OneSV.PosB + OneSV.CI_B + Overhead;
-    
-    get_RP_Reads(CurrentState, par);
-    */
-    std::cout << "Reads around both breakpoints " << CurrentState.Reads_RP.size() << std::endl;
+    //std::cout << "Reads around both breakpoints " << CurrentState.Reads_RP.size() << std::endl;
     std::vector <unsigned> Distances, RP_READ_Index;
     unsigned TempDistance;
     for (unsigned ReadIndex = 0; ReadIndex < CurrentState.Reads_RP.size(); ReadIndex++) {
@@ -255,153 +276,14 @@ short GetRP4OnDEL(const std::vector <Chromosome> & AllChromosomes, std::map<std:
     //    std::cout << Distances[ReadIndex] << " ";
     //std::cout << std::endl;
     unsigned Median = Distances[Distances.size() / 2]; 
-    std::cout << "Insert size = " << Median << std::endl;
+    //std::cout << "Insert size = " << Median << std::endl;
     unsigned Average, STDE;
     getAverageAndSTDE(Distances, Average, STDE);
     unsigned MAD;
     getMAD(Distances, Median, MAD);
-    unsigned CountREF_A, CountREF_B, CountALT;
-    CountRPSupport4DEL(CurrentState.Reads_RP, RP_READ_Index, OneSV, Median, MAD, CountREF_A, CountREF_B, CountALT);
-    /*
-    std::vector <RP_READ> ALL_RP_reads;
-    unsigned SearchCenter;
-    unsigned SearchRange;
-    std::cout << "Current SV: " << OneSV.Index << " " << OneSV.Type << " " << OneSV.ChrA << " " << OneSV.PosA << " " << OneSV.CI_A 
-    << "\t" << OneSV.ChrB << " " << OneSV.PosB << " " << OneSV.CI_B << std::endl;
-    // get first BP
-    CurrentState.Reads.clear();
-    //std::cout << "AssembleOneSV 2" << std::endl;
-    
-    CurrentState.CurrentChrName = OneSV.ChrA;
-    CurrentState.CurrentChrSeq = AllChromosomes[ChrName2Index.find(OneSV.ChrA)->second].ChrSeq;
-    CONS_Chr_Size = CurrentState.CurrentChrSeq.size() - 2 * g_SpacerBeforeAfter; // #################
-    //std::cout << "CONS_Chr_Size " << CONS_Chr_Size << std::endl;
-    g_maxPos = 0; // #################
-    g_NumReadInWindow = 0; // #################
-    g_InWinPlus = 0; // #################
-    g_InWinMinus = 0; // #################
-    g_CloseMappedPlus = 0; // #################
-    g_CloseMappedMinus = 0; // #################
-    unsigned Left, Right;
-    if (OneSV.PosA > OneSV.CI_A + 1000)  
-        CurrentState.lowerBinBorder = OneSV.PosA - OneSV.CI_A - 1000; //CurrentState.
-    else CurrentState.lowerBinBorder = 1;
-    CurrentState.upperBinBorder = OneSV.PosA + OneSV.CI_A + 1000;
-    Left = OneSV.PosA + g_SpacerBeforeAfter - OneSV.CI_A;
-    Right = OneSV.PosA + g_SpacerBeforeAfter + OneSV.CI_A;
-    
-    std::cout << "\nFirst BP\tChrName " << CurrentState.CurrentChrName << "\tRange " << CurrentState.lowerBinBorder << " " << CurrentState.upperBinBorder << std::endl;
-    get_SR_Reads(CurrentState, par);
-    
-    //std::cout << "First size: " << CurrentState.Reads.size() << std::endl;
-    CombineAndSort(AllChromosomes, ChrName2Index, CurrentState, par, OneSV, First, CurrentState.lowerBinBorder, CurrentState.upperBinBorder, WhetherFirstBP);
-    
-    CleanUpCloseEnd(First, Left, Right); // vector of reads
-    
-    std::cout << "\nFirst size " << First.size() << std::endl;
-    SearchRange = OneSV.CI_B + 1000;
-    SearchCenter = OneSV.PosB + g_SpacerBeforeAfter;
-    Left = OneSV.PosB + g_SpacerBeforeAfter - OneSV.CI_B;
-    Right = OneSV.PosB + g_SpacerBeforeAfter + OneSV.CI_B;
-    
-    for (unsigned ReadIndex = 0; ReadIndex < First.size(); ReadIndex++) {
-        First[ReadIndex].FarFragName = OneSV.ChrB;
-        SearchFarEndAtPos(AllChromosomes[ChrName2Index.find(OneSV.ChrB)->second].ChrSeq, First[ReadIndex], SearchCenter, SearchRange);
-    }
-    //std::cout << "AssembleOneSV 7" << std::endl;
-    
-    CleanUpFarEnd(First, Left, Right);
-    //std::cout << "AssembleOneSV 8" << std::endl;
-    
-    
-    for (unsigned ReadIndex = 0; ReadIndex < First.size(); ReadIndex++) {
-        if (First[ReadIndex].UP_Close.size()) {
-            if (First[ReadIndex].UP_Far.size()) {
-                //if (First[ReadIndex].UP_Far[0].LengthStr < 0) continue;
-                //std::cout << "First UP_Far: ";
-                //std::cout << First[ReadIndex].UP_Far.size() << std::endl;
-                //std::cout << "First[ReadIndex].UP_Far.size() " << First[ReadIndex].UP_Close[First[ReadIndex].UP_Close.size() - 1].LengthStr << std::endl;
-                if (First[ReadIndex].UP_Far[First[ReadIndex].UP_Far.size() - 1].LengthStr + First[ReadIndex].UP_Close[First[ReadIndex].UP_Close.size() - 1].LengthStr + Max_NT_Size >= First[ReadIndex].ReadLength) OutputCurrentRead(AllChromosomes, ChrName2Index, CurrentState, par, OneSV, First[ReadIndex], ASM_Output);
-            }
-            else if (First[ReadIndex].UP_Far_backup.size()) {
-                //std::cout << "First UP_Far_backup ";
-                //std::cout << First[ReadIndex].UP_Far_backup.size() << std::endl; //First[ReadIndex].UP_Far_backup[First[ReadIndex].UP_Far_backup.size() - 1].LengthStr << " " << First[ReadIndex].UP_Close[First[ReadIndex].UP_Close.size() - 1].LengthStr << " " << Max_NT_Size << " " << First[ReadIndex].ReadLength << std::endl;
-                //if (First[ReadIndex].UP_Far_backup[First[ReadIndex].UP_Far_backup.size() - 1].LengthStr + First[ReadIndex].UP_Close[First[ReadIndex].UP_Close.size() - 1].LengthStr + Max_NT_Size >= First[ReadIndex].ReadLength) 
-                //std::cout << "First[ReadIndex].UP_Far_backup.size() # " << First[ReadIndex].UP_Close[First[ReadIndex].UP_Close.size() - 1].LengthStr << std::endl;
-                OutputCurrentRead(AllChromosomes, ChrName2Index, CurrentState, par, OneSV, First[ReadIndex], ASM_Output);
-            }
-        }
-    }
-    
-    
-    // get second BP
-    CurrentState.Reads.clear();
-    WhetherFirstBP = false;
-    CurrentState.CurrentChrName = OneSV.ChrB;
-    CurrentState.CurrentChrSeq = AllChromosomes[ChrName2Index.find(OneSV.ChrB)->second].ChrSeq;
-    CONS_Chr_Size = CurrentState.CurrentChrSeq.size() - 2 * g_SpacerBeforeAfter; // #################
-    g_maxPos = 0; // #################
-    g_NumReadInWindow = 0; // #################
-    g_InWinPlus = 0; // #################
-    g_InWinMinus = 0; // #################
-    g_CloseMappedPlus = 0; // #################
-    g_CloseMappedMinus = 0; // #################
-    if (OneSV.PosB > OneSV.CI_B + 1000)  
-        CurrentState.lowerBinBorder = OneSV.PosB - OneSV.CI_B - 1000;
-    else CurrentState.lowerBinBorder = 1;
-    CurrentState.upperBinBorder = OneSV.PosB + OneSV.CI_B + 1000;
-    Left = OneSV.PosB + g_SpacerBeforeAfter - OneSV.CI_B;
-    Right = OneSV.PosB + g_SpacerBeforeAfter + OneSV.CI_B;
-    
-    std::cout << "\nSecond BP\tChrName " << CurrentState.CurrentChrName << "\tRange " << CurrentState.lowerBinBorder << " " << CurrentState.upperBinBorder << std::endl;    
-    get_SR_Reads(CurrentState, par);
-    
-    CombineAndSort(AllChromosomes, ChrName2Index, CurrentState, par, OneSV, Second, CurrentState.lowerBinBorder, CurrentState.upperBinBorder, WhetherFirstBP);
-    
-    CleanUpCloseEnd(Second, Left, Right);
-    
-    std::cout << "\nSecond size " << Second.size() << std::endl;
-    SearchRange = OneSV.CI_A + 1000;
-    SearchCenter = OneSV.PosA + g_SpacerBeforeAfter;
-    Left = OneSV.PosA + g_SpacerBeforeAfter - OneSV.CI_A;
-    Right = OneSV.PosA + g_SpacerBeforeAfter + OneSV.CI_A;
-    
-    for (unsigned ReadIndex = 0; ReadIndex < Second.size(); ReadIndex++) {
-        Second[ReadIndex].FarFragName = OneSV.ChrA;
-        SearchFarEndAtPos(AllChromosomes[ChrName2Index.find(OneSV.ChrA)->second].ChrSeq, Second[ReadIndex], SearchCenter, SearchRange);
-    }
-    
-    CleanUpFarEnd(Second, Left, Right);
-    
-    for (unsigned ReadIndex = 0; ReadIndex < Second.size(); ReadIndex++) {
-        if (Second[ReadIndex].UP_Close.size()) {
-            if (Second[ReadIndex].UP_Far.size()) {
-                //std::cout << "Second UP_Far: " << Second[ReadIndex].UP_Far.size() << std::endl;
-                //std::cout << "Second[ReadIndex].UP_Far.size() " << Second[ReadIndex].UP_Close[Second[ReadIndex].UP_Close.size() - 1].LengthStr << std::endl;
-                if (Second[ReadIndex].UP_Far[Second[ReadIndex].UP_Far.size() - 1].LengthStr + Second[ReadIndex].UP_Close[Second[ReadIndex].UP_Close.size() - 1].LengthStr + Max_NT_Size >= Second[ReadIndex].ReadLength) OutputCurrentRead(AllChromosomes, ChrName2Index, CurrentState, par, OneSV, Second[ReadIndex], ASM_Output);
-            }
-            else if (Second[ReadIndex].UP_Far_backup.size()) {
-                //std::cout << "Second UP_Far_backup " << Second[ReadIndex].UP_Far_backup.size() << std::endl; //<< Second[ReadIndex].UP_Far_backup[Second[ReadIndex].UP_Far_backup.size() - 1].LengthStr << " " << Second[ReadIndex].UP_Close[Second[ReadIndex].UP_Close.size() - 1].LengthStr << " " << Max_NT_Size << " " << Second[ReadIndex].ReadLength << std::endl;
-                //if (Second[ReadIndex].UP_Far_backup[Second[ReadIndex].UP_Far_backup.size() - 1].LengthStr + Second[ReadIndex].UP_Close[Second[ReadIndex].UP_Close.size() - 1].LengthStr + Max_NT_Size >= Second[ReadIndex].ReadLength) 
-                //std::cout << "Second[ReadIndex].UP_Far_backup.size() " << Second[ReadIndex].UP_Close[Second[ReadIndex].UP_Close.size() - 1].LengthStr << std::endl;
-                OutputCurrentRead(AllChromosomes, ChrName2Index, CurrentState, par, OneSV, Second[ReadIndex], ASM_Output);
-            }
-        }
-    }
-    //std::cout << "AssembleOneSV 15" << std::endl;
-    
-    unsigned SumSize = 0;
-    for (unsigned ReadIndex = 0; ReadIndex < First.size(); ReadIndex++) {
-        SumSize += First[ReadIndex].UP_Far.size() + First[ReadIndex].UP_Far_backup.size();
-    }
-    for (unsigned ReadIndex = 0; ReadIndex < Second.size(); ReadIndex++) {
-        SumSize += Second[ReadIndex].UP_Far.size() + Second[ReadIndex].UP_Far_backup.size();
-    }
-    if (SumSize == 0 && OneSV.ChrA == OneSV.ChrB) {
-        TryLI(AllChromosomes, ChrName2Index, CurrentState, par, OneSV, First, Second, ASM_Output);
-    }
-
-    */
+    //unsigned CountREF_A, CountREF_B, CountALT;
+    CountRPSupport4DEL(CurrentState.Reads_RP, RP_READ_Index, OneSV, Median, MAD, SampleName2IndexAsMap);
+ 
     return 0;
 }
 

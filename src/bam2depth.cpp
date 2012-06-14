@@ -180,25 +180,25 @@ void getRelativeCoverageInternal(const std::string & chromosomeName, const int c
     //std::cout << "1" << std::endl;
     std::cout.precision(2);
     bam2depth( chromosomeName, startOfRegionBeforeSV, startPos, minBaseQuality, minMappingQuality, listOfFiles, avgCoverageOfRegionBeforeSV );
-    std::cout << "before  ";
-    for (int fileIndex=0; fileIndex < numberOfBams; fileIndex++ ) {
-        std::cout << Spaces(avgCoverageOfRegionBeforeSV[fileIndex]) << std::fixed << avgCoverageOfRegionBeforeSV[fileIndex];
-    }
-    std::cout << std::endl;
+    //std::cout << "before  ";
+    //for (int fileIndex=0; fileIndex < numberOfBams; fileIndex++ ) {
+    //    std::cout << Spaces(avgCoverageOfRegionBeforeSV[fileIndex]) << std::fixed << avgCoverageOfRegionBeforeSV[fileIndex];
+    //}
+    //std::cout << std::endl;
     //std::cout << "2" << std::endl;
     bam2depth( chromosomeName, startPos, endPos, minBaseQuality, minMappingQuality, listOfFiles, avgCoverageOfSVRegion );
-    std::cout << "in      "; 
-    for (int fileIndex=0; fileIndex < numberOfBams; fileIndex++ ) {
-        std::cout << Spaces(avgCoverageOfSVRegion[fileIndex]) << std::fixed << avgCoverageOfSVRegion[fileIndex];
-    }
-    std::cout << std::endl;
+    //std::cout << "in      "; 
+    //for (int fileIndex=0; fileIndex < numberOfBams; fileIndex++ ) {
+    //    std::cout << Spaces(avgCoverageOfSVRegion[fileIndex]) << std::fixed << avgCoverageOfSVRegion[fileIndex];
+    //}
+    //std::cout << std::endl;
     //std::cout << "3" << std::endl;
     bam2depth( chromosomeName, endPos, endOfRegionAfterSV, minBaseQuality, minMappingQuality, listOfFiles, avgCoverageOfRegionAfterSV );
-    std::cout << "after   ";
-    for (int fileIndex=0; fileIndex < numberOfBams; fileIndex++ ) {
-        std::cout << Spaces(avgCoverageOfRegionAfterSV[fileIndex])  << std::fixed << avgCoverageOfRegionAfterSV[fileIndex];
-    }
-    std::cout << std::endl;
+    //std::cout << "after   ";
+    //for (int fileIndex=0; fileIndex < numberOfBams; fileIndex++ ) {
+    //    std::cout << Spaces(avgCoverageOfRegionAfterSV[fileIndex])  << std::fixed << avgCoverageOfRegionAfterSV[fileIndex];
+    //}
+    //std::cout << std::endl;
     //std::cout << "4" << std::endl;
     for (int fileIndex=0; fileIndex < numberOfBams; fileIndex++ ) {
        if ( avgCoverageOfRegionBeforeSV[ fileIndex ] + avgCoverageOfRegionAfterSV[ fileIndex ] == 0 ) { 
@@ -236,9 +236,9 @@ void getRelativeCoverage(const std::string & CurrentChrSeq, const int chromosome
 		OneSV.RD_signals);  
     //std::cout << "after  getRelativeCoverageInternal " << OneSV.ChrA << "\t" << OneSV.PosA << "\t" << OneSV.CI_A << "\t"
     //          << OneSV.ChrB << "\t" << OneSV.PosB << "\t" << OneSV.CI_B;
-    std::cout << "Genotyping per sample";
+    std::cout << "Genotype_Based_On_RD:";
     for (unsigned RD_index = 0; RD_index < OneSV.RD_signals.size(); RD_index++) {
-        std::cout << "\t" << std::fixed << OneSV.RD_signals[RD_index];
+        std::cout << " " << std::fixed << OneSV.RD_signals[RD_index];
     }
     std::cout << std::endl;
     //std::cout << "leaving getRelativeCoverage" << std::endl;
