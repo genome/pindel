@@ -7,7 +7,12 @@
 	e.m.w.lameijer@lumc.nl
 	+31(0)71-526 9745
 
-BUGS: -c option does not work properly
+	Version 0.3.9 [June 8th, 2012] Added maximum total coverage to protect from duplicated regions
+	Veriosn 0.3.8 [June 8th, 2012] Long insertions support debugged.
+	Version 0.3.7 [June 8th, 2012] Next stage in debugging repeats/postindel options
+	Version 0.3.6 [June 8th, 2012] Debugged int repeats/postindel options[1]
+	Version 0.3.5 [June 1st, 2012] Refined microhomology/microsattelite sequencing to distinguish internal repeats and 'postindel' repeats
+	Version 0.3.4 [May 21st, 2012] Alternative homology calling; now checks whether inserted/deleted sequence is part of a longer repetitive sequence
 	Version 0.3.3 [May 2nd, 2012] Debugged -sb/-ss option: now works if 1 sample is selected
 	Version 0.3.2 [May 1st, 2012] Adds -sb and -ss options to allow users to only count samples with sufficient individual support. 
 	Version 0.3.1 [March 27th, 2012] -c option now works!
@@ -28,7 +33,15 @@ BUGS: -c option does not work properly
 
 */
 
+/* CONTENTS
 
+PREFACE: include files and global constants
+CHAPTER 1. General utilities for DNA-string manipulation (reverse-complementing a string)
+CHAPTER 2. Defining the parameters and the 'Parameter class' to handle them.
+*/
+
+
+/*** PREFACE: include files and global constants ->***/
 
 #include <algorithm>
 #include <fstream>
@@ -48,10 +61,40 @@ const int FIRST_SAMPLE_INDEX = 32; // index of first sample name
 
 using namespace std;
 
-string g_versionString = "0.3.3";
+string g_versionString = "0.3.9";
 string g_programName = "pindel2vcf";
 
 bool g_normalBaseArray[256];
+
+/* the global parameter g_par stores the values of all parameters set by the user; the Parameter class, in contrast, is for user-friendly IO. */ 
+struct ParameterSettings {
+   string reference;
+   string referenceName;
+   string referenceDate;
+   string pindelfile;
+   string vcffile;
+   string chromosome;
+	int windowSize;
+   int minsize;
+   int maxsize;
+   bool bothstrands;
+   int minsuppSamples;
+   int minsuppReads;
+	int maxSuppReads;
+   int regionStart;
+   int regionEnd;
+   int maxInterRepeatNo;
+   int maxInterRepeatLength;
+   int maxPostRepeatNo;
+   int maxPostRepeatLength;	
+	bool onlyBalancedSamples;
+	int minimumStrandSupport;
+   bool showHelp;
+} g_par;
+
+/*** END OF PREFACE: include files and global constants ***/
+
+/*** CHAPTER 1. General utilities for DNA-string manipulation (reverse-complementing a string) ->***/
 
 /* returns the complementary DNA-base of base 'inputbase' */
 char complementBase( char inputBase )
@@ -81,27 +124,7 @@ void createComplement( const string& dna, string& complement )
 }
 
 
-struct ParameterCollection {
-   string reference;
-   string referenceName;
-   string referenceDate;
-   string pindelfile;
-   string vcffile;
-   string chromosome;
-	int windowSize;
-   int minsize;
-   int maxsize;
-   bool bothstrands;
-   int minsuppSamples;
-   int minsuppReads;
-   int regionStart;
-   int regionEnd;
-   int maxHomopolyRepeats;
-   int maxHomopolyLength;
-	bool onlyBalancedSamples;
-	int minimumStrandSupport;
-   bool showHelp;
-} par;
+
 
 /* 'Parameter' stores an individual parameter; it is set by the command line parameters, and used by the program. */
 class Parameter
@@ -452,7 +475,7 @@ void createHeader(ofstream &outFile, const string& sourceProgram, const string& 
    struct tm * timeinfo;
    time ( &rawtime );
    timeinfo = localtime ( &rawtime );
-   outFile << "##fileDate=" << par.referenceDate << endl;
+   outFile << "##fileDate=" << g_par.referenceDate << endl;
 
    // source
    outFile << "##source=" << sourceProgram << endl;
@@ -625,7 +648,7 @@ public:
    bool bothStrands() const;
 	int getNumSupportSamples(const bool onlyBalancedSamples, const int minimumStrandSupport) const;
    int getNumSupportReads() const;
-   int detectHomoPolyRepeats(const int maxHPlen) const;
+
    string getChromosome() const {
       return d_chromosome;
    }
@@ -691,6 +714,8 @@ public:
 	string getAlternative() const;
 	void setNT(string nt) { d_nt = nt; };
 	void setSecondNT(string secondNT) { d_nt2 = secondNT; };
+	bool withinAllowedRepeatsPostIndel(const int maxRepeatLen, const int maxNoRepeats) const;
+	bool withinAllowedRepeatsInternal(const int maxRepeatLen, const int maxNoRepeats) const;
 
 private:
    string d_chromosome;
@@ -711,6 +736,8 @@ private:
 	string d_nt2; // for inversions
    vector<Genotype> d_format;
 	Genome* d_genome_ptr;
+
+	string getSVSequence() const;
 };
 
 string SVData::getAlternative() const
@@ -782,6 +809,8 @@ SVData::SVData(const int genotypeTotal) // default settings
    d_format.resize( numberOfSamples, Genotype(0,0,0,0) );
 };
 
+
+/* 'bothStrands' Is a SV supported by reads on both strands? */
 bool SVData::bothStrands() const
 {
    bool strandPlus = false;
@@ -798,6 +827,8 @@ bool SVData::bothStrands() const
    return ( strandPlus && strandMinus );
 }
 
+
+/* 'getNumSupportSamples': how many samples support this SV? */
 int SVData::getNumSupportSamples(const bool onlyBalancedSamples, const int minimumStrandSupport) const
 {
    int numSupportingSamples = 0;
@@ -818,6 +849,8 @@ int SVData::getNumSupportSamples(const bool onlyBalancedSamples, const int minim
    return numSupportingSamples;
 }
 
+
+/* 'getNumSupportReads': how many reads support this SV? */
 int SVData::getNumSupportReads() const
 {
    int numReads = 0;
@@ -827,6 +860,8 @@ int SVData::getNumSupportReads() const
    return numReads;
 }
 
+
+/* comparison operator of SVData objects; helps sorting them for output. */
 bool SVData::operator<(const SVData& otherSV ) const
 {
    if ( d_chromosome.compare( otherSV.d_chromosome ) != 0 ) {
@@ -840,51 +875,105 @@ bool SVData::operator<(const SVData& otherSV ) const
    }
 }
 
+
 /* 'testHypothesis' tests whether the DNA string consists of a number of repeating "hypothesis" strings. If so, it
 	returns the number of repeats; otherwise, it returns zero. */
-int testHypothesis(const string& hypothesis, const string& dna )
+int testHypothesis(const string& hypothesis, const string& sequence )
 {
    int hypLen = hypothesis.size();
-   int dnaLen = dna.size();
-   bool hypothesisCorrect = true;
-   int repeatCounter = 0;
-   // this version assumes that there must be a whole number of repeats; this can be corrected/modified later
-   if ( dnaLen % hypLen != 0 ) {
-      return 0;
-   }
-   else {
-      for (int repeat=0; repeat<dnaLen/hypLen; repeat++ ) {
-         string checkedDNA = dna.substr( repeat*hypLen, hypLen );
-         if ( checkedDNA.compare(hypothesis) != 0 ) {
-            hypothesisCorrect = false;
-         }
-      } // <for
-      return ( hypothesisCorrect ? dnaLen/hypLen : 0 );
-   } // <else
+   int sequenceLen = sequence.size();
+
+   for (int testedBaseIndex=0; testedBaseIndex<sequence.size(); testedBaseIndex++ ) {
+		char currentHypothesisBase = hypothesis[ testedBaseIndex % hypLen ];
+		if ( currentHypothesisBase != sequence[ testedBaseIndex ] ) {
+			return 0;
+		}
+	} 
+   return sequenceLen/hypLen;
 }
 
-int countHPRepeats( const string& bases, const int maxRepeatLength )
+
+/* 'countRepeats' counts the repeats in a sequence. Returns the shortest result which can explain (allowing for rotation, CACAC => CA) the input sequence */
+int countRepeats( const string& sequence, const int maxRepeatLength, int &bestSize )
 {
-   int maximumLen = min( maxRepeatLength, (int)bases.size() );
+   int maximumLen = min( maxRepeatLength, (int)(sequence.size()/2) ); 
+	if (maxRepeatLength<0 ) {
+		// no maximum repeat length set; assume it is infinite		
+		maximumLen = (int)(sequence.size()/2);
+	} 
    string hypothesis = "";
-   for (int repeatLen=1; repeatLen<maximumLen; repeatLen++ ) {
-      hypothesis += bases[ repeatLen - 1 ];
-      int repeats = testHypothesis( hypothesis, bases );
-      if (repeats>0) {
-         return repeats;
+	int bestRepeatLength = 0;
+	int bestRepeatNumber = 0;
+   for (int repeatLen=1; repeatLen<=maximumLen; repeatLen++ ) {
+      hypothesis += sequence[ repeatLen - 1 ];
+      int repeats = testHypothesis( hypothesis, sequence );
+      if (repeats>0 && repeats*hypothesis.size() > bestRepeatLength * bestRepeatNumber) {
+			bestRepeatLength = hypothesis.size();
+			bestRepeatNumber = repeats;
       }
    }
-   return 0;
+	bestSize = bestRepeatLength;
+   return bestRepeatNumber;
 }
 
-int SVData::detectHomoPolyRepeats(const int maxHPlen) const
+
+/* 'getSVSequence' returns the inserted or deleted sequence; if the mutation is complex or weird, it returns the new ('alt') sequence. */
+string SVData::getSVSequence() const
 {
-   int refHP = countHPRepeats( getReference(), maxHPlen );
-   int altHP = countHPRepeats( getAlternative(), maxHPlen );
-   int hseqHP = countHPRepeats( d_homseq, maxHPlen );
-   //if ( max( refHP, max ( altHP, hseqHP ) ) > 0) { cout << "REPEATS!" << d_reference << " " << d_alternative << " " << d_homseq << endl; }
-   return max( refHP, max ( altHP, hseqHP ) );
+	string ref = getReference();
+	string alt = getAlternative();
+	string modifiedSequence = "";
+	int pos=0;
+	int maxPos=min( ref.size(), alt.size() );
+	while (pos < maxPos && ref[pos]==alt[pos]) { pos++;};
+	if (pos == maxPos ) { // simple insertion or deletion...
+		modifiedSequence = ( maxPos==ref.size() ? alt.substr(pos) : ref.substr(pos));  
+	}
+	else { // replacement
+		modifiedSequence = alt.substr( pos );
+	}
+	return modifiedSequence;
 }
+
+
+/* 'withinAllowedRepeatsPostIndel' Is the number of repeats after the detected SV within the maximum allowed number of repeats (maxNoRepeats) of the 
+	fundamental repetitive unit of the SV? */
+bool SVData::withinAllowedRepeatsPostIndel(const int maxRepeatLen, const int maxNoRepeats) const
+{
+	// 1. get the minimum repeating unit from the inserted sequence
+	string sequenceToAnalyze = getSVSequence();
+	int actualRepeatLength = 0;
+	int repeatCount = countRepeats( sequenceToAnalyze, maxRepeatLen, actualRepeatLength );
+	if (actualRepeatLength>0) {
+		string hypothesis = sequenceToAnalyze.substr( 0 , actualRepeatLength );
+		int extendedRepeatCount = testHypothesis( hypothesis, sequenceToAnalyze + d_homseq );
+		return (extendedRepeatCount - repeatCount <= maxNoRepeats );
+	}
+	else {
+		int bestSize = 0;
+		int extendedRepeatCount = countRepeats( sequenceToAnalyze + d_homseq, maxRepeatLen, bestSize );
+		int repetitiveLength = bestSize * extendedRepeatCount;
+		int repetitivePartPostIndel = repetitiveLength - sequenceToAnalyze.size();
+      double noRepPostIndel = (double)repetitivePartPostIndel / bestSize;
+		return (int)noRepPostIndel <= maxNoRepeats;
+	}
+}
+
+
+/* 'withinAllowedRepeatsInternal' Is the number of repeats of the smallest repetitive unit in the detected SV within the maximum allowed number of repeats (maxNoRepeats)? */
+bool SVData::withinAllowedRepeatsInternal(const int maxRepeatLen, const int maxNoRepeats) const
+{
+	string sequenceToAnalyze = getSVSequence();  
+	int actualRepeatLength = 0;
+	int repeatCount = countRepeats( sequenceToAnalyze, maxRepeatLen, actualRepeatLength );
+	if ( repeatCount > maxNoRepeats ) {
+		return false;
+	}
+	else {
+		return true;
+	}
+}
+
 
 /* first version of operator==. Are two events the same? We could make this more complicated, but first see if it works. */
 bool SVData::operator==(const SVData& otherSV ) const
@@ -1080,11 +1169,11 @@ void convertIndelToSVdata( ifstream& svfile, map< string, int>& sampleMap, Genom
       }
       int beforeStartPos = atoi( fetchElement( lineStream, 1 ).c_str() );
       svd.setPosition( beforeStartPos );
-      int plusSupport = atoi( fetchElement( lineStream, 1 ).c_str());
+      int plusSupport = atoi( fetchElement( lineStream, 2 ).c_str());
       int rightmostEndPos = atoi (fetchElement( lineStream, 1 ).c_str()); // now at position 14
       svd.setEnd( rightmostEndPos );
       svd.setBPrange( beforeStartPos, rightmostEndPos );
-      int minSupport = atoi( fetchElement( lineStream, 1 ).c_str());
+      int minSupport = atoi( fetchElement( lineStream, 2 ).c_str());
       svd.addGenotype( 0, plusSupport , minSupport );
       return;
    }
@@ -1242,43 +1331,49 @@ void readReference( const string& referenceName, Genome& genome )
 void createParameters()
 {
    parameters.push_back(
-      new StringParameter( &par.reference, "-r", "--reference", "The name of the file containing the reference genome", true, "" ) );
+      new StringParameter( &g_par.reference, "-r", "--reference", "The name of the file containing the reference genome", true, "" ) );
    parameters.push_back(
-      new StringParameter( &par.referenceName, "-R", "--reference_name", "The name and version of the reference genome", true, "" ) );
+      new StringParameter( &g_par.referenceName, "-R", "--reference_name", "The name and version of the reference genome", true, "" ) );
    parameters.push_back(
-      new StringParameter( &par.referenceDate, "-d", "--reference_date", "The date of the version of the reference genome used", true, "" ) );
+      new StringParameter( &g_par.referenceDate, "-d", "--reference_date", "The date of the version of the reference genome used", true, "" ) );
    parameters.push_back(
-      new StringParameter( &par.pindelfile, "-p", "--pindel_output", "The name of the pindel output file containing the SVs", true, "" ) );
+      new StringParameter( &g_par.pindelfile, "-p", "--pindel_output", "The name of the pindel output file containing the SVs", true, "" ) );
    parameters.push_back(
-      new StringParameter( &par.vcffile, "-v", "--vcf", "The name of the output vcf-file (default: name of pindel output file +\".vcf\"", false, "" ) );
+      new StringParameter( &g_par.vcffile, "-v", "--vcf", "The name of the output vcf-file (default: name of pindel output file +\".vcf\"", false, "" ) );
    parameters.push_back(
-      new StringParameter( &par.chromosome, "-c", "--chromosome", "The name of the chromosome (default: SVs on all chromosomes are processed)", false, "" ) );
+      new StringParameter( &g_par.chromosome, "-c", "--chromosome", "The name of the chromosome (default: SVs on all chromosomes are processed)", false, "" ) );
    parameters.push_back(
-      new IntParameter( &par.windowSize, "-w", "--window_size", "Memory saving option: the size of the genomic region in a chromosome of which structural variants are calculated separately, in millions of bases (default 300, for memory saving 100 or 50 recommended)", false, 300 ) );
+      new IntParameter( &g_par.windowSize, "-w", "--window_size", "Memory saving option: the size of the genomic region in a chromosome of which structural variants are calculated separately, in millions of bases (default 300, for memory saving 100 or 50 recommended)", false, 300 ) );
    parameters.push_back(
-      new IntParameter( &par.minsize, "-is", "--min_size", "The minimum size of events to be reported (default 1)", false, 1 ) );
+      new IntParameter( &g_par.minsize, "-is", "--min_size", "The minimum size of events to be reported (default 1)", false, 1 ) );
    parameters.push_back(
-      new IntParameter( &par.maxsize, "-as", "--max_size", "The maximum size of events to be reported (default infinite)", false, -1 ) );
+      new IntParameter( &g_par.maxsize, "-as", "--max_size", "The maximum size of events to be reported (default infinite)", false, -1 ) );
    parameters.push_back(
-      new BoolParameter( &par.bothstrands, "-b", "--both_strands_supported", "Only report events that are detected on both strands (default false)", false, false ) );
+      new BoolParameter( &g_par.bothstrands, "-b", "--both_strands_supported", "Only report events that are detected on both strands (default false)", false, false ) );
    parameters.push_back(
-      new IntParameter( &par.minsuppSamples, "-m", "--min_supporting_samples", "The minimum number of samples an event needs to occur in with sufficient support to be reported (default 0)", false, 1 ) );
+      new IntParameter( &g_par.minsuppSamples, "-m", "--min_supporting_samples", "The minimum number of samples an event needs to occur in with sufficient support to be reported (default 0)", false, 1 ) );
    parameters.push_back(
-      new IntParameter( &par.minsuppReads, "-e", "--min_supporting_reads", "The minimum number of supporting reads required for an event to be reported (default 1)", false, 1 ) );
+      new IntParameter( &g_par.minsuppReads, "-e", "--min_supporting_reads", "The minimum number of supporting reads required for an event to be reported (default 1)", false, 1 ) );
    parameters.push_back(
-      new IntParameter( &par.regionStart, "-sr", "--region_start", "The start of the region of which events are to be reported (default 0)", false, 0 ) );
+      new IntParameter( &g_par.maxSuppReads, "-f", "--max_supporting_reads", "The maximum number of supporting reads allowed for an event to be reported, allows protection against miscalls in due to segmental duplications or poorly mapped regions (default infinite)", false, -1 ) );
    parameters.push_back(
-      new IntParameter( &par.regionEnd, "-er", "--region_end", "The end of the region of which events are to be reported (default infinite)", false, -1 ) );
+      new IntParameter( &g_par.regionStart, "-sr", "--region_start", "The start of the region of which events are to be reported (default 0)", false, 0 ) );
    parameters.push_back(
-      new IntParameter( &par.maxHomopolyRepeats, "-lr", "--max_homopolymer_repeats", "Filters out all homopolymers of more than X repetitions (default infinite)", false, -1 ) );
+      new IntParameter( &g_par.regionEnd, "-er", "--region_end", "The end of the region of which events are to be reported (default infinite)", false, -1 ) );
    parameters.push_back(
-      new IntParameter( &par.maxHomopolyLength, "-ll", "--max_homopolymer_length", "The maximum size of a repeating unit to be considered a homopolymer, use with the option -lr. (default infinite)", false, -1 ) );
+      new IntParameter( &g_par.maxInterRepeatNo, "-ir", "--max_internal_repeats", "Filters out all indels where the inserted/deleted sequence is a homopolymer/microsatellite of more than X repetitions (default infinite). For example: T->TCACACA has CACACA as insertion, which is a microsattelite of 3 repeats; this would be filtered out by setting -ir to 2", false, -1 ) );
+   parameters.push_back(
+      new IntParameter( &g_par.maxInterRepeatLength, "-il", "--max_internal_repeatlength", "Filters out all indels where the inserted/deleted sequence is a homopolymers/microsatellite with an unit size of more than Y, combine with the option -ir. Default value of -il is infinite. For example: T->TCAGCAG has CAGCAG as insertion, which has the fundamental repetitive unit CAG of length 3. This would be filtered out if -il has been set to 3 or above, but would be deemed 'sufficiently unrepetitive' if -il is 2", false, -1 ) );
 	parameters.push_back(
-      new BoolParameter( &par.onlyBalancedSamples, "-sb", "--only_balanced_samples", "Only count a sample as supporting an event if it is supported by reads on both strands, minimum reads per strand given by the -ss parameter. (default false)", false, 0 ) );
+     	new IntParameter( &g_par.maxPostRepeatNo, "-pr", "--max_postindel_repeats", "Filters out all indels where the inserted/deleted sequence is followed by a repetition (of over X times) of the fundamental repeat unit of the inserted/deleted sequence. For example, T->TCACA would usually be a normal insertion, which is not filtered out, but if the real sequence change is TCACACA->TCACACACACA, it will be filtered out by -pr of 1 or above, as the fundamental repeat unit of the inserted sequence (CA) is repeated more than one time in the postindel sequence [indel sequence CACA, postindel sequence CACACA]. Note: when CAC is inserted next to ACACAC, the repeat sequence is recognized as CA, even though the 'postrepeat' sequence is ACACAC", false, -1 ) );
+  	parameters.push_back(
+      new IntParameter( &g_par.maxPostRepeatLength, "-pl", "--max_postindel_repeatlength", "Filters out all indels where the inserted/deleted sequence is followed by a repetition of  the fundamental repeat unit of the inserted/deleted sequence; the maximum size of that 'fundamental unit' given by the value of -pl (default infinite) For example: TCAG->TCAGCAG has insertion CAG and post-insertion sequence CAG. This insertion would be filtered out if -pl has been set to 3 or above, but would be deemed 'sufficiently unrepetitive' if -pl is 2", false, -1 ) );
 	parameters.push_back(
-		new IntParameter( &par.minimumStrandSupport, "-ss", "--minimum_strand_support", "Only count a sample as supporting an event if at least one of its strands is supported by X reads (default 1)", false, 1 ) );
+      new BoolParameter( &g_par.onlyBalancedSamples, "-sb", "--only_balanced_samples", "Only count a sample as supporting an event if it is supported by reads on both strands, minimum reads per strand given by the -ss parameter. (default false)", false, 0 ) );
+	parameters.push_back(
+		new IntParameter( &g_par.minimumStrandSupport, "-ss", "--minimum_strand_support", "Only count a sample as supporting an event if at least one of its strands is supported by X reads (default 1)", false, 1 ) );
    parameters.push_back(
-      new BoolParameter( &par.showHelp, "-h", "--help", "Print the help of this converter", false, false ) );
+      new BoolParameter( &g_par.showHelp, "-h", "--help", "Print the help of this converter", false, false ) );
 }
 
 /* 'findParameter' returns the index of the parameter with name 'name'; -1 if not found.*/
@@ -1380,43 +1475,47 @@ bool checkParameters()
 /* 'setParameters' sets the filters to be used in the rest of the program. */
 void setParameters()
 {
-   par.vcffile = parameters[ findParameter( "-v" )]->getSValue();
-   if (par.vcffile.compare("")==0) {
-      par.vcffile = par.pindelfile + ".vcf";   // default
+   g_par.vcffile = parameters[ findParameter( "-v" )]->getSValue();
+   if (g_par.vcffile.compare("")==0) {
+      g_par.vcffile = g_par.pindelfile + ".vcf";   // default
    }
 }
 
 /* 'throughFilter' checks whether the event is good enough to be written to the output file. */
 bool throughFilter(SVData sv)
 {
-   if (( par.minsize > 1 ) && ( abs( sv.getSize()) < par.minsize ) ) {
+   if (( g_par.minsize > 1 ) && ( abs( sv.getSize()) < g_par.minsize ) ) {
       return false;
    }
-   if (( par.maxsize > 0 ) && ( abs( sv.getSize()) > par.maxsize ) ) {
+   if (( g_par.maxsize > 0 ) && ( abs( sv.getSize()) > g_par.maxsize ) ) {
       return false;
    }
-   if ( par.bothstrands && !sv.bothStrands() ) {
+   if ( g_par.bothstrands && !sv.bothStrands() ) {
       return false;
    }
-   if ( ( par.minsuppSamples >= 1 ) && ( sv.getNumSupportSamples(par.onlyBalancedSamples, par.minimumStrandSupport) < par.minsuppSamples ) ) {
+   if ( ( g_par.minsuppSamples >= 1 ) && ( sv.getNumSupportSamples(g_par.onlyBalancedSamples, g_par.minimumStrandSupport) < g_par.minsuppSamples ) ) {
       return false;
    }
-   if ( ( par.minsuppReads >= 1 ) && ( sv.getNumSupportReads() < par.minsuppReads ) ) {
+   if ( ( g_par.minsuppReads >= 1 ) && ( sv.getNumSupportReads() < g_par.minsuppReads ) ) {
       return false;
    }
-   if ( ( par.regionStart > 0 ) && ( sv.getPosition() < par.regionStart ) ) {
+   if ( ( g_par.maxSuppReads >= 1 ) && ( sv.getNumSupportReads() > g_par.maxSuppReads ) ) {
       return false;
    }
-   if ( ( par.regionEnd > 0 ) && ( sv.getPosition() > par.regionEnd ) ) {
+   if ( ( g_par.regionStart > 0 ) && ( sv.getPosition() < g_par.regionStart ) ) {
       return false;
    }
-   if ( par.maxHomopolyRepeats > 0 ) { // filter out repeating homopolymers
-      //cout << "Checking repeats: seeing " << sv.detectHomoPolyRepeats(par.maxHomopolyLength);
-      if ( sv.detectHomoPolyRepeats(par.maxHomopolyLength) > par.maxHomopolyRepeats ) {
-         return false;
-      }
+   if ( ( g_par.regionEnd > 0 ) && ( sv.getPosition() > g_par.regionEnd ) ) {
+      return false;
    }
-	
+   if ( g_par.maxInterRepeatNo >= 0 && !sv.withinAllowedRepeatsInternal(g_par.maxInterRepeatLength, g_par.maxInterRepeatNo )) {
+		return false;
+   }
+	if ( g_par.maxPostRepeatNo >= 0 && !sv.withinAllowedRepeatsPostIndel(g_par.maxPostRepeatLength, g_par.maxPostRepeatNo )) {
+		return false;
+   }	
+
+
    // all filters passed
    return true;
 }
@@ -1456,7 +1555,7 @@ void reportSVsInChromosome(const string& chromosomeID, const set<string>& chromo
 		SVData backupSV(sampleNames.size() );
 		bool backupAvailable = false;
       do {
-			regionEnd = regionStart + par.windowSize*1000000;
+			regionEnd = regionStart + g_par.windowSize*1000000;
 			cout << "Reading region " << regionStart << "-" << regionEnd << endl;
 	      svfile.clear();
    	   svfile.seekg(0);
@@ -1494,7 +1593,7 @@ void reportSVsInChromosome(const string& chromosomeID, const set<string>& chromo
          	backupSV = svs[ svs.size()-1 ];
 				backupAvailable = true;
 			}
-			regionStart += (par.windowSize*1000000);
+			regionStart += (g_par.windowSize*1000000);
 		} while (regionEnd<genome.getChromosome( chromosomeID )->size());
       if ( backupAvailable && throughFilter( backupSV) ) {
    	   vcfFile << backupSV;
@@ -1515,10 +1614,10 @@ int main(int argc, char* argv[])
       exit(EXIT_FAILURE);
    }
    setParameters();
-   ofstream vcfFile(par.vcffile.c_str());
+   ofstream vcfFile(g_par.vcffile.c_str());
    set<string> sampleNames;
 	set<string> chromosomeNames;
-   ifstream svfile(par.pindelfile.c_str());
+   ifstream svfile(g_par.pindelfile.c_str());
    if (!svfile) {
       cout << "The pindel file (-p) does not exist.\n";
       exit( EXIT_FAILURE );
@@ -1531,15 +1630,15 @@ int main(int argc, char* argv[])
 
    map< string, int > sampleMap;
    makeSampleMap( sampleNames, sampleMap );
-   createHeader(vcfFile,"pindel",par.referenceName, sampleNames);
+   createHeader(vcfFile,"pindel",g_par.referenceName, sampleNames);
 
    // read in reference
    Genome genome;
-   readReference(par.reference,genome);
+   readReference(g_par.reference,genome);
 	
-	if (par.chromosome != "" ) {
+	if (g_par.chromosome != "" ) {
 		// a specific chromosome has been specified
-		reportSVsInChromosome( par.chromosome, chromosomeNames, sampleNames, svfile, sampleMap, genome, vcfFile );
+		reportSVsInChromosome( g_par.chromosome, chromosomeNames, sampleNames, svfile, sampleMap, genome, vcfFile );
 	}
    for (int chromosomeCount=0; chromosomeCount<genome.d_chromosomes.size(); chromosomeCount++ ) {
       reportSVsInChromosome( genome.d_chromosomes[ chromosomeCount ].getID(), chromosomeNames, sampleNames, svfile, sampleMap, genome, vcfFile );
@@ -1547,4 +1646,3 @@ int main(int argc, char* argv[])
    } 
 }
 
-//(const string& chromosomeID, const set<string>& chromosomeNames, const set<string>& sampleNames, ifstream& svfile, const map< string, int >& sampleMap, const Genome& genome, ofstream& vcfFile )
