@@ -20,3 +20,6 @@ pindel 0.2.4q, March 27 2012
 Pindel 0.2.4r, June 14 2012
 1. Kai: changed the insert size quality check to 1x the read length as some users had fragments of which both read ends overlapped
 2. Eric-Wubbo: updated pindel2vcf to version 0.3.9; adds some extra options for homology filtering and filtering out regions with suspiciously high coverage
+
+Pindel 0.2.4s, June 18 2012
+1. Eric-Wubbo: added a 'clear' and small check for empty buffer at end of file

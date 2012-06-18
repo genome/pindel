@@ -23,8 +23,10 @@ IfstreamLineReader::~IfstreamLineReader()
 
 void IfstreamLineReader::Reset()
 {
-	if (in -> is_open())
+	if (in -> is_open()) { //EW180612: add in->clear() needed for some compilers
+		in -> clear();
 		in -> seekg(0);
+	}
 	Advance();
 }
 

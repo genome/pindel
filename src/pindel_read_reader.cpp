@@ -35,7 +35,7 @@ void PindelReadReader::Reset()
 
 bool PindelReadReader::HasNext()
 {
-	return reader.HasNext();
+	return (reader.HasNext() || buffer.Name!="" );
 }
 
 

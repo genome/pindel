@@ -63,8 +63,9 @@
 /* EW: update 0.2.4q: also works with -c all instead of -c ALL */
 /* Kai: update 0.2.4q: use ChrName and ChrSeq for clarity; start to include assembly */
 /* Kai: min_perfect_match_around_BP to 5 */
+/* EW: update 0.2.4s: bugfix for -p option of Pindel0.2.4r */
 
-const std::string Pindel_Version_str = "Pindel version 0.2.4q, May 4 2012.";
+const std::string Pindel_Version_str = "Pindel version 0.2.4s, June 18 2012.";
 std::ostream* logStream;
 std::ofstream g_logFile;
 int findParameter(std::string name);
