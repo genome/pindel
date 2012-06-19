@@ -1596,7 +1596,7 @@ int main(int argc, char *argv[])
             /* 3.2.8 report ends */
 
         } // do {
-        while ((currentState.PindelReadDefined && !isFinishedPindel(
+        while (((currentState.PindelReadDefined || currentState.pindelConfigDefined )&& !isFinishedPindel(
                     currentState.lowerBinBorder, currentState.regionEndDefined, currentState.endRegionPlusBuffer))
                 || (currentState.BAMDefined && !isFinishedBAM(
                         currentState.lowerBinBorder,

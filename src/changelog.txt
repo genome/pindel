@@ -23,3 +23,4 @@ Pindel 0.2.4r, June 14 2012
 
 Pindel 0.2.4s, June 18 2012
 1. Eric-Wubbo: added a 'clear' and small check for empty buffer at end of file
+2. Eric-Wubbo: corrected for only checking for PindelReadDefined at end of bin; now also checks for PindelConfigDefined
