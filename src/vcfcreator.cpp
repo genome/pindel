@@ -7,6 +7,13 @@
 	e.m.w.lameijer@lumc.nl
 	+31(0)71-526 9745
 
+	Version 0.4.6 [June 20th, 2012] END-position now proper according to http://www.1000genomes.org/wiki/Analysis/Variant%20Call%20Format/vcf-variant-call-format-version-41, access date June 20, 2012
+	Version 0.4.5 [June 20th, 2012] displays proper warnings when using the -G option
+	Version 0.4.4 [June 19th, 2012] now also prints inversions correctly in GATK-format (when using the -G option)
+	Version 0.4.3 [June 19th, 2012] adding equilength replacement calls to -G output (2)
+	Version 0.4.2 [June 19th, 2012] adding equilength replacement calls to -G output (1)
+	Version 0.4.1 [June 18th, 2012] Now automatically sets the end of long insertions to occur after the beginning...
+	Version 0.4.0 [June 18th, 2012] Added -G option to make output GATK-compatible
 	Version 0.3.9 [June 8th, 2012] Added maximum total coverage to protect from duplicated regions
 	Veriosn 0.3.8 [June 8th, 2012] Long insertions support debugged.
 	Version 0.3.7 [June 8th, 2012] Next stage in debugging repeats/postindel options
@@ -29,8 +36,6 @@
 					    Also, genotypes are somewhat more correctly indicated with . and 1/.
                                             Also, replaces -1 by . to indicate unknown number of fields in the declarations in the header
 	Version 0.1.9 [August 19th, 2011. To save memory, now reads in chromosomes only when needed, so doesn't put the entire genome in memory at once.
-	Version 0.1.8 [July 27th, 2011. END-position now proper according to VCF rules (so for deletion: start+length+1, for SI: start+1), mentioning -d] 
-
 */
 
 /* CONTENTS
@@ -90,6 +95,7 @@ struct ParameterSettings {
 	bool onlyBalancedSamples;
 	int minimumStrandSupport;
    bool showHelp;
+	bool gatkCompatible;
 } g_par;
 
 /*** END OF PREFACE: include files and global constants ***/
@@ -617,12 +623,24 @@ void Genotype::fuse( const Genotype& gt )
 
 ostream& operator<<(ostream& os, const Genotype& gt)
 {
-   if (gt.d_genFirstChromosome==0 && gt.d_genSecondChromosome==0) {
-      os << ".";
-   }
-   else { // at least one genotype is 1
-      os << "1/.";
-   }
+	if (g_par.gatkCompatible) {
+		if (gt.d_genFirstChromosome==0 && gt.d_genSecondChromosome==0) {
+	      os << "0/0";
+	   }
+	   else { // at least one genotype is 1
+	      os << "0/1";
+	   }
+
+
+	}
+   else { 
+		if (gt.d_genFirstChromosome==0 && gt.d_genSecondChromosome==0) {
+	      os << ".";
+	   }
+	   else { // at least one genotype is 1
+	      os << "1/.";
+	   }
+	}
    os << ":" << ( gt.d_readDepthPlus + gt.d_readDepthMinus );
    return os;
 }
@@ -640,7 +658,13 @@ public:
    SVData(const int genotypeTotal);
 
    int getPosition() const {
-      return d_position;
+		// attempted workaround for GATK undocumented feature
+		if (g_par.gatkCompatible && altSameLengthAsRef()) {
+			return d_position+1;
+		}
+		else {
+      	return d_position;
+		}
    }
    int getSize() const {
       return d_svlen;
@@ -673,8 +697,19 @@ public:
    }
 
    void setEnd(const int end) {
+//cout << "Setting end to " << end << endl;
+
       d_end = end;
    }
+	int getVCFPrintEnd() const 
+	{
+		if (d_end <= d_position ) {
+			cout << "Warning: end position of the SV (" << d_end << ") appears to be before the startposition (" << d_position << "). Will adjust end to be startposition+reflen-1.\n";
+		}
+		else {} // empty else.
+		return d_position+getReference().size()-1;
+	}
+
    void setHomlen(const int homlen) {
       d_homlen = homlen;
    }
@@ -716,26 +751,38 @@ public:
 	void setSecondNT(string secondNT) { d_nt2 = secondNT; };
 	bool withinAllowedRepeatsPostIndel(const int maxRepeatLen, const int maxNoRepeats) const;
 	bool withinAllowedRepeatsInternal(const int maxRepeatLen, const int maxNoRepeats) const;
+	bool isEquilengthReplacement() const { 
+		if ((d_svtype=="RPL" && d_svlen == d_replaceLen ) || (d_svtype=="INV" && d_replaceLen==0 && d_replaceLenTwo==0 )) return true;
+		else return false;
+	}
 
 private:
-   string d_chromosome;
+
+	bool altSameLengthAsRef() const {
+		return ((d_svtype=="RPL" && d_svlen == d_replaceLen) ||
+			     (d_svtype=="INV" && d_replaceLen==0 && d_replaceLenTwo ==0 ));
+	}
+
    int d_position; // 1-based
-   string d_id; // default '.', as we don't mine variant databases yet
-   //StringCollection d_alternatives;
-   string d_quality; // '.' by default, but can be floating-point number
-   string d_filter;  // "PASS" by default
+
    int d_end;
    int d_homlen;
    int d_bpr_start, d_bpr_end;
-   string d_homseq;
    int d_svlen;
-   string d_svtype;
    int d_replaceLen;
    int d_replaceLenTwo; // for inversions
+
 	string d_nt;
 	string d_nt2; // for inversions
    vector<Genotype> d_format;
 	Genome* d_genome_ptr;
+   string d_chromosome;
+   string d_id; // default '.', as we don't mine variant databases yet
+   //StringCollection d_alternatives;
+   string d_quality; // '.' by default, but can be floating-point number
+   string d_filter;  // "PASS" by default
+   string d_svtype;
+   string d_homseq;
 
 	string getSVSequence() const;
 };
@@ -748,7 +795,9 @@ string SVData::getAlternative() const
 	string altVariant = "";
 	const string* reference = d_genome_ptr->getChromosome( d_chromosome );
 	if ( d_svtype == "INS" || d_svtype == "DEL" || d_svtype == "RPL" ) {
-      altVariant += (*reference)[ d_position ];
+		if (!(g_par.gatkCompatible && altSameLengthAsRef())) {
+      	altVariant += (*reference)[ d_position ];
+		}
       altVariant += d_nt;
    }
    else if ( d_svtype == "DUP:TANDEM" ) {	
@@ -759,18 +808,22 @@ string SVData::getAlternative() const
    }
    else if ( d_svtype == "INV" ) {
 		string refVariant = getReference();
-      altVariant += (*reference)[ d_position ];
-      altVariant += d_nt;
-
-      string referenceInv = refVariant.substr(1);
-      string complement = "";
-      createComplement( referenceInv, complement );
-
-      altVariant += complement;
-      altVariant += d_nt2;
+		if (g_par.gatkCompatible && altSameLengthAsRef()) {
+			string complement = "";
+      	createComplement( refVariant, complement );
+			altVariant = complement;
+      }
+		else {
+			altVariant += d_nt;
+      	altVariant += (*reference)[ d_position ];
+      	string referenceInv = refVariant.substr(1);
+      	string complement = "";
+      	createComplement( referenceInv, complement );
+      	altVariant += complement;
+      	altVariant += d_nt2;
+		}
    }
 	return altVariant;
-
 }
 
 
@@ -785,7 +838,11 @@ string SVData::getReference() const
 	}
 	else { // normal insertion/deletion or whatever
    	string refVariant="";
-   	for (int position=d_position; position<d_end; position++ ) {
+		int startPosition = d_position;
+		if (g_par.gatkCompatible && altSameLengthAsRef() ) {
+			startPosition = d_position + 1; // workaround GATK
+		}
+   	for (int position=startPosition; position<d_end; position++ ) {
       	refVariant += (*reference)[ position ];
    	}		
 		return refVariant;
@@ -799,6 +856,7 @@ SVData::SVData(const int genotypeTotal) // default settings
    d_filter="PASS";
    d_replaceLen=0;
    d_homlen=0;
+	d_end = 0;
    d_homseq="";
 	d_nt="";
 	d_nt2="";
@@ -867,8 +925,8 @@ bool SVData::operator<(const SVData& otherSV ) const
    if ( d_chromosome.compare( otherSV.d_chromosome ) != 0 ) {
       return ( d_chromosome.compare( otherSV.d_chromosome ) < 0 );
    }
-   if ( d_position != otherSV.d_position) {
-      return ( d_position < otherSV.d_position );
+   if ( getPosition() != otherSV.getPosition()) {
+      return ( getPosition() < otherSV.getPosition() );
    }
    else {
       return ( d_svlen < otherSV.d_svlen );   // position equal: then do smallest SV first
@@ -1028,14 +1086,14 @@ void SVData::fuse( SVData& otherSV )
 ostream& operator<<(ostream& os, const SVData& svd)
 {
    os << svd.d_chromosome << "\t";
-   os << svd.d_position << "\t";
+   os << svd.getPosition() << "\t";
    os << svd.d_id << "\t";
    os << svd.getReference() << "\t";
    os << svd.getAlternative() << "\t";
    os << svd.d_quality << "\t";
    os << svd.d_filter << "\t";
 
-   os << "END=" << svd.d_end << ";";
+   os << "END=" << svd.getVCFPrintEnd() << ";";
    os << "HOMLEN=" << svd.d_homlen << ";";
    if ( svd.d_homlen != 0 ) {
       os << "HOMSEQ=" << svd.d_homseq << ";";
@@ -1134,9 +1192,6 @@ void showSet( set<string> aSet )
 }
 
 
-
-
-
 /* 'convertIndelToSVdata' converts insertions and deletions to nicely formatted SV-data. */
 void convertIndelToSVdata( ifstream& svfile, map< string, int>& sampleMap, Genome& genome, SVData& svd, const string& targetChromosomeID)
 {
@@ -1171,6 +1226,7 @@ void convertIndelToSVdata( ifstream& svfile, map< string, int>& sampleMap, Genom
       svd.setPosition( beforeStartPos );
       int plusSupport = atoi( fetchElement( lineStream, 2 ).c_str());
       int rightmostEndPos = atoi (fetchElement( lineStream, 1 ).c_str()); // now at position 14
+//cout << "plusSupport, righmostEndPos is " << plusSupport << ", " << rightmostEndPos << endl;
       svd.setEnd( rightmostEndPos );
       svd.setBPrange( beforeStartPos, rightmostEndPos );
       int minSupport = atoi( fetchElement( lineStream, 2 ).c_str());
@@ -1373,6 +1429,8 @@ void createParameters()
 	parameters.push_back(
 		new IntParameter( &g_par.minimumStrandSupport, "-ss", "--minimum_strand_support", "Only count a sample as supporting an event if at least one of its strands is supported by X reads (default 1)", false, 1 ) );
    parameters.push_back(
+      new BoolParameter( &g_par.gatkCompatible, "-G", "--gatk_compatible", "calls genotypes which could either be homozygous or heterozygous not as ./1 but as 0/1, to ensure compatibility with GATK", false, false ) );
+   parameters.push_back(
       new BoolParameter( &g_par.showHelp, "-h", "--help", "Print the help of this converter", false, false ) );
 }
 
@@ -1513,7 +1571,12 @@ bool throughFilter(SVData sv)
    }
 	if ( g_par.maxPostRepeatNo >= 0 && !sv.withinAllowedRepeatsPostIndel(g_par.maxPostRepeatLength, g_par.maxPostRepeatNo )) {
 		return false;
-   }	
+   }
+	
+	/*if (g_par.gatkCompatible && sv.isEquilengthReplacement() ) {
+		return false;
+	}*/
+	
 
 
    // all filters passed
@@ -1644,5 +1707,18 @@ int main(int argc, char* argv[])
       reportSVsInChromosome( genome.d_chromosomes[ chromosomeCount ].getID(), chromosomeNames, sampleNames, svfile, sampleMap, genome, vcfFile );
       genome.d_chromosomes[ chromosomeCount ].removeFromMemory(); // to prevent memory overload
    } 
+
+	if (g_par.gatkCompatible) {
+		cout << "\nNote: for this conversion, the -G (GATK) compatibility option was used; it's possible that this format is not compatible with other VCF-reading software. " <<
+				  "Also note that GATK requires genotypes to be 0/0, 0/1 or 1/1 instead of undefined, like ./1 or . ('not detected'). However, since pindel cannot yet " <<
+				  "genotype events " << 		
+				  "(distinguish between 0/1 and 1/1) all events are called as 0/0 (not found) or 0/1, even while some may very well be homozygous alternative (1/1).\n\n";
+	}
+	else {
+		cout << "\nNote: for this conversion, the -G (GATK) compatibility option was not used; while this allows Pindel to indicate the uncertainty in genotypes, and should be " <<
+			     "compatible with most software, this format " <<
+			     "will not be compatible with GATK pipelines and tools such as GATK ValidateVariants; if you wish to input the vcf-file into the GATK pipeline, " <<
+			     "please use the -G option.\n\n";
+	}
 }
 
