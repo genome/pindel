@@ -7,6 +7,7 @@
 	e.m.w.lameijer@lumc.nl
 	+31(0)71-526 9745
 
+	Version 0.4.7 [June 21th, 2012] LI now also have proper labels <as per updated Pindel>
 	Version 0.4.6 [June 20th, 2012] END-position now proper according to http://www.1000genomes.org/wiki/Analysis/Variant%20Call%20Format/vcf-variant-call-format-version-41, access date June 20, 2012
 	Version 0.4.5 [June 20th, 2012] displays proper warnings when using the -G option
 	Version 0.4.4 [June 19th, 2012] now also prints inversions correctly in GATK-format (when using the -G option)
@@ -1154,7 +1155,13 @@ void getSampleNamesAndChromosomeNames(ifstream& svfile, set<string>& sampleNames
       if ( svType.compare("LI")==0 ) {
 			string chromosomeName = fetchElement( lineStream, 2 );
 			chromosomeNames.insert( chromosomeName );
-         sampleNames.insert("TOTAL");
+			string firstSampleName = fetchElement( lineStream, 7);	
+	      sampleNames.insert( firstSampleName );
+   	   string newSampleName = fetchElement( lineStream, 5 );
+   	   while (!lineStream.fail()) {
+   	      sampleNames.insert( newSampleName );
+   	      newSampleName = fetchElement( lineStream, 5 );
+   	   }
 			continue;
       }
 		string chromosomeName = fetchElement( lineStream, 6 );
@@ -1224,13 +1231,28 @@ void convertIndelToSVdata( ifstream& svfile, map< string, int>& sampleMap, Genom
       }
       int beforeStartPos = atoi( fetchElement( lineStream, 1 ).c_str() );
       svd.setPosition( beforeStartPos );
-      int plusSupport = atoi( fetchElement( lineStream, 2 ).c_str());
+      int totalPlusSupport = atoi( fetchElement( lineStream, 2 ).c_str());
       int rightmostEndPos = atoi (fetchElement( lineStream, 1 ).c_str()); // now at position 14
 //cout << "plusSupport, righmostEndPos is " << plusSupport << ", " << rightmostEndPos << endl;
       svd.setEnd( rightmostEndPos );
       svd.setBPrange( beforeStartPos, rightmostEndPos );
-      int minSupport = atoi( fetchElement( lineStream, 2 ).c_str());
-      svd.addGenotype( 0, plusSupport , minSupport );
+      int totalMinSupport = atoi( fetchElement( lineStream, 2 ).c_str());
+ 		string sampleName = fetchElement( lineStream, 1);
+   	int samplePlusSupport = atoi( fetchElement( lineStream, 2 ).c_str()); 
+	   int sampleMinSupport = atoi( fetchElement( lineStream, 2 ).c_str()); // now at position 35, total +supports sample 1
+   	//int count=0;
+  		while (!lineStream.fail()) {
+      	if (sampleMap.find( sampleName )==sampleMap.end() ) {
+      	   cout << "Error: could not find sample " << sampleName << endl;
+      	}
+      	else {
+         	int sampleID = sampleMap[ sampleName ];
+         	svd.addGenotype( sampleID, samplePlusSupport , sampleMinSupport );
+      	}
+      	sampleName = fetchElement( lineStream, 1); // for unique support, 2->1,
+	      samplePlusSupport = atoi( fetchElement( lineStream, 2 ).c_str()); // for unique support, 2->1
+   	   sampleMinSupport = atoi( fetchElement( lineStream, 2 ).c_str()); // now at position 33, total +supports sample 1
+  		}
       return;
    }
    svd.setSVlen( fetchElement( lineStream, 1 ) ); // to 3
@@ -1328,7 +1350,6 @@ void convertIndelToSVdata( ifstream& svfile, map< string, int>& sampleMap, Genom
    string sampleName = fetchElement( lineStream, 18);
    int plusSupport = atoi( fetchElement( lineStream, 1 ).c_str()); // now at position 33, total +supports sample 1; for unique support 1->2
    int minSupport = atoi( fetchElement( lineStream, 2 ).c_str()); // now at position 35, total +supports sample 1
-//cout << "SN PS MS" << sampleName << plusSupport << minSupport << endl;
    int count=0;
    while (!lineStream.fail()) {
       if (sampleMap.find( sampleName )==sampleMap.end() ) {
@@ -1336,16 +1357,12 @@ void convertIndelToSVdata( ifstream& svfile, map< string, int>& sampleMap, Genom
       }
       else {
          int sampleID = sampleMap[ sampleName ];
-         //cout << "Found sample " << sampleName << " with number " << sampleID << endl;
          svd.addGenotype( sampleID, plusSupport , minSupport );
       }
       sampleName = fetchElement( lineStream, 2); // for unique support, 2->1,
       plusSupport = atoi( fetchElement( lineStream, 1 ).c_str()); // for unique support, 2->1
       minSupport = atoi( fetchElement( lineStream, 2 ).c_str()); // now at position 33, total +supports sample 1
-      //cout << "SN PS MS" << sampleName << plusSupport << minSupport << endl;
-      //cout << "Adding sample: " << ++count << endl;
    }
-   //cout << "Added a " << svType << "!\n";
 }
 
 /* 'readReference' reads in the reference. */
