@@ -47,6 +47,8 @@ struct BreakDancer {
 	unsigned POS2;
 };
 
+typedef std::vector< RP_READ> RPVector; 
+
 class ControlState {
 public:
 
@@ -93,7 +95,8 @@ public:
 	std::string CurrentChrName;
 
 	std::vector<SPLIT_READ> InputReads_SR, Reads_SR, FutureReads_SR;
-    std::vector <RP_READ> Reads_RP;
+    std::vector <RPVector> Reads_RP;
+    
 
 	int lowerBinBorder;
 	int upperBinBorder;

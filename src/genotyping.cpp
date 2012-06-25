@@ -176,54 +176,62 @@ void getMAD(const std::vector <unsigned> & Distances, const unsigned & Median, u
     //std::cout << "MAD: " << Median << " " << MAD << std::endl; 
 }
 
-void CountREF_RP(const std::vector <RP_READ> & Reads_RP, const std::vector <unsigned> & RP_READ_Index, unsigned lower, unsigned upper, unsigned Cutoff, unsigned * CountREF, std::map<std::string, unsigned> & SampleName2IndexAsMap) {
+void CountREF_RP_DEL(const std::vector <RPVector> & Reads_RP, const std::vector <std::vector <unsigned> > & RP_READ_Index, unsigned lower, unsigned upper, unsigned * Cutoff, unsigned * CountREF, std::map<std::string, unsigned> & SampleName2IndexAsMap) {
     for (unsigned SampleIndex = 0; SampleIndex < SampleName2IndexAsMap.size(); SampleIndex++)
        CountREF[SampleIndex] = 0;
     //std::cout << "lower and upper: " << lower << " " << upper << std::endl;
-    for (unsigned i = 0; i < RP_READ_Index.size(); i++) {
-        if ((unsigned)Reads_RP[RP_READ_Index[i]].Distance <= Cutoff) {
-            //std::cout << "here CountREF_RP " << Reads_RP[RP_READ_Index[i]].Distance << " " << Reads_RP[RP_READ_Index[i]].PosA << " " << Reads_RP[RP_READ_Index[i]].PosB << std::endl;
-            if (Reads_RP[RP_READ_Index[i]].PosA < Reads_RP[RP_READ_Index[i]].PosB) {
-                if (Reads_RP[RP_READ_Index[i]].PosA <= lower && Reads_RP[RP_READ_Index[i]].PosB >= upper) {
-                    CountREF[SampleName2IndexAsMap.find(Reads_RP[RP_READ_Index[i]].Tag) -> second]++;
+    for (unsigned SampleIndex = 0; SampleIndex < SampleName2IndexAsMap.size(); SampleIndex++) {
+        for (unsigned i = 0; i < RP_READ_Index[SampleIndex].size(); i++) {
+            if ((unsigned)Reads_RP[SampleIndex][RP_READ_Index[SampleIndex][i]].Distance <= Cutoff[SampleIndex]) {
+                //std::cout << "here CountREF_RP " << Reads_RP[RP_READ_Index[i]].Distance << " " << Reads_RP[RP_READ_Index[i]].PosA << " " << Reads_RP[RP_READ_Index[i]].PosB << std::endl;
+                if (Reads_RP[SampleIndex][RP_READ_Index[SampleIndex][i]].PosA < Reads_RP[SampleIndex][RP_READ_Index[SampleIndex][i]].PosB) {
+                    if (Reads_RP[SampleIndex][RP_READ_Index[SampleIndex][i]].PosA <= lower && Reads_RP[SampleIndex][RP_READ_Index[SampleIndex][i]].PosB >= upper) {
+                        CountREF[SampleIndex]++;
+                    }
                 }
-            }
-            else {
-                if (Reads_RP[RP_READ_Index[i]].PosB <= lower && Reads_RP[RP_READ_Index[i]].PosA >= upper) {
-                    CountREF[SampleName2IndexAsMap.find(Reads_RP[RP_READ_Index[i]].Tag) -> second]++;
+                else {
+                    if (Reads_RP[SampleIndex][RP_READ_Index[SampleIndex][i]].PosB <= lower && Reads_RP[SampleIndex][RP_READ_Index[SampleIndex][i]].PosA >= upper) {
+                        CountREF[SampleIndex]++;
+                    }
                 }
             }
         }
     }
 }
 
-void CountALT_RP(const std::vector <RP_READ> & Reads_RP, const std::vector <unsigned> & RP_READ_Index, unsigned lower, unsigned upper, unsigned Cutoff, unsigned * CountALT, std::map<std::string, unsigned> & SampleName2IndexAsMap) {
+void CountALT_RP_DEL(const std::vector <RPVector> & Reads_RP, const std::vector <std::vector <unsigned> > & RP_READ_Index, unsigned lower, unsigned upper, unsigned * Cutoff, unsigned * CountALT, std::map<std::string, unsigned> & SampleName2IndexAsMap) {
     for (unsigned SampleIndex = 0; SampleIndex < SampleName2IndexAsMap.size(); SampleIndex++)
         CountALT[SampleIndex] = 0;
-    for (unsigned i = 0; i < RP_READ_Index.size(); i++) {
-        if ((unsigned)Reads_RP[RP_READ_Index[i]].Distance > Cutoff) {
-            //std::cout << "here CountALT_RP " << Reads_RP[RP_READ_Index[i]].Distance << " " << Reads_RP[RP_READ_Index[i]].PosA << " " << Reads_RP[RP_READ_Index[i]].PosB << std::endl;
-            if (Reads_RP[RP_READ_Index[i]].PosA < Reads_RP[RP_READ_Index[i]].PosB) {
-                if (Reads_RP[RP_READ_Index[i]].PosA <= lower && Reads_RP[RP_READ_Index[i]].PosB >= upper) {
-                    CountALT[SampleName2IndexAsMap.find(Reads_RP[RP_READ_Index[i]].Tag) -> second]++;
+    for (unsigned SampleIndex = 0; SampleIndex < SampleName2IndexAsMap.size(); SampleIndex++) {
+        for (unsigned i = 0; i < RP_READ_Index[SampleIndex].size(); i++) {
+            if ((unsigned)Reads_RP[SampleIndex][RP_READ_Index[SampleIndex][i]].Distance > Cutoff[SampleIndex]) {
+                //std::cout << "here CountREF_RP " << Reads_RP[RP_READ_Index[i]].Distance << " " << Reads_RP[RP_READ_Index[i]].PosA << " " << Reads_RP[RP_READ_Index[i]].PosB << std::endl;
+                if (Reads_RP[SampleIndex][RP_READ_Index[SampleIndex][i]].PosA < Reads_RP[SampleIndex][RP_READ_Index[SampleIndex][i]].PosB) {
+                    if (Reads_RP[SampleIndex][RP_READ_Index[SampleIndex][i]].PosA <= lower && Reads_RP[SampleIndex][RP_READ_Index[SampleIndex][i]].PosB >= upper) {
+                        CountALT[SampleIndex]++;
+                    }
                 }
-            }
-            else {
-                if (Reads_RP[RP_READ_Index[i]].PosB <= lower && Reads_RP[RP_READ_Index[i]].PosA >= upper) {
-                    CountALT[SampleName2IndexAsMap.find(Reads_RP[RP_READ_Index[i]].Tag) -> second]++;
+                else {
+                    if (Reads_RP[SampleIndex][RP_READ_Index[SampleIndex][i]].PosB <= lower && Reads_RP[SampleIndex][RP_READ_Index[SampleIndex][i]].PosA >= upper) {
+                        CountALT[SampleIndex]++;
+                    }
                 }
             }
         }
     }
 }
 
-void CountRPSupport4DEL(const std::vector <RP_READ> & Reads_RP, const std::vector <unsigned> RP_READ_Index, const Genotyping & OneSV, const unsigned Median, const unsigned MAD, std::map<std::string, unsigned> & SampleName2IndexAsMap) {
-    unsigned Cutoff = Median + 5 * MAD;
+void CountRPSupport4DEL(const std::vector <RPVector> & Reads_RP, const std::vector <std::vector <unsigned> >  RP_READ_Index, const Genotyping & OneSV, const unsigned * Median, const unsigned * MAD, std::map<std::string, unsigned> & SampleName2IndexAsMap) {
+    //unsigned Cutoff = Median + 5 * MAD;
     //std::cout << "Cutoff " << Cutoff << std::endl;
+    unsigned cutoff[SampleName2IndexAsMap.size()];
+    for (unsigned SampleIndex = 0; SampleIndex < SampleName2IndexAsMap.size(); SampleIndex++) {
+        cutoff[SampleIndex] = Median[SampleIndex] + 5 * MAD[SampleIndex];
+    }
     unsigned CountREF_A[SampleName2IndexAsMap.size()], CountREF_B[SampleName2IndexAsMap.size()], CountALT[SampleName2IndexAsMap.size()];
-    CountREF_RP(Reads_RP, RP_READ_Index, OneSV.PosA - OneSV.CI_A, OneSV.PosA + OneSV.CI_A, Cutoff, CountREF_A, SampleName2IndexAsMap);
-    CountREF_RP(Reads_RP, RP_READ_Index, OneSV.PosB - OneSV.CI_B, OneSV.PosB + OneSV.CI_B, Cutoff, CountREF_B, SampleName2IndexAsMap);
-    CountALT_RP(Reads_RP, RP_READ_Index, OneSV.PosA - OneSV.CI_A, OneSV.PosB + OneSV.CI_B, Cutoff, CountALT, SampleName2IndexAsMap);
+    CountREF_RP_DEL(Reads_RP, RP_READ_Index, OneSV.PosA - OneSV.CI_A, OneSV.PosA + OneSV.CI_A, cutoff, CountREF_A, SampleName2IndexAsMap);
+    CountREF_RP_DEL(Reads_RP, RP_READ_Index, OneSV.PosB - OneSV.CI_B, OneSV.PosB + OneSV.CI_B, cutoff, CountREF_B, SampleName2IndexAsMap);
+    CountALT_RP_DEL(Reads_RP, RP_READ_Index, OneSV.PosA - OneSV.CI_A, OneSV.PosB + OneSV.CI_B, cutoff, CountALT, SampleName2IndexAsMap);
     //std::cout << "REF A: " << CountREF_A << "\tREF B: " << CountREF_B << "\t ALT: " << CountALT << std::endl;
     std::cout << "Genotype_Based_On_RP:";
     for (unsigned SampleIndex = 0; SampleIndex < SampleName2IndexAsMap.size(); SampleIndex++) {
@@ -258,36 +266,44 @@ short GetRP4OnDEL(const std::vector <Chromosome> & AllChromosomes, std::map<std:
     //std::cout << "Reads around BP 1 " << CurrentState.Reads_RP.size() << std::endl;
     
     //std::cout << "Reads around both breakpoints " << CurrentState.Reads_RP.size() << std::endl;
-    std::vector <unsigned> Distances, RP_READ_Index;
+    typedef std::vector <unsigned> VectorOfUnsigned;
+    std::vector <VectorOfUnsigned> Distances, RP_READ_Index;
+    VectorOfUnsigned TempDistances, TempRP_READ_Index;
+    
+    for (unsigned SampleIndex = 0; SampleIndex < SampleName2IndexAsMap.size(); SampleIndex++) {
+        Distances.push_back(TempDistances);
+        RP_READ_Index.push_back(TempRP_READ_Index);
+    }
     unsigned TempDistance;
-    for (unsigned ReadIndex = 0; ReadIndex < CurrentState.Reads_RP.size(); ReadIndex++) {
-        if (CurrentState.Reads_RP[ReadIndex].ChrNameA == CurrentState.Reads_RP[ReadIndex].ChrNameB 
-            && CurrentState.Reads_RP[ReadIndex].ChrNameA == OneSV.ChrA) {
-            if (CurrentState.Reads_RP[ReadIndex].PosA == CurrentState.Reads_RP[ReadIndex].PosB) continue;
-            if (CurrentState.Reads_RP[ReadIndex].MQA >= Min_MQ && CurrentState.Reads_RP[ReadIndex].MQB >= Min_MQ) {
-                RP_READ_Index.push_back(ReadIndex);
-                
-                if (CurrentState.Reads_RP[ReadIndex].PosA > CurrentState.Reads_RP[ReadIndex].PosB) TempDistance = CurrentState.Reads_RP[ReadIndex].PosA - CurrentState.Reads_RP[ReadIndex].PosB;
-                else TempDistance = CurrentState.Reads_RP[ReadIndex].PosB - CurrentState.Reads_RP[ReadIndex].PosA;
-                CurrentState.Reads_RP[ReadIndex].Distance = TempDistance;
-                //if (TempDistance > 10000)
-                //std::cout << CurrentState.Reads_RP[ReadIndex].PosA << " " << CurrentState.Reads_RP[ReadIndex].PosB << " " << TempDistance << std::endl;
-                Distances.push_back(TempDistance);
-                
+    
+    for (unsigned SampleIndex = 0; SampleIndex < SampleName2IndexAsMap.size(); SampleIndex++) {
+        for (unsigned ReadIndex = 0; ReadIndex < CurrentState.Reads_RP[SampleIndex].size(); ReadIndex++) {
+            if (CurrentState.Reads_RP[SampleIndex][ReadIndex].ChrNameA == CurrentState.Reads_RP[SampleIndex][ReadIndex].ChrNameB 
+                && CurrentState.Reads_RP[SampleIndex][ReadIndex].ChrNameA == OneSV.ChrA) {
+                if (CurrentState.Reads_RP[SampleIndex][ReadIndex].PosA == CurrentState.Reads_RP[SampleIndex][ReadIndex].PosB) continue;
+                if (CurrentState.Reads_RP[SampleIndex][ReadIndex].MQA >= Min_MQ && CurrentState.Reads_RP[SampleIndex][ReadIndex].MQB >= Min_MQ) {
+                    RP_READ_Index[SampleIndex].push_back(ReadIndex);
+                    
+                    if (CurrentState.Reads_RP[SampleIndex][ReadIndex].PosA > CurrentState.Reads_RP[SampleIndex][ReadIndex].PosB) TempDistance = CurrentState.Reads_RP[SampleIndex][ReadIndex].PosA - CurrentState.Reads_RP[SampleIndex][ReadIndex].PosB;
+                    else TempDistance = CurrentState.Reads_RP[SampleIndex][ReadIndex].PosB - CurrentState.Reads_RP[SampleIndex][ReadIndex].PosA;
+                    CurrentState.Reads_RP[SampleIndex][ReadIndex].Distance = TempDistance;
+                    //if (TempDistance > 10000)
+                    //std::cout << CurrentState.Reads_RP[ReadIndex].PosA << " " << CurrentState.Reads_RP[ReadIndex].PosB << " " << TempDistance << std::endl;
+                    Distances[SampleIndex].push_back(TempDistance);
+                    
+                }
             }
         }
     }
-    sort(Distances.begin(), Distances.end());
-    //for (unsigned ReadIndex = 0; ReadIndex < Distances.size(); ReadIndex++)
-    //    std::cout << Distances[ReadIndex] << " ";
-    //std::cout << std::endl;
-    unsigned Median = Distances[Distances.size() / 2]; 
-    //std::cout << "Insert size = " << Median << std::endl;
-    unsigned Average, STDE;
-    getAverageAndSTDE(Distances, Average, STDE);
-    unsigned MAD;
-    getMAD(Distances, Median, MAD);
-    //unsigned CountREF_A, CountREF_B, CountALT;
+    
+
+    unsigned Median[SampleName2IndexAsMap.size()], Average[SampleName2IndexAsMap.size()], STDE[SampleName2IndexAsMap.size()], MAD[SampleName2IndexAsMap.size()];
+    for (unsigned SampleIndex = 0; SampleIndex < SampleName2IndexAsMap.size(); SampleIndex++) {
+        sort(Distances[SampleIndex].begin(), Distances[SampleIndex].end());
+        Median[SampleIndex] = Distances[SampleIndex][Distances[SampleIndex].size() / 2]; 
+        getAverageAndSTDE(Distances[SampleIndex], Average[SampleIndex], STDE[SampleIndex]);
+        getMAD(Distances[SampleIndex], Median[SampleIndex], MAD[SampleIndex]);
+    }
     CountRPSupport4DEL(CurrentState.Reads_RP, RP_READ_Index, OneSV, Median, MAD, SampleName2IndexAsMap);
  
     return 0;

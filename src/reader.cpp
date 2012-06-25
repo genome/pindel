@@ -944,16 +944,18 @@ int32_t bam_cigar2mismatch( const bam1_core_t *readCore, const uint32_t *cigar)
 short get_RP_Reads(ControlState& currentState, ParCollection & par) {
     //std::cout << "getReads " << currentState.CurrentChrName << " " << currentState.CurrentChrSeq.size() << std::endl;
     short ReturnFromReadingReads;
+    RPVector TempOneRPVector;
     //ReadBuffer readBuffer(BUFFER_SIZE, currentState.Reads_SR, currentState.CurrentChrSeq);
     if (currentState.BAMDefined) {
         ReturnFromReadingReads = 0;
         for (unsigned int i = 0; i < currentState.bams_to_parse.size(); i++) {
             //*logStream << "Insertsize in bamreads: " << currentState.bams_to_parse[i].InsertSize << std::endl;
+            currentState.Reads_RP.push_back(TempOneRPVector);
             ReturnFromReadingReads = ReadInBamReads_RP(
                                                        currentState.bams_to_parse[i].BamFile.c_str(),
                                                        currentState.CurrentChrName, 
                                                        &currentState.CurrentChrSeq,
-                                                       currentState.Reads_RP,
+                                                       currentState.Reads_RP[i],
                                                        currentState.bams_to_parse[i].InsertSize,
                                                        currentState.bams_to_parse[i].Tag,
                                                        currentState.lowerBinBorder,
