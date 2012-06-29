@@ -139,8 +139,8 @@ struct SPLIT_READ {
         FarFragName = "";
 		Name = "";
 		UnmatchedSeq = "";
-		HalfMapped = "";
-		HalfUnmapped = "";
+//		HalfMapped = "";
+//		HalfUnmapped = "";
 		MatchedD = 0;
 		MatchedRelPos = 0;
 		MS = 0;
@@ -174,8 +174,8 @@ struct SPLIT_READ {
     std::string FarFragName;
 	std::string Name;
 	std::string UnmatchedSeq;
-	std::string HalfMapped;
-	std::string HalfUnmapped;
+//	std::string HalfMapped;
+//	std::string HalfUnmapped;
 	char MatchedD;
 	unsigned int MatchedRelPos;
 	short MS;

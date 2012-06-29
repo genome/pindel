@@ -288,8 +288,8 @@ std::ostream& operator<<(std::ostream& os, const SPLIT_READ& splitRead)
     os << "Fragname: " << splitRead.FragName << std::endl;
     os << "Name: " << splitRead.Name << std::endl;
     os << "UnmatchedSeq: " << splitRead.UnmatchedSeq << std::endl;
-    os << "HalfMapped: " << splitRead.HalfMapped << std::endl;
-    os << "HalfUnMapped: " << splitRead.HalfUnmapped << std::endl;
+    //os << "HalfMapped: " << splitRead.HalfMapped << std::endl;
+    //os << "HalfUnMapped: " << splitRead.HalfUnmapped << std::endl;
     os << "MatchedD: " << splitRead.MatchedD << " * MatchedRelPos: " << splitRead.MatchedRelPos << " * MS: " << splitRead.MS << " * ";
     os << "InsertSize: " << splitRead.InsertSize << std::endl;
     os << "Tag: " << splitRead.Tag << std::endl;
