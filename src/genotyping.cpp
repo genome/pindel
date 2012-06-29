@@ -139,8 +139,11 @@ short GenotypingOneDEL(const std::vector <Chromosome> & AllChromosomes, std::map
     // get RD signals
     const std::string & CurrentChrSeq = AllChromosomes[ ChrName2Index[ OneSV.ChrA ]].ChrSeq;
     CurrentState.CurrentChrName = OneSV.ChrA;
+    std::cout << "1" << std::endl;
     getRelativeCoverage(CurrentChrSeq, ChrName2Index[OneSV.ChrA], CurrentState, OneSV);
+    std::cout << "2" << std::endl;
     GetRP4OnDEL(AllChromosomes, ChrName2Index, CurrentState, par, OneSV, SampleName2IndexAsMap, GT_Output);
+    std::cout << "3" << std::endl;
     //short AssembleOneSV(const std::vector <Chromosome> & AllChromosomes, std::map<std::string,int> & ChrName2Index, ControlState & CurrentState, ParCollection & par, const Assembly & OneSV, std::ofstream & ASM_Output);
     //getRP_counts4DEL(CurrentChrSeq, ChrName2Index[OneSV.ChrA], CurrentState, OneSV);
     //std::cout << "after getRelativeCoverage " << OneSV.Type << " " << OneSV.ChrA << " " << OneSV.PosA << " " 
@@ -245,6 +248,7 @@ void CountRPSupport4DEL(const std::vector <RPVector> & Reads_RP, const std::vect
 
 short GetRP4OnDEL(const std::vector <Chromosome> & AllChromosomes, std::map<std::string,int> & ChrName2Index, ControlState & CurrentState, ParCollection & par, const Genotyping & OneSV, std::map<std::string, unsigned> & SampleName2IndexAsMap, std::ofstream & GT_Output) {
     //std::vector <RP_READ> ALL_RP_reads;
+    std::cout << "GetRP4OnDEL 1" << std::endl;
     short Min_MQ = 20;
     std::set<std::string> ReadNames;
     
@@ -252,7 +256,7 @@ short GetRP4OnDEL(const std::vector <Chromosome> & AllChromosomes, std::map<std:
         CurrentState.CurrentChrName = OneSV.ChrA;
         CurrentState.CurrentChrSeq = AllChromosomes[ChrName2Index.find(OneSV.ChrA)->second].ChrSeq; // change later, copying one chrseq for each SV is expensive. 
     }
-    
+    std::cout << "GetRP4OnDEL 2" << std::endl;
     //unsigned SearchCenter;
     //unsigned SearchRange;
     
@@ -262,21 +266,21 @@ short GetRP4OnDEL(const std::vector <Chromosome> & AllChromosomes, std::map<std:
         CurrentState.lowerBinBorder = OneSV.PosA - OneSV.CI_A - Overhead; //CurrentState.
     else CurrentState.lowerBinBorder = 1;
     CurrentState.upperBinBorder = OneSV.PosB + OneSV.CI_B + Overhead;
-    
+    std::cout << "GetRP4OnDEL 3" << std::endl;
     get_RP_Reads(CurrentState, par);
     //std::cout << "Reads around BP 1 " << CurrentState.Reads_RP.size() << std::endl;
-    
+    std::cout << "GetRP4OnDEL 4" << std::endl;
     //std::cout << "Reads around both breakpoints " << CurrentState.Reads_RP.size() << std::endl;
     typedef std::vector <unsigned> VectorOfUnsigned;
     std::vector <VectorOfUnsigned> Distances, RP_READ_Index;
     VectorOfUnsigned TempDistances, TempRP_READ_Index;
-    
+    std::cout << "GetRP4OnDEL 5" << std::endl;
     for (unsigned SampleIndex = 0; SampleIndex < SampleName2IndexAsMap.size(); SampleIndex++) {
         Distances.push_back(TempDistances);
         RP_READ_Index.push_back(TempRP_READ_Index);
     }
     unsigned TempDistance;
-    
+    std::cout << "GetRP4OnDEL 6" << std::endl;
     for (unsigned SampleIndex = 0; SampleIndex < SampleName2IndexAsMap.size(); SampleIndex++) {
         for (unsigned ReadIndex = 0; ReadIndex < CurrentState.Reads_RP[SampleIndex].size(); ReadIndex++) {
             if (CurrentState.Reads_RP[SampleIndex][ReadIndex].ChrNameA == CurrentState.Reads_RP[SampleIndex][ReadIndex].ChrNameB 
@@ -296,7 +300,7 @@ short GetRP4OnDEL(const std::vector <Chromosome> & AllChromosomes, std::map<std:
             }
         }
     }
-    
+    std::cout << "GetRP4OnDEL 7" << std::endl;
 
     unsigned Median[SampleName2IndexAsMap.size()], Average[SampleName2IndexAsMap.size()], STDE[SampleName2IndexAsMap.size()], MAD[SampleName2IndexAsMap.size()];
     for (unsigned SampleIndex = 0; SampleIndex < SampleName2IndexAsMap.size(); SampleIndex++) {
@@ -305,8 +309,9 @@ short GetRP4OnDEL(const std::vector <Chromosome> & AllChromosomes, std::map<std:
         getAverageAndSTDE(Distances[SampleIndex], Average[SampleIndex], STDE[SampleIndex]);
         getMAD(Distances[SampleIndex], Median[SampleIndex], MAD[SampleIndex]);
     }
+    std::cout << "GetRP4OnDEL 8" << std::endl;
     CountRPSupport4DEL(CurrentState.Reads_RP, RP_READ_Index, OneSV, Median, MAD, SampleName2IndexAsMap);
- 
+    std::cout << "GetRP4OnDEL 9" << std::endl;
     return 0;
 }
 
