@@ -322,7 +322,7 @@ std::ostream& operator<<(std::ostream& os, const SPLIT_READ& splitRead)
     os << "IndelSize:" << splitRead.IndelSize << std::endl;
     //os << "UniqueAnchor:" << splitRead.UniqueAnchor << std::endl;
     os << "UniqueRead:" << splitRead.UniqueRead << std::endl;
-    os << "score:" << splitRead.score << std::endl;
+//    os << "score:" << splitRead.score << std::endl;
     //os << "InsertedStr:" << splitRead.InsertedStr << std::endl;
     os << "NT_str:" << splitRead.NT_str  << std::endl;
     os << "NT_size:" << splitRead.NT_size << std::endl;

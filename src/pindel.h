@@ -161,7 +161,7 @@ struct SPLIT_READ {
 		IndelSize = 0;
 		//UniqueAnchor = false;
         UniqueRead = false;
-		score = 0.0;
+		//score = 0.0;
 		//InsertedStr = "";
 		NT_str = "";
 		NT_size = 0;
@@ -176,11 +176,11 @@ struct SPLIT_READ {
 	std::string UnmatchedSeq;
 //	std::string HalfMapped;
 //	std::string HalfUnmapped;
-	char MatchedD;
+	char MatchedD; // rename AnchorStrand?
 	unsigned int MatchedRelPos;
-	short MS;
+	short MS; // rename MappingQuality ?
 	short InsertSize;
-	std::string Tag;
+	std::string Tag; // rename SampleName ?
     unsigned Thickness;
 	std::vector<UniquePoint> UP_Close; // partial alignment of the unmapped reads close to the mapped read
 	std::vector<UniquePoint> UP_Far;
@@ -200,7 +200,7 @@ struct SPLIT_READ {
 	unsigned int IndelSize;
 	//bool UniqueAnchor;
     bool UniqueRead;
-	double score;
+//	double score;
 	std::string InsertedStr;
 	std::string NT_str;
 	unsigned short NT_size;
