@@ -223,7 +223,7 @@ void CountALT_RP_DEL(const std::vector <RPVector> & Reads_RP, const std::vector 
 
 void CountRPSupport4DEL(const std::vector <RPVector> & Reads_RP, const std::vector <std::vector <unsigned> >  RP_READ_Index, const Genotyping & OneSV, const unsigned * Median, const unsigned * MAD, std::map<std::string, unsigned> & SampleName2IndexAsMap) {
     //unsigned Cutoff = Median + 5 * MAD;
-    //std::cout << "Cutoff " << Cutoff << std::endl;
+    std::cout << "entering CountRPSupport4DEL ..." << std::endl;
     unsigned cutoff[SampleName2IndexAsMap.size()];
     for (unsigned SampleIndex = 0; SampleIndex < SampleName2IndexAsMap.size(); SampleIndex++) {
         cutoff[SampleIndex] = Median[SampleIndex] + 5 * MAD[SampleIndex];
@@ -240,6 +240,7 @@ void CountRPSupport4DEL(const std::vector <RPVector> & Reads_RP, const std::vect
         else std::cout << " -1";// << std::endl;
     }
     std::cout << std::endl;
+    std::cout << "leaving CountRPSupport4DEL ..." << std::endl;
 }
 
 short GetRP4OnDEL(const std::vector <Chromosome> & AllChromosomes, std::map<std::string,int> & ChrName2Index, ControlState & CurrentState, ParCollection & par, const Genotyping & OneSV, std::map<std::string, unsigned> & SampleName2IndexAsMap, std::ofstream & GT_Output) {
