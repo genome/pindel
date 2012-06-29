@@ -139,11 +139,11 @@ short GenotypingOneDEL(const std::vector <Chromosome> & AllChromosomes, std::map
     // get RD signals
     const std::string & CurrentChrSeq = AllChromosomes[ ChrName2Index[ OneSV.ChrA ]].ChrSeq;
     CurrentState.CurrentChrName = OneSV.ChrA;
-    std::cout << "1" << std::endl;
+    //std::cout << "1" << std::endl;
     getRelativeCoverage(CurrentChrSeq, ChrName2Index[OneSV.ChrA], CurrentState, OneSV);
-    std::cout << "2" << std::endl;
+    //std::cout << "2" << std::endl;
     GetRP4OnDEL(AllChromosomes, ChrName2Index, CurrentState, par, OneSV, SampleName2IndexAsMap, GT_Output);
-    std::cout << "3" << std::endl;
+    //std::cout << "3" << std::endl;
     //short AssembleOneSV(const std::vector <Chromosome> & AllChromosomes, std::map<std::string,int> & ChrName2Index, ControlState & CurrentState, ParCollection & par, const Assembly & OneSV, std::ofstream & ASM_Output);
     //getRP_counts4DEL(CurrentChrSeq, ChrName2Index[OneSV.ChrA], CurrentState, OneSV);
     //std::cout << "after getRelativeCoverage " << OneSV.Type << " " << OneSV.ChrA << " " << OneSV.PosA << " " 
