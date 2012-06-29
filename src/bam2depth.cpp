@@ -202,7 +202,7 @@ void getRelativeCoverageInternal(const std::string & chromosomeName, const int c
     //std::cout << "4" << std::endl;
     for (int fileIndex=0; fileIndex < numberOfBams; fileIndex++ ) {
        if ( avgCoverageOfRegionBeforeSV[ fileIndex ] + avgCoverageOfRegionAfterSV[ fileIndex ] == 0 ) { 
-            standardizedDepthPerBam[ fileIndex ] = 2.0; 
+            standardizedDepthPerBam[ fileIndex ] = -1; 
        } // if SV fills entire chromosome/contig 
        else {
            standardizedDepthPerBam[ fileIndex ] = PLOIDY * (2 * avgCoverageOfSVRegion[ fileIndex] ) 
