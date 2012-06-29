@@ -274,12 +274,11 @@ OutputDeletions (const std::vector < SPLIT_READ > &Deletions,
                    << " " << NumSupportPerTag[i].NumUMinus;
    DeletionOutf << std::endl;
    LOG_DEBUG(*logStream << "d_7" << std::endl);
-//std::cout << "@@@reportlength " << g_reportLength << "Left= " << Deletions[C_S].Left << " BP= " << Deletions[C_S].BP << " indelsize=" << Deletions[C_S].IndelSize << " RIght=" << Deletions[C_S].Right 
-//			<< "Readlength= " << Deletions[C_S].ReadLength << " Gapsize=" << GapSize << std::endl;
+
    DeletionOutf << TheInput.substr (Deletions[C_S].Left - g_reportLength + Deletions[C_S].BP + 1, g_reportLength);	// << endl;// g_reportLength
    if (Deletions[C_S].IndelSize >= 14) {
       DeletionOutf << Cap2Low (TheInput.substr (Deletions[C_S].Left + Deletions[C_S].BP + 1, 5)) << "<" << Deletions[C_S].IndelSize - 10 << ">" << 
-										 Cap2Low (TheInput.substr (Deletions[C_S].Right - Deletions[C_S].ReadLength + Deletions[C_S].BP - 3, 5));
+										 Cap2Low (TheInput.substr (Deletions[C_S].Right - Deletions[C_S].getReadLength() + Deletions[C_S].BP - 3, 5));
    }
    else {
       DeletionOutf << Cap2Low (TheInput.substr (Deletions[C_S].Left + Deletions[C_S].BP + 1, GapSize));
@@ -294,20 +293,20 @@ OutputDeletions (const std::vector < SPLIT_READ > &Deletions,
       }
       short SpaceBeforeD =
          g_reportLength + g_reportLength - SpaceBeforeReadSeq -
-         Deletions[GoodIndex].ReadLength;
+         Deletions[GoodIndex].getReadLength();
       if (Deletions[GoodIndex].MatchedD == Minus) {
          DeletionOutf << Deletions[GoodIndex].UnmatchedSeq.substr (0, Deletions[GoodIndex].BP + 1);	// << endl;
          for (int i = 0; i < GapSize; i++) {
             DeletionOutf << " ";
          }
-         DeletionOutf << Deletions[GoodIndex].UnmatchedSeq.substr (Deletions[GoodIndex].BP + 1, Deletions[GoodIndex].ReadLength - Deletions[GoodIndex].BP);	// << endl;
+         DeletionOutf << Deletions[GoodIndex].UnmatchedSeq.substr (Deletions[GoodIndex].BP + 1, Deletions[GoodIndex].getReadLength() - Deletions[GoodIndex].BP);	// << endl;
       }
       else {
          DeletionOutf << ReverseComplement (Deletions[GoodIndex].UnmatchedSeq).substr (0, Deletions[GoodIndex].BP + 1);	// << endl;
          for (int i = 0; i < GapSize; i++) {
             DeletionOutf << " ";
          }
-         DeletionOutf << ReverseComplement (Deletions[GoodIndex].UnmatchedSeq).substr (Deletions[GoodIndex].BP + 1, Deletions[GoodIndex].ReadLength - Deletions[GoodIndex].BP);	// << endl;
+         DeletionOutf << ReverseComplement (Deletions[GoodIndex].UnmatchedSeq).substr (Deletions[GoodIndex].BP + 1, Deletions[GoodIndex].getReadLength() - Deletions[GoodIndex].BP);	// << endl;
       }
       for (int i = 0; i < SpaceBeforeD; i++) {
          DeletionOutf << " ";
@@ -581,7 +580,7 @@ OutputSIs (const std::vector < SPLIT_READ > &SIs,
       }
       short SpaceBeforeD =
          g_reportLength + g_reportLength - SpaceBeforeReadSeq -
-         SIs[GoodIndex].ReadLength;
+         SIs[GoodIndex].getReadLength();
       for (short i = 0; i < SpaceBeforeD; i++) {
          SIsOutf << " ";
       }
@@ -707,15 +706,7 @@ SortOutputSI (const unsigned &NumBoxes, const std::string & CurrentChr,
          for (unsigned int First = 0; First < SIsNum - 1; First++) {
             {
                for (unsigned int Second = First + 1; Second < SIsNum; Second++) {
-                  {  /* 
-                     if (Reads[SIs[Box_index][First]].ReadLength ==
-                           Reads[SIs[Box_index][Second]].ReadLength) {
-                        if (Reads[SIs[Box_index][First]].LeftMostPos ==
-                              Reads[SIs[Box_index][Second]].LeftMostPos) {
-                           Reads[SIs[Box_index][Second]].UniqueRead = false;
-                        }
-                     }
-                     */ 
+                  {  
                       CompareResult = 0;
                      if (Reads[SIs[Box_index][First]].BPLeft <
                            Reads[SIs[Box_index][Second]].BPLeft) {
@@ -756,10 +747,10 @@ SortOutputSI (const unsigned &NumBoxes, const std::string & CurrentChr,
          for (unsigned int First = 0; First < SIsNum - 1; First++) {
              //*logStream << First << " " << Reads[SIs[Box_index][First]].BPLeft << " " << Reads[SIs[Box_index][First]].IndelSize << " " << Reads[SIs[Box_index][First]].BP << " " << Reads[SIs[Box_index][First]].MatchedD << " " << Reads[SIs[Box_index][First]].Tag << std::endl; 
              for (unsigned int Second = First + 1; Second < SIsNum; Second++) {
-                 if (Reads[SIs[Box_index][First]].ReadLength == Reads[SIs[Box_index][Second]].ReadLength) {
+                 if (Reads[SIs[Box_index][First]].getReadLength() == Reads[SIs[Box_index][Second]].getReadLength()) {
                      if (Reads[SIs[Box_index][First]].LeftMostPos ==
-                         Reads[SIs[Box_index][Second]].LeftMostPos || Reads[SIs[Box_index][First]].LeftMostPos + Reads[SIs[Box_index][First]].ReadLength ==
-                         Reads[SIs[Box_index][Second]].LeftMostPos + Reads[SIs[Box_index][Second]].ReadLength) {
+                         Reads[SIs[Box_index][Second]].LeftMostPos || Reads[SIs[Box_index][First]].LeftMostPos + Reads[SIs[Box_index][First]].getReadLength() ==
+                         Reads[SIs[Box_index][Second]].LeftMostPos + Reads[SIs[Box_index][Second]].getReadLength()) {
                          if (Reads[SIs[Box_index][First]].MatchedD == Reads[SIs[Box_index][Second]].MatchedD) 
                          Reads[SIs[Box_index][Second]].UniqueRead = false;
                      }
@@ -910,14 +901,7 @@ SortAndOutputTandemDuplications (const unsigned &NumBoxes, const std::string & C
             {
                for (unsigned int Second = First + 1; Second < TDNum;
                      Second++) {
-                  {  /*
-                     if (AllReads[TDs[Box_index][First]].ReadLength ==
-                           AllReads[TDs[Box_index][Second]].ReadLength) {
-                        if (AllReads[TDs[Box_index][First]].LeftMostPos ==
-                              AllReads[TDs[Box_index][Second]].LeftMostPos) {
-                           AllReads[TDs[Box_index][Second]].UniqueRead = false;
-                        }
-                     }*/
+                  {  
                       CompareResult = 0;
                      if (AllReads[TDs[Box_index][First]].BPLeft <
                            AllReads[TDs[Box_index][Second]].BPLeft) {
@@ -965,10 +949,10 @@ SortAndOutputTandemDuplications (const unsigned &NumBoxes, const std::string & C
           
           for (unsigned int First = 0; First < TDNum - 1; First++) {
               for (unsigned int Second = First + 1; Second < TDNum; Second++) {
-                  if (AllReads[TDs[Box_index][First]].ReadLength == AllReads[TDs[Box_index][Second]].ReadLength) {
+                  if (AllReads[TDs[Box_index][First]].getReadLength() == AllReads[TDs[Box_index][Second]].getReadLength()) {
                       if (AllReads[TDs[Box_index][First]].LeftMostPos ==
-                          AllReads[TDs[Box_index][Second]].LeftMostPos || AllReads[TDs[Box_index][First]].LeftMostPos + AllReads[TDs[Box_index][First]].ReadLength ==
-                          AllReads[TDs[Box_index][Second]].LeftMostPos + AllReads[TDs[Box_index][Second]].ReadLength) {
+                          AllReads[TDs[Box_index][Second]].LeftMostPos || AllReads[TDs[Box_index][First]].LeftMostPos + AllReads[TDs[Box_index][First]].getReadLength() ==
+                          AllReads[TDs[Box_index][Second]].LeftMostPos + AllReads[TDs[Box_index][Second]].getReadLength()) {
                           if (AllReads[TDs[Box_index][First]].MatchedD == AllReads[TDs[Box_index][Second]].MatchedD) 
                           AllReads[TDs[Box_index][Second]].UniqueRead = false;
                       }
@@ -1120,15 +1104,7 @@ SortOutputD (const unsigned &NumBoxes, const std::string & CurrentChr,
             {
                for (unsigned int Second = First + 1; Second < DeletionsNum;
                      Second++) {
-                  {  /*
-                     if (Reads[Deletions[Box_index][First]].ReadLength ==
-                           Reads[Deletions[Box_index][Second]].ReadLength) {
-                        if (Reads[Deletions[Box_index][First]].
-                              LeftMostPos ==
-                              Reads[Deletions[Box_index][Second]].LeftMostPos)
-                           Reads[Deletions[Box_index][Second]].UniqueRead =
-                              false;
-                     }*/
+                  { 
                       CompareResult = 0;
                      if (Reads[Deletions[Box_index][First]].BPLeft <
                            Reads[Deletions[Box_index][Second]].BPLeft) {
@@ -1164,10 +1140,10 @@ SortOutputD (const unsigned &NumBoxes, const std::string & CurrentChr,
          }
           for (unsigned int First = 0; First < DeletionsNum - 1; First++) {
               for (unsigned int Second = First + 1; Second < DeletionsNum; Second++) {
-                  if (Reads[Deletions[Box_index][First]].ReadLength == Reads[Deletions[Box_index][Second]].ReadLength) {
+                  if (Reads[Deletions[Box_index][First]].getReadLength() == Reads[Deletions[Box_index][Second]].getReadLength()) {
                       if (Reads[Deletions[Box_index][First]].LeftMostPos ==
-                          Reads[Deletions[Box_index][Second]].LeftMostPos || Reads[Deletions[Box_index][First]].LeftMostPos + Reads[Deletions[Box_index][First]].ReadLength ==
-                          Reads[Deletions[Box_index][Second]].LeftMostPos + Reads[Deletions[Box_index][Second]].ReadLength) {
+                          Reads[Deletions[Box_index][Second]].LeftMostPos || Reads[Deletions[Box_index][First]].LeftMostPos + Reads[Deletions[Box_index][First]].getReadLength() ==
+                          Reads[Deletions[Box_index][Second]].LeftMostPos + Reads[Deletions[Box_index][Second]].getReadLength()) {
                           if (Reads[Deletions[Box_index][First]].MatchedD == Reads[Deletions[Box_index][Second]].MatchedD)
                           Reads[Deletions[Box_index][Second]].UniqueRead = false;
                       }
@@ -1436,14 +1412,7 @@ void SortOutputDI (const unsigned &NumBoxes, const std::string & CurrentChr,
             {
                for (unsigned int Second = First + 1; Second < DINum;
                      Second++) {
-                  {   /*
-                     if (Reads[DI[Box_index][First]].ReadLength ==
-                           Reads[DI[Box_index][Second]].ReadLength) {
-                        if (Reads[DI[Box_index][First]].LeftMostPos ==
-                              Reads[DI[Box_index][Second]].LeftMostPos) {
-                           Reads[DI[Box_index][Second]].UniqueRead = false;
-                        }
-                     }*/
+                  {  
                       CompareResult = 0;
                      if (Reads[DI[Box_index][First]].BPLeft <
                            Reads[DI[Box_index][Second]].BPLeft) {
@@ -1486,10 +1455,10 @@ void SortOutputDI (const unsigned &NumBoxes, const std::string & CurrentChr,
          }
           for (unsigned int First = 0; First < DINum - 1; First++) {
               for (unsigned int Second = First + 1; Second < DINum; Second++) {
-                  if (Reads[DI[Box_index][First]].ReadLength == Reads[DI[Box_index][Second]].ReadLength) {
+                  if (Reads[DI[Box_index][First]].getReadLength() == Reads[DI[Box_index][Second]].getReadLength()) {
                       if (Reads[DI[Box_index][First]].LeftMostPos ==
-                          Reads[DI[Box_index][Second]].LeftMostPos || Reads[DI[Box_index][First]].LeftMostPos + Reads[DI[Box_index][First]].ReadLength ==
-                          Reads[DI[Box_index][Second]].LeftMostPos + Reads[DI[Box_index][Second]].ReadLength) {
+                          Reads[DI[Box_index][Second]].LeftMostPos || Reads[DI[Box_index][First]].LeftMostPos + Reads[DI[Box_index][First]].getReadLength() ==
+                          Reads[DI[Box_index][Second]].LeftMostPos + Reads[DI[Box_index][Second]].getReadLength()) {
                           if (Reads[DI[Box_index][First]].MatchedD == Reads[DI[Box_index][Second]].MatchedD)
                           Reads[DI[Box_index][Second]].UniqueRead = false;
                       }
@@ -1714,11 +1683,11 @@ SortOutputLI (const std::string & CurrentChr, std::vector < SPLIT_READ > &Reads,
          UP_Close_index = temp_Minus_Reads[i].UP_Close.size () - 1;
          temp_LengthStr =
             temp_Minus_Reads[i].UP_Close[UP_Close_index].LengthStr;
-         if ((float) temp_LengthStr > temp_Minus_Reads[i].ReadLength * 0.5) {
+         if ((float) temp_LengthStr > temp_Minus_Reads[i].getReadLength() * 0.5) {
             temp_BalancedMinus_Plus = true;
          }
          else if ((float) temp_LengthStr <
-                  temp_Minus_Reads[i].ReadLength * 0.5) {
+                  temp_Minus_Reads[i].getReadLength() * 0.5) {
             temp_BalancedMinus_Minus = true;
          }
       }
@@ -1730,11 +1699,11 @@ SortOutputLI (const std::string & CurrentChr, std::vector < SPLIT_READ > &Reads,
          UP_Close_index = temp_Plus_Reads[i].UP_Close.size () - 1;
          temp_LengthStr =
             temp_Plus_Reads[i].UP_Close[UP_Close_index].LengthStr;
-         if ((float) temp_LengthStr > temp_Plus_Reads[i].ReadLength * 0.5) {
+         if ((float) temp_LengthStr > temp_Plus_Reads[i].getReadLength() * 0.5) {
             temp_BalancedPlus_Plus = true;
          }
          else if ((float) temp_LengthStr <
-                  temp_Plus_Reads[i].ReadLength * 0.5) {
+                  temp_Plus_Reads[i].getReadLength() * 0.5) {
             temp_BalancedPlus_Minus = true;
          }
       }
@@ -1837,7 +1806,7 @@ SortOutputLI (const std::string & CurrentChr, std::vector < SPLIT_READ > &Reads,
                for (int j = 0;
                      j <
                      g_reportLength + temp_LengthStr -
-                     temp_Minus_Reads[i].ReadLength; j++) {
+                     temp_Minus_Reads[i].getReadLength(); j++) {
                   LargeInsertionOutf << " ";
                }
                LargeInsertionOutf << (temp_Minus_Reads[i].UnmatchedSeq) 
@@ -1962,10 +1931,10 @@ SortOutputRest (const std::string & CurrentChr,
          //temp_Pos_Reads.push_back (Reads[Rest_Positions[LI_index].Pos_Reads[i]]);
          UP_Close_index = CurrentSupportingRead.UP_Close.size () - 1;
          temp_LengthStr = CurrentSupportingRead.UP_Close[UP_Close_index].LengthStr;
-         if ((float) temp_LengthStr > CurrentSupportingRead.ReadLength * 0.5) {
+         if ((float) temp_LengthStr > CurrentSupportingRead.getReadLength() * 0.5) {
             temp_BalancedPlus = true;
          }
-         else if ((float) temp_LengthStr < CurrentSupportingRead.ReadLength * 0.5) {
+         else if ((float) temp_LengthStr < CurrentSupportingRead.getReadLength() * 0.5) {
             temp_BalancedMinus = true;
          }
       }
@@ -2016,20 +1985,6 @@ SortOutputRest (const std::string & CurrentChr,
                SPLIT_READ & CurrentSupportingRead = Reads[Rest_Positions[LI_index].Pos_Reads[i]]; 
                UP_Close_index = CurrentSupportingRead.UP_Close.size () - 1;
                temp_LengthStr = CurrentSupportingRead.UP_Close[UP_Close_index].LengthStr;
-               /*
-               if (temp_LengthStr > temp_Pos_Reads[HalfMappedIndex].
-                     UP_Close[temp_Pos_Reads[HalfMappedIndex].UP_Close.
-                              size () - 1].LengthStr) {
-                  HalfMappedIndex = i;
-               }
-               if (temp_Pos_Reads[i].ReadLength - temp_LengthStr >
-                     temp_Pos_Reads[HalfUnmappedIndex].ReadLength -
-                     temp_Pos_Reads[HalfUnmappedIndex].
-                     UP_Close[temp_Pos_Reads[HalfUnmappedIndex].UP_Close.
-                              size () - 1].LengthStr) {
-                  HalfUnmappedIndex = i;
-               }
-                */
                for (int j = 0; j < g_reportLength - temp_LengthStr; j++) {
                   Outf_Rest << " ";
                }
@@ -2039,8 +1994,6 @@ SortOutputRest (const std::string & CurrentChr,
                          MatchedRelPos << "\t" << CurrentSupportingRead.
                          MS << "\t" << CurrentSupportingRead.
                          Tag << "\t" << CurrentSupportingRead.Name << std::endl;
-               //temp_Pos_Reads[0].
-               //BP_Reads.push_back();
             }
 
          }
@@ -2073,7 +2026,7 @@ SortOutputRest (const std::string & CurrentChr,
                UP_Close_index = CurrentSupportingRead.UP_Close.size () - 1;
                temp_LengthStr =
                   CurrentSupportingRead.UP_Close[UP_Close_index].LengthStr;
-               for (int j = 0; j < g_reportLength + temp_LengthStr - CurrentSupportingRead.ReadLength; j++) {
+               for (int j = 0; j < g_reportLength + temp_LengthStr - CurrentSupportingRead.getReadLength(); j++) {
                   Outf_Rest << " ";
                }
                Outf_Rest << (CurrentSupportingRead.UnmatchedSeq)
@@ -2086,8 +2039,6 @@ SortOutputRest (const std::string & CurrentChr,
          }
       }
    }
-   //delete[]plus_LI_Pos;
-   //delete[]minus_LI_Pos;
    LOG_INFO(*logStream << "Other unassigned breakpoints (BP): " << Count_BP << std::endl << std::endl);
 }
 

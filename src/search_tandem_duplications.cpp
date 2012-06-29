@@ -70,7 +70,7 @@ int searchTandemDuplications(ControlState& currentState, unsigned NumBoxes)
 
                      if (currentState.Reads_SR[ReadIndex].UP_Far[FarIndex].LengthStr
                            + currentState.Reads_SR[ReadIndex].UP_Close[CloseIndex].LengthStr
-                           == currentState.Reads_SR[ReadIndex].ReadLength
+                           == currentState.Reads_SR[ReadIndex].getReadLength()
                            && currentState.Reads_SR[ReadIndex].UP_Far[FarIndex].AbsLoc
                            + currentState.Reads_SR[ReadIndex].UP_Far[FarIndex].LengthStr
                            < currentState.Reads_SR[ReadIndex].UP_Close[CloseIndex].AbsLoc
@@ -162,7 +162,7 @@ int searchTandemDuplications(ControlState& currentState, unsigned NumBoxes)
                         == Plus) {
                      if (currentState.Reads_SR[ReadIndex]. UP_Close[CloseIndex].LengthStr
                            + currentState.Reads_SR[ReadIndex].UP_Far[FarIndex]. LengthStr
-                           == currentState.Reads_SR[ReadIndex].ReadLength
+                           == currentState.Reads_SR[ReadIndex].getReadLength()
                            && currentState.Reads_SR[ReadIndex]. UP_Close[CloseIndex].AbsLoc
                            + currentState.Reads_SR[ReadIndex].UP_Close[CloseIndex].LengthStr
                            < currentState.Reads_SR[ReadIndex].UP_Far[FarIndex]. AbsLoc

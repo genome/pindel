@@ -199,17 +199,11 @@ short AssembleOneSV(const std::vector <Chromosome> & AllChromosomes, std::map<st
     for (unsigned ReadIndex = 0; ReadIndex < First.size(); ReadIndex++) {
         if (First[ReadIndex].UP_Close.size()) {
             if (First[ReadIndex].UP_Far.size()) {
-                //if (First[ReadIndex].UP_Far[0].LengthStr < 0) continue;
-                //std::cout << "First UP_Far: ";
-                //std::cout << First[ReadIndex].UP_Far.size() << std::endl;
-                //std::cout << "First[ReadIndex].UP_Far.size() " << First[ReadIndex].UP_Close[First[ReadIndex].UP_Close.size() - 1].LengthStr << std::endl;
-                if (First[ReadIndex].UP_Far[First[ReadIndex].UP_Far.size() - 1].LengthStr + First[ReadIndex].UP_Close[First[ReadIndex].UP_Close.size() - 1].LengthStr + Max_NT_Size >= First[ReadIndex].ReadLength) OutputCurrentRead(AllChromosomes, ChrName2Index, CurrentState, par, OneSV, First[ReadIndex], ASM_Output);
+
+                if (First[ReadIndex].UP_Far[First[ReadIndex].UP_Far.size() - 1].LengthStr + First[ReadIndex].UP_Close[First[ReadIndex].UP_Close.size() - 1].LengthStr + Max_NT_Size >= First[ReadIndex].getReadLength()) OutputCurrentRead(AllChromosomes, ChrName2Index, CurrentState, par, OneSV, First[ReadIndex], ASM_Output);
             }
             else if (First[ReadIndex].UP_Far_backup.size()) {
-                //std::cout << "First UP_Far_backup ";
-                //std::cout << First[ReadIndex].UP_Far_backup.size() << std::endl; //First[ReadIndex].UP_Far_backup[First[ReadIndex].UP_Far_backup.size() - 1].LengthStr << " " << First[ReadIndex].UP_Close[First[ReadIndex].UP_Close.size() - 1].LengthStr << " " << Max_NT_Size << " " << First[ReadIndex].ReadLength << std::endl;
-                //if (First[ReadIndex].UP_Far_backup[First[ReadIndex].UP_Far_backup.size() - 1].LengthStr + First[ReadIndex].UP_Close[First[ReadIndex].UP_Close.size() - 1].LengthStr + Max_NT_Size >= First[ReadIndex].ReadLength) 
-                //std::cout << "First[ReadIndex].UP_Far_backup.size() # " << First[ReadIndex].UP_Close[First[ReadIndex].UP_Close.size() - 1].LengthStr << std::endl;
+
                 OutputCurrentRead(AllChromosomes, ChrName2Index, CurrentState, par, OneSV, First[ReadIndex], ASM_Output);
             }
         }
@@ -258,19 +252,13 @@ short AssembleOneSV(const std::vector <Chromosome> & AllChromosomes, std::map<st
     for (unsigned ReadIndex = 0; ReadIndex < Second.size(); ReadIndex++) {
         if (Second[ReadIndex].UP_Close.size()) {
             if (Second[ReadIndex].UP_Far.size()) {
-                //std::cout << "Second UP_Far: " << Second[ReadIndex].UP_Far.size() << std::endl;
-                //std::cout << "Second[ReadIndex].UP_Far.size() " << Second[ReadIndex].UP_Close[Second[ReadIndex].UP_Close.size() - 1].LengthStr << std::endl;
-                if (Second[ReadIndex].UP_Far[Second[ReadIndex].UP_Far.size() - 1].LengthStr + Second[ReadIndex].UP_Close[Second[ReadIndex].UP_Close.size() - 1].LengthStr + Max_NT_Size >= Second[ReadIndex].ReadLength) OutputCurrentRead(AllChromosomes, ChrName2Index, CurrentState, par, OneSV, Second[ReadIndex], ASM_Output);
+                if (Second[ReadIndex].UP_Far[Second[ReadIndex].UP_Far.size() - 1].LengthStr + Second[ReadIndex].UP_Close[Second[ReadIndex].UP_Close.size() - 1].LengthStr + Max_NT_Size >= Second[ReadIndex].getReadLength()) OutputCurrentRead(AllChromosomes, ChrName2Index, CurrentState, par, OneSV, Second[ReadIndex], ASM_Output);
             }
             else if (Second[ReadIndex].UP_Far_backup.size()) {
-                //std::cout << "Second UP_Far_backup " << Second[ReadIndex].UP_Far_backup.size() << std::endl; //<< Second[ReadIndex].UP_Far_backup[Second[ReadIndex].UP_Far_backup.size() - 1].LengthStr << " " << Second[ReadIndex].UP_Close[Second[ReadIndex].UP_Close.size() - 1].LengthStr << " " << Max_NT_Size << " " << Second[ReadIndex].ReadLength << std::endl;
-                //if (Second[ReadIndex].UP_Far_backup[Second[ReadIndex].UP_Far_backup.size() - 1].LengthStr + Second[ReadIndex].UP_Close[Second[ReadIndex].UP_Close.size() - 1].LengthStr + Max_NT_Size >= Second[ReadIndex].ReadLength) 
-                //std::cout << "Second[ReadIndex].UP_Far_backup.size() " << Second[ReadIndex].UP_Close[Second[ReadIndex].UP_Close.size() - 1].LengthStr << std::endl;
                 OutputCurrentRead(AllChromosomes, ChrName2Index, CurrentState, par, OneSV, Second[ReadIndex], ASM_Output);
             }
         }
     }
-    //std::cout << "AssembleOneSV 15" << std::endl;
 
     unsigned SumSize = 0;
     for (unsigned ReadIndex = 0; ReadIndex < First.size(); ReadIndex++) {
@@ -300,13 +288,13 @@ void CombineAndSort(const std::vector <Chromosome> & AllChromosomes, std::map<st
     std::vector <int> Plus_Read_Index, Minus_Read_Index;
     for (unsigned i = 0; i < CurrentState.Reads_SR.size(); i++) {
         if (First) {
-            if (CurrentState.Reads_SR[i].UP_Close[CurrentState.Reads_SR[i].UP_Close.size() - 1].AbsLoc + OneSV.CI_A + CurrentState.Reads_SR[i].ReadLength > g_SpacerBeforeAfter + OneSV.PosA && CurrentState.Reads_SR[i].UP_Close[CurrentState.Reads_SR[i].UP_Close.size() - 1].AbsLoc < g_SpacerBeforeAfter + OneSV.PosA + OneSV.CI_A + CurrentState.Reads_SR[i].ReadLength) {
+            if (CurrentState.Reads_SR[i].UP_Close[CurrentState.Reads_SR[i].UP_Close.size() - 1].AbsLoc + OneSV.CI_A + CurrentState.Reads_SR[i].getReadLength() > g_SpacerBeforeAfter + OneSV.PosA && CurrentState.Reads_SR[i].UP_Close[CurrentState.Reads_SR[i].UP_Close.size() - 1].AbsLoc < g_SpacerBeforeAfter + OneSV.PosA + OneSV.CI_A + CurrentState.Reads_SR[i].getReadLength()) {
                 if (CurrentState.Reads_SR[i].MatchedD == Plus) Index_Plus[CurrentState.Reads_SR[i].UP_Close[CurrentState.Reads_SR[i].UP_Close.size() - 1].AbsLoc - OffSet - g_SpacerBeforeAfter].push_back(i);
                 else if (CurrentState.Reads_SR[i].MatchedD == Minus) Index_Minus[CurrentState.Reads_SR[i].UP_Close[CurrentState.Reads_SR[i].UP_Close.size() - 1].AbsLoc - OffSet - g_SpacerBeforeAfter].push_back(i);
             }
         }
         else { // second BP
-            if (CurrentState.Reads_SR[i].UP_Close[CurrentState.Reads_SR[i].UP_Close.size() - 1].AbsLoc + OneSV.CI_B + CurrentState.Reads_SR[i].ReadLength > g_SpacerBeforeAfter + OneSV.PosB && CurrentState.Reads_SR[i].UP_Close[CurrentState.Reads_SR[i].UP_Close.size() - 1].AbsLoc < g_SpacerBeforeAfter+ OneSV.PosB + OneSV.CI_B + CurrentState.Reads_SR[i].ReadLength) {
+            if (CurrentState.Reads_SR[i].UP_Close[CurrentState.Reads_SR[i].UP_Close.size() - 1].AbsLoc + OneSV.CI_B + CurrentState.Reads_SR[i].getReadLength() > g_SpacerBeforeAfter + OneSV.PosB && CurrentState.Reads_SR[i].UP_Close[CurrentState.Reads_SR[i].UP_Close.size() - 1].AbsLoc < g_SpacerBeforeAfter+ OneSV.PosB + OneSV.CI_B + CurrentState.Reads_SR[i].getReadLength()) {
                 if (CurrentState.Reads_SR[i].MatchedD == Plus) Index_Plus[CurrentState.Reads_SR[i].UP_Close[CurrentState.Reads_SR[i].UP_Close.size() - 1].AbsLoc - OffSet - g_SpacerBeforeAfter].push_back(i);
                 else if (CurrentState.Reads_SR[i].MatchedD == Minus) Index_Minus[CurrentState.Reads_SR[i].UP_Close[CurrentState.Reads_SR[i].UP_Close.size() - 1].AbsLoc - OffSet - g_SpacerBeforeAfter].push_back(i);
             }
@@ -343,10 +331,10 @@ void CombineReads(const std::string & CurrentChrSeq, const char & Strand, const 
         //std::cout << input_reads[Index_Of_Useful_Reads[ReadIndex]].LeftMostPos << " " << input_reads[Index_Of_Useful_Reads[ReadIndex]].UnmatchedSeq << std::endl;
         if (input_reads[Index_Of_Useful_Reads[ReadIndex]].LeftMostPos < (int)Min_LeftMostPos)
             Min_LeftMostPos = input_reads[Index_Of_Useful_Reads[ReadIndex]].LeftMostPos;
-        if (input_reads[Index_Of_Useful_Reads[ReadIndex]].ReadLength > (short)Max_ReadLength)
-            Max_ReadLength = input_reads[Index_Of_Useful_Reads[ReadIndex]].ReadLength;
-        if (input_reads[Index_Of_Useful_Reads[ReadIndex]].LeftMostPos + (unsigned)input_reads[Index_Of_Useful_Reads[ReadIndex]].ReadLength > Max_AssembledLength) 
-            Max_AssembledLength = input_reads[Index_Of_Useful_Reads[ReadIndex]].LeftMostPos + input_reads[Index_Of_Useful_Reads[ReadIndex]].ReadLength;
+        if (input_reads[Index_Of_Useful_Reads[ReadIndex]].getReadLength() > (short)Max_ReadLength)
+            Max_ReadLength = input_reads[Index_Of_Useful_Reads[ReadIndex]].getReadLength();
+        if (input_reads[Index_Of_Useful_Reads[ReadIndex]].LeftMostPos + (unsigned)input_reads[Index_Of_Useful_Reads[ReadIndex]].getReadLength() > Max_AssembledLength) 
+            Max_AssembledLength = input_reads[Index_Of_Useful_Reads[ReadIndex]].LeftMostPos + input_reads[Index_Of_Useful_Reads[ReadIndex]].getReadLength();
     }
     Max_AssembledLength = Max_AssembledLength - Min_LeftMostPos;
     if ((float)Max_AssembledLength < Max_ReadLength * 1.3) return;
@@ -355,7 +343,7 @@ void CombineReads(const std::string & CurrentChrSeq, const char & Strand, const 
         Spacer.clear();
         
         if (Strand == '+') {
-            for (unsigned SpacerIndex = 0; SpacerIndex < Max_AssembledLength + Min_LeftMostPos - input_reads[Index_Of_Useful_Reads[ReadIndex]].LeftMostPos - input_reads[Index_Of_Useful_Reads[ReadIndex]].ReadLength; SpacerIndex++) Spacer += " ";
+            for (unsigned SpacerIndex = 0; SpacerIndex < Max_AssembledLength + Min_LeftMostPos - input_reads[Index_Of_Useful_Reads[ReadIndex]].LeftMostPos - input_reads[Index_Of_Useful_Reads[ReadIndex]].getReadLength(); SpacerIndex++) Spacer += " ";
             //std::cout << Spacer << (input_reads[Index_Of_Useful_Reads[ReadIndex]].UnmatchedSeq) << std::endl;
         }
         else {
@@ -383,23 +371,23 @@ void CombineReads(const std::string & CurrentChrSeq, const char & Strand, const 
     if (Strand == '+') {
         for (unsigned ReadIndex = 0; ReadIndex < Index_Of_Useful_Reads.size(); ReadIndex++) {
             //std::cout << std::endl;
-            for (short BaseIndex = 0; BaseIndex < input_reads[Index_Of_Useful_Reads[ReadIndex]].ReadLength; BaseIndex++) {
+            for (short BaseIndex = 0; BaseIndex < input_reads[Index_Of_Useful_Reads[ReadIndex]].getReadLength(); BaseIndex++) {
                 //std::cout << input_reads[Index_Of_Useful_Reads[ReadIndex]].UnmatchedSeq[BaseIndex];
                 switch (input_reads[Index_Of_Useful_Reads[ReadIndex]].UnmatchedSeq[BaseIndex]) {
                     case 'A':
-                        Count[0][Max_AssembledLength + Min_LeftMostPos - input_reads[Index_Of_Useful_Reads[ReadIndex]].LeftMostPos - input_reads[Index_Of_Useful_Reads[ReadIndex]].ReadLength + BaseIndex]++;
+                        Count[0][Max_AssembledLength + Min_LeftMostPos - input_reads[Index_Of_Useful_Reads[ReadIndex]].LeftMostPos - input_reads[Index_Of_Useful_Reads[ReadIndex]].getReadLength() + BaseIndex]++;
                         break;	// 00000000
                     case 'C':
-                        Count[1][Max_AssembledLength + Min_LeftMostPos - input_reads[Index_Of_Useful_Reads[ReadIndex]].LeftMostPos - input_reads[Index_Of_Useful_Reads[ReadIndex]].ReadLength + BaseIndex]++;
+                        Count[1][Max_AssembledLength + Min_LeftMostPos - input_reads[Index_Of_Useful_Reads[ReadIndex]].LeftMostPos - input_reads[Index_Of_Useful_Reads[ReadIndex]].getReadLength() + BaseIndex]++;
                         break;	// 00010000
                     case 'G':
-                        Count[2][Max_AssembledLength + Min_LeftMostPos - input_reads[Index_Of_Useful_Reads[ReadIndex]].LeftMostPos - input_reads[Index_Of_Useful_Reads[ReadIndex]].ReadLength + BaseIndex]++;
+                        Count[2][Max_AssembledLength + Min_LeftMostPos - input_reads[Index_Of_Useful_Reads[ReadIndex]].LeftMostPos - input_reads[Index_Of_Useful_Reads[ReadIndex]].getReadLength() + BaseIndex]++;
                         break;	// 00100000
                     case 'T':
-                        Count[3][Max_AssembledLength + Min_LeftMostPos - input_reads[Index_Of_Useful_Reads[ReadIndex]].LeftMostPos - input_reads[Index_Of_Useful_Reads[ReadIndex]].ReadLength + BaseIndex]++;
+                        Count[3][Max_AssembledLength + Min_LeftMostPos - input_reads[Index_Of_Useful_Reads[ReadIndex]].LeftMostPos - input_reads[Index_Of_Useful_Reads[ReadIndex]].getReadLength() + BaseIndex]++;
                         break;	// 00110000
                     default:
-                        Count[4][Max_AssembledLength + Min_LeftMostPos - input_reads[Index_Of_Useful_Reads[ReadIndex]].LeftMostPos - input_reads[Index_Of_Useful_Reads[ReadIndex]].ReadLength + BaseIndex]++;
+                        Count[4][Max_AssembledLength + Min_LeftMostPos - input_reads[Index_Of_Useful_Reads[ReadIndex]].LeftMostPos - input_reads[Index_Of_Useful_Reads[ReadIndex]].getReadLength() + BaseIndex]++;
                         // 01000000
                 }
             }
@@ -408,7 +396,7 @@ void CombineReads(const std::string & CurrentChrSeq, const char & Strand, const 
     else if (Strand == '-') {
         for (unsigned ReadIndex = 0; ReadIndex < Index_Of_Useful_Reads.size(); ReadIndex++) {
             //std::cout << std::endl;
-            for (short BaseIndex = 0; BaseIndex < input_reads[Index_Of_Useful_Reads[ReadIndex]].ReadLength; BaseIndex++) {
+            for (short BaseIndex = 0; BaseIndex < input_reads[Index_Of_Useful_Reads[ReadIndex]].getReadLength(); BaseIndex++) {
                 //std::cout << input_reads[Index_Of_Useful_Reads[ReadIndex]].UnmatchedSeq[BaseIndex];
                 switch (input_reads[Index_Of_Useful_Reads[ReadIndex]].UnmatchedSeq[BaseIndex]) {
                     case 'A':
@@ -562,9 +550,8 @@ void OutputCurrentRead(const std::vector <Chromosome> & AllChromosomes, std::map
     }
     else if (OneRead.UP_Far_backup.size()) {
         //std::cout << "UP_Far_backup start" << std::endl;
-        short NT_Size = OneRead.ReadLength - OneRead.UP_Close[OneRead.UP_Close.size() - 1].LengthStr - OneRead.UP_Far_backup[OneRead.UP_Far_backup.size() - 1].LengthStr;
-        //std::cout << "ReadLength " << OneRead.ReadLength << " CloseEnd: " << OneRead.UP_Close[OneRead.UP_Close.size() - 1].LengthStr << " Far_Backup " << OneRead.UP_Far_backup[OneRead.UP_Far_backup.size() - 1].LengthStr << std::endl;
-        //std::cout << "NT_Size " << NT_Size << std::endl;
+        short NT_Size = OneRead.getReadLength() - OneRead.UP_Close[OneRead.UP_Close.size() - 1].LengthStr - OneRead.UP_Far_backup[OneRead.UP_Far_backup.size() - 1].LengthStr;
+
         std::string NT_Str = "";
         if (OneRead.UP_Close[OneRead.UP_Close.size() - 1].Strand  == '+') {
             NT_Str = OneRead.UnmatchedSeq.substr(OneRead.UP_Far_backup[OneRead.UP_Far_backup.size() - 1].LengthStr, NT_Size);
@@ -616,7 +603,7 @@ void TryLI(const std::vector <Chromosome> & AllChromosomes, std::map<std::string
         if (First[ReadIndex_Plus].MatchedD == '-') continue;
         for (unsigned ReadIndex_Minus = 0; ReadIndex_Minus < Second.size(); ReadIndex_Minus++) {
             if (Second[ReadIndex_Minus].MatchedD == '+') continue;
-            MaximumOverlap = std::min(First[ReadIndex_Plus].ReadLength, Second[ReadIndex_Minus].ReadLength);
+            MaximumOverlap = std::min(First[ReadIndex_Plus].getReadLength(), Second[ReadIndex_Minus].getReadLength());
             std::cout << MaximumOverlap << std::endl;
             FirstOne = ReverseComplement(First[ReadIndex_Plus].UnmatchedSeq);
             SecondOne = Second[ReadIndex_Minus].UnmatchedSeq;
@@ -663,7 +650,7 @@ void ReportLI(const std::vector <Chromosome> & AllChromosomes, std::map<std::str
             return;
         }
         else {
-            short NT_Size = OneRead.ReadLength - OneRead.UP_Close[OneRead.UP_Close.size() - 1].LengthStr - OneRead.UP_Far_backup[OneRead.UP_Far_backup.size() - 1].LengthStr;
+            short NT_Size = OneRead.getReadLength() - OneRead.UP_Close[OneRead.UP_Close.size() - 1].LengthStr - OneRead.UP_Far_backup[OneRead.UP_Far_backup.size() - 1].LengthStr;
             std::string NT_Str = OneRead.UnmatchedSeq.substr(OneRead.UP_Far_backup[OneRead.UP_Far_backup.size() - 1].LengthStr, NT_Size);
             
             ASM_Output << OneSV.Index + 1 << " " << OneSV.Type << " " << OneSV.ChrA << " " << OneSV.PosA << " " << OneSV.CI_A << "\t" << OneSV.ChrB << " " << OneSV.PosB << " " << OneSV .CI_B 

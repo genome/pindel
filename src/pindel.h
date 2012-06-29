@@ -185,7 +185,8 @@ struct SPLIT_READ {
 	std::vector<UniquePoint> UP_Close; // partial alignment of the unmapped reads close to the mapped read
 	std::vector<UniquePoint> UP_Far;
 	std::vector<UniquePoint> UP_Far_backup;
-	short ReadLength;
+   short getReadLength() const { return ReadLength; }
+   void setReadLength(short readLength) { ReadLength = readLength; }
 	short ReadLengthMinus;
 	short MAX_SNP_ERROR; // = (short)(Temp_One_Read.UnmatchedSeq.size() * Seq_Error_Rate);
 
@@ -218,7 +219,8 @@ struct SPLIT_READ {
 	friend std::ostream& operator<<(std::ostream& os, const SPLIT_READ& splitRead);
 
 private:
-	unsigned int MaxEndSize( const std::vector<UniquePoint>& upVector) const;
+	short ReadLength;
+      unsigned int MaxEndSize( const std::vector<UniquePoint>& upVector) const;
 
 };
 

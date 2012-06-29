@@ -40,7 +40,7 @@ bool SearchDeletions::decisionBranch1(ControlState& currentState,
 {
    return currentState.Reads_SR[ReadIndex].UP_Far[FarIndex]. LengthStr
           + currentState.Reads_SR[ReadIndex].UP_Close[CloseIndex]. LengthStr
-          == currentState.Reads_SR[ReadIndex].ReadLength
+          == currentState.Reads_SR[ReadIndex].getReadLength()
           && currentState.Reads_SR[ReadIndex].UP_Far[FarIndex]. AbsLoc
           > currentState.Reads_SR[ReadIndex].UP_Close[CloseIndex]. AbsLoc
           + 1;
@@ -51,7 +51,7 @@ bool SearchDeletions::decisionBranch2(ControlState& currentState,
 {
    return currentState.Reads_SR[ReadIndex].UP_Close[CloseIndex]. LengthStr
           + currentState.Reads_SR[ReadIndex].UP_Far[FarIndex]. LengthStr
-          == currentState.Reads_SR[ReadIndex].ReadLength
+          == currentState.Reads_SR[ReadIndex].getReadLength()
           && currentState.Reads_SR[ReadIndex]. UP_Close[CloseIndex].AbsLoc
           > currentState.Reads_SR[ReadIndex].UP_Far[FarIndex]. AbsLoc
           + 1;

@@ -83,12 +83,6 @@ OutputSorter::DoSortAndOutputInversions (std::vector<SPLIT_READ> &Reads,
                LOG_DEBUG (*logStream << InputIndels[First].BPLeft << "\t" << InputIndels[First].BPRight << "\t"
                           InputIndels[Second].BPLeft << "\t" << InputIndels[Second].BPRight << std::endl);
                {  
-                  /* 
-                  if (Reads[Inv[Box_index][First]].ReadLength == Reads[Inv[Box_index][Second]].ReadLength) {
-                     if (Reads[Inv[Box_index][First]].LeftMostPos == Reads[Inv[Box_index][Second]].LeftMostPos) {
-                        Reads[Inv[Box_index][Second]].UniqueRead = false;
-                     }
-                  }*/
                   CompareResult = 0; 
                   if (Reads[Inv[Box_index][First]].BPLeft + Reads[Inv[Box_index][First]].BPRight < Reads[Inv[Box_index][Second]].BPLeft + Reads[Inv[Box_index][Second]].BPRight) {
                      continue;
@@ -141,13 +135,10 @@ OutputSorter::DoSortAndOutputInversions (std::vector<SPLIT_READ> &Reads,
          }
           for (unsigned int First = 0; First < InversionsNum - 1; First++) {
               for (unsigned int Second = First + 1; Second < InversionsNum; Second++) {
-                  if (Reads[Inv[Box_index][First]].LeftMostPos == Reads[Inv[Box_index][Second]].LeftMostPos || Reads[Inv[Box_index][First]].LeftMostPos + Reads[Inv[Box_index][First]].ReadLength == Reads[Inv[Box_index][Second]].LeftMostPos + Reads[Inv[Box_index][Second]].ReadLength) {
-                      //if (Reads[Inv[Box_index][First]].ReadLength == Reads[Inv[Box_index][Second]].ReadLength) {
-                          //if (Reads[Inv[Box_index][First]].LeftMostPos == Reads[Inv[Box_index][Second]].LeftMostPos) {
+                  if (Reads[Inv[Box_index][First]].LeftMostPos == Reads[Inv[Box_index][Second]].LeftMostPos || Reads[Inv[Box_index][First]].LeftMostPos + Reads[Inv[Box_index][First]].getReadLength() == Reads[Inv[Box_index][Second]].LeftMostPos + Reads[Inv[Box_index][Second]].getReadLength()) {
+
                           if (Reads[Inv[Box_index][First]].MatchedD == Reads[Inv[Box_index][Second]].MatchedD)
-                              Reads[Inv[Box_index][Second]].UniqueRead = false;
-                          //}
-                      //}    
+                              Reads[Inv[Box_index][Second]].UniqueRead = false; 
                   }
               }
           }
@@ -195,7 +186,7 @@ OutputSorter::DoSortAndOutputInversions (std::vector<SPLIT_READ> &Reads,
                 //*logStream << "MaxSize " << MaxSize << std::endl;
                // changed BP according to the largest event
                for (unsigned i = OneIndelEvent.Start; i <= OneIndelEvent.End; i++) {
-                  if (GoodIndels[i].IndelSize / (float)MaxSize < 0.95 || MaxSize  + 30 > GoodIndels[i].ReadLength + GoodIndels[i].IndelSize) {
+                  if (GoodIndels[i].IndelSize / (float)MaxSize < 0.95 || MaxSize  + 30 > GoodIndels[i].getReadLength() + GoodIndels[i].IndelSize) {
                      OneIndelEvent.WhetherReport = false;
                      //*logStream << "Skip one inversion 1!" << std::endl;
                      break;
@@ -247,7 +238,7 @@ OutputSorter::DoSortAndOutputInversions (std::vector<SPLIT_READ> &Reads,
           //*logStream << "in6" << std::endl;
          // changed BP according to the largest event
          for (unsigned i = OneIndelEvent.Start; i <= OneIndelEvent.End; i++) {
-            if (GoodIndels[i].IndelSize / (float)MaxSize < 0.95 || MaxSize  + 30 > GoodIndels[i].ReadLength + GoodIndels[i].IndelSize) {
+            if (GoodIndels[i].IndelSize / (float)MaxSize < 0.95 || MaxSize  + 30 > GoodIndels[i].getReadLength() + GoodIndels[i].IndelSize) {
                OneIndelEvent.WhetherReport = false;
                //*logStream << "Skip one inversion 2!" << std::endl;
                break;

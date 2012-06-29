@@ -178,8 +178,8 @@ ReadInRead (PindelReadReader & inf_ReadSeq, const std::string & FragName,
       if (Temp_One_Read.FragName == FragName
             && Temp_One_Read.MatchedRelPos >= lowerBinBorder
             && Temp_One_Read.MatchedRelPos < upperBinBorder) {
-         Temp_One_Read.ReadLength = Temp_One_Read.UnmatchedSeq.size ();
-         Temp_One_Read.ReadLengthMinus = Temp_One_Read.ReadLength - 1;
+         Temp_One_Read.setReadLength( Temp_One_Read.UnmatchedSeq.size () );
+         Temp_One_Read.ReadLengthMinus = Temp_One_Read.getReadLength() - 1;
          g_NumReadInWindow++;
 
          Temp_One_Read.MAX_SNP_ERROR =
@@ -219,8 +219,8 @@ ReadInRead (PindelReadReader & inf_ReadSeq, const std::string & FragName,
                   BufferReadsIndex++) {
                if (BufferReads[BufferReadsIndex].UP_Close.size ()) {
                   UPCLOSE_COUNTER++;
-                  if (g_reportLength < BufferReads[BufferReadsIndex].ReadLength)
-                     g_reportLength = BufferReads[BufferReadsIndex].ReadLength;
+                  if (g_reportLength < BufferReads[BufferReadsIndex].getReadLength())
+                     g_reportLength = BufferReads[BufferReadsIndex].getReadLength();
                   BufferReads[BufferReadsIndex].Used = false;
                   //BufferReads[BufferReadsIndex].UniqueAnchor = true;
                   BufferReads[BufferReadsIndex].UniqueRead = true; 
@@ -246,7 +246,7 @@ ReadInRead (PindelReadReader & inf_ReadSeq, const std::string & FragName,
                         UP_Close[BufferReads[BufferReadsIndex].UP_Close.
                                  size () - 1].AbsLoc +
                         BufferReads[BufferReadsIndex].CloseEndLength -
-                        BufferReads[BufferReadsIndex].ReadLength;
+                        BufferReads[BufferReadsIndex].getReadLength();
                   LOG_DEBUG(*logStream << "Pushing back!" << std::endl);
                   Reads.push_back (BufferReads[BufferReadsIndex]);
                   if (BufferReads[BufferReadsIndex].MatchedD == Plus) {
@@ -276,8 +276,8 @@ ReadInRead (PindelReadReader & inf_ReadSeq, const std::string & FragName,
          BufferReadsIndex++) {
       if (BufferReads[BufferReadsIndex].UP_Close.size ()) {
          UPCLOSE_COUNTER++;
-         if (g_reportLength < BufferReads[BufferReadsIndex].ReadLength) {
-            g_reportLength = BufferReads[BufferReadsIndex].ReadLength;
+         if (g_reportLength < BufferReads[BufferReadsIndex].getReadLength()) {
+            g_reportLength = BufferReads[BufferReadsIndex].getReadLength();
          }
          BufferReads[BufferReadsIndex].Used = false;
          //BufferReads[BufferReadsIndex].UniqueAnchor = true;
@@ -306,7 +306,7 @@ ReadInRead (PindelReadReader & inf_ReadSeq, const std::string & FragName,
                UP_Close[BufferReads[BufferReadsIndex].UP_Close.size () -
                         1].AbsLoc +
                BufferReads[BufferReadsIndex].CloseEndLength -
-               BufferReads[BufferReadsIndex].ReadLength;
+               BufferReads[BufferReadsIndex].getReadLength();
          Reads.push_back (BufferReads[BufferReadsIndex]);
          if (BufferReads[BufferReadsIndex].MatchedD == Plus) {
             g_CloseMappedPlus++;
@@ -562,7 +562,7 @@ build_record_SR (const bam1_t * mapped_read, const bam1_t * unmapped_read,
         return;
     }
     //rudimentary n filter end
-    Temp_One_Read.ReadLength = length;
+    Temp_One_Read.setReadLength( length );
     Temp_One_Read.ReadLengthMinus = length - 1;
     if (unmapped_core->flag & BAM_FREVERSE) {
         Temp_One_Read.UnmatchedSeq = ReverseComplement (c_sequence);
@@ -585,7 +585,7 @@ build_record_SR (const bam1_t * mapped_read, const bam1_t * unmapped_read,
     //FIXME pass these through from the command line with a struct
     Temp_One_Read.InsertSize = InsertSize;
 	if (InsertSize <= length ) {
-		*logStream << "Error: the insert size is only " << InsertSize << " while the read length is " << Temp_One_Read.ReadLength << std::endl;
+		*logStream << "Error: the insert size is only " << InsertSize << " while the read length is " << Temp_One_Read.getReadLength() << std::endl;
         *logStream << "in paired end sequencing, the insert size is the total size of the fragment to be sequenced, with a read length of 100 bp the entire fragment may for example look like\n\n";
 		*logStream << "|----100 bp: first read of the read pair--|-------------------300 bp: unsequenced DNA---------------------|----100 bp: second read of the read pair--|\n";
         *logStream << "<-----------------------------------------------------------insert size=500 ------------------------------------------------------------------------->\n\n";

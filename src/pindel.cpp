@@ -308,7 +308,7 @@ std::ostream& operator<<(std::ostream& os, const SPLIT_READ& splitRead)
         os << "[" << i << "]=" << splitRead.UP_Far_backup[i] << " ";
     }
     os << std::endl;
-    os << "ReadLength: " << splitRead.ReadLength << std::endl;
+    os << "ReadLength: " << splitRead.getReadLength() << std::endl;
     os << "ReadLengthMinus: " << splitRead.ReadLengthMinus << std::endl;
     os << "MAX_SNP_ERROR:" << splitRead.MAX_SNP_ERROR << std::endl;
     os << "TOTAL_SNP_ERROR_CHECKED:" << splitRead.TOTAL_SNP_ERROR_CHECKED << std::endl;
@@ -1662,7 +1662,7 @@ std::string Cap2Low(const std::string & input)
 bool ReportEvent(const std::vector<SPLIT_READ> &Deletions,
                  const unsigned int &S, const unsigned int &E)
 {
-    short ReadLength = Deletions[S].ReadLength - Deletions[S].NT_size;
+    short ReadLength = Deletions[S].getReadLength() - Deletions[S].NT_size;
     short Min_Length = (short) ((ReadLength * Min_Filter_Ratio) + 0.5) - 1;
     short Max_Length = (short) (ReadLength * (1 - Min_Filter_Ratio) - 0.5) - 1;
     bool LeftMin = false;
@@ -1670,20 +1670,20 @@ bool ReportEvent(const std::vector<SPLIT_READ> &Deletions,
     bool RightMin = false;
     bool RightMax = false;
     for (unsigned i = S; i <= E; i++) {
-        ReadLength = Deletions[i].ReadLength - Deletions[i].NT_size;
+        ReadLength = Deletions[i].getReadLength() - Deletions[i].NT_size;
         Min_Length = (short) ((ReadLength * Min_Filter_Ratio) + 0.5) - 1;
         Max_Length = (short) (ReadLength * (1 - Min_Filter_Ratio) - 0.5) - 1;
         if (Deletions[i].BP <= Min_Length) {
             LeftMin = true;
         }
-        if (Deletions[i].ReadLength - Deletions[i].BP - Deletions[i].NT_size
+        if (Deletions[i].getReadLength() - Deletions[i].BP - Deletions[i].NT_size
                 <= Min_Length) {
             RightMin = true;
         }
         if (Deletions[i].BP >= Max_Length) {
             LeftMax = true;
         }
-        if (Deletions[i].ReadLength - Deletions[i].BP - Deletions[i].NT_size
+        if (Deletions[i].getReadLength() - Deletions[i].BP - Deletions[i].NT_size
                 >= Max_Length) {
             RightMax = true;
         }
@@ -1762,8 +1762,8 @@ std::vector<Region> Merge(const std::vector<Region> &AllRegions)
 /* 'updateReadAfterCloseEndMapping' (EWL, 31thAug2011) */
 void updateReadAfterCloseEndMapping( SPLIT_READ& Temp_One_Read )
 {
-    if (g_reportLength < Temp_One_Read.ReadLength) {
-        g_reportLength = Temp_One_Read.ReadLength;
+    if (g_reportLength < Temp_One_Read.getReadLength()) {
+        g_reportLength = Temp_One_Read.getReadLength();
     }
     Temp_One_Read.Used = false;
     //Temp_One_Read.UniqueAnchor = true;
@@ -1781,7 +1781,7 @@ void updateReadAfterCloseEndMapping( SPLIT_READ& Temp_One_Read )
         g_CloseMappedPlus++;
     }
     else {
-        Temp_One_Read.LeftMostPos = Temp_One_Read.UP_Close[0].AbsLoc +	Temp_One_Read.UP_Close[0].LengthStr - Temp_One_Read.ReadLength;
+        Temp_One_Read.LeftMostPos = Temp_One_Read.UP_Close[0].AbsLoc +	Temp_One_Read.UP_Close[0].LengthStr - Temp_One_Read.getReadLength();
         g_CloseMappedMinus++;
     }
 }
@@ -1790,8 +1790,8 @@ void updateReadAfterCloseEndMapping( SPLIT_READ& Temp_One_Read )
 
 void GetCloseEndInner(const std::string & CurrentChrSeq, SPLIT_READ & Temp_One_Read)
 {
-    Temp_One_Read.ReadLength = Temp_One_Read.UnmatchedSeq.size();
-    Temp_One_Read.ReadLengthMinus = Temp_One_Read.ReadLength - 1;
+    Temp_One_Read.setReadLength( Temp_One_Read.UnmatchedSeq.size() );
+    Temp_One_Read.ReadLengthMinus = Temp_One_Read.getReadLength() - 1;
 
     std::string CurrentReadSeq;
     std::vector<unsigned int> PD[Temp_One_Read.TOTAL_SNP_ERROR_CHECKED];

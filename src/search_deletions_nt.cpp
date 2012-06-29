@@ -58,7 +58,7 @@ int searchIndels(ControlState& currentState, unsigned NumBoxes)
                == Minus) {
             if (currentState.Reads_SR[ReadIndex].UP_Far[FarIndex].LengthStr
                   + currentState.Reads_SR[ReadIndex].UP_Close[CloseIndex]. LengthStr
-                  < currentState.Reads_SR[ReadIndex].ReadLength
+                  < currentState.Reads_SR[ReadIndex].getReadLength()
                   && currentState.Reads_SR[ReadIndex].UP_Far[FarIndex]. LengthStr
                   + currentState.Reads_SR[ReadIndex].UP_Close[CloseIndex]. LengthStr
                   >= Min_Num_Matched_Bases
@@ -77,7 +77,7 @@ int searchIndels(ControlState& currentState, unsigned NumBoxes)
                   = currentState.Reads_SR[ReadIndex].UP_Close[CloseIndex]. LengthStr
                     - 1;
                currentState.Reads_SR[ReadIndex].NT_size
-                  = currentState.Reads_SR[ReadIndex].ReadLength
+                  = currentState.Reads_SR[ReadIndex].getReadLength()
                     - currentState.Reads_SR[ReadIndex].UP_Far[FarIndex]. LengthStr
                     - currentState.Reads_SR[ReadIndex].UP_Close[CloseIndex]. LengthStr;
 
@@ -101,10 +101,7 @@ int searchIndels(ControlState& currentState, unsigned NumBoxes)
                   = currentState.Reads_SR[ReadIndex].UP_Far[FarIndex].AbsLoc
                     - g_SpacerBeforeAfter;
 
-               if (//currentState.Reads_SR[ReadIndex].IndelSize
-                  //	>= (unsigned) MIN_IndelSize_NT
-                  //	&&
-                  //currentState.Reads_SR[ReadIndex].NT_size <= Max_Length_NT
+               if (
                    1) {
 
                   if (readTransgressesBinBoundaries(
@@ -136,7 +133,7 @@ int searchIndels(ControlState& currentState, unsigned NumBoxes)
                == Plus) {
             if (currentState.Reads_SR[ReadIndex].UP_Close[CloseIndex]. LengthStr
                   + currentState.Reads_SR[ReadIndex].UP_Far[FarIndex].LengthStr
-                  < currentState.Reads_SR[ReadIndex].ReadLength
+                  < currentState.Reads_SR[ReadIndex].getReadLength()
                   && currentState.Reads_SR[ReadIndex].UP_Close[CloseIndex]. LengthStr
                   + currentState.Reads_SR[ReadIndex].UP_Far[FarIndex].LengthStr
                   >= Min_Num_Matched_Bases
@@ -155,7 +152,7 @@ int searchIndels(ControlState& currentState, unsigned NumBoxes)
                   = currentState.Reads_SR[ReadIndex].UP_Far[FarIndex]. LengthStr
                     - 1;
                currentState.Reads_SR[ReadIndex].NT_size
-                  = currentState.Reads_SR[ReadIndex].ReadLength
+                  = currentState.Reads_SR[ReadIndex].getReadLength()
                     - currentState.Reads_SR[ReadIndex].UP_Close[CloseIndex]. LengthStr
                     - currentState.Reads_SR[ReadIndex].UP_Far[FarIndex].LengthStr;
                currentState.Reads_SR[ReadIndex].NT_str
@@ -176,11 +173,7 @@ int searchIndels(ControlState& currentState, unsigned NumBoxes)
                   = currentState.Reads_SR[ReadIndex].UP_Close[CloseIndex].AbsLoc
                     - g_SpacerBeforeAfter;
                {
-                  if (//currentState.Reads_SR[ReadIndex].IndelSize
-                     //	>= (unsigned) MIN_IndelSize_NT
-                     //	&&
-                     //currentState.Reads_SR[ReadIndex].NT_size
-                     //<= Max_Length_NT
+                  if (
                       1
                       ) {
 

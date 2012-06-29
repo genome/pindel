@@ -47,7 +47,7 @@ int searchTandemDuplicationsNT(ControlState& currentState, unsigned NumBoxes)
       FarIndex = currentState.Reads_SR[ReadIndex].UP_Far.size() - 1;
       if (currentState.Reads_SR[ReadIndex].UP_Far[FarIndex].LengthStr
             + currentState.Reads_SR[ReadIndex].UP_Close[CloseIndex].LengthStr
-            >= currentState.Reads_SR[ReadIndex].ReadLength) {
+            >= currentState.Reads_SR[ReadIndex].getReadLength()) {
          continue;
       }
       if (currentState.Reads_SR[ReadIndex].UP_Far[FarIndex].Mismatches
@@ -87,7 +87,7 @@ int searchTandemDuplicationsNT(ControlState& currentState, unsigned NumBoxes)
                     - currentState.Reads_SR[ReadIndex].UP_Far[FarIndex]. AbsLoc
                     + 1;
                currentState.Reads_SR[ReadIndex].NT_size
-                  = currentState.Reads_SR[ReadIndex].ReadLength
+                  = currentState.Reads_SR[ReadIndex].getReadLength()
                     - currentState.Reads_SR[ReadIndex].UP_Close[CloseIndex]. LengthStr
                     - currentState.Reads_SR[ReadIndex].UP_Far[FarIndex]. LengthStr;
                currentState.Reads_SR[ReadIndex].NT_str
@@ -157,7 +157,7 @@ int searchTandemDuplicationsNT(ControlState& currentState, unsigned NumBoxes)
                     - currentState.Reads_SR[ReadIndex].UP_Close[CloseIndex]. AbsLoc
                     + 1;
                currentState.Reads_SR[ReadIndex].NT_size
-                  = currentState.Reads_SR[ReadIndex].ReadLength
+                  = currentState.Reads_SR[ReadIndex].getReadLength()
                     - currentState.Reads_SR[ReadIndex].UP_Close[CloseIndex]. LengthStr
                     - currentState.Reads_SR[ReadIndex].UP_Far[FarIndex]. LengthStr;
                currentState.Reads_SR[ReadIndex].NT_str

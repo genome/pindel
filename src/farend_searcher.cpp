@@ -31,8 +31,8 @@ void SearchFarEndAtPos( const std::string& chromosome, SPLIT_READ& Temp_One_Read
    //   std::cout << "KAI1108 UP_Far.size() == " << Temp_One_Read.UP_Far.size() << std::endl;
    //}
     //Temp_One_Read.UP_Far.clear();
-    Temp_One_Read.ReadLength = Temp_One_Read.UnmatchedSeq.size();
-    Temp_One_Read.ReadLengthMinus = Temp_One_Read.ReadLength - 1;
+    Temp_One_Read.setReadLength( Temp_One_Read.UnmatchedSeq.size() );
+    Temp_One_Read.ReadLengthMinus = Temp_One_Read.getReadLength() - 1;
    short BP_End = Temp_One_Read.ReadLengthMinus; // matched far end should be between BP_Start and BP_End bases long (including BP_Start and End)
    std::vector<UniquePoint> UP; // temporary container for unique far ends
     Temp_One_Read.MAX_SNP_ERROR = (short) (Temp_One_Read.UnmatchedSeq.size () * Seq_Error_Rate);
@@ -42,8 +42,8 @@ void SearchFarEndAtPos( const std::string& chromosome, SPLIT_READ& Temp_One_Read
    std::vector<unsigned int> PD_Minus[Temp_One_Read.TOTAL_SNP_ERROR_CHECKED];
     //std::cout << "In SearchFarEndAtPos " << Temp_One_Read.UnmatchedSeq << " " << Temp_One_Read.MAX_SNP_ERROR << " " << Temp_One_Read.TOTAL_SNP_ERROR_CHECKED << std::endl;
     //std::cout <<  chromosome.size() << std::endl;
-   int Start = SearchCenter - Range - Temp_One_Read.ReadLength;
-   int End = SearchCenter + Range + Temp_One_Read.ReadLength;
+   int Start = SearchCenter - Range - Temp_One_Read.getReadLength();
+   int End = SearchCenter + Range + Temp_One_Read.getReadLength();
 
    for (int CheckIndex = 0; CheckIndex < Temp_One_Read.TOTAL_SNP_ERROR_CHECKED; CheckIndex++) {
       PD_Plus[CheckIndex].reserve(End - Start + 1);
@@ -73,7 +73,7 @@ void SearchFarEndAtPos( const std::string& chromosome, SPLIT_READ& Temp_One_Read
     //          << " " << Temp_One_Read.UP_Close[Temp_One_Read.UP_Close.size() - 1].LengthStr << " " << UP[UP.size() - 1].LengthStr << " Sum: " << Temp_One_Read.UP_Close[Temp_One_Read.UP_Close.size() - 1].LengthStr + UP[UP.size() - 1].LengthStr << std::endl;
 
    if (UP.empty()) {}
-   else if (UP[UP.size() - 1].LengthStr + Temp_One_Read.UP_Close[Temp_One_Read.UP_Close.size() - 1].LengthStr < Temp_One_Read.ReadLength && UP[UP.size() - 1].LengthStr > 0 && Temp_One_Read.UP_Close[Temp_One_Read.UP_Close.size() - 1].LengthStr > 0) { // should put into UP_Far_backup
+   else if (UP[UP.size() - 1].LengthStr + Temp_One_Read.UP_Close[Temp_One_Read.UP_Close.size() - 1].LengthStr < Temp_One_Read.getReadLength() && UP[UP.size() - 1].LengthStr > 0 && Temp_One_Read.UP_Close[Temp_One_Read.UP_Close.size() - 1].LengthStr > 0) { // should put into UP_Far_backup
       if (Temp_One_Read.UP_Far_backup.empty()) { // UP_Far_backup is empty, put it straightforwards
          Temp_One_Read.UP_Far_backup.swap(UP);
       }

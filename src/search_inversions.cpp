@@ -81,7 +81,7 @@ int searchInversions(ControlState& currentState, unsigned NumBoxes)
                               == Plus) {
                            if (currentState.Reads_SR[ReadIndex]. UP_Far[FarIndex].LengthStr
                                  + currentState.Reads_SR[ReadIndex]. UP_Close[CloseIndex]. LengthStr
-                                 == currentState.Reads_SR[ReadIndex].ReadLength
+                                 == currentState.Reads_SR[ReadIndex].getReadLength()
                                  && currentState.Reads_SR[ReadIndex]. UP_Far[FarIndex].AbsLoc
                                  > currentState.Reads_SR[ReadIndex]. UP_Close[CloseIndex]. AbsLoc
                                  + MIN_IndelSize_Inversion) {
@@ -92,7 +92,7 @@ int searchInversions(ControlState& currentState, unsigned NumBoxes)
                               currentState.Reads_SR[ReadIndex].Right
                                  = currentState.Reads_SR[ReadIndex]. UP_Far[FarIndex].AbsLoc
                                    - currentState.Reads_SR[ReadIndex]. UP_Far[FarIndex]. LengthStr
-                                   + currentState.Reads_SR[ReadIndex]. ReadLength;
+                                   + currentState.Reads_SR[ReadIndex].getReadLength();
                               currentState.Reads_SR[ReadIndex].BP
                                  = currentState.Reads_SR[ReadIndex]. UP_Close[CloseIndex]. LengthStr
                                    - 1;
@@ -177,14 +177,14 @@ int searchInversions(ControlState& currentState, unsigned NumBoxes)
                            // anchor inside reversed block.
                            if (currentState.Reads_SR[ReadIndex]. UP_Far[FarIndex].LengthStr
                                  + currentState.Reads_SR[ReadIndex]. UP_Close[CloseIndex]. LengthStr
-                                 == currentState.Reads_SR[ReadIndex].ReadLength
+                                 == currentState.Reads_SR[ReadIndex].getReadLength()
                                  && currentState.Reads_SR[ReadIndex]. UP_Far[FarIndex].AbsLoc
                                  + MIN_IndelSize_Inversion
                                  < currentState.Reads_SR[ReadIndex]. UP_Close[CloseIndex].AbsLoc) {
                               currentState.Reads_SR[ReadIndex].Right
                                  = currentState.Reads_SR[ReadIndex]. UP_Close[CloseIndex]. AbsLoc
                                    - currentState.Reads_SR[ReadIndex]. UP_Close[CloseIndex]. LengthStr
-                                   + currentState.Reads_SR[ReadIndex]. ReadLength;
+                                   + currentState.Reads_SR[ReadIndex].getReadLength();
                               currentState.Reads_SR[ReadIndex].Left
                                  = currentState.Reads_SR[ReadIndex]. UP_Far[FarIndex].AbsLoc
                                    - currentState.Reads_SR[ReadIndex]. UP_Far[FarIndex]. LengthStr
@@ -277,14 +277,14 @@ int searchInversions(ControlState& currentState, unsigned NumBoxes)
                               == Minus) {
                            if (currentState.Reads_SR[ReadIndex]. UP_Close[CloseIndex]. LengthStr
                                  + currentState.Reads_SR[ReadIndex]. UP_Far[FarIndex]. LengthStr
-                                 == currentState.Reads_SR[ReadIndex].ReadLength
+                                 == currentState.Reads_SR[ReadIndex].getReadLength()
                                  && currentState.Reads_SR[ReadIndex]. UP_Close[CloseIndex]. AbsLoc
                                  > currentState.Reads_SR[ReadIndex]. UP_Far[FarIndex].AbsLoc
                                  + MIN_IndelSize_Inversion) {
                               currentState.Reads_SR[ReadIndex].Left
                                  = currentState.Reads_SR[ReadIndex]. UP_Far[FarIndex].AbsLoc
                                    + currentState.Reads_SR[ReadIndex]. UP_Far[FarIndex]. LengthStr
-                                   - currentState.Reads_SR[ReadIndex]. ReadLength;
+                                   - currentState.Reads_SR[ReadIndex].getReadLength();
                               currentState.Reads_SR[ReadIndex].Right
                                  = currentState.Reads_SR[ReadIndex]. UP_Close[CloseIndex]. AbsLoc
                                    + currentState.Reads_SR[ReadIndex]. UP_Close[CloseIndex]. LengthStr
@@ -366,7 +366,7 @@ int searchInversions(ControlState& currentState, unsigned NumBoxes)
                            // anchor inside reversed block.
                            if (currentState.Reads_SR[ReadIndex]. UP_Close[CloseIndex]. LengthStr
                                  + currentState.Reads_SR[ReadIndex]. UP_Far[FarIndex]. LengthStr
-                                 == currentState.Reads_SR[ReadIndex].ReadLength
+                                 == currentState.Reads_SR[ReadIndex].getReadLength()
                                  && currentState.Reads_SR[ReadIndex]. UP_Close[CloseIndex]. AbsLoc
                                  + MIN_IndelSize_Inversion
                                  < currentState.Reads_SR[ReadIndex]. UP_Far[FarIndex].AbsLoc) {
@@ -377,7 +377,7 @@ int searchInversions(ControlState& currentState, unsigned NumBoxes)
                               currentState.Reads_SR[ReadIndex].Left
                                  = currentState.Reads_SR[ReadIndex]. UP_Close[CloseIndex]. AbsLoc
                                    + currentState.Reads_SR[ReadIndex]. UP_Close[CloseIndex]. LengthStr
-                                   - currentState.Reads_SR[ReadIndex]. ReadLength;
+                                   - currentState.Reads_SR[ReadIndex].getReadLength();
                               currentState.Reads_SR[ReadIndex].BP
                                  = currentState.Reads_SR[ReadIndex]. UP_Close[CloseIndex]. LengthStr
                                    - 1;

@@ -42,7 +42,7 @@ bool SearchShortInsertions::decisionBranch1(ControlState& currentState,
           == currentState.Reads_SR[ReadIndex].UP_Close[CloseIndex].AbsLoc + 1
           && currentState.Reads_SR[ReadIndex].UP_Close[CloseIndex].LengthStr
           + currentState.Reads_SR[ReadIndex].UP_Far[FarIndex]. LengthStr
-          < currentState.Reads_SR[ReadIndex].ReadLength;
+          < currentState.Reads_SR[ReadIndex].getReadLength();
 }
 
 bool SearchShortInsertions::decisionBranch2(ControlState& currentState,
@@ -52,7 +52,7 @@ bool SearchShortInsertions::decisionBranch2(ControlState& currentState,
           == currentState.Reads_SR[ReadIndex].UP_Far[FarIndex]. AbsLoc + 1
           && currentState.Reads_SR[ReadIndex]. UP_Far[FarIndex].LengthStr
           + currentState.Reads_SR[ReadIndex]. UP_Close[CloseIndex].LengthStr
-          < currentState.Reads_SR[ReadIndex].ReadLength;
+          < currentState.Reads_SR[ReadIndex].getReadLength();
 }
 
 unsigned int SearchShortInsertions::calculateIndelSize(
