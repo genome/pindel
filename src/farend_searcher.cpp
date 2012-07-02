@@ -27,8 +27,8 @@
 
 void SearchFarEndAtPos( const std::string& chromosome, SPLIT_READ& Temp_One_Read, const unsigned int SearchCenter, const unsigned int Range)
 {
-    Temp_One_Read.setReadLength( Temp_One_Read.getUnmatchedSeq().size() );
-    Temp_One_Read.setReadLengthMinus( Temp_One_Read.getReadLength() - 1 );
+    //Temp_One_Read.setReadLength( Temp_One_Read.getUnmatchedSeq().size() );
+    //Temp_One_Read.setReadLengthMinus( Temp_One_Read.getReadLength() - 1 );
    short BP_End = Temp_One_Read.getReadLengthMinus(); // matched far end should be between BP_Start and BP_End bases long (including BP_Start and End)
    std::vector<UniquePoint> UP; // temporary container for unique far ends
     Temp_One_Read.setMAX_SNP_ERROR( (short) (Temp_One_Read.getUnmatchedSeq().size () * Seq_Error_Rate) );

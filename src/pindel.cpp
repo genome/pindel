@@ -1790,8 +1790,8 @@ void updateReadAfterCloseEndMapping( SPLIT_READ& Temp_One_Read )
 
 void GetCloseEndInner(const std::string & CurrentChrSeq, SPLIT_READ & Temp_One_Read)
 {
-    Temp_One_Read.setReadLength( Temp_One_Read.getUnmatchedSeq().size() );
-    Temp_One_Read.setReadLengthMinus( Temp_One_Read.getReadLength() - 1 );
+    //Temp_One_Read.setReadLength( Temp_One_Read.getUnmatchedSeq().size() );
+    //Temp_One_Read.setReadLengthMinus( Temp_One_Read.getReadLength() - 1 );
 
     std::string CurrentReadSeq;
     std::vector<unsigned int> PD[Temp_One_Read.getTOTAL_SNP_ERROR_CHECKED()];

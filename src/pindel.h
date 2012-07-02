@@ -161,8 +161,6 @@ struct SPLIT_READ {
 		IndelSize = 0;
 		//UniqueAnchor = false;
         UniqueRead = false;
-		//score = 0.0;
-		//InsertedStr = "";
 		NT_str = "";
 		NT_size = 0;
 		Used = false;
@@ -174,7 +172,11 @@ struct SPLIT_READ {
     std::string FarFragName;
 	std::string Name;
 
-	void setUnmatchedSeq( const std::string unmatchedSeq ) { UnmatchedSeq = unmatchedSeq; }
+	void setUnmatchedSeq( const std::string unmatchedSeq ) { 
+		UnmatchedSeq = unmatchedSeq; 
+		ReadLength = UnmatchedSeq.size();
+		ReadLengthMinus = ReadLength - 1;
+	}
 	std::string getUnmatchedSeq() const { return UnmatchedSeq; }	
 
 
@@ -188,9 +190,9 @@ struct SPLIT_READ {
 	std::vector<UniquePoint> UP_Far;
 	std::vector<UniquePoint> UP_Far_backup;
    short getReadLength() const { return ReadLength; }
-   void setReadLength(const short readLength) { ReadLength = readLength; }
+   //void setReadLength(const short readLength) { ReadLength = readLength; }
 	short getReadLengthMinus() const { return ReadLengthMinus; }
-	void setReadLengthMinus(const short readLengthMinus) { ReadLengthMinus = readLengthMinus; }
+	//void setReadLengthMinus(const short readLengthMinus) { ReadLengthMinus = readLengthMinus; }
 	short getMAX_SNP_ERROR() const { return MAX_SNP_ERROR; }
 	void setMAX_SNP_ERROR(const short max_SNP_ERROR) { MAX_SNP_ERROR = max_SNP_ERROR; }
 	short getTOTAL_SNP_ERROR_CHECKED() const { return TOTAL_SNP_ERROR_CHECKED; }
