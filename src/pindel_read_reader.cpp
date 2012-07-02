@@ -54,7 +54,7 @@ void PindelReadReader::advance()
 	// Read line by line
 	 
 	buffer.Name = reader.NextLine();
-	buffer.UnmatchedSeq = reader.NextLine();
+	buffer.setUnmatchedSeq( reader.NextLine());
 	
 	istringstream iss(reader.NextLine().c_str());
 	iss >> buffer.MatchedD;

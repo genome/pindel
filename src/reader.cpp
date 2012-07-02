@@ -165,7 +165,7 @@ ReadInRead (PindelReadReader & inf_ReadSeq, const std::string & FragName,
 
       if (Temp_One_Read.MatchedD != Minus && Temp_One_Read.MatchedD != Plus) {
          LOG_INFO(*logStream << Temp_One_Read.Name << std::endl
-                  << Temp_One_Read.UnmatchedSeq << std::endl
+                  << Temp_One_Read.getUnmatchedSeq() << std::endl
                   << Temp_One_Read.MatchedD << " ..." << std::endl);
          LOG_INFO(*logStream << "+/-" << std::endl);
          return 1;
@@ -178,11 +178,11 @@ ReadInRead (PindelReadReader & inf_ReadSeq, const std::string & FragName,
       if (Temp_One_Read.FragName == FragName
             && Temp_One_Read.MatchedRelPos >= lowerBinBorder
             && Temp_One_Read.MatchedRelPos < upperBinBorder) {
-         Temp_One_Read.setReadLength( Temp_One_Read.UnmatchedSeq.size () );
+         Temp_One_Read.setReadLength( Temp_One_Read.getUnmatchedSeq().size () );
          Temp_One_Read.setReadLengthMinus( Temp_One_Read.getReadLength() - 1 );
          g_NumReadInWindow++;
 
-         Temp_One_Read.setMAX_SNP_ERROR( (short) (Temp_One_Read.UnmatchedSeq.size () * Seq_Error_Rate) );
+         Temp_One_Read.setMAX_SNP_ERROR( (short) (Temp_One_Read.getUnmatchedSeq().size () * Seq_Error_Rate) );
          Temp_One_Read.setTOTAL_SNP_ERROR_CHECKED ( Temp_One_Read.getMAX_SNP_ERROR() + ADDITIONAL_MISMATCH + 1 );
          Temp_One_Read.setTOTAL_SNP_ERROR_CHECKED_Minus( Temp_One_Read.getMAX_SNP_ERROR() + ADDITIONAL_MISMATCH );
          Temp_One_Read.MinClose = 8;
@@ -319,7 +319,7 @@ ReadInRead (PindelReadReader & inf_ReadSeq, const std::string & FragName,
    if (FirstChr) {
       LOG_INFO(*logStream << std::endl << "The last read Pindel scanned: " << std::endl);
       LOG_INFO(*logStream << Temp_One_Read.Name << std::endl
-               << Temp_One_Read.UnmatchedSeq << std::endl
+               << Temp_One_Read.getUnmatchedSeq() << std::endl
                << Temp_One_Read.MatchedD << "\t"
                << Temp_One_Read.FragName << "\t"
                << Temp_One_Read.MatchedRelPos << "\t"
@@ -562,10 +562,10 @@ build_record_SR (const bam1_t * mapped_read, const bam1_t * unmapped_read,
     Temp_One_Read.setReadLength( length );
     Temp_One_Read.setReadLengthMinus( length - 1 );
     if (unmapped_core->flag & BAM_FREVERSE) {
-        Temp_One_Read.UnmatchedSeq = ReverseComplement (c_sequence);
+        Temp_One_Read.setUnmatchedSeq( ReverseComplement (c_sequence) );
     }
     else {
-        Temp_One_Read.UnmatchedSeq = c_sequence;
+        Temp_One_Read.setUnmatchedSeq( c_sequence );
     }
     Temp_One_Read.MatchedRelPos = mapped_core->pos;
     if (mapped_core->flag & BAM_FREVERSE) {
@@ -604,7 +604,7 @@ build_record_SR (const bam1_t * mapped_read, const bam1_t * unmapped_read,
     Temp_One_Read.FragName = header->target_name[mapped_core->tid];
     //Temp_One_Read.FragName = FragName;
     LOG_DEBUG(cout << Temp_One_Read.Name << std::endl
-              << Temp_One_Read.UnmatchedSeq << std::endl);
+              << Temp_One_Read.getUnmatchedSeq() << std::endl);
     LOG_DEBUG(cout << Temp_One_Read.MatchedD <<
               "\t" << Temp_One_Read.FragName <<
               "\t" << Temp_One_Read.MatchedRelPos <<
@@ -614,7 +614,7 @@ build_record_SR (const bam1_t * mapped_read, const bam1_t * unmapped_read,
     
     
     g_NumReadInWindow++;
-    Temp_One_Read.setMAX_SNP_ERROR( (short) trunc((double)0.5+Temp_One_Read.UnmatchedSeq.size () * Seq_Error_Rate) );
+    Temp_One_Read.setMAX_SNP_ERROR( (short) trunc((double)0.5+Temp_One_Read.getUnmatchedSeq().size () * Seq_Error_Rate) );
     
     Temp_One_Read.setTOTAL_SNP_ERROR_CHECKED( Temp_One_Read.getMAX_SNP_ERROR() + ADDITIONAL_MISMATCH + 1 );
     Temp_One_Read.setTOTAL_SNP_ERROR_CHECKED_Minus( Temp_One_Read.getMAX_SNP_ERROR() + ADDITIONAL_MISMATCH );

@@ -92,7 +92,7 @@ int searchTandemDuplicationsNT(ControlState& currentState, unsigned NumBoxes)
                     - currentState.Reads_SR[ReadIndex].UP_Far[FarIndex]. LengthStr;
                currentState.Reads_SR[ReadIndex].NT_str
                   = ReverseComplement(
-                       currentState.Reads_SR[ReadIndex]. UnmatchedSeq). substr(
+                       currentState.Reads_SR[ReadIndex]. getUnmatchedSeq()). substr(
                        currentState.Reads_SR[ReadIndex].BP + 1,
                        currentState.Reads_SR[ReadIndex].NT_size);
                //currentState.Reads_SR[ReadIndex].InsertedStr = "";
@@ -161,7 +161,7 @@ int searchTandemDuplicationsNT(ControlState& currentState, unsigned NumBoxes)
                     - currentState.Reads_SR[ReadIndex].UP_Close[CloseIndex]. LengthStr
                     - currentState.Reads_SR[ReadIndex].UP_Far[FarIndex]. LengthStr;
                currentState.Reads_SR[ReadIndex].NT_str
-                  = currentState.Reads_SR[ReadIndex].UnmatchedSeq. substr(
+                  = currentState.Reads_SR[ReadIndex].getUnmatchedSeq(). substr(
                        currentState.Reads_SR[ReadIndex].BP + 1,
                        currentState.Reads_SR[ReadIndex].NT_size);
                //currentState.Reads_SR[ReadIndex].InsertedStr = "";

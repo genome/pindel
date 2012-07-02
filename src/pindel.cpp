@@ -287,7 +287,7 @@ std::ostream& operator<<(std::ostream& os, const SPLIT_READ& splitRead)
 {
     os << "Fragname: " << splitRead.FragName << std::endl;
     os << "Name: " << splitRead.Name << std::endl;
-    os << "UnmatchedSeq: " << splitRead.UnmatchedSeq << std::endl;
+    os << "UnmatchedSeq: " << splitRead.getUnmatchedSeq() << std::endl;
     //os << "HalfMapped: " << splitRead.HalfMapped << std::endl;
     //os << "HalfUnMapped: " << splitRead.HalfUnmapped << std::endl;
     os << "MatchedD: " << splitRead.MatchedD << " * MatchedRelPos: " << splitRead.MatchedRelPos << " * MS: " << splitRead.MS << " * ";
@@ -1411,7 +1411,7 @@ int main(int argc, char *argv[])
                         CloseEndMappedOutputFilename. c_str(), std::ios::app);
                     for (int Index = 0; Index < TotalNumReads; Index++) {
                         CloseEndMappedOutput << currentState.Reads_SR[Index].Name
-                                             << "\n" << currentState.Reads_SR[Index].UnmatchedSeq
+                                             << "\n" << currentState.Reads_SR[Index].getUnmatchedSeq()
                                              << "\n" << currentState.Reads_SR[Index].MatchedD
                                              << "\t" << currentState.Reads_SR[Index].FragName
                                              << "\t" << currentState.Reads_SR[Index].MatchedRelPos
@@ -1473,7 +1473,7 @@ int main(int argc, char *argv[])
                             if (currentState.Reads_SR[Index].IndelSize > Indel_SV_cutoff
                                     || currentState.Reads_SR[Index].IndelSize == 0)
                                 SVReadOutput << currentState.Reads_SR[Index].Name << "\n"
-                                             << currentState.Reads_SR[Index]. UnmatchedSeq
+                                             << currentState.Reads_SR[Index]. getUnmatchedSeq()
                                              << "\n" << currentState.Reads_SR[Index]. MatchedD
                                              << "\t" << currentState.Reads_SR[Index]. FragName
                                              << "\t"
@@ -1496,7 +1496,7 @@ int main(int argc, char *argv[])
                             if (currentState.Reads_SR[Index].IndelSize == 0)
                                 LargeInterChrSVReadsOutput
                                         << currentState.Reads_SR[Index].Name << "\n"
-                                        << currentState.Reads_SR[Index].UnmatchedSeq
+                                        << currentState.Reads_SR[Index].getUnmatchedSeq()
                                         << "\n" << currentState.Reads_SR[Index].MatchedD
                                         << "\t" << currentState.Reads_SR[Index].FragName
                                         << "\t"
@@ -1790,7 +1790,7 @@ void updateReadAfterCloseEndMapping( SPLIT_READ& Temp_One_Read )
 
 void GetCloseEndInner(const std::string & CurrentChrSeq, SPLIT_READ & Temp_One_Read)
 {
-    Temp_One_Read.setReadLength( Temp_One_Read.UnmatchedSeq.size() );
+    Temp_One_Read.setReadLength( Temp_One_Read.getUnmatchedSeq().size() );
     Temp_One_Read.setReadLengthMinus( Temp_One_Read.getReadLength() - 1 );
 
     std::string CurrentReadSeq;
@@ -1810,7 +1810,7 @@ void GetCloseEndInner(const std::string & CurrentChrSeq, SPLIT_READ & Temp_One_R
     BP_Start = Temp_One_Read.MinClose;
     BP_End = Temp_One_Read.getReadLengthMinus();
     if (Temp_One_Read.MatchedD == Plus) {
-        CurrentReadSeq = ReverseComplement(Temp_One_Read.UnmatchedSeq);
+        CurrentReadSeq = ReverseComplement(Temp_One_Read.getUnmatchedSeq());
         Start = Temp_One_Read.MatchedRelPos + g_SpacerBeforeAfter;
         End = Start + 3 * Temp_One_Read.InsertSize;
         char LeftChar;
@@ -1838,7 +1838,7 @@ void GetCloseEndInner(const std::string & CurrentChrSeq, SPLIT_READ & Temp_One_R
         }
     }
     else if (Temp_One_Read.MatchedD == Minus) {
-        CurrentReadSeq = Temp_One_Read.UnmatchedSeq;
+        CurrentReadSeq = Temp_One_Read.getUnmatchedSeq();
         End = Temp_One_Read.MatchedRelPos + g_SpacerBeforeAfter;
         Start = End - 3 * Temp_One_Read.InsertSize;
         char RightChar;
@@ -1871,12 +1871,10 @@ void GetCloseEnd(const std::string & CurrentChrSeq, SPLIT_READ & Temp_One_Read)
     GetCloseEndInner( CurrentChrSeq, Temp_One_Read );
 
     if (Temp_One_Read.UP_Close.size()==0) { // no good close ends found
-        //*logStream << "Trying to match " << Temp_One_Read.UnmatchedSeq << std::endl;
-        Temp_One_Read.UnmatchedSeq = ReverseComplement( Temp_One_Read.UnmatchedSeq );
+        Temp_One_Read.setUnmatchedSeq( ReverseComplement( Temp_One_Read.getUnmatchedSeq() ) );
 
         GetCloseEndInner( CurrentChrSeq, Temp_One_Read );
-        //*logStream << "New attempt: Trying to match " << Temp_One_Read.UnmatchedSeq << "\t"
-        //          << Temp_One_Read.UP_Close.size() << std::endl;
+
     }
 }
 
@@ -1904,7 +1902,7 @@ void CheckBoth(const SPLIT_READ & OneRead, const std::string & TheInput,
                                               + 1)) {
                     UniquePoint TempOne;
                     TempOne.LengthStr = CurrentLength;
-                    if ((unsigned)TempOne.LengthStr > OneRead.UnmatchedSeq.size() && TempOne.LengthStr < 0) {
+                    if ((unsigned)TempOne.LengthStr > OneRead.getUnmatchedSeq().size() && TempOne.LengthStr < 0) {
                         std::cout << "TempOne.LengthStr " << TempOne.LengthStr << std::endl;
                         return;
                     }
@@ -1913,7 +1911,7 @@ void CheckBoth(const SPLIT_READ & OneRead, const std::string & TheInput,
                         TempOne.Strand = SENSE;
                         TempOne.AbsLoc = PD_Plus[i][0];
                         TempOne.Mismatches = i;
-                        if (CheckMismatches(TheInput, OneRead.UnmatchedSeq, TempOne)) {
+                        if (CheckMismatches(TheInput, OneRead.getUnmatchedSeq(), TempOne)) {
                             UP.push_back (TempOne);
                             break;
                         }
@@ -1923,7 +1921,7 @@ void CheckBoth(const SPLIT_READ & OneRead, const std::string & TheInput,
                         TempOne.Strand = ANTISENSE;
                         TempOne.AbsLoc = PD_Minus[i][0];
                         TempOne.Mismatches = i;
-                        if (CheckMismatches(TheInput, OneRead.UnmatchedSeq, TempOne)) { // ######################
+                        if (CheckMismatches(TheInput, OneRead.getUnmatchedSeq(), TempOne)) { // ######################
                             UP.push_back (TempOne);
                             break;
                         } // ######################

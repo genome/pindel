@@ -373,7 +373,7 @@ void CombineReads(const std::string & CurrentChrSeq, const char & Strand, const 
             //std::cout << std::endl;
             for (short BaseIndex = 0; BaseIndex < input_reads[Index_Of_Useful_Reads[ReadIndex]].getReadLength(); BaseIndex++) {
                 //std::cout << input_reads[Index_Of_Useful_Reads[ReadIndex]].UnmatchedSeq[BaseIndex];
-                switch (input_reads[Index_Of_Useful_Reads[ReadIndex]].UnmatchedSeq[BaseIndex]) {
+                switch (input_reads[Index_Of_Useful_Reads[ReadIndex]].getUnmatchedSeq()[BaseIndex]) {
                     case 'A':
                         Count[0][Max_AssembledLength + Min_LeftMostPos - input_reads[Index_Of_Useful_Reads[ReadIndex]].LeftMostPos - input_reads[Index_Of_Useful_Reads[ReadIndex]].getReadLength() + BaseIndex]++;
                         break;	// 00000000
@@ -398,7 +398,7 @@ void CombineReads(const std::string & CurrentChrSeq, const char & Strand, const 
             //std::cout << std::endl;
             for (short BaseIndex = 0; BaseIndex < input_reads[Index_Of_Useful_Reads[ReadIndex]].getReadLength(); BaseIndex++) {
                 //std::cout << input_reads[Index_Of_Useful_Reads[ReadIndex]].UnmatchedSeq[BaseIndex];
-                switch (input_reads[Index_Of_Useful_Reads[ReadIndex]].UnmatchedSeq[BaseIndex]) {
+                switch (input_reads[Index_Of_Useful_Reads[ReadIndex]].getUnmatchedSeq()[BaseIndex]) {
                     case 'A':
                         Count[0][input_reads[Index_Of_Useful_Reads[ReadIndex]].LeftMostPos - Min_LeftMostPos + BaseIndex]++;
                         break;	// 00000000
@@ -494,7 +494,7 @@ void CombineReads(const std::string & CurrentChrSeq, const char & Strand, const 
         Index2Read4Copy = 0; // if the best one cannot be found due to N or whatever reasons, use the first read as the template for copy.
         //std::cout << "Original Index2Read4Copy: " << Index2Read4Copy << std::endl;
         for (unsigned ReadIndex = 0; ReadIndex < Index_Of_Useful_Reads.size(); ReadIndex++) {
-            if (input_reads[Index_Of_Useful_Reads[ReadIndex]].UP_Close.size() < Min_Close_Size && OutputOneStr.find(input_reads[Index_Of_Useful_Reads[ReadIndex]].UnmatchedSeq) !=std::string::npos) { // quick fix here: need more work
+            if (input_reads[Index_Of_Useful_Reads[ReadIndex]].UP_Close.size() < Min_Close_Size && OutputOneStr.find(input_reads[Index_Of_Useful_Reads[ReadIndex]].getUnmatchedSeq()) !=std::string::npos) { // quick fix here: need more work
                 Min_Close_Size = input_reads[Index_Of_Useful_Reads[ReadIndex]].UP_Close.size();
                 Index2Read4Copy = ReadIndex; // input_reads[Index_Of_Useful_Reads[Index2Read4Copy]]
                 //std::cout << "Changed Index2Read4Copy: " << Index2Read4Copy << std::endl;
@@ -503,7 +503,7 @@ void CombineReads(const std::string & CurrentChrSeq, const char & Strand, const 
         //std::cout << "here2" << std::endl;
         output_one_read = input_reads[Index_Of_Useful_Reads[Index2Read4Copy]];
         //std::cout << "here2a" << std::endl;
-        output_one_read.UnmatchedSeq = OutputOneStr;
+        output_one_read.setUnmatchedSeq( OutputOneStr );
         //update std::map <std::string, int> ReadCountPerSample;
         GetReadCountPerSample(input_reads, Index_Of_Useful_Reads, output_one_read);
         //std::cout << "here2b" << std::endl;
@@ -554,10 +554,10 @@ void OutputCurrentRead(const std::vector <Chromosome> & AllChromosomes, std::map
 
         std::string NT_Str = "";
         if (OneRead.UP_Close[OneRead.UP_Close.size() - 1].Strand  == '+') {
-            NT_Str = OneRead.UnmatchedSeq.substr(OneRead.UP_Far_backup[OneRead.UP_Far_backup.size() - 1].LengthStr, NT_Size);
+            NT_Str = OneRead.getUnmatchedSeq().substr(OneRead.UP_Far_backup[OneRead.UP_Far_backup.size() - 1].LengthStr, NT_Size);
         }
         else {
-            NT_Str = ReverseComplement(OneRead.UnmatchedSeq).substr(OneRead.UP_Close[OneRead.UP_Close.size() - 1].LengthStr, NT_Size);
+            NT_Str = ReverseComplement(OneRead.getUnmatchedSeq()).substr(OneRead.UP_Close[OneRead.UP_Close.size() - 1].LengthStr, NT_Size);
         }
         ASM_Output << OneSV.Index + 1 << " " << OneSV.Type << " " << OneSV.ChrA << " " << OneSV.PosA << " " << OneSV.CI_A << "\t" << OneSV.ChrB << " " << OneSV.PosB << " " << OneSV .CI_B 
             << "\tA " << OneRead.MatchedD << " " << OneRead.MatchedRelPos << " " << OneRead.Thickness << "\t" << OneRead.FragName  
@@ -605,8 +605,8 @@ void TryLI(const std::vector <Chromosome> & AllChromosomes, std::map<std::string
             if (Second[ReadIndex_Minus].MatchedD == '+') continue;
             MaximumOverlap = std::min(First[ReadIndex_Plus].getReadLength(), Second[ReadIndex_Minus].getReadLength());
             std::cout << MaximumOverlap << std::endl;
-            FirstOne = ReverseComplement(First[ReadIndex_Plus].UnmatchedSeq);
-            SecondOne = Second[ReadIndex_Minus].UnmatchedSeq;
+            FirstOne = ReverseComplement(First[ReadIndex_Plus].getUnmatchedSeq());
+            SecondOne = Second[ReadIndex_Minus].getUnmatchedSeq();
             FirstLength = FirstOne.size();
             SecondLength = SecondOne.size();
             std::cout << FirstOne << "\n" << SecondOne << "\n";
@@ -634,7 +634,7 @@ void ReportLI(const std::vector <Chromosome> & AllChromosomes, std::map<std::str
     
     unsigned CountSupportingSamples = 0;
     SPLIT_READ OneRead = Second;
-    OneRead.UnmatchedSeq = MergedString;
+    OneRead.setUnmatchedSeq( MergedString );
     
     OneRead.UP_Close.clear();
     OneRead.UP_Far.clear();
@@ -651,7 +651,7 @@ void ReportLI(const std::vector <Chromosome> & AllChromosomes, std::map<std::str
         }
         else {
             short NT_Size = OneRead.getReadLength() - OneRead.UP_Close[OneRead.UP_Close.size() - 1].LengthStr - OneRead.UP_Far_backup[OneRead.UP_Far_backup.size() - 1].LengthStr;
-            std::string NT_Str = OneRead.UnmatchedSeq.substr(OneRead.UP_Far_backup[OneRead.UP_Far_backup.size() - 1].LengthStr, NT_Size);
+            std::string NT_Str = OneRead.getUnmatchedSeq().substr(OneRead.UP_Far_backup[OneRead.UP_Far_backup.size() - 1].LengthStr, NT_Size);
             
             ASM_Output << OneSV.Index + 1 << " " << OneSV.Type << " " << OneSV.ChrA << " " << OneSV.PosA << " " << OneSV.CI_A << "\t" << OneSV.ChrB << " " << OneSV.PosB << " " << OneSV .CI_B 
             << "\tLIA " << OneRead.MatchedD << " " << OneRead.MatchedRelPos << " " << OneRead.Thickness << "\t" << OneRead.FragName  

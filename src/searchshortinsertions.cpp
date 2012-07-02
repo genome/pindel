@@ -66,7 +66,7 @@ unsigned int SearchShortInsertions::calculateIndelSize(
 std::string SearchShortInsertions::getInsertedStr1(ControlState& currentState,
       unsigned ReadIndex)
 {
-   return ReverseComplement(currentState.Reads_SR[ReadIndex]. UnmatchedSeq). substr(
+   return ReverseComplement(currentState.Reads_SR[ReadIndex]. getUnmatchedSeq()). substr(
              currentState.Reads_SR[ReadIndex].BP + 1,
              currentState.Reads_SR[ReadIndex]. IndelSize);
 }
@@ -74,7 +74,7 @@ std::string SearchShortInsertions::getInsertedStr1(ControlState& currentState,
 std::string SearchShortInsertions::getInsertedStr2(ControlState& currentState,
       unsigned ReadIndex)
 {
-   return currentState.Reads_SR[ReadIndex].UnmatchedSeq. substr(
+   return currentState.Reads_SR[ReadIndex].getUnmatchedSeq(). substr(
              currentState.Reads_SR[ReadIndex].BP + 1,
              currentState.Reads_SR[ReadIndex]. IndelSize);
 }

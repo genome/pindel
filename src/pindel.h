@@ -173,9 +173,11 @@ struct SPLIT_READ {
 	std::string FragName;
     std::string FarFragName;
 	std::string Name;
-	std::string UnmatchedSeq;
-//	std::string HalfMapped;
-//	std::string HalfUnmapped;
+
+	void setUnmatchedSeq( const std::string unmatchedSeq ) { UnmatchedSeq = unmatchedSeq; }
+	std::string getUnmatchedSeq() const { return UnmatchedSeq; }	
+
+
 	char MatchedD; // rename AnchorStrand?
 	unsigned int MatchedRelPos;
 	short MS; // rename MappingQuality ?
@@ -227,6 +229,7 @@ private:
 	short MAX_SNP_ERROR; // = (short)(Temp_One_Read.UnmatchedSeq.size() * Seq_Error_Rate);
 	short TOTAL_SNP_ERROR_CHECKED; // = MAX_SNP_ERROR + ADDITIONAL_MISMATCH + 1;
 	short TOTAL_SNP_ERROR_CHECKED_Minus; // = MAX_SNP_ERROR + ADDITIONAL_MISMATCH;
+	std::string UnmatchedSeq;
    unsigned int MaxEndSize( const std::vector<UniquePoint>& upVector) const;
 
 };

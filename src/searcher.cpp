@@ -54,7 +54,7 @@ CheckLeft_Close (const SPLIT_READ & OneRead,
                TempOne.Strand = ANTISENSE;
                TempOne.Mismatches = i;
                   
-               if (CheckMismatches(TheInput, OneRead.UnmatchedSeq, TempOne)) {
+               if (CheckMismatches(TheInput, OneRead.getUnmatchedSeq(), TempOne)) {
                   LeftUP.push_back (TempOne);
                   break;
                }
@@ -178,7 +178,7 @@ CheckRight_Close (const SPLIT_READ & OneRead,
                TempOne.Direction = BACKWARD;
                TempOne.Strand = SENSE;
                TempOne.Mismatches = i;
-               if (CheckMismatches(TheInput, OneRead.UnmatchedSeq, TempOne)) {
+               if (CheckMismatches(TheInput, OneRead.getUnmatchedSeq(), TempOne)) {
                   RightUP.push_back (TempOne);
                   break;
                } // ###################################
