@@ -62,7 +62,7 @@ unsigned int SearchDeletions::calculateIndelSize(ControlState& currentState,
 {
    return (currentState.Reads_SR[ReadIndex].Right
            - currentState.Reads_SR[ReadIndex].Left)
-          - currentState.Reads_SR[ReadIndex].ReadLengthMinus;
+          - currentState.Reads_SR[ReadIndex].getReadLengthMinus();
 }
 
 std::string SearchDeletions::getInsertedStr1(ControlState& currentState,

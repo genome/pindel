@@ -186,9 +186,12 @@ struct SPLIT_READ {
 	std::vector<UniquePoint> UP_Far;
 	std::vector<UniquePoint> UP_Far_backup;
    short getReadLength() const { return ReadLength; }
-   void setReadLength(short readLength) { ReadLength = readLength; }
-	short ReadLengthMinus;
-	short MAX_SNP_ERROR; // = (short)(Temp_One_Read.UnmatchedSeq.size() * Seq_Error_Rate);
+   void setReadLength(const short readLength) { ReadLength = readLength; }
+	short getReadLengthMinus() const { return ReadLengthMinus; }
+	void setReadLengthMinus(const short readLengthMinus) { ReadLengthMinus = readLengthMinus; }
+	short getMAX_SNP_ERROR() const { return MAX_SNP_ERROR; }
+	void setMAX_SNP_ERROR(const short max_SNP_ERROR) { MAX_SNP_ERROR = max_SNP_ERROR; }
+
 
 	short TOTAL_SNP_ERROR_CHECKED; // = MAX_SNP_ERROR + ADDITIONAL_MISMATCH + 1;
 	short TOTAL_SNP_ERROR_CHECKED_Minus; // = MAX_SNP_ERROR + ADDITIONAL_MISMATCH;
@@ -220,6 +223,8 @@ struct SPLIT_READ {
 
 private:
 	short ReadLength;
+	short ReadLengthMinus;
+	short MAX_SNP_ERROR; // = (short)(Temp_One_Read.UnmatchedSeq.size() * Seq_Error_Rate);
       unsigned int MaxEndSize( const std::vector<UniquePoint>& upVector) const;
 
 };

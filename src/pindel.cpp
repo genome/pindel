@@ -309,8 +309,8 @@ std::ostream& operator<<(std::ostream& os, const SPLIT_READ& splitRead)
     }
     os << std::endl;
     os << "ReadLength: " << splitRead.getReadLength() << std::endl;
-    os << "ReadLengthMinus: " << splitRead.ReadLengthMinus << std::endl;
-    os << "MAX_SNP_ERROR:" << splitRead.MAX_SNP_ERROR << std::endl;
+    os << "ReadLengthMinus: " << splitRead.getReadLengthMinus() << std::endl;
+    os << "MAX_SNP_ERROR:" << splitRead.getMAX_SNP_ERROR() << std::endl;
     os << "TOTAL_SNP_ERROR_CHECKED:" << splitRead.TOTAL_SNP_ERROR_CHECKED << std::endl;
     os << "TOTAL_SNP_ERROR_CHECKED_Minus:" << splitRead.TOTAL_SNP_ERROR_CHECKED_Minus << std::endl;
     os << "MinClose:" << splitRead.MinClose << std::endl;
@@ -1791,7 +1791,7 @@ void updateReadAfterCloseEndMapping( SPLIT_READ& Temp_One_Read )
 void GetCloseEndInner(const std::string & CurrentChrSeq, SPLIT_READ & Temp_One_Read)
 {
     Temp_One_Read.setReadLength( Temp_One_Read.UnmatchedSeq.size() );
-    Temp_One_Read.ReadLengthMinus = Temp_One_Read.getReadLength() - 1;
+    Temp_One_Read.setReadLengthMinus( Temp_One_Read.getReadLength() - 1 );
 
     std::string CurrentReadSeq;
     std::vector<unsigned int> PD[Temp_One_Read.TOTAL_SNP_ERROR_CHECKED];
@@ -1808,7 +1808,7 @@ void GetCloseEndInner(const std::string & CurrentChrSeq, SPLIT_READ & Temp_One_R
 
     Temp_One_Read.UP_Close.clear();
     BP_Start = Temp_One_Read.MinClose;
-    BP_End = Temp_One_Read.ReadLengthMinus;
+    BP_End = Temp_One_Read.getReadLengthMinus();
     if (Temp_One_Read.MatchedD == Plus) {
         CurrentReadSeq = ReverseComplement(Temp_One_Read.UnmatchedSeq);
         Start = Temp_One_Read.MatchedRelPos + g_SpacerBeforeAfter;
@@ -1842,7 +1842,7 @@ void GetCloseEndInner(const std::string & CurrentChrSeq, SPLIT_READ & Temp_One_R
         End = Temp_One_Read.MatchedRelPos + g_SpacerBeforeAfter;
         Start = End - 3 * Temp_One_Read.InsertSize;
         char RightChar;
-        RightChar = CurrentReadSeq[Temp_One_Read.ReadLengthMinus];
+        RightChar = CurrentReadSeq[Temp_One_Read.getReadLengthMinus()];
         if (RightChar != 'N') {
             for (int pos = Start; pos < End; pos++) {
                 if (CurrentChrSeq[pos] == RightChar) {
@@ -1891,7 +1891,7 @@ void CheckBoth(const SPLIT_READ & OneRead, const std::string & TheInput,
 
     if (CurrentLength >= BP_Start && CurrentLength <= BP_End) {
         // put it to LeftUP if unique
-        for (short i = 0; i <= OneRead.MAX_SNP_ERROR; i++) {
+        for (short i = 0; i <= OneRead.getMAX_SNP_ERROR(); i++) {
             if (PD_Plus[i].size() + PD_Minus[i].size() == 1 && CurrentLength
                     >= BP_Start + i) {
                 Sum = 0;
@@ -2037,7 +2037,7 @@ void CheckBoth(const SPLIT_READ & OneRead, const std::string & TheInput,
             }
 
             Sum = 0;
-            for (int i = 0; i <= OneRead.MAX_SNP_ERROR; i++) {
+            for (int i = 0; i <= OneRead.getMAX_SNP_ERROR(); i++) {
                 Sum += PD_Plus_Output[i].size() + PD_Minus_Output[i].size();
             }
             if (Sum) {

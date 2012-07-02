@@ -77,7 +77,7 @@ int SearchVariant::Search(ControlState& currentState, const unsigned numBoxes)
       }
       if (currentState.Reads_SR[ReadIndex].MatchedD == Plus) {
          for (short MAX_SNP_ERROR_index = 0; MAX_SNP_ERROR_index
-               <= currentState.Reads_SR[ReadIndex].MAX_SNP_ERROR; MAX_SNP_ERROR_index++) {
+               <= currentState.Reads_SR[ReadIndex].getMAX_SNP_ERROR(); MAX_SNP_ERROR_index++) {
             for (unsigned int CloseIndex = 0; CloseIndex
                   < currentState.Reads_SR[ReadIndex].UP_Close.size(); CloseIndex++) {
                if (currentState.Reads_SR[ReadIndex].Used) {
@@ -161,7 +161,7 @@ int SearchVariant::Search(ControlState& currentState, const unsigned numBoxes)
       }
       else if (currentState.Reads_SR[ReadIndex].MatchedD == Minus) {
          for (short MAX_SNP_ERROR_index = 0; MAX_SNP_ERROR_index
-               <= currentState.Reads_SR[ReadIndex].MAX_SNP_ERROR; MAX_SNP_ERROR_index++) {
+               <= currentState.Reads_SR[ReadIndex].getMAX_SNP_ERROR(); MAX_SNP_ERROR_index++) {
             for (int CloseIndex =
                      currentState.Reads_SR[ReadIndex].UP_Close.size() - 1; CloseIndex
                   >= 0; CloseIndex--) {

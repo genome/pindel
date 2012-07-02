@@ -58,7 +58,7 @@ bool SearchShortInsertions::decisionBranch2(ControlState& currentState,
 unsigned int SearchShortInsertions::calculateIndelSize(
    ControlState& currentState, unsigned ReadIndex)
 {
-   return currentState.Reads_SR[ReadIndex].ReadLengthMinus
+   return currentState.Reads_SR[ReadIndex].getReadLengthMinus()
           - (currentState.Reads_SR[ReadIndex].Right
              - currentState.Reads_SR[ReadIndex].Left);
 }

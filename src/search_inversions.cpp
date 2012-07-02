@@ -52,7 +52,7 @@ int searchInversions(ControlState& currentState, unsigned NumBoxes)
                   > currentState.Reads_SR[ReadIndex].UP_Close[currentState.Reads_SR[ReadIndex]. UP_Close.size()
                         - 1].AbsLoc + MIN_IndelSize_Inversion) { // normal situation
                for (short MAX_SNP_ERROR_index = 0; MAX_SNP_ERROR_index
-                     <= currentState.Reads_SR[ReadIndex].MAX_SNP_ERROR; MAX_SNP_ERROR_index++) {
+                     <= currentState.Reads_SR[ReadIndex].getMAX_SNP_ERROR(); MAX_SNP_ERROR_index++) {
                   for (CloseIndex
                         = (int) currentState.Reads_SR[ReadIndex].UP_Close.size()
                           - 1; CloseIndex >= 0; CloseIndex--) {
@@ -146,7 +146,7 @@ int searchInversions(ControlState& currentState, unsigned NumBoxes)
                      - 1].AbsLoc + MIN_IndelSize_Inversion
                      < currentState.Reads_SR[ReadIndex].UP_Close[0].AbsLoc) {
                for (short MAX_SNP_ERROR_index = 0; MAX_SNP_ERROR_index
-                     <= currentState.Reads_SR[ReadIndex].MAX_SNP_ERROR; MAX_SNP_ERROR_index++) {
+                     <= currentState.Reads_SR[ReadIndex].getMAX_SNP_ERROR(); MAX_SNP_ERROR_index++) {
                   for (CloseIndex = 0; CloseIndex
                         < (int) currentState.Reads_SR[ReadIndex].UP_Close.size(); CloseIndex++) {
                      if (currentState.Reads_SR[ReadIndex].Used) {
@@ -248,7 +248,7 @@ int searchInversions(ControlState& currentState, unsigned NumBoxes)
                   > currentState.Reads_SR[ReadIndex].UP_Far[0].AbsLoc
                   + MIN_IndelSize_Inversion) {
                for (short MAX_SNP_ERROR_index = 0; MAX_SNP_ERROR_index
-                     <= currentState.Reads_SR[ReadIndex].MAX_SNP_ERROR; MAX_SNP_ERROR_index++) {
+                     <= currentState.Reads_SR[ReadIndex].getMAX_SNP_ERROR(); MAX_SNP_ERROR_index++) {
                   for (CloseIndex
                         = (int) currentState.Reads_SR[ReadIndex].UP_Close.size()
                           - 1; CloseIndex >= 0; CloseIndex--) {
@@ -335,7 +335,7 @@ int searchInversions(ControlState& currentState, unsigned NumBoxes)
                      < currentState.Reads_SR[ReadIndex].UP_Far[currentState.Reads_SR[ReadIndex]. UP_Far.size()
                            - 1].AbsLoc) {
                for (short MAX_SNP_ERROR_index = 0; MAX_SNP_ERROR_index
-                     <= currentState.Reads_SR[ReadIndex].MAX_SNP_ERROR; MAX_SNP_ERROR_index++) {
+                     <= currentState.Reads_SR[ReadIndex].getMAX_SNP_ERROR(); MAX_SNP_ERROR_index++) {
                   for (unsigned int CloseIndex = 0; CloseIndex
                         < currentState.Reads_SR[ReadIndex].UP_Close.size(); CloseIndex++) {
                      if (currentState.Reads_SR[ReadIndex].Used) {

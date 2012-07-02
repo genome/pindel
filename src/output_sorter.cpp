@@ -207,7 +207,7 @@ OutputSorter::DoSortAndOutputInversions (std::vector<SPLIT_READ> &Reads,
                       }
                   }
                   else {
-                       if (GoodIndels[i].BP + Diff < GoodIndels[i].ReadLengthMinus)
+                       if (GoodIndels[i].BP + Diff < GoodIndels[i].getReadLengthMinus())
                      GoodIndels[i].BP = GoodIndels[i].BP + Diff;   // for minus
                   }
                    //if (GoodIndels[i].BP < 0) *logStream << "here " << Diff << " " << GoodIndels[i].BP << std::endl;
@@ -253,7 +253,7 @@ OutputSorter::DoSortAndOutputInversions (std::vector<SPLIT_READ> &Reads,
                    GoodIndels[i].BP = GoodIndels[i].BP - Diff;
             }
             else {
-                if (GoodIndels[i].BP + Diff < GoodIndels[i].ReadLengthMinus)
+                if (GoodIndels[i].BP + Diff < GoodIndels[i].getReadLengthMinus())
                    GoodIndels[i].BP = GoodIndels[i].BP + Diff;   // for minus
             }
             //if (GoodIndels[i].BP < 0) *logStream << "there " << Diff << " " << GoodIndels[i].BP << std::endl;

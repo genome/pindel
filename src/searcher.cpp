@@ -37,7 +37,7 @@ CheckLeft_Close (const SPLIT_READ & OneRead,
    int Sum;
    if (CurrentLength >= BP_Left_Start && CurrentLength <= BP_Left_End) {
       // put it to LeftUP if unique
-      for (short i = 0; i <= OneRead.MAX_SNP_ERROR; i++) {
+      for (short i = 0; i <= OneRead.getMAX_SNP_ERROR(); i++) {
          if (Left_PD[i].size () == 1 && CurrentLength >= BP_Left_Start + i) {
             Sum = 0;
             if (ADDITIONAL_MISMATCH)
@@ -131,7 +131,7 @@ CheckLeft_Close (const SPLIT_READ & OneRead,
          }
       }
       Sum = 0;
-      for (int i = 0; i <= OneRead.MAX_SNP_ERROR; i++) {
+      for (int i = 0; i <= OneRead.getMAX_SNP_ERROR(); i++) {
          Sum += Left_PD_Output[i].size ();
       }
       if (Sum) {
@@ -162,7 +162,7 @@ CheckRight_Close (const SPLIT_READ & OneRead,
    short ReadLengthMinus = CurrentReadSeq.size () - 1;
    int Sum;
    if (CurrentLength >= BP_Right_Start && CurrentLength <= BP_Right_End) {
-      for (short i = 0; i <= OneRead.MAX_SNP_ERROR; i++) {
+      for (short i = 0; i <= OneRead.getMAX_SNP_ERROR(); i++) {
          if (Right_PD[i].size () == 1 && CurrentLength >= BP_Right_Start + i) {
             Sum = 0;
             if (ADDITIONAL_MISMATCH)
@@ -250,7 +250,7 @@ CheckRight_Close (const SPLIT_READ & OneRead,
       }
 
       Sum = 0;
-      for (int i = 0; i <= OneRead.MAX_SNP_ERROR; i++) {
+      for (int i = 0; i <= OneRead.getMAX_SNP_ERROR(); i++) {
          Sum += Right_PD_Output[i].size ();
       }
       if (Sum) {
