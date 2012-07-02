@@ -191,10 +191,12 @@ struct SPLIT_READ {
 	void setReadLengthMinus(const short readLengthMinus) { ReadLengthMinus = readLengthMinus; }
 	short getMAX_SNP_ERROR() const { return MAX_SNP_ERROR; }
 	void setMAX_SNP_ERROR(const short max_SNP_ERROR) { MAX_SNP_ERROR = max_SNP_ERROR; }
+	short getTOTAL_SNP_ERROR_CHECKED() const { return TOTAL_SNP_ERROR_CHECKED; }
+	void setTOTAL_SNP_ERROR_CHECKED(const short total_SNP_ERROR_CHECKED) { TOTAL_SNP_ERROR_CHECKED = total_SNP_ERROR_CHECKED; }
+	short getTOTAL_SNP_ERROR_CHECKED_Minus() const { return TOTAL_SNP_ERROR_CHECKED_Minus; }
+	void setTOTAL_SNP_ERROR_CHECKED_Minus(const short total_SNP_ERROR_CHECKED_Minus) { TOTAL_SNP_ERROR_CHECKED_Minus = total_SNP_ERROR_CHECKED_Minus; }
 
 
-	short TOTAL_SNP_ERROR_CHECKED; // = MAX_SNP_ERROR + ADDITIONAL_MISMATCH + 1;
-	short TOTAL_SNP_ERROR_CHECKED_Minus; // = MAX_SNP_ERROR + ADDITIONAL_MISMATCH;
 	short MinClose;
 	short BP;
 	int Left;
@@ -202,9 +204,7 @@ struct SPLIT_READ {
 	unsigned int BPLeft;
 	unsigned int BPRight;
 	unsigned int IndelSize;
-	//bool UniqueAnchor;
     bool UniqueRead;
-//	double score;
 	std::string InsertedStr;
 	std::string NT_str;
 	unsigned short NT_size;
@@ -225,7 +225,9 @@ private:
 	short ReadLength;
 	short ReadLengthMinus;
 	short MAX_SNP_ERROR; // = (short)(Temp_One_Read.UnmatchedSeq.size() * Seq_Error_Rate);
-      unsigned int MaxEndSize( const std::vector<UniquePoint>& upVector) const;
+	short TOTAL_SNP_ERROR_CHECKED; // = MAX_SNP_ERROR + ADDITIONAL_MISMATCH + 1;
+	short TOTAL_SNP_ERROR_CHECKED_Minus; // = MAX_SNP_ERROR + ADDITIONAL_MISMATCH;
+   unsigned int MaxEndSize( const std::vector<UniquePoint>& upVector) const;
 
 };
 

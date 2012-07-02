@@ -32,15 +32,15 @@ void SearchFarEndAtPos( const std::string& chromosome, SPLIT_READ& Temp_One_Read
    short BP_End = Temp_One_Read.getReadLengthMinus(); // matched far end should be between BP_Start and BP_End bases long (including BP_Start and End)
    std::vector<UniquePoint> UP; // temporary container for unique far ends
     Temp_One_Read.setMAX_SNP_ERROR( (short) (Temp_One_Read.UnmatchedSeq.size () * Seq_Error_Rate) );
-    Temp_One_Read.TOTAL_SNP_ERROR_CHECKED = Temp_One_Read.getMAX_SNP_ERROR() + ADDITIONAL_MISMATCH + 1;
-    Temp_One_Read.TOTAL_SNP_ERROR_CHECKED_Minus = Temp_One_Read.getMAX_SNP_ERROR() + ADDITIONAL_MISMATCH;
-   std::vector<unsigned int> PD_Plus[Temp_One_Read.TOTAL_SNP_ERROR_CHECKED];
-   std::vector<unsigned int> PD_Minus[Temp_One_Read.TOTAL_SNP_ERROR_CHECKED];
+    Temp_One_Read.setTOTAL_SNP_ERROR_CHECKED( Temp_One_Read.getMAX_SNP_ERROR() + ADDITIONAL_MISMATCH + 1 );
+    Temp_One_Read.setTOTAL_SNP_ERROR_CHECKED_Minus( Temp_One_Read.getMAX_SNP_ERROR() + ADDITIONAL_MISMATCH );
+   std::vector<unsigned int> PD_Plus[Temp_One_Read.getTOTAL_SNP_ERROR_CHECKED()];
+   std::vector<unsigned int> PD_Minus[Temp_One_Read.getTOTAL_SNP_ERROR_CHECKED()];
 
    int Start = SearchCenter - Range - Temp_One_Read.getReadLength();
    int End = SearchCenter + Range + Temp_One_Read.getReadLength();
 
-   for (int CheckIndex = 0; CheckIndex < Temp_One_Read.TOTAL_SNP_ERROR_CHECKED; CheckIndex++) {
+   for (int CheckIndex = 0; CheckIndex < Temp_One_Read.getTOTAL_SNP_ERROR_CHECKED(); CheckIndex++) {
       PD_Plus[CheckIndex].reserve(End - Start + 1);
       PD_Minus[CheckIndex].reserve(End - Start + 1);
    }

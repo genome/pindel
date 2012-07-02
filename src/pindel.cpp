@@ -311,8 +311,8 @@ std::ostream& operator<<(std::ostream& os, const SPLIT_READ& splitRead)
     os << "ReadLength: " << splitRead.getReadLength() << std::endl;
     os << "ReadLengthMinus: " << splitRead.getReadLengthMinus() << std::endl;
     os << "MAX_SNP_ERROR:" << splitRead.getMAX_SNP_ERROR() << std::endl;
-    os << "TOTAL_SNP_ERROR_CHECKED:" << splitRead.TOTAL_SNP_ERROR_CHECKED << std::endl;
-    os << "TOTAL_SNP_ERROR_CHECKED_Minus:" << splitRead.TOTAL_SNP_ERROR_CHECKED_Minus << std::endl;
+    os << "TOTAL_SNP_ERROR_CHECKED:" << splitRead.getTOTAL_SNP_ERROR_CHECKED() << std::endl;
+    os << "getTOTAL_SNP_ERROR_CHECKED_Minus():" << splitRead.getTOTAL_SNP_ERROR_CHECKED_Minus() << std::endl;
     os << "MinClose:" << splitRead.MinClose << std::endl;
     os << "BP:" << splitRead.BP << std::endl;
     os << "Left:" << splitRead.Left << std::endl;
@@ -1794,11 +1794,11 @@ void GetCloseEndInner(const std::string & CurrentChrSeq, SPLIT_READ & Temp_One_R
     Temp_One_Read.setReadLengthMinus( Temp_One_Read.getReadLength() - 1 );
 
     std::string CurrentReadSeq;
-    std::vector<unsigned int> PD[Temp_One_Read.TOTAL_SNP_ERROR_CHECKED];
+    std::vector<unsigned int> PD[Temp_One_Read.getTOTAL_SNP_ERROR_CHECKED()];
     if (Temp_One_Read.InsertSize > g_maxInsertSize) {
         g_maxInsertSize = Temp_One_Read.InsertSize;
     }
-    for (int CheckIndex = 0; CheckIndex < Temp_One_Read.TOTAL_SNP_ERROR_CHECKED; CheckIndex++) {
+    for (int CheckIndex = 0; CheckIndex < Temp_One_Read.getTOTAL_SNP_ERROR_CHECKED(); CheckIndex++) {
         PD[CheckIndex].reserve(3 * Temp_One_Read.InsertSize);
     }
     std::vector<UniquePoint> UP;
@@ -1934,11 +1934,11 @@ void CheckBoth(const SPLIT_READ & OneRead, const std::string & TheInput,
     }
     if (CurrentLength < BP_End) {
         std::vector<unsigned int>
-        PD_Plus_Output[OneRead.TOTAL_SNP_ERROR_CHECKED];
+        PD_Plus_Output[OneRead.getTOTAL_SNP_ERROR_CHECKED()];
         std::vector<unsigned int>
-        PD_Minus_Output[OneRead.TOTAL_SNP_ERROR_CHECKED];
+        PD_Minus_Output[OneRead.getTOTAL_SNP_ERROR_CHECKED()];
         for (int CheckedIndex = 0; CheckedIndex
-                < OneRead.TOTAL_SNP_ERROR_CHECKED; CheckedIndex++) {
+                < OneRead.getTOTAL_SNP_ERROR_CHECKED(); CheckedIndex++) {
             PD_Plus_Output[CheckedIndex].reserve(PD_Plus[CheckedIndex]. size());
             PD_Minus_Output[CheckedIndex].reserve(
                 PD_Minus[CheckedIndex]. size());
@@ -1948,7 +1948,7 @@ void CheckBoth(const SPLIT_READ & OneRead, const std::string & TheInput,
         {
             unsigned int pos;
             int SizeOfCurrent;
-            for (int i = 0; i < OneRead.TOTAL_SNP_ERROR_CHECKED_Minus; i++) {
+            for (int i = 0; i < OneRead.getTOTAL_SNP_ERROR_CHECKED_Minus(); i++) {
                 SizeOfCurrent = PD_Plus[i].size();
                 if (CurrentChar == 'N') {
                     for (int j = 0; j < SizeOfCurrent; j++) {
@@ -1998,40 +1998,40 @@ void CheckBoth(const SPLIT_READ & OneRead, const std::string & TheInput,
             }
 
             SizeOfCurrent
-                = PD_Plus[OneRead.TOTAL_SNP_ERROR_CHECKED_Minus].size();
+                = PD_Plus[OneRead.getTOTAL_SNP_ERROR_CHECKED_Minus()].size();
             if (CurrentChar == 'N') {
                 for (int j = 0; j < SizeOfCurrent; j++) {
-                    pos = PD_Plus[OneRead.TOTAL_SNP_ERROR_CHECKED_Minus][j] + 1;
+                    pos = PD_Plus[OneRead.getTOTAL_SNP_ERROR_CHECKED_Minus()][j] + 1;
                     if (Match2N[(short) TheInput[pos]] == 'N')
-                        PD_Plus_Output[OneRead.TOTAL_SNP_ERROR_CHECKED_Minus]. push_back(
+                        PD_Plus_Output[OneRead.getTOTAL_SNP_ERROR_CHECKED_Minus()]. push_back(
                             pos);
                 }
             }
             else {
                 for (int j = 0; j < SizeOfCurrent; j++) {
-                    pos = PD_Plus[OneRead.TOTAL_SNP_ERROR_CHECKED_Minus][j] + 1;
+                    pos = PD_Plus[OneRead.getTOTAL_SNP_ERROR_CHECKED_Minus()][j] + 1;
                     if (TheInput[pos] == CurrentChar)
-                        PD_Plus_Output[OneRead.TOTAL_SNP_ERROR_CHECKED_Minus]. push_back(
+                        PD_Plus_Output[OneRead.getTOTAL_SNP_ERROR_CHECKED_Minus()]. push_back(
                             pos);
                 }
             }
             SizeOfCurrent
-                = PD_Minus[OneRead.TOTAL_SNP_ERROR_CHECKED_Minus].size();
+                = PD_Minus[OneRead.getTOTAL_SNP_ERROR_CHECKED_Minus()].size();
             if (CurrentCharRC == 'N') {
                 for (int j = 0; j < SizeOfCurrent; j++) {
-                    pos = PD_Minus[OneRead.TOTAL_SNP_ERROR_CHECKED_Minus][j]
+                    pos = PD_Minus[OneRead.getTOTAL_SNP_ERROR_CHECKED_Minus()][j]
                           - 1;
                     if (Match2N[(short) TheInput[pos]] == 'N')
-                        PD_Minus_Output[OneRead.TOTAL_SNP_ERROR_CHECKED_Minus]. push_back(
+                        PD_Minus_Output[OneRead.getTOTAL_SNP_ERROR_CHECKED_Minus()]. push_back(
                             pos);
                 }
             }
             else {
                 for (int j = 0; j < SizeOfCurrent; j++) {
-                    pos = PD_Minus[OneRead.TOTAL_SNP_ERROR_CHECKED_Minus][j]
+                    pos = PD_Minus[OneRead.getTOTAL_SNP_ERROR_CHECKED_Minus()][j]
                           - 1;
                     if (TheInput[pos] == CurrentCharRC)
-                        PD_Minus_Output[OneRead.TOTAL_SNP_ERROR_CHECKED_Minus]. push_back(
+                        PD_Minus_Output[OneRead.getTOTAL_SNP_ERROR_CHECKED_Minus()]. push_back(
                             pos);
                 }
             }

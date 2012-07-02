@@ -63,16 +63,16 @@ CheckLeft_Close (const SPLIT_READ & OneRead,
       }
    }
    if (CurrentLength < BP_Left_End) {
-      std::vector < unsigned int >Left_PD_Output[OneRead.TOTAL_SNP_ERROR_CHECKED];
+      std::vector < unsigned int >Left_PD_Output[OneRead.getTOTAL_SNP_ERROR_CHECKED()];
       for (int CheckedIndex = 0;
-            CheckedIndex < OneRead.TOTAL_SNP_ERROR_CHECKED; CheckedIndex++) {
+            CheckedIndex < OneRead.getTOTAL_SNP_ERROR_CHECKED(); CheckedIndex++) {
          Left_PD_Output[CheckedIndex].reserve (Left_PD[CheckedIndex].
                                                size ());
       }
       const char CurrentChar = CurrentReadSeq[CurrentLength];
       //const int SizeOfCurrent = Left_PD.size();
       unsigned int pos;
-      for (int i = 0; i < OneRead.TOTAL_SNP_ERROR_CHECKED_Minus; i++) {
+      for (int i = 0; i < OneRead.getTOTAL_SNP_ERROR_CHECKED_Minus(); i++) {
          int SizeOfCurrent = Left_PD[i].size ();
          if (CurrentChar == 'N') {
             //#pragma omp parallel default(shared)
@@ -104,15 +104,15 @@ CheckLeft_Close (const SPLIT_READ & OneRead,
       }
 
       int SizeOfCurrent =
-         Left_PD[OneRead.TOTAL_SNP_ERROR_CHECKED_Minus].size ();
+         Left_PD[OneRead.getTOTAL_SNP_ERROR_CHECKED_Minus()].size ();
       if (CurrentChar == 'N') {
          //#pragma omp parallel default(shared)
          {
             // #pragma omp for
             for (int j = 0; j < SizeOfCurrent; j++) {
-               pos = Left_PD[OneRead.TOTAL_SNP_ERROR_CHECKED_Minus][j] + 1;
+               pos = Left_PD[OneRead.getTOTAL_SNP_ERROR_CHECKED_Minus()][j] + 1;
                if (Match2N[(short) TheInput[pos]] == 'N')
-                  Left_PD_Output[OneRead.TOTAL_SNP_ERROR_CHECKED_Minus].
+                  Left_PD_Output[OneRead.getTOTAL_SNP_ERROR_CHECKED_Minus()].
                   push_back (pos);
             }
          }
@@ -122,9 +122,9 @@ CheckLeft_Close (const SPLIT_READ & OneRead,
          {
             // #pragma omp for
             for (int j = 0; j < SizeOfCurrent; j++) {
-               pos = Left_PD[OneRead.TOTAL_SNP_ERROR_CHECKED_Minus][j] + 1;
+               pos = Left_PD[OneRead.getTOTAL_SNP_ERROR_CHECKED_Minus()][j] + 1;
                if (TheInput[pos] == CurrentChar)
-                  Left_PD_Output[OneRead.TOTAL_SNP_ERROR_CHECKED_Minus].
+                  Left_PD_Output[OneRead.getTOTAL_SNP_ERROR_CHECKED_Minus()].
                   push_back (pos);
                //else Left_PD_Output[i + 1].push_back(pos);
             }
@@ -188,9 +188,9 @@ CheckRight_Close (const SPLIT_READ & OneRead,
    }
 
    if (CurrentLength < BP_Right_End) {
-      std::vector < unsigned int >Right_PD_Output[OneRead.TOTAL_SNP_ERROR_CHECKED];
+      std::vector < unsigned int >Right_PD_Output[OneRead.getTOTAL_SNP_ERROR_CHECKED()];
       for (int CheckedIndex = 0;
-            CheckedIndex < OneRead.TOTAL_SNP_ERROR_CHECKED; CheckedIndex++) {
+            CheckedIndex < OneRead.getTOTAL_SNP_ERROR_CHECKED(); CheckedIndex++) {
          Right_PD_Output[CheckedIndex].reserve (Right_PD[CheckedIndex].
                                                 size ());
       }
@@ -198,7 +198,7 @@ CheckRight_Close (const SPLIT_READ & OneRead,
          CurrentReadSeq[ReadLengthMinus - CurrentLength];
       unsigned int pos;
 
-      for (int i = 0; i < OneRead.TOTAL_SNP_ERROR_CHECKED_Minus; i++) {
+      for (int i = 0; i < OneRead.getTOTAL_SNP_ERROR_CHECKED_Minus(); i++) {
          int SizeOfCurrent = Right_PD[i].size ();
          if (CurrentChar == 'N') {
             //#pragma omp parallel default(shared)
@@ -230,22 +230,21 @@ CheckRight_Close (const SPLIT_READ & OneRead,
       }
 
       int SizeOfCurrent =
-         Right_PD[OneRead.TOTAL_SNP_ERROR_CHECKED_Minus].size ();
+         Right_PD[OneRead.getTOTAL_SNP_ERROR_CHECKED_Minus()].size ();
       if (CurrentChar == 'N') {
          for (int j = 0; j < SizeOfCurrent; j++) {
-            pos = Right_PD[OneRead.TOTAL_SNP_ERROR_CHECKED_Minus][j] - 1;
+            pos = Right_PD[OneRead.getTOTAL_SNP_ERROR_CHECKED_Minus()][j] - 1;
             if (Match2N[(short) TheInput[pos]] == 'N')
-               Right_PD_Output[OneRead.TOTAL_SNP_ERROR_CHECKED_Minus].
+               Right_PD_Output[OneRead.getTOTAL_SNP_ERROR_CHECKED_Minus()].
                push_back (pos);
          }
       }
       else {
          for (int j = 0; j < SizeOfCurrent; j++) {
-            pos = Right_PD[OneRead.TOTAL_SNP_ERROR_CHECKED_Minus][j] - 1;
+            pos = Right_PD[OneRead.getTOTAL_SNP_ERROR_CHECKED_Minus()][j] - 1;
             if (TheInput[pos] == CurrentChar)
-               Right_PD_Output[OneRead.TOTAL_SNP_ERROR_CHECKED_Minus].
+               Right_PD_Output[OneRead.getTOTAL_SNP_ERROR_CHECKED_Minus()].
                push_back (pos);
-            //else Left_PD_Output[i + 1].push_back(pos);
          }
       }
 
