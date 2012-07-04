@@ -178,15 +178,9 @@ ReadInRead (PindelReadReader & inf_ReadSeq, const std::string & FragName,
       if (Temp_One_Read.FragName == FragName
             && Temp_One_Read.MatchedRelPos >= lowerBinBorder
             && Temp_One_Read.MatchedRelPos < upperBinBorder) {
-         //Temp_One_Read.setReadLength( Temp_One_Read.getUnmatchedSeq().size () );
-         //Temp_One_Read.setReadLengthMinus( Temp_One_Read.getReadLength() - 1 );
          g_NumReadInWindow++;
 
-         //Temp_One_Read.setMAX_SNP_ERROR( (short) (Temp_One_Read.getUnmatchedSeq().size () * Seq_Error_Rate) );
-         //Temp_One_Read.setTOTAL_SNP_ERROR_CHECKED ( Temp_One_Read.getMAX_SNP_ERROR() + ADDITIONAL_MISMATCH + 1 );
-         //Temp_One_Read.setTOTAL_SNP_ERROR_CHECKED_Minus( Temp_One_Read.getMAX_SNP_ERROR() + ADDITIONAL_MISMATCH );
-         Temp_One_Read.MinClose = 8;
-         Temp_One_Read.Found = false;
+         //Temp_One_Read.Found = false;
          if (Temp_One_Read.MatchedD == Plus) {
             g_InWinPlus++;
          }
@@ -614,11 +608,6 @@ build_record_SR (const bam1_t * mapped_read, const bam1_t * unmapped_read,
     
     
     g_NumReadInWindow++;
-    //Temp_One_Read.setMAX_SNP_ERROR( (short) trunc((double)0.5+Temp_One_Read.getUnmatchedSeq().size () * Seq_Error_Rate) );
-    
-    //Temp_One_Read.setTOTAL_SNP_ERROR_CHECKED( Temp_One_Read.getMAX_SNP_ERROR() + ADDITIONAL_MISMATCH + 1 );
-    //Temp_One_Read.setTOTAL_SNP_ERROR_CHECKED_Minus( Temp_One_Read.getMAX_SNP_ERROR() + ADDITIONAL_MISMATCH );
-    Temp_One_Read.MinClose = 8;
     
     if (Temp_One_Read.MatchedD == Plus) {
         g_InWinPlus++;

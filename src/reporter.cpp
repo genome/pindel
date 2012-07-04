@@ -1562,7 +1562,7 @@ SortOutputLI (const std::string & CurrentChr, std::vector < SPLIT_READ > &Reads,
    ShiftedVector< int32_t > EventIndex_Pos( absStartBuffered , absEndBuffered , -1 );
 
    for (unsigned Index = 0; Index < Reads.size (); Index++) {
-      if (Reads[Index].Found || Reads[Index].Used
+      if (Reads[Index].Used
             || !Reads[Index].UP_Far.empty ()) {
          continue;
       }
@@ -1855,7 +1855,7 @@ SortOutputRest (const std::string & CurrentChr,
    ShiftedVector< uint8_t > minus_LI_Pos( absStartBuffered , absEndBuffered , 0 );
 
    for (unsigned Index = 0; Index < Reads.size (); Index++) {
-      if (Reads[Index].Found || Reads[Index].Used
+      if (Reads[Index].Used
             || !Reads[Index].UP_Far.empty ()) {
          continue;
       }

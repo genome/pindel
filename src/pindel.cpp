@@ -72,6 +72,7 @@ int findParameter(std::string name);
 
 int g_binIndex = -1; // global variable for the bin index, as I cannot easily pass an extra parameter to the diverse functions
 int g_maxPos = -1; // to calculate which is the last position in the chromosome, and hence to calculate the number of bins
+short g_MinClose = 8;
 
 std::set<std::string> g_sampleNames;
 
@@ -313,17 +314,13 @@ std::ostream& operator<<(std::ostream& os, const SPLIT_READ& splitRead)
     os << "MAX_SNP_ERROR:" << splitRead.getMAX_SNP_ERROR() << std::endl;
     os << "TOTAL_SNP_ERROR_CHECKED:" << splitRead.getTOTAL_SNP_ERROR_CHECKED() << std::endl;
     os << "getTOTAL_SNP_ERROR_CHECKED_Minus():" << splitRead.getTOTAL_SNP_ERROR_CHECKED_Minus() << std::endl;
-    os << "MinClose:" << splitRead.MinClose << std::endl;
     os << "BP:" << splitRead.BP << std::endl;
     os << "Left:" << splitRead.Left << std::endl;
     os << "Right:" << splitRead.Right << std::endl;
     os << "BPLeft:" << splitRead.BPLeft << std::endl;
     os << "BPRight:" << splitRead.BPRight << std::endl;
     os << "IndelSize:" << splitRead.IndelSize << std::endl;
-    //os << "UniqueAnchor:" << splitRead.UniqueAnchor << std::endl;
     os << "UniqueRead:" << splitRead.UniqueRead << std::endl;
-//    os << "score:" << splitRead.score << std::endl;
-    //os << "InsertedStr:" << splitRead.InsertedStr << std::endl;
     os << "NT_str:" << splitRead.NT_str  << std::endl;
     os << "NT_size:" << splitRead.NT_size << std::endl;
     return os;
@@ -1354,49 +1351,6 @@ int main(int argc, char *argv[])
             }
             //short ReturnFromReadingReads;
             get_SR_Reads(currentState, par); 
-            /*
-            if (currentState.BAMDefined) {
-                ReturnFromReadingReads = 0;
-                for (unsigned int i = 0; i < currentState.bams_to_parse.size(); i++) {
-                    *logStream << "Insertsize in bamreads: " << currentState.bams_to_parse[i].InsertSize << std::endl;
-                    ReturnFromReadingReads = ReadInBamReads(
-                                                 currentState.bams_to_parse[i].BamFile.c_str(),
-                                                 currentState.CurrentChrName, 
-                                                 &currentState.CurrentChrSeq,
-                                                 currentState.Reads,
-                                                 currentState.bams_to_parse[i].InsertSize,
-                                                 currentState.bams_to_parse[i].Tag,
-                                                 currentState.lowerBinBorder,
-                                                 currentState.upperBinBorder, readBuffer );
-                    if (ReturnFromReadingReads == 0) {
-                        LOG_ERROR(*logStream << "Bam read failed: "
-                                  << currentState.bams_to_parse[i].BamFile
-                                  << std::endl);
-                        return 1;
-                    }
-                    else if (currentState.Reads.size() == 0) {
-                        LOG_ERROR(*logStream << "No currentState.Reads for "
-                                  << currentState.CurrentChrName << " found in "
-                                  << currentState.bams_to_parse[i].BamFile
-                                  << std::endl);
-                    }
-                    (*logStream << "BAM file index\t" << i << "\t"
-                     << currentState.Reads.size() << std::endl);
-                }
-
-            }
-            if (currentState.pindelConfigDefined) {	
-				for (unsigned int fileIndex=0; fileIndex<currentState.pindelfilesToParse.size(); fileIndex++ ) {
-					std::ifstream currentPindelfile( currentState.pindelfilesToParse[ fileIndex ].c_str() );
-					readInPindelReads( currentPindelfile, currentState.pindelfilesToParse[ fileIndex ].c_str(), currentState );
-				}
-			}
-            //readBuffer.flush();
-
-            if (currentState.PindelReadDefined) {
-					readInPindelReads( currentState.inf_Pindel_Reads, par.pindelFilename, currentState );
-            }
-            */
             Time_Mine_E = time(NULL);
 
             if (currentState.Reads_SR.size() ) {
@@ -1516,7 +1470,7 @@ int main(int argc, char *argv[])
                             Count_Far++;
                         }
                         if (!currentState.Reads_SR[Index].UP_Far.empty()
-                                || currentState.Reads_SR[Index].Found) {
+                 ) {
 
                         }
                         else {
@@ -1807,7 +1761,7 @@ void GetCloseEndInner(const std::string & CurrentChrSeq, SPLIT_READ & Temp_One_R
     short BP_End; // = ReadLength - MinClose;
 
     Temp_One_Read.UP_Close.clear();
-    BP_Start = Temp_One_Read.MinClose;
+    BP_Start = g_MinClose;
     BP_End = Temp_One_Read.getReadLengthMinus();
     if (Temp_One_Read.MatchedD == Plus) {
         CurrentReadSeq = ReverseComplement(Temp_One_Read.getUnmatchedSeq());

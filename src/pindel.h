@@ -72,6 +72,7 @@ extern unsigned int g_InWinMinus;
 extern unsigned int g_CloseMappedPlus;
 extern unsigned int g_CloseMappedMinus;
 extern int g_binIndex;
+extern short g_MinClose;
 extern int WINDOW_SIZE;
 extern unsigned int g_minimalAnchorQuality;
 extern int g_maxInsertSize;
@@ -139,8 +140,6 @@ struct SPLIT_READ {
         FarFragName = "";
 		Name = "";
 		UnmatchedSeq = "";
-//		HalfMapped = "";
-//		HalfUnmapped = "";
 		MatchedD = 0;
 		MatchedRelPos = 0;
 		MS = 0;
@@ -152,7 +151,6 @@ struct SPLIT_READ {
 		MAX_SNP_ERROR = 0;
 		TOTAL_SNP_ERROR_CHECKED = 0;
 		TOTAL_SNP_ERROR_CHECKED_Minus = 0;
-		MinClose = 0;
 		BP = 0;
 		Left = 0;
 		Right = 0;
@@ -165,7 +163,7 @@ struct SPLIT_READ {
 		NT_size = 0;
 		Used = false;
 		CloseEndLength = 0;
-		Found = false;
+		//Found = false;
 		LeftMostPos = 0;
 	}
 	std::string FragName;
@@ -195,7 +193,6 @@ struct SPLIT_READ {
 	std::vector<UniquePoint> UP_Far;
 	std::vector<UniquePoint> UP_Far_backup;
    short getReadLength() const { return ReadLength; }
-   //void setReadLength(const short readLength) { ReadLength = readLength; }
 	short getReadLengthMinus() const { return ReadLengthMinus; }
 	//void setReadLengthMinus(const short readLengthMinus) { ReadLengthMinus = readLengthMinus; }
 	short getMAX_SNP_ERROR() const { return MAX_SNP_ERROR; }
@@ -205,21 +202,19 @@ struct SPLIT_READ {
 	short getTOTAL_SNP_ERROR_CHECKED_Minus() const { return TOTAL_SNP_ERROR_CHECKED_Minus; }
 	//void setTOTAL_SNP_ERROR_CHECKED_Minus(const short total_SNP_ERROR_CHECKED_Minus) { TOTAL_SNP_ERROR_CHECKED_Minus = total_SNP_ERROR_CHECKED_Minus; }
 
-
-	short MinClose;
 	short BP;
 	int Left;
 	int Right;
 	unsigned int BPLeft;
 	unsigned int BPRight;
 	unsigned int IndelSize;
-    bool UniqueRead;
+   bool UniqueRead;
 	std::string InsertedStr;
 	std::string NT_str;
 	unsigned short NT_size;
 	bool Used;
 	short CloseEndLength;
-	bool Found;
+	//bool Found;
 	int LeftMostPos;
     std::map <std::string, int> ReadCountPerSample;
 
