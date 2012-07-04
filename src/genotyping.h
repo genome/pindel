@@ -89,7 +89,7 @@ struct Genotyping {
 
 
 
-void doGenotyping (ControlState & CurrentState, ParCollection & par);
+void doGenotyping (ControlState & CurrentState, std::ifstream& FastaFile, ParCollection & par);
 
 short GenotypingOneDEL(const std::vector <Chromosome> & AllChromosomes, std::map<std::string,int> & ChrName2Index, ControlState & CurrentState, ParCollection & par, Genotyping & OneSV, std::map<std::string, unsigned> & SampleName2IndexAsMap, std::ofstream & ASM_Output);
 

@@ -28,7 +28,7 @@
 #include <string>
 #include <utility>
 
-void doAssembly (ControlState & CurrentState, ParCollection & par) {
+void doAssembly (ControlState & CurrentState, std::ifstream& FastaFile, ParCollection & par) {
     
     std::map<std::string,int> ChrName2Index;
     
@@ -36,7 +36,7 @@ void doAssembly (ControlState & CurrentState, ParCollection & par) {
     // step 1. get the whole genome sequence
 
     std::vector <Chromosome> AllChromosomes;
-    getWholeGenome(CurrentState, AllChromosomes);
+    getWholeGenome(FastaFile, AllChromosomes);
     
     for (unsigned i = 0; i < AllChromosomes.size(); i++) {
         std::cout << "ChrName " << AllChromosomes[i].ChrName << "\tChrSeqSize " << AllChromosomes[i].ChrSeq.size() << std::endl;
@@ -82,9 +82,7 @@ void doAssembly (ControlState & CurrentState, ParCollection & par) {
     return;
 }
 
-short getWholeGenome(ControlState & CurrentState, std::vector <Chromosome> & AllChromosomes) {
-    //short Diff2UpperCase = 'A' - 'a';
-    //std::cout << "1" << std::endl;
+short getWholeGenome(std::ifstream& FastaFile, std::vector <Chromosome> & AllChromosomes) {
     std::string Spacer = "";
     for (unsigned i = 0; i < g_SpacerBeforeAfter; i++) Spacer += "N";
     //std::string Spacer("N", g_SpacerBeforeAfter);
@@ -92,12 +90,12 @@ short getWholeGenome(ControlState & CurrentState, std::vector <Chromosome> & All
     Chromosome OneChr;
     std::string TempLine;
     char TempChar;
-    CurrentState.inf_Seq.clear();
-    CurrentState.inf_Seq.seekg(0);
-    CurrentState.inf_Seq >> TempChar;
-    while (CurrentState.inf_Seq >> OneChr.ChrName) {
-        getline(CurrentState.inf_Seq, TempLine);
-        while (CurrentState.inf_Seq >> TempChar) {
+    FastaFile.clear();
+    FastaFile.seekg(0);
+    FastaFile >> TempChar;
+    while (FastaFile >> OneChr.ChrName) {
+        getline(FastaFile, TempLine);
+        while (FastaFile >> TempChar) {
             if (TempChar != '\n' && TempChar != '\r') {
                 if (TempChar == '>') {
                     OneChr.ChrSeq = Spacer + OneChr.ChrSeq + Spacer;
@@ -135,7 +133,7 @@ short getWholeGenome(ControlState & CurrentState, std::vector <Chromosome> & All
     OneChr.ChrSeq = Spacer + OneChr.ChrSeq + Spacer;
     std::cout << OneChr.ChrName << " " << OneChr.ChrSeq.size() << std::endl;
     AllChromosomes.push_back(OneChr);
-    CurrentState.inf_Seq.close();
+    FastaFile.close();
     return 0;
 }
 

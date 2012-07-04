@@ -57,8 +57,8 @@ struct Assembly {
     unsigned CI_B;
 };
 
-void doAssembly (ControlState & CurrentState, ParCollection & par);
-short getWholeGenome(ControlState & CurrentState, std::vector <Chromosome> & AllChromosomes) ;
+void doAssembly (ControlState & CurrentState, std::ifstream& FastaFile, ParCollection & par);
+short getWholeGenome(std::ifstream& FastaFile, std::vector <Chromosome> & AllChromosomes); 
 short AssembleOneSV(const std::vector <Chromosome> & AllChromosomes, std::map<std::string,int> & ChrName2Index, ControlState & CurrentState, ParCollection & par, const Assembly & OneSV, std::ofstream & ASM_Output);
 void CombineAndSort(const std::vector <Chromosome> & AllChromosomes, std::map<std::string,int> &ChrName2Index, ControlState & CurrentState, ParCollection & par, const Assembly & OneSV, std::vector <SPLIT_READ> & output_reads, const unsigned & lowerBinBorder, const unsigned & upperBinBorder, const bool & First);
 void CombineReads(const std::string & CurrentChrSeq, const char & Strand, const std::vector <SPLIT_READ> & input_reads, const std::vector <unsigned int> Index_Of_Useful_Reads, std::vector <SPLIT_READ> & output_reads);

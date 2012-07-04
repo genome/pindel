@@ -55,8 +55,8 @@ public:
 	ControlState();
 	virtual ~ControlState();
 
-	bool SpecifiedChrVisited;
-	std::ifstream inf_Seq;
+	//bool SpecifiedChrVisited;
+	//std::ifstream inf_Seq;
     std::ifstream inf_AssemblyInput;
     std::ifstream inf_GenotypingInput;
 	LineReader *lineReader;

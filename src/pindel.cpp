@@ -918,7 +918,7 @@ int init(int argc, char *argv[], ControlState& currentState )
     WINDOW_SIZE = (int)(1000000 * FLOAT_WINDOW_SIZE);
 
     // if all parameters are okay, open the files
-    currentState.inf_Seq.open(par.referenceFileName.c_str());
+
 
     currentState.PindelReadDefined = parameters[findParameter("-p")]->isSet();
     if (currentState.PindelReadDefined) {
@@ -1109,15 +1109,9 @@ int init(int argc, char *argv[], ControlState& currentState )
 
     std::vector < std::string > chromosomes;
 
-    char FirstCharOfFasta;
-    currentState.inf_Seq >> FirstCharOfFasta;
-    if (FirstCharOfFasta != '>') {
-        *logStream << "The reference genome must be in fasta format!"
-                  << std::endl;
-        return 1;
-    }
 
-    currentState.SpecifiedChrVisited = false;
+
+
 
     currentState.startOfRegion = -1;
     currentState.endOfRegion = -1;
@@ -1211,13 +1205,23 @@ int main(int argc, char *argv[])
     }
 
     std::string emptystr;
+
+	std::ifstream FastaFile( par.referenceFileName.c_str() );
+    char FirstCharOfFasta;
+    FastaFile >> FirstCharOfFasta;
+    if (FirstCharOfFasta != '>') {
+        *logStream << "The reference genome must be in fasta format!"
+                  << std::endl;
+        return 1;
+    }
+
     
     /* Start of shortcut to genotyping */ // currentState.inf_AssemblyInput.open(par.inf_AssemblyInputFilename.c_str());
     //std::cout << "here " << par.AssemblyInputDefined << std::endl;
     if (par.GenotypingInputDefined) {
         
         std::cout << "Entering genotyping mode ..." << std::endl;
-        doGenotyping(currentState, par);
+        doGenotyping(currentState, FastaFile, par);
        
         std::cout << "\nLeaving genotyping mode and terminating this run." << std::endl;
         exit(EXIT_SUCCESS);
@@ -1230,7 +1234,7 @@ int main(int argc, char *argv[])
     if (par.AssemblyInputDefined) {
         
         std::cout << "Entering assembly mode ..." << std::endl;
-        doAssembly(currentState, par);
+        doAssembly(currentState, FastaFile, par);
         /*
         // step 1: define output file
         std:string AssemblyOutputFilename = inf_AssemblyInputFilename + "_ASM";
@@ -1252,24 +1256,27 @@ int main(int argc, char *argv[])
 
     // Get a new chromosome again and again until you have visited the specified chromosome or the file ends
     // CurrentChrName stores the name of the chromosome.
-    while (currentState.SpecifiedChrVisited == false && currentState.inf_Seq
-            >> currentState.CurrentChrName && !currentState.inf_Seq.eof()) {
+
+
+    bool SpecifiedChrVisited = false;
+
+    while (SpecifiedChrVisited == false && FastaFile >> currentState.CurrentChrName && !FastaFile.eof()) {
         /* 3.1 preparation starts */
         (*logStream << "Processing chromosome: " << currentState.CurrentChrName
          << std::endl);
         //TODO: check with Kai what's the use of this line.
         // dangerous, there may be no other elements on the fasta header line
-        std::getline(currentState.inf_Seq, emptystr);
+        std::getline(FastaFile, emptystr);
         if (currentState.loopOverAllChromosomes) {
-            GetOneChrSeq(currentState.inf_Seq, currentState.CurrentChrSeq, true);
+            GetOneChrSeq(FastaFile, currentState.CurrentChrSeq, true);
             //currentState.WhichChr = currentState.CurrentChrName;
         }
         else if (currentState.CurrentChrName == currentState.TargetChrName) {   // just one chr and this is the correct one
-            GetOneChrSeq(currentState.inf_Seq, currentState.CurrentChrSeq, true);
-            currentState.SpecifiedChrVisited = true;
+            GetOneChrSeq(FastaFile, currentState.CurrentChrSeq, true);
+            SpecifiedChrVisited = true;
         }
         else {   // not build up sequence
-            GetOneChrSeq(currentState.inf_Seq, currentState.CurrentChrSeq, false);
+            GetOneChrSeq(FastaFile, currentState.CurrentChrSeq, false);
             (*logStream << "Skipping chromosome: " << currentState.CurrentChrName
              << std::endl);
             continue;

@@ -29,7 +29,7 @@ ControlState::ControlState()
    BreakDancerDefined = false;
 
    loopOverAllChromosomes = false;
-   SpecifiedChrVisited = false;
+   //SpecifiedChrVisited = false;
 
    lowerBinBorder = 0;
    upperBinBorder = 0;

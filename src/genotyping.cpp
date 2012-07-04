@@ -35,7 +35,7 @@
 #include <math.h>
 
 
-void doGenotyping (ControlState & CurrentState, ParCollection & par) {
+void doGenotyping (ControlState & CurrentState, std::ifstream& FastaFile, ParCollection & par) {
     const int SV_Genotype_Cutoff = 1000;
     
     // step 1 load whole genome sequences into memory
@@ -46,7 +46,7 @@ void doGenotyping (ControlState & CurrentState, ParCollection & par) {
     // step 1. get the whole genome sequence
     
     std::vector <Chromosome> AllChromosomes;
-    getWholeGenome(CurrentState, AllChromosomes);
+    getWholeGenome(FastaFile, AllChromosomes);
     
     for (unsigned i = 0; i < AllChromosomes.size(); i++) {
         //std::cout << "ChrName " << AllChromosomes[i].ChrName << "\tChrSeqSize " << AllChromosomes[i].ChrSeq.size() << std::endl;
