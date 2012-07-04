@@ -179,6 +179,8 @@ struct SPLIT_READ {
 		ReadLength = UnmatchedSeq.size();
 		ReadLengthMinus = ReadLength - 1;
 		MAX_SNP_ERROR = (short)(((double)ReadLength * Seq_Error_Rate) + EPSILON);
+		TOTAL_SNP_ERROR_CHECKED_Minus = MAX_SNP_ERROR + ADDITIONAL_MISMATCH;
+		TOTAL_SNP_ERROR_CHECKED = TOTAL_SNP_ERROR_CHECKED_Minus + 1;
 	}
 	std::string getUnmatchedSeq() const { return UnmatchedSeq; }	
 
@@ -199,9 +201,9 @@ struct SPLIT_READ {
 	short getMAX_SNP_ERROR() const { return MAX_SNP_ERROR; }
 	//void setMAX_SNP_ERROR(const short max_SNP_ERROR) { MAX_SNP_ERROR = max_SNP_ERROR; }
 	short getTOTAL_SNP_ERROR_CHECKED() const { return TOTAL_SNP_ERROR_CHECKED; }
-	void setTOTAL_SNP_ERROR_CHECKED(const short total_SNP_ERROR_CHECKED) { TOTAL_SNP_ERROR_CHECKED = total_SNP_ERROR_CHECKED; }
+	//void setTOTAL_SNP_ERROR_CHECKED(const short total_SNP_ERROR_CHECKED) { TOTAL_SNP_ERROR_CHECKED = total_SNP_ERROR_CHECKED; }
 	short getTOTAL_SNP_ERROR_CHECKED_Minus() const { return TOTAL_SNP_ERROR_CHECKED_Minus; }
-	void setTOTAL_SNP_ERROR_CHECKED_Minus(const short total_SNP_ERROR_CHECKED_Minus) { TOTAL_SNP_ERROR_CHECKED_Minus = total_SNP_ERROR_CHECKED_Minus; }
+	//void setTOTAL_SNP_ERROR_CHECKED_Minus(const short total_SNP_ERROR_CHECKED_Minus) { TOTAL_SNP_ERROR_CHECKED_Minus = total_SNP_ERROR_CHECKED_Minus; }
 
 
 	short MinClose;
