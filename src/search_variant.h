@@ -15,14 +15,14 @@ protected:
 
 	std::string typeOfVariant;
 
-	virtual bool decisionBranch1(ControlState& currentState, unsigned ReadIndex, unsigned int CloseIndex, int FarIndex) = 0;
+	virtual bool decisionBranch1(const SPLIT_READ& read, unsigned int CloseIndex, int FarIndex) = 0;
 
-	virtual bool decisionBranch2(ControlState& currentState, unsigned ReadIndex, unsigned int CloseIndex, int FarIndex) = 0;
+	virtual bool decisionBranch2(const SPLIT_READ& read, unsigned int CloseIndex, int FarIndex) = 0;
 
-	virtual unsigned int calculateIndelSize(ControlState& currentState, unsigned ReadIndex) = 0;
+	virtual unsigned int calculateIndelSize(const SPLIT_READ& read ) = 0;
 
-	virtual std::string getInsertedStr1(ControlState& currentState, unsigned ReadIndex) = 0;
-	virtual std::string getInsertedStr2(ControlState& currentState, unsigned ReadIndex) = 0;
+	virtual std::string getInsertedStr1(const SPLIT_READ& read ) = 0;
+	virtual std::string getInsertedStr2(const SPLIT_READ& read ) = 0;
 
 	virtual void outputResults(ControlState& currentState, std::vector<unsigned> Vars[], const unsigned NumBoxes) = 0;
 

@@ -934,8 +934,6 @@ int init(int argc, char *argv[], ControlState& currentState )
 
     bool BreakDancerDefined = parameters[findParameter("-b")]->isSet();
     if (BreakDancerDefined) {
-        //currentState.inf_BP_test.open(par.breakdancerFileName.c_str());
-        //currentState.inf_BP.open(par.breakdancerFileName.c_str());
         g_bdData.loadBDFile(par.breakdancerFileName);
     }
 

@@ -13,15 +13,15 @@ protected:
 
 	std::string typeOfVariant;
 
-	bool decisionBranch1(ControlState& currentState, unsigned ReadIndex, unsigned int CloseIndex, int FarIndex);
+	bool decisionBranch1(const SPLIT_READ& read, unsigned int CloseIndex, int FarIndex);
 
-	bool decisionBranch2(ControlState& currentState, unsigned ReadIndex, unsigned int CloseIndex, int FarIndex);
+	bool decisionBranch2(const SPLIT_READ& read, unsigned int CloseIndex, int FarIndex);
 
-	unsigned int calculateIndelSize(ControlState& currentState, unsigned ReadIndex);
+	unsigned int calculateIndelSize(const SPLIT_READ& read);
 
-	std::string getInsertedStr1(ControlState& currentState, unsigned ReadIndex);
+	std::string getInsertedStr1(const SPLIT_READ& read);
 
-	std::string getInsertedStr2(ControlState& currentState, unsigned ReadIndex);
+	std::string getInsertedStr2(const SPLIT_READ& read );
 
 	void outputResults(ControlState& currentState, std::vector<unsigned> Vars[], const unsigned NumBoxes);
 

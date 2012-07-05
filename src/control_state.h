@@ -63,13 +63,11 @@ public:
 	std::string TargetChrName;
 	std::vector<bam_info> bams_to_parse;
 	std::vector<std::string> pindelfilesToParse;
-	//std::ifstream inf_BP; // input file name
 	bool BAMDefined;
 	bool PindelReadDefined;
-	//bool BreakDancerDefined;
 	bool pindelConfigDefined;
     
-    short Min_MQ;
+ //   short Min_MQ;
     
 
 	std::string SIOutputFilename;
