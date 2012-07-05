@@ -55,27 +55,18 @@ public:
 	ControlState();
 	virtual ~ControlState();
 
-	//bool SpecifiedChrVisited;
-	//std::ifstream inf_Seq;
     std::ifstream inf_AssemblyInput;
     std::ifstream inf_GenotypingInput;
 	LineReader *lineReader;
 	PindelReadReader *inf_Pindel_Reads;
-	std::string bam_file;
 	std::string OutputFolder;
 	std::string TargetChrName;
-//	std::string line;
 	std::vector<bam_info> bams_to_parse;
 	std::vector<std::string> pindelfilesToParse;
-	std::ifstream config_file;
-	bam_info info;
-
-	std::ifstream inf_ReadsSeq; // input file name
-	std::ifstream inf_BP_test; // input file name
-	std::ifstream inf_BP; // input file name
+	//std::ifstream inf_BP; // input file name
 	bool BAMDefined;
 	bool PindelReadDefined;
-	bool BreakDancerDefined;
+	//bool BreakDancerDefined;
 	bool pindelConfigDefined;
     
     short Min_MQ;

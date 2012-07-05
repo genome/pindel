@@ -773,35 +773,33 @@ bool fileExists(const std::string& filename )
 void readBamConfigFile(std::string& bamConfigFileName, ControlState& currentState )
 {
     int sampleCounter=0;
-    currentState.config_file.open(par.bamConfigFileName.c_str());
-    if (currentState.config_file) {
-        while (currentState.config_file.good()) {
-            currentState.config_file >> currentState.info.BamFile
-                                     >> currentState.info.InsertSize;
-//*logStream << "Bamfilename: " << currentState.info.BamFile << " Insertsize " << currentState.info.InsertSize << std::endl;
-            if (!currentState.config_file.good()) break;
-            currentState.info.Tag = "";
-            currentState.config_file >> currentState.info.Tag;
-//*logStream << "Tag is '" << currentState.info.Tag << "'\n";
-            if (currentState.info.Tag=="") {
-                *logStream << "Missing tag in line '" << currentState.info.BamFile << "\t" << currentState.info.InsertSize << "' in configuration file " << bamConfigFileName << "\n";
+    std::ifstream BamConfigFile(par.bamConfigFileName.c_str());
+    if (BamConfigFile) {
+        while (BamConfigFile.good()) {
+				bam_info tempBamInfo;
+            BamConfigFile >> tempBamInfo.BamFile >> tempBamInfo.InsertSize;
+            if (!BamConfigFile.good()) break;
+            tempBamInfo.Tag = "";
+            BamConfigFile >> tempBamInfo.Tag;
+            if (tempBamInfo.Tag=="") {
+                *logStream << "Missing tag in line '" << tempBamInfo.BamFile << "\t" << tempBamInfo.InsertSize << "' in configuration file " << bamConfigFileName << "\n";
                 exit(EXIT_FAILURE);
             }
-            g_sampleNames.insert( currentState.info.Tag );
-            if (! fileExists( currentState.info.BamFile )) {
-                *logStream << "I cannot find the file '"<< currentState.info.BamFile << "'. referred to in configuration file '" << bamConfigFileName << "'. Please change the BAM configuration file.\n\n";
+            g_sampleNames.insert( tempBamInfo.Tag );
+            if (! fileExists( tempBamInfo.BamFile )) {
+                *logStream << "I cannot find the file '"<< tempBamInfo.BamFile << "'. referred to in configuration file '" << bamConfigFileName << "'. Please change the BAM configuration file.\n\n";
                 exit(EXIT_FAILURE);
             }
-            if (! fileExists( currentState.info.BamFile+".bai" )) {
-                *logStream << "I cannot find the bam index-file '"<< currentState.info.BamFile << ".bai' that should accompany the file " << currentState.info.BamFile << " mentioned in the configuration file " << bamConfigFileName << ". Please run samtools index on " <<
-                          currentState.info.BamFile << ".\n\n";
+            if (! fileExists( tempBamInfo.BamFile+".bai" )) {
+                *logStream << "I cannot find the bam index-file '"<< tempBamInfo.BamFile << ".bai' that should accompany the file " << tempBamInfo.BamFile << " mentioned in the configuration file " << bamConfigFileName << ". Please run samtools index on " <<
+                          tempBamInfo.BamFile << ".\n\n";
                 exit(EXIT_FAILURE);
             }
 
             //copy kai and throw crap into useless variable
 				std::string restOfLine;
-            std::getline(currentState.config_file, restOfLine);
-            currentState.bams_to_parse.push_back(currentState.info);
+            std::getline(BamConfigFile, restOfLine);
+            currentState.bams_to_parse.push_back(tempBamInfo);
             sampleCounter++;
         } // while
         if (sampleCounter==0) {
@@ -876,8 +874,6 @@ LineReader *getLineReaderByFilename(const char *filename)
 
 int init(int argc, char *argv[], ControlState& currentState )
 {
-
-
     if (NumRead2ReportCutOff == 1) {
         BalanceCutoff = 300000000;
     }
@@ -936,10 +932,10 @@ int init(int argc, char *argv[], ControlState& currentState )
 
     currentState.OutputFolder = par.outputFileName;
 
-    currentState.BreakDancerDefined = parameters[findParameter("-b")]->isSet();
-    if (currentState.BreakDancerDefined) {
-        currentState.inf_BP_test.open(par.breakdancerFileName.c_str());
-        currentState.inf_BP.open(par.breakdancerFileName.c_str());
+    bool BreakDancerDefined = parameters[findParameter("-b")]->isSet();
+    if (BreakDancerDefined) {
+        //currentState.inf_BP_test.open(par.breakdancerFileName.c_str());
+        //currentState.inf_BP.open(par.breakdancerFileName.c_str());
         g_bdData.loadBDFile(par.breakdancerFileName);
     }
 
@@ -960,22 +956,6 @@ int init(int argc, char *argv[], ControlState& currentState )
                   << "Maximal range index (-x) exceeds the allowed value (9) - resetting to 9."
                   << std::endl);
         MaxRangeIndex = 9;
-    }
-
-    bool WithFolder = false;
-    int StartOfFileName = 0;
-    for (int i = currentState.bam_file.size(); i >= 0; i--) {
-        if (currentState.bam_file[i] == '/') {
-            StartOfFileName = i;
-            WithFolder = true;
-            break;
-        }
-    }
-
-    if (WithFolder) {
-        currentState.bam_file = currentState.bam_file.substr(
-                                    StartOfFileName + 1,
-                                    currentState.bam_file.size() - 1 - StartOfFileName);
     }
 
     currentState.SIOutputFilename = currentState.OutputFolder + "_SI"; // output file name
