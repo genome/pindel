@@ -25,7 +25,7 @@
 #include <string>
 
 #ifndef ASSEMBLY_H
-#define	ASSEMBLY_H
+#define ASSEMBLY_H
 
 struct Chromosome {
     Chromosome() {

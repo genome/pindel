@@ -42,6 +42,7 @@
 #include "read_buffer.h"
 #include "line_reader.h"
 #include "pindel_read_reader.h"
+#include "user_defined_settings.h"
 // Static function declaration
 
 static int fetch_func_SR (const bam1_t * b1, void *data);
@@ -1013,7 +1014,7 @@ short get_SR_Reads(ControlState& currentState, ParCollection & par) {
 		}
 	}
 	if (currentState.PindelReadDefined) {
-		readInPindelReads(*currentState.inf_Pindel_Reads, par.pindelFilename, currentState );
+		readInPindelReads(*currentState.inf_Pindel_Reads, UserDefinedSettings::Instance()->pindelFilename, currentState );
 	}
     return 0;
 }

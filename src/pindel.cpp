@@ -46,6 +46,7 @@
 #include "search_variant.h"
 #include "searchshortinsertions.h"
 #include "searchdeletions.h"
+#include "user_defined_settings.h"
 #include "logdef.h"
 #include "assembly.h"
 #include "genotyping.h"
@@ -331,26 +332,27 @@ std::ostream& operator<<(std::ostream& os, const SPLIT_READ& splitRead)
  do not need to be stored in the par structure. */
 void defineParameters()
 {
-    parameters. push_back(
-        new StringParameter(&par.referenceFileName, "-f", "--fasta",
+	UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
+   parameters. push_back(
+        new StringParameter(&userSettings->referenceFilename, "-f", "--fasta",
                             "the reference genome sequences in fasta format", true, ""));
     parameters. push_back(
         new StringParameter(
-            &par.pindelFilename,
+            &(userSettings->pindelFilename),
             "-p",
             "--pindel-file",
             "the Pindel input file; either this, a pindel configuration file (consisting of multiple pindel filenames) or a bam configuration file is required",
             false, ""));
     parameters. push_back(
         new StringParameter(
-            &par.bamConfigFileName,
+            &userSettings->bamConfigFilename,
             "-i",
             "--config-file",
             "the bam config file; either this, a pindel input file, or a pindel config file is required. Per line: path and file name of bam, insert size and sample tag.     For example: /data/tumour.bam  400  tumour",
             false, ""));
     parameters. push_back(
         new StringParameter(
-            &par.pindelConfigFilename,
+            &userSettings->pindelConfigFilename,
             "-P",
             "--pindel-config-file",
             "the pindel config file, containing the names of all Pindel files that need to be sampled; either this, a bam config file or a pindel input file is required. Per line: path and file name of pindel input. Example: /data/tumour.txt",
@@ -770,10 +772,10 @@ bool fileExists(const std::string& filename )
     return exists;
 }
 
-void readBamConfigFile(std::string& bamConfigFileName, ControlState& currentState )
+void readBamConfigFile(std::string& bamConfigFilename, ControlState& currentState )
 {
     int sampleCounter=0;
-    std::ifstream BamConfigFile(par.bamConfigFileName.c_str());
+    std::ifstream BamConfigFile( bamConfigFilename.c_str() );
     if (BamConfigFile) {
         while (BamConfigFile.good()) {
 				bam_info tempBamInfo;
@@ -782,16 +784,16 @@ void readBamConfigFile(std::string& bamConfigFileName, ControlState& currentStat
             tempBamInfo.Tag = "";
             BamConfigFile >> tempBamInfo.Tag;
             if (tempBamInfo.Tag=="") {
-                *logStream << "Missing tag in line '" << tempBamInfo.BamFile << "\t" << tempBamInfo.InsertSize << "' in configuration file " << bamConfigFileName << "\n";
+                *logStream << "Missing tag in line '" << tempBamInfo.BamFile << "\t" << tempBamInfo.InsertSize << "' in configuration file " << bamConfigFilename << "\n";
                 exit(EXIT_FAILURE);
             }
             g_sampleNames.insert( tempBamInfo.Tag );
             if (! fileExists( tempBamInfo.BamFile )) {
-                *logStream << "I cannot find the file '"<< tempBamInfo.BamFile << "'. referred to in configuration file '" << bamConfigFileName << "'. Please change the BAM configuration file.\n\n";
+                *logStream << "I cannot find the file '"<< tempBamInfo.BamFile << "'. referred to in configuration file '" << bamConfigFilename << "'. Please change the BAM configuration file.\n\n";
                 exit(EXIT_FAILURE);
             }
             if (! fileExists( tempBamInfo.BamFile+".bai" )) {
-                *logStream << "I cannot find the bam index-file '"<< tempBamInfo.BamFile << ".bai' that should accompany the file " << tempBamInfo.BamFile << " mentioned in the configuration file " << bamConfigFileName << ". Please run samtools index on " <<
+                *logStream << "I cannot find the bam index-file '"<< tempBamInfo.BamFile << ".bai' that should accompany the file " << tempBamInfo.BamFile << " mentioned in the configuration file " << bamConfigFilename << ". Please run samtools index on " <<
                           tempBamInfo.BamFile << ".\n\n";
                 exit(EXIT_FAILURE);
             }
@@ -803,14 +805,14 @@ void readBamConfigFile(std::string& bamConfigFileName, ControlState& currentStat
             sampleCounter++;
         } // while
         if (sampleCounter==0) {
-            *logStream << "Could not find any samples in the sample file '" << bamConfigFileName
+            *logStream << "Could not find any samples in the sample file '" << bamConfigFilename
                       << "'. Please run Pindel again with a config-file of the specified type (format 'A.bam	<insert-size>	sample_label)\n\n";
             exit( EXIT_FAILURE );
         }
     }
     else {
         // no config-file defined
-        *logStream << "BAM configuration file '" << par.bamConfigFileName << "' does not exist. Please run Pindel again with an existing config-file (format 'A.bam	insert-size	sample_label')\n\n";
+        *logStream << "BAM configuration file '" << bamConfigFilename << "' does not exist. Please run Pindel again with an existing config-file (format 'A.bam	insert-size	sample_label')\n\n";
         exit( EXIT_FAILURE );
     }
 }
@@ -915,19 +917,21 @@ int init(int argc, char *argv[], ControlState& currentState )
 
     // if all parameters are okay, open the files
 
+	UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
+
 
     currentState.PindelReadDefined = parameters[findParameter("-p")]->isSet();
     if (currentState.PindelReadDefined) {
-		currentState.lineReader= getLineReaderByFilename(par.pindelFilename.c_str());
+		currentState.lineReader= getLineReaderByFilename(userSettings->pindelFilename.c_str());
         currentState.inf_Pindel_Reads = new PindelReadReader(*currentState.lineReader);
     }
 	currentState.pindelConfigDefined = parameters[findParameter("-P")]->isSet();
 	if (currentState.pindelConfigDefined) {
-		readPindelConfigFile( par.pindelConfigFilename, currentState.pindelfilesToParse );
+		readPindelConfigFile( userSettings->pindelConfigFilename, currentState.pindelfilesToParse );
 	}
     currentState.BAMDefined = parameters[findParameter("-i")]->isSet();
     if (currentState.BAMDefined) {
-        readBamConfigFile( par.bamConfigFileName, currentState );
+        readBamConfigFile( userSettings->bamConfigFilename, currentState );
     }
 
     currentState.OutputFolder = par.outputFileName;
@@ -1184,7 +1188,7 @@ int main(int argc, char *argv[])
 
     std::string emptystr;
 
-	std::ifstream FastaFile( par.referenceFileName.c_str() );
+	std::ifstream FastaFile( UserDefinedSettings::Instance()->referenceFilename.c_str() );
     char FirstCharOfFasta;
     FastaFile >> FirstCharOfFasta;
     if (FirstCharOfFasta != '>') {
