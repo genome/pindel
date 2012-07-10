@@ -40,8 +40,8 @@ short ReadInRead (PindelReadReader & inf_ReadSeq,
 									std::vector < SPLIT_READ > &Reads, const unsigned int lowerBinBorder,
 									const unsigned int upperBinBorder);
 
-short get_SR_Reads(ControlState& currentState, ParCollection & par);
-short get_RP_Reads(ControlState& currentState, ParCollection & par);
+short get_SR_Reads(ControlState& currentState );
+short get_RP_Reads(ControlState& currentState );
 void readInPindelReads(PindelReadReader &reader, const std::string& pindelFilename, ControlState& currentState );
 
 #endif /* READER_H */

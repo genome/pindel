@@ -35,6 +35,9 @@ CheckLeft_Close (const SPLIT_READ & OneRead,
                  const short &CurrentLength, std::vector < UniquePoint > &LeftUP)
 {
    int Sum;
+
+	UserDefinedSettings *userSettings = UserDefinedSettings::Instance();
+
    if (CurrentLength >= BP_Left_Start && CurrentLength <= BP_Left_End) {
       // put it to LeftUP if unique
       for (short i = 0; i <= OneRead.getMAX_SNP_ERROR(); i++) {
@@ -46,7 +49,7 @@ CheckLeft_Close (const SPLIT_READ & OneRead,
                }
 
             if (Sum == 1
-                  && i <= (short) (CurrentLength * Seq_Error_Rate + 1)) {
+                  && i <= (short) (CurrentLength * userSettings->Seq_Error_Rate + 1)) {
                UniquePoint TempOne;
                TempOne.LengthStr = CurrentLength;
                TempOne.AbsLoc = Left_PD[i][0];
@@ -160,6 +163,9 @@ CheckRight_Close (const SPLIT_READ & OneRead,
 {
    //cout << CurrentLength << "\t" << RightUP.size() << "\t" << Right_PD[0].size() << "\t" << Right_PD[1].size() << endl;
    short ReadLengthMinus = CurrentReadSeq.size () - 1;
+
+	UserDefinedSettings *userSettings = UserDefinedSettings::Instance();
+
    int Sum;
    if (CurrentLength >= BP_Right_Start && CurrentLength <= BP_Right_End) {
       for (short i = 0; i <= OneRead.getMAX_SNP_ERROR(); i++) {
@@ -171,7 +177,7 @@ CheckRight_Close (const SPLIT_READ & OneRead,
                }
 
             if (Sum == 1
-                  && i <= (short) (CurrentLength * Seq_Error_Rate + 1)) {
+                  && i <= (short) (CurrentLength * userSettings->Seq_Error_Rate + 1)) {
                UniquePoint TempOne;
                TempOne.LengthStr = CurrentLength;
                TempOne.AbsLoc = Right_PD[i][0];

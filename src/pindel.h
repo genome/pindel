@@ -33,6 +33,8 @@
 #include "khash.h"
 #include "sam.h"
 
+#include "user_defined_settings.h"
+
 // Forward declarations
 class LineReader;
 
@@ -42,7 +44,6 @@ extern std::set<std::string> g_sampleNames; // EWL: could make this a singleton 
  * Global variables defined in pindel.cpp
  */
 extern int ADDITIONAL_MISMATCH;
-extern double Seq_Error_Rate;
 extern char Match[256];
 extern char Match2N[256];
 extern char Convert2RC[256];
@@ -176,7 +177,7 @@ struct SPLIT_READ {
 		UnmatchedSeq = unmatchedSeq; 
 		ReadLength = UnmatchedSeq.size();
 		ReadLengthMinus = ReadLength - 1;
-		MAX_SNP_ERROR = (short)(((double)ReadLength * Seq_Error_Rate) + EPSILON);
+		MAX_SNP_ERROR = (short)(((double)ReadLength * UserDefinedSettings::Instance()->Seq_Error_Rate) + EPSILON);
 		TOTAL_SNP_ERROR_CHECKED_Minus = MAX_SNP_ERROR + ADDITIONAL_MISMATCH;
 		TOTAL_SNP_ERROR_CHECKED = TOTAL_SNP_ERROR_CHECKED_Minus + 1;
 	}
@@ -320,26 +321,6 @@ struct flags_hit {
 	int edits;
 	bool suboptimal;
 };
-
-typedef struct {
-	//std::string referenceFileName;
-	//std::string pindelFilename;
-	//std::string bamConfigFileName;
-	//std::string pindelConfigFilename;
-	std::string outputFileName;
-	std::string breakdancerFileName;
-	std::string breakDancerOutputFilename;
-	std::string logFilename;
-    std::string inf_AssemblyInputFilename; // 
-    std::string inf_GenotypingInputFilename; // 
-    std::string SearchRegion;
-    bool AssemblyInputDefined; // 
-    bool GenotypingInputDefined;
-    int numThreads;
-    bool showHelp;
-    bool reportOnlyCloseMappedReads;
-} ParCollection;
-
 
 /*
  * Function definitions

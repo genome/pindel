@@ -82,7 +82,7 @@ short Before, After;
 BDData g_bdData;
 
 
-ParCollection par;
+//ParCollection par;
 
 
 
@@ -140,7 +140,6 @@ unsigned int g_minimalAnchorQuality = 20; // true value set in the defineParamet
 int Min_Perfect_Match_Around_BP = 5; // user                   //#
 int MIN_IndelSize_NT = 50; //user            //#
 int MIN_IndelSize_Inversion = 50; //user       //#
-double Seq_Error_Rate = 0.05; // user            //#
 unsigned int BalanceCutoff = 0; //                    //#
 bool Analyze_INV = true; //# user
 bool Analyze_TD = true; //# user
@@ -156,7 +155,6 @@ bool ReportCloseMappedRead = false; // user
 const bool ReportSVReads = false;
 const bool ReportLargeInterChrSVReads = false;
 const unsigned short Indel_SV_cutoff = 50;
-double FLOAT_WINDOW_SIZE = 10.0;
 int WINDOW_SIZE = 10000000;
 const int AROUND_REGION_BUFFER = 10000; // how much earlier reads should be selected if only a region of the chromosome needs be specified.
 // #########################################################
@@ -203,13 +201,13 @@ unsigned int SPLIT_READ::MaxLenFarEndBackup() const
 
 bool doOutputBreakdancerEvents()
 {
-    return ( par.breakDancerOutputFilename != "" && parameters[findParameter("-b")]->isSet());
+    return ( UserDefinedSettings::Instance()->breakdancerOutputFilename != "" && parameters[findParameter("-b")]->isSet());
 }
 
 void outputBreakDancerEvent( const std::string& chromosomeName, const int leftPosition, const int rightPosition,
                              const int svSize, const std::string& svType, const int svCounter)
 {
-    std::ofstream breakDancerOutputFile(par.breakDancerOutputFilename.c_str(), std::ios::app);
+    std::ofstream breakDancerOutputFile(UserDefinedSettings::Instance()->breakdancerOutputFilename.c_str(), std::ios::app);
     breakDancerOutputFile << chromosomeName << "\t" << leftPosition << "\t" << rightPosition << "\t" <<
                           svSize << "\t" << svType << "\t" << svCounter << "\n";
 }
@@ -358,28 +356,28 @@ void defineParameters()
             "the pindel config file, containing the names of all Pindel files that need to be sampled; either this, a bam config file or a pindel input file is required. Per line: path and file name of pindel input. Example: /data/tumour.txt",
             false, ""));
     parameters. push_back(
-        new StringParameter(&par.outputFileName, "-o", "--output-prefix",
+        new StringParameter(&userSettings->outputFilename, "-o", "--output-prefix",
                             "Output prefix;", true, ""));
     parameters. push_back(
         new StringParameter(
-            &par.SearchRegion,
+            &userSettings->SearchRegion,
             "-c",
             "--chromosome",
             "Which chr/fragment. Pindel will process reads for one chromosome each time. ChrName must be the same as in reference sequence and in read file. '-c ALL' will make Pindel loop over all chromosomes. The search for indels and SVs can also be limited to a specific region; -c 20:10,000,000 will only look for indels and SVs after position 10,000,000 = [10M, end], -c 20:5,000,000-15,000,000 will report indels in the range between and including the bases at position 5,000,000 and 15,000,000 = [5M, 15M]. (default ALL)",
             false, "ALL"));
 
-    parameters. push_back(
-        new BoolParameter(&par.showHelp, "-h", "--help",
+    parameters.push_back(
+        new BoolParameter(&userSettings->showHelp, "-h", "--help",
                           "show the command line options of Pindel", false, false));
 
     parameters. push_back(
-        new IntParameter(&par.numThreads, "-T", "--number_of_threads",
+        new IntParameter(&userSettings->numThreads, "-T", "--number_of_threads",
                          "the number of threads Pindel will use (default 1).",
                          false, 1));
 
     parameters. push_back(
         new IntParameter(
-            &MaxRangeIndex,
+            &userSettings->MaxRangeIndex,
             "-x",
             "--max_range_index",
             "the maximum size of structural variations to be detected; the higher this number, the greater "
@@ -389,14 +387,14 @@ void defineParameters()
             "(maximum 9, default 5)", false, 5));
     parameters. push_back(
         new FloatParameter(
-            &FLOAT_WINDOW_SIZE,
+            &userSettings->FLOAT_WINDOW_SIZE,
             "-w",
             "--window_size",
             "for saving RAM, divides the reference in bins of X million bases and only analyzes the reads that belong in the current "
-            "bin, " "(default 10 (=10 million))", false, 10));
+            "bin, " "(default 10 (=10 million))", false, 10.0));
 
     parameters. push_back(
-        new FloatParameter(&Seq_Error_Rate, "-e",
+        new FloatParameter(&userSettings->Seq_Error_Rate, "-e",
                            "--sequencing_error_rate",
                            "the expected fraction of sequencing errors "
                            "(default 0.03)", false, 0.03));
@@ -436,7 +434,7 @@ void defineParameters()
 
     parameters. push_back(
         new BoolParameter(
-            &par.reportOnlyCloseMappedReads,
+            &userSettings->reportOnlyCloseMappedReads,
             "-S",
             "--report_only_close_mapped_reads",
             "do not search for SVs, only report reads of which only one end (the one closest to the mapped read of the paired-end read) "
@@ -444,7 +442,7 @@ void defineParameters()
 
     parameters. push_back(
         new StringParameter(
-            &par.breakdancerFileName,
+            &userSettings->breakdancerFilename,
             "-b",
             "--breakdancer",
             "Pindel is able to use calls from other SV methods such as BreakDancer to further increase sensitivity and specificity.                    BreakDancer result or calls from any methods must in the format:   ChrA LocA stringA ChrB LocB stringB other",
@@ -507,7 +505,7 @@ void defineParameters()
             "(default 3)", false, 3));
     parameters. push_back(
         new StringParameter(
-            &par.inf_AssemblyInputFilename,
+            &userSettings->inf_AssemblyInputFilename,
             "-z",
             "--input_SV_Calls_for_assembly",
             "A filename of a list of SV calls for assembling breakpoints \n"
@@ -517,14 +515,14 @@ void defineParameters()
             "", false, ""));
     parameters. push_back(
             new StringParameter(
-                      &par.inf_GenotypingInputFilename,
+                      &userSettings->inf_GenotypingInputFilename,
                       "-g",
                       "--genotyping",
                       "gentype variants if -i is also turn true."
                       "", false, ""));
     parameters. push_back(
         new StringParameter(
-            &par.breakDancerOutputFilename,
+            &userSettings->breakdancerOutputFilename,
             "-Q",
             "--output_of_breakdancer_events",
             "If breakdancer input is used, you can specify a filename here to write the confirmed breakdancer "
@@ -532,7 +530,7 @@ void defineParameters()
             "", false, ""));
 	parameters.push_back( 
 		new StringParameter(
-			&par.logFilename,
+			&userSettings->logFilename,
 			"-L",
 			"--name_of_logfile",
 			"Specifies a file to write Pindel's log to (default: no logfile, log is written to the screen/stdout)", 
@@ -641,7 +639,7 @@ void printHelp()
 /* 'checkParameters' checks whether all required parameters have been set. */
 bool checkParameters()
 {
-    if (parameters[findParameter("-h")]->getBValue()) {
+    if (UserDefinedSettings::Instance()->showHelp) {
         printHelp();
         return false;
     }
@@ -886,10 +884,10 @@ int init(int argc, char *argv[], ControlState& currentState )
     // now read the parameters from the command line
     readParameters(argc, argv);
 
+	UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
 
-
-	if (par.logFilename != "" ) {
-		g_logFile.open( par.logFilename.c_str() );
+	if (userSettings->logFilename != "" ) {
+		g_logFile.open( userSettings->logFilename.c_str() );
 		logStream = &g_logFile;
 	}
 
@@ -904,20 +902,20 @@ int init(int argc, char *argv[], ControlState& currentState )
     if (!checkParameters()) {
         exit ( EXIT_FAILURE);
     }
-    if (FLOAT_WINDOW_SIZE > 5000.0) {
-        LOG_ERROR(*logStream << "Window size of " << FLOAT_WINDOW_SIZE
+    if (userSettings->FLOAT_WINDOW_SIZE > 5000.0) {
+        LOG_ERROR(*logStream << "Window size of " << userSettings->FLOAT_WINDOW_SIZE
                   << " million bases is too large" << std::endl);
         return 1;
     }
-    else if (FLOAT_WINDOW_SIZE > 100.0) {
-        LOG_ERROR(*logStream << "Window size of " << FLOAT_WINDOW_SIZE
+    else if (userSettings->FLOAT_WINDOW_SIZE > 100.0) {
+        LOG_ERROR(*logStream << "Window size of " << userSettings->FLOAT_WINDOW_SIZE
                   << " million bases is rather large; this may produce bad::allocs or segmentation faults. If that happens, either try to reduce the window size or deactivate the searching for breakpoints and long insertions by adding the command-line options \"-l false -k false\"." << std::endl);
     }
-    WINDOW_SIZE = (int)(1000000 * FLOAT_WINDOW_SIZE);
+    WINDOW_SIZE = (int)(1000000 * userSettings->FLOAT_WINDOW_SIZE);
 
     // if all parameters are okay, open the files
 
-	UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
+
 
 
     currentState.PindelReadDefined = parameters[findParameter("-p")]->isSet();
@@ -934,30 +932,30 @@ int init(int argc, char *argv[], ControlState& currentState )
         readBamConfigFile( userSettings->bamConfigFilename, currentState );
     }
 
-    currentState.OutputFolder = par.outputFileName;
+    currentState.OutputFolder =  userSettings->outputFilename;
 
     bool BreakDancerDefined = parameters[findParameter("-b")]->isSet();
     if (BreakDancerDefined) {
-        g_bdData.loadBDFile(par.breakdancerFileName);
+        g_bdData.loadBDFile(userSettings->breakdancerFilename);
     }
 
-    par.AssemblyInputDefined = parameters[findParameter("-z")]->isSet();
-    if (par.AssemblyInputDefined) {
-        currentState.inf_AssemblyInput.open(par.inf_AssemblyInputFilename.c_str());
+    bool AssemblyInputDefined = parameters[findParameter("-z")]->isSet();
+    if (AssemblyInputDefined) {
+        currentState.inf_AssemblyInput.open(userSettings->inf_AssemblyInputFilename.c_str());
     }
     
-    par.GenotypingInputDefined = parameters[findParameter("-g")]->isSet();
-    if (par.GenotypingInputDefined) {
-        currentState.inf_GenotypingInput.open(par.inf_GenotypingInputFilename.c_str());
+    bool GenotypingInputDefined = parameters[findParameter("-g")]->isSet();
+    if (GenotypingInputDefined) {
+        currentState.inf_GenotypingInput.open(userSettings->inf_GenotypingInputFilename.c_str());
     }
 
-    omp_set_num_threads(par.numThreads);
+    omp_set_num_threads(userSettings->numThreads);
 
-    if (MaxRangeIndex > 9) {
+    if (userSettings->MaxRangeIndex > 9) {
        LOG_ERROR(*logStream
                   << "Maximal range index (-x) exceeds the allowed value (9) - resetting to 9."
                   << std::endl);
-        MaxRangeIndex = 9;
+        userSettings->MaxRangeIndex = 9;
     }
 
     currentState.SIOutputFilename = currentState.OutputFolder + "_SI"; // output file name
@@ -1021,13 +1019,12 @@ int init(int argc, char *argv[], ControlState& currentState )
     std::string CloseEndMappedOutputFilename = currentState.OutputFolder + "_CloseEndMapped";
     std::ofstream CloseEndMappedOutput( CloseEndMappedOutputFilename. c_str() );
 
-    currentState.breakDancerOutputFilename = par.breakDancerOutputFilename;
 
-    if ( currentState.breakDancerOutputFilename.compare("") != 0 ) {
-        std::ofstream bdOutf_test(currentState.breakDancerOutputFilename.c_str());
+    if ( userSettings->breakdancerOutputFilename.compare("") != 0 ) {
+        std::ofstream bdOutf_test(userSettings->breakdancerOutputFilename.c_str());
         if (!bdOutf_test) {
             LOG_ERROR(*logStream << "Sorry, cannot write to the file: "
-                      << currentState.breakDancerOutputFilename << std::endl);
+                      << userSettings->breakdancerOutputFilename << std::endl);
             return 1;
         }
         bdOutf_test.close();
@@ -1099,10 +1096,10 @@ int init(int argc, char *argv[], ControlState& currentState )
     currentState.endOfRegion = -1;
     bool correctParse = false;
     std::string chrName;
-    parseRegion(par.SearchRegion, currentState.regionStartDefined, currentState.regionEndDefined, currentState.startOfRegion,
+    parseRegion(userSettings->SearchRegion, currentState.regionStartDefined, currentState.regionEndDefined, currentState.startOfRegion,
                 currentState.endOfRegion, chrName, correctParse);
     if (!correctParse) {
-        LOG_ERROR(*logStream << "I cannot parse the region '" << par.SearchRegion
+        LOG_ERROR(*logStream << "I cannot parse the region '" << userSettings->SearchRegion
                   << "'. Please give region in the format -c ALL, -c <chromosome_name> "
                   "(for example -c 20) or -c <chromosome_name>:<start_position>[-<end_position>], for example -c II:1,000 or "
                   "-c II:1,000-50,000. If an end position is specified, it must be larger than the start position."
@@ -1111,7 +1108,7 @@ int init(int argc, char *argv[], ControlState& currentState )
     }
     currentState.TargetChrName = chrName; // removes the region from the 'pure' chromosome name
 
-    if (uppercase(currentState.TargetChrName).compare("ALL") == 0 && par.AssemblyInputDefined == false && par.GenotypingInputDefined == false) {
+    if (uppercase(currentState.TargetChrName).compare("ALL") == 0 && AssemblyInputDefined == false && GenotypingInputDefined == false) {
         *logStream << "Looping over all chromosomes." << std::endl;
         currentState.loopOverAllChromosomes = true;
     }
@@ -1139,12 +1136,13 @@ void SearchFarEnd( const std::string& chromosome, SPLIT_READ& read)
             return;
         }
     }
-
+	
+   UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
 
     // if breakdancer does not find the event, or not find an event we trust, we turn to regular pattern matching
     int searchSpan=START_SEARCH_SPAN;
     int centerOfSearch = read.getLastAbsLocCloseEnd();
-    for (int rangeIndex=1; rangeIndex<=MaxRangeIndex; rangeIndex++ ) {
+    for (int rangeIndex=1; rangeIndex<=userSettings->MaxRangeIndex; rangeIndex++ ) {
         SearchFarEndAtPos( chromosome, read, centerOfSearch, searchSpan );
         searchSpan *= 4;
         if (read.goodFarEndFound()) {
@@ -1188,7 +1186,9 @@ int main(int argc, char *argv[])
 
     std::string emptystr;
 
-	std::ifstream FastaFile( UserDefinedSettings::Instance()->referenceFilename.c_str() );
+	UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
+
+	std::ifstream FastaFile( userSettings->referenceFilename.c_str() );
     char FirstCharOfFasta;
     FastaFile >> FirstCharOfFasta;
     if (FirstCharOfFasta != '>') {
@@ -1200,10 +1200,11 @@ int main(int argc, char *argv[])
     
     /* Start of shortcut to genotyping */ // currentState.inf_AssemblyInput.open(par.inf_AssemblyInputFilename.c_str());
     //std::cout << "here " << par.AssemblyInputDefined << std::endl;
-    if (par.GenotypingInputDefined) {
+	bool GenotypingInputDefined = parameters[findParameter("-g")]->isSet();
+    if (GenotypingInputDefined) {
         
         std::cout << "Entering genotyping mode ..." << std::endl;
-        doGenotyping(currentState, FastaFile, par);
+        doGenotyping(currentState, FastaFile );
        
         std::cout << "\nLeaving genotyping mode and terminating this run." << std::endl;
         exit(EXIT_SUCCESS);
@@ -1213,13 +1214,14 @@ int main(int argc, char *argv[])
     
     /* Start of shortcut to assembly */ // currentState.inf_AssemblyInput.open(par.inf_AssemblyInputFilename.c_str());
     //std::cout << "here " << par.AssemblyInputDefined << std::endl;
-    if (par.AssemblyInputDefined) {
+    bool AssemblyInputDefined = parameters[findParameter("-z")]->isSet();
+    if (AssemblyInputDefined) {
         
         std::cout << "Entering assembly mode ..." << std::endl;
-        doAssembly(currentState, FastaFile, par);
+        doAssembly(currentState, FastaFile );
         /*
         // step 1: define output file
-        std:string AssemblyOutputFilename = inf_AssemblyInputFilename + "_ASM";
+       // std:string AssemblyOutputFilename = inf_AssemblyInputFilename + "_ASM";
         std::ofstream AssemblyOutput(AssemblyOutputFilename.c_str()); 
         
         // step 1: get whole genome as vector of chr
@@ -1339,7 +1341,7 @@ int main(int argc, char *argv[])
                 Time_Load_S = time(NULL);
             }
             //short ReturnFromReadingReads;
-            get_SR_Reads(currentState, par); 
+            get_SR_Reads(currentState ); 
             Time_Mine_E = time(NULL);
 
             if (currentState.Reads_SR.size() ) {
@@ -1347,7 +1349,7 @@ int main(int argc, char *argv[])
                  << " reads for this chromosome region." << std::endl); // what region?
 
                 int TotalNumReads = currentState.Reads_SR.size();
-                if (ReportCloseMappedRead || par.reportOnlyCloseMappedReads ) {
+                if (ReportCloseMappedRead || userSettings->reportOnlyCloseMappedReads ) {
                     std::string CloseEndMappedOutputFilename =
                         currentState.OutputFolder + "_CloseEndMapped";
                     std::ofstream CloseEndMappedOutput(
@@ -1364,7 +1366,7 @@ int main(int argc, char *argv[])
                     }
                 }
                 Time_Load_E = time(NULL);
-                if (!par.reportOnlyCloseMappedReads) {
+                if (!userSettings->reportOnlyCloseMappedReads) {
 
 
                     unsigned int Num_Left;
@@ -1830,6 +1832,8 @@ void CheckBoth(const SPLIT_READ & OneRead, const std::string & TheInput,
 {   //std::cout << "in " << CurrentLength << std::endl;
     int Sum;
 
+	UserDefinedSettings *userSettings = UserDefinedSettings::Instance();
+
     if (CurrentLength >= BP_Start && CurrentLength <= BP_End) {
         // put it to LeftUP if unique
         for (short i = 0; i <= OneRead.getMAX_SNP_ERROR(); i++) {
@@ -1841,7 +1845,7 @@ void CheckBoth(const SPLIT_READ & OneRead, const std::string & TheInput,
                         Sum += PD_Plus[j].size() + PD_Minus[j].size();
                     }
 
-                if (Sum == 1 && i <= (short) (Seq_Error_Rate * CurrentLength
+                if (Sum == 1 && i <= (short) (userSettings->Seq_Error_Rate * CurrentLength
                                               + 1)) {
                     UniquePoint TempOne;
                     TempOne.LengthStr = CurrentLength;

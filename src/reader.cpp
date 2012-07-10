@@ -925,7 +925,7 @@ int32_t bam_cigar2mismatch( const bam1_core_t *readCore, const uint32_t *cigar)
    return numberOfMismatches;
 }
 
-short get_RP_Reads(ControlState& currentState, ParCollection & par) {
+short get_RP_Reads(ControlState& currentState ) {
     //std::cout << "getReads " << currentState.CurrentChrName << " " << currentState.CurrentChrSeq.size() << std::endl;
     short ReturnFromReadingReads;
     RPVector TempOneRPVector;
@@ -951,13 +951,9 @@ short get_RP_Reads(ControlState& currentState, ParCollection & par) {
                 return 1;
             }
             else if (currentState.Reads_RP.size() == 0) {
-                //LOG_ERROR(*logStream << "No currentState.Reads for "
-                //          << currentState.CurrentChrName << " found in "
-                //          << currentState.bams_to_parse[i].BamFile
+                //LOG_ERROR(*logStream << "No currentState.Reads for "<< currentState.CurrentChrName << " found in " << currentState.bams_to_parse[i].BamFile
                 //          << std::endl);
             }
-            //(*logStream << "BAM file index\t" << i << "\t"
-            // << currentState.Reads_RP.size() << std::endl);
         }
         
     }
@@ -965,7 +961,7 @@ short get_RP_Reads(ControlState& currentState, ParCollection & par) {
 
 }
 
-short get_SR_Reads(ControlState& currentState, ParCollection & par) {
+short get_SR_Reads(ControlState& currentState ) {
     std::cout << "getReads " << currentState.CurrentChrName << " " << currentState.CurrentChrSeq.size() << std::endl;
     short ReturnFromReadingReads;
     ReadBuffer readBuffer(BUFFER_SIZE, currentState.Reads_SR, currentState.CurrentChrSeq);
