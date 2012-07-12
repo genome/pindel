@@ -37,10 +37,7 @@ RefReader::~RefReader()
 {
 }
 
-
-
-void
-RefReader::ReadSeq(bool WhetherBuildUp)
+void RefReader::ReadSeq(bool WhetherBuildUp)
 {
    TheInput->clear ();
    std::string TempLine, TempChrName;
@@ -61,8 +58,7 @@ RefReader::ReadSeq(bool WhetherBuildUp)
    }
 }
 
-void
-RefReader::SkipThisSeq()
+void RefReader::SkipThisSeq()
 {
    char TempChar;
    // Skip until the next sequence start.
@@ -73,8 +69,7 @@ RefReader::SkipThisSeq()
    }
 }
 
-void
-RefReader::CopyThisSeq()
+void RefReader::CopyThisSeq()
 {
    char TempChar;
    short Diff2UpperCase = 'A' - 'a';

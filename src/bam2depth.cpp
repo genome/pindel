@@ -13,37 +13,12 @@
 #include "genotyping.h"
 
 
-/*struct aux_t {     // auxiliary data structure
-	bamFile fp;      // the file handler
-	bam_iter_t iter; // NULL if a region has not been specified
-	int min_mapQ;    // mapQ filter
-    
-   void init();
-   void destroy();
-};
-
-void aux_t::init() 
-{
-    fp = NULL;
-    iter = NULL;
-    min_mapQ = 0;
-}
-
-void aux_t::destroy() 
-{
-    bam_close( fp );
-    if (iter != NULL) bam_iter_destroy( iter );
-}*/
 
 typedef struct {     // auxiliary data structure
 	bamFile fp;      // the file handler
 	bam_iter_t iter; // NULL if a region not specified
 	int min_mapQ;    // mapQ filter
 } aux_t;
-
-//void *bed_read(const char *fn); // read a BED or position list file
-//void bed_destroy(void *_h);     // destroy the BED data structure
-//int bed_overlap(const void *_h, const char *chr, int beg, int end); // test if chr:beg-end overlaps
 
 std::string Spaces(double input);
 
@@ -56,25 +31,6 @@ static int read_bam(void *data, bam1_t *b) // read level filters better go here 
 	return ret;
 }
 
-
-
-// This function reads a BAM alignment from one BAM file.
-/*static int read_bam(void *data, bam1_t *b) // read level filters better go here to avoid pileup
-{
-	aux_t *aux = (aux_t*)data; // data in fact is a pointer to an auxiliary structure
-	int ret = aux->iter? bam_iter_read(aux->fp, aux->iter, b) : bam_read1(aux->fp, b);
-	// EW:
-	if (region has been specified) {
-	   bam_iter_read(bamfile, region, &bam_alignment); <- bam_iter_read reads a specified part of a BAM_file
-	}
-	else { // no region specified
-        bam_read1( bamfile, &bam_alignment ); <- bam_read1 reads entire bam-file
-	} */
-	/*if ((int)b->core.qual < aux->min_mapQ) b->core.flag |= BAM_FUNMAP;
-	// if the mapping quality in the bam_reads is smaller than the desired mapping quality, set the BAM_FUNMAP-bit in b->core.flag to TRUE
-	return ret; // the code returned by bam_read1 or bam_iter_read, probably success or failure.
-}*/
-
 int getChromosomeID( bam_header_t *bamHeaderPtr, const std::string & chromosomeName, const int startPos, const int endPos )
 {
     int dummyBegin, dummyEnd;
@@ -82,7 +38,6 @@ int getChromosomeID( bam_header_t *bamHeaderPtr, const std::string & chromosomeN
     std::stringstream region;
     region << chromosomeName << ":" << startPos << "-" << endPos;
     bam_parse_region(bamHeaderPtr, region.str().c_str(), &chromosomeID, &dummyBegin, &dummyEnd);
-    //std::cout << "chromosomeID " << chromosomeID << std::endl; 
     return chromosomeID;
 }
 
@@ -97,8 +52,6 @@ int bam2depth(const std::string& chromosomeName, const int startPos, const int e
 	bam_header_t *h = 0; // BAM header of the 1st input
 	aux_t **data;
 	bam_mplp_t mplp;
-
-
 
 	// initialize the auxiliary data structures
 	n = listOfFiles.size(); // the number of BAMs on the command line
@@ -131,8 +84,6 @@ int bam2depth(const std::string& chromosomeName, const int startPos, const int e
    std::vector<int> sumOfReadDepths( n, 0);
 	while (bam_mplp_auto(mplp, &tid, &pos, n_plp, plp) > 0) { // come to the next covered position
 		if (pos < beg || pos >= end) continue; // out of range; skip
-		//if (bed && bed_overlap(bed, h->target_name[tid], pos, pos + 1) == 0) continue; // not in BED; skip
-		//fputs(h->target_name[tid], stdout); printf("\t%d", pos+1); // a customized printf() would be faster
 		for (i = 0; i < n; ++i) { // base level filters have to go here
 			int j, m = 0;
 			for (j = 0; j < n_plp[i]; ++j) {
@@ -140,10 +91,8 @@ int bam2depth(const std::string& chromosomeName, const int startPos, const int e
 				if (p->is_del || p->is_refskip) ++m; // having dels or refskips at tid:pos
 				else if (bam1_qual(p->b)[p->qpos] < baseQ) ++m; // low base quality
 			}
-			//printf("\t%d", n_plp[i] - m); // this the depth to output
 			sumOfReadDepths[ i ] += n_plp[i] - m;
 		}
-		//putchar('\n');
 	}
   	averageCoveragePerBam.resize( n );
     for (int fileIndex=0; fileIndex< n; fileIndex++ ) {
@@ -159,7 +108,6 @@ int bam2depth(const std::string& chromosomeName, const int startPos, const int e
 		free(data[i]);
 	}
 	free(data); free(reg);
-	//if (bed) bed_destroy(bed);
 	return 0;
 }
 
@@ -175,31 +123,10 @@ void getRelativeCoverageInternal(const std::string & chromosomeName, const int c
     int regionLength = endPos - startPos;
     int startOfRegionBeforeSV = (startPos - regionLength >=0) ? startPos - regionLength : 0;
     int endOfRegionAfterSV = (endPos + regionLength > chromosomeSize ) ? chromosomeSize : endPos + regionLength;
-    //std::cout << "startOfRegionBeforeSV, Startpos, endpos, endofregionm " << startOfRegionBeforeSV << " " << startPos << " " << endPos << " " << endOfRegionAfterSV << "\n"; 
-    //std::cout << "ChrSize " << chromosomeSize << "\n"; 
-    //std::cout << "1" << std::endl;
     std::cout.precision(2);
     bam2depth( chromosomeName, startOfRegionBeforeSV, startPos, minBaseQuality, minMappingQuality, listOfFiles, avgCoverageOfRegionBeforeSV );
-    //std::cout << "before  ";
-    //for (int fileIndex=0; fileIndex < numberOfBams; fileIndex++ ) {
-    //    std::cout << Spaces(avgCoverageOfRegionBeforeSV[fileIndex]) << std::fixed << avgCoverageOfRegionBeforeSV[fileIndex];
-    //}
-    //std::cout << std::endl;
-    //std::cout << "2" << std::endl;
     bam2depth( chromosomeName, startPos, endPos, minBaseQuality, minMappingQuality, listOfFiles, avgCoverageOfSVRegion );
-    //std::cout << "in      "; 
-    //for (int fileIndex=0; fileIndex < numberOfBams; fileIndex++ ) {
-    //    std::cout << Spaces(avgCoverageOfSVRegion[fileIndex]) << std::fixed << avgCoverageOfSVRegion[fileIndex];
-    //}
-    //std::cout << std::endl;
-    //std::cout << "3" << std::endl;
     bam2depth( chromosomeName, endPos, endOfRegionAfterSV, minBaseQuality, minMappingQuality, listOfFiles, avgCoverageOfRegionAfterSV );
-    //std::cout << "after   ";
-    //for (int fileIndex=0; fileIndex < numberOfBams; fileIndex++ ) {
-    //    std::cout << Spaces(avgCoverageOfRegionAfterSV[fileIndex])  << std::fixed << avgCoverageOfRegionAfterSV[fileIndex];
-    //}
-    //std::cout << std::endl;
-    //std::cout << "4" << std::endl;
     for (int fileIndex=0; fileIndex < numberOfBams; fileIndex++ ) {
        if ( avgCoverageOfRegionBeforeSV[ fileIndex ] + avgCoverageOfRegionAfterSV[ fileIndex ] == 0 ) { 
             standardizedDepthPerBam[ fileIndex ] = -1; 
@@ -214,10 +141,7 @@ void getRelativeCoverageInternal(const std::string & chromosomeName, const int c
 void getRelativeCoverage(const std::string & CurrentChrSeq, const int chromosomeID, const ControlState& allGlobalData, Genotyping & OneSV)
                          //const int startPos, const int endPos, std::vector<double> & standardizedDepthPerBam ) RD_signals
 {
-    //std::cout << "start " << OneSV.ChrA << "\t" << OneSV.PosA << "\t" << OneSV.CI_A << "\t"
-    //<< OneSV.ChrB << "\t" << OneSV.PosB << "\t" << OneSV.CI_B << std::endl;
     std::cout.precision(2);
-    //std::cout << "entering getRelativeCoverage" << std::endl;
     const int startPos = OneSV.PosA;
     const int endPos   = OneSV.PosB;
     
@@ -230,18 +154,13 @@ void getRelativeCoverage(const std::string & CurrentChrSeq, const int chromosome
 	for (unsigned int fileIndex=0; fileIndex<bamFileData.size(); fileIndex++ ) {
 		listOfFiles.push_back( bamFileData[ fileIndex ].BamFile );
 	}
-    //std::cout << "before  getRelativeCoverageInternal " << OneSV.ChrA << "\t" << OneSV.PosA << "\t" << OneSV.CI_A << "\t"
-    //<< OneSV.ChrB << "\t" << OneSV.PosB << "\t" << OneSV.CI_B << std::endl;
 	getRelativeCoverageInternal( chromosomeName, chromosomeSize, chromosomeID, startPos, endPos, MIN_BASE_QUALITY_READDEPTH, MIN_MAPPING_QUALITY_READDEPTH, listOfFiles, 	
 		OneSV.RD_signals);  
-    //std::cout << "after  getRelativeCoverageInternal " << OneSV.ChrA << "\t" << OneSV.PosA << "\t" << OneSV.CI_A << "\t"
-    //          << OneSV.ChrB << "\t" << OneSV.PosB << "\t" << OneSV.CI_B;
     std::cout << "Genotype_Based_On_RD:";
     for (unsigned RD_index = 0; RD_index < OneSV.RD_signals.size(); RD_index++) {
         std::cout << " " << std::fixed << OneSV.RD_signals[RD_index];
     }
     std::cout << std::endl;
-    //std::cout << "leaving getRelativeCoverage" << std::endl;
 } 
 
 std::string Spaces(double input) {

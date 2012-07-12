@@ -81,16 +81,9 @@ short Before, After;
 
 BDData g_bdData;
 
-
-//ParCollection par;
-
-
-
 unsigned int CountIndels = 0;
 const int alphs = 4;
 const char alphabet[alphs] = { 'A', 'C', 'G', 'T' };
-
-
 
 unsigned long long int TheMax = 0;
 const short MAX_MISMATCHES = 4;
@@ -140,7 +133,6 @@ int NumRead2ReportCutOff_BP = 2;
 int MaxRangeIndex = 9; // 5 or 6 or 7 or maximum 8      //# // user
 double MaximumAllowedMismatchRate = 0.1; //#  // user
 int Max_Length_NT = 30; // user
-
 const bool ReportSVReads = false;
 const bool ReportLargeInterChrSVReads = false;
 const unsigned short Indel_SV_cutoff = 50;
@@ -218,7 +210,6 @@ struct Region {
     unsigned start;
     unsigned end;
 };
-
 
 
 short WhetherRemoveDuplicates;
@@ -312,7 +303,6 @@ std::ostream& operator<<(std::ostream& os, const SPLIT_READ& splitRead)
     os << "NT_str:" << splitRead.NT_str  << std::endl;
     os << "NT_size:" << splitRead.NT_size << std::endl;
     return os;
-//	cout << ":" <<  << std::endl;
 }
 
 /** 'eliminate' eliminates a character from the input string. */
@@ -532,8 +522,6 @@ int init(int argc, char *argv[], ControlState& currentState )
     // now read the parameters from the command line
     readParameters(argc, argv, parameters);
 
-
-
 	if (userSettings->logFilename != "" ) {
 		g_logFile.open( userSettings->logFilename.c_str() );
 		logStream = &g_logFile;
@@ -562,9 +550,6 @@ int init(int argc, char *argv[], ControlState& currentState )
     WINDOW_SIZE = (int)(1000000 * userSettings->FLOAT_WINDOW_SIZE);
 
     // if all parameters are okay, open the files
-
-
-
 
     currentState.PindelReadDefined = parameters[findParameter("-p",parameters)]->isSet();
     if (currentState.PindelReadDefined) {
@@ -717,7 +702,10 @@ int init(int argc, char *argv[], ControlState& currentState )
 
     DSizeArray[0] = 0;
     DSizeArray[1] = 128;
-    DSizeArray[2] = DSizeArray[1] * 4; // 512
+	for (int dIndex=2; dIndex<15; dIndex++ ) {
+		DSizeArray[ dIndex ] = DSizeArray[ dIndex-1 ] * 4;
+	}
+   /* DSizeArray[2] = DSizeArray[1] * 4; // 512
     DSizeArray[3] = DSizeArray[2] * 4; // 2048
     DSizeArray[4] = DSizeArray[3] * 4; // 8092
     DSizeArray[5] = DSizeArray[4] * 4; // 32368
@@ -730,15 +718,9 @@ int init(int argc, char *argv[], ControlState& currentState )
     DSizeArray[11] = DSizeArray[10] * 4;
     DSizeArray[12] = DSizeArray[11] * 4;
     DSizeArray[13] = DSizeArray[12] * 4;
-    DSizeArray[14] = DSizeArray[13] * 4;
-
-
+    DSizeArray[14] = DSizeArray[13] * 4;*/
 
     std::vector < std::string > chromosomes;
-
-
-
-
 
     currentState.startOfRegion = -1;
     currentState.endOfRegion = -1;
@@ -953,8 +935,7 @@ int main(int argc, char *argv[])
         }
 
 
-        int displayedStartOfRegion =
-            ((currentState.regionStartDefined) ? (currentState.startOfRegion) : currentState.lowerBinBorder);
+        int displayedStartOfRegion = ((currentState.regionStartDefined) ? (currentState.startOfRegion) : currentState.lowerBinBorder);
         int displayedEndOfRegion = displayedStartOfRegion + WINDOW_SIZE;
         if ( displayedEndOfRegion > currentState.upperBinBorder ) {
             displayedEndOfRegion = currentState.upperBinBorder;
@@ -1030,10 +1011,6 @@ int main(int argc, char *argv[])
                             SearchFarEnd( currentState.CurrentChrSeq, currentState.Reads_SR[readIndex] );
                         }
                     }
-
-
-
-
 
                     (*logStream << "Far end searching completed for this window." << std::endl);
 
@@ -1269,15 +1246,13 @@ bool ReportEvent(const std::vector<SPLIT_READ> &Deletions,
         if (Deletions[i].BP <= Min_Length) {
             LeftMin = true;
         }
-        if (Deletions[i].getReadLength() - Deletions[i].BP - Deletions[i].NT_size
-                <= Min_Length) {
+        if (Deletions[i].getReadLength() - Deletions[i].BP - Deletions[i].NT_size <= Min_Length) {
             RightMin = true;
         }
         if (Deletions[i].BP >= Max_Length) {
             LeftMax = true;
         }
-        if (Deletions[i].getReadLength() - Deletions[i].BP - Deletions[i].NT_size
-                >= Max_Length) {
+        if (Deletions[i].getReadLength() - Deletions[i].BP - Deletions[i].NT_size >= Max_Length) {
             RightMax = true;
         }
     }
@@ -1359,7 +1334,6 @@ void updateReadAfterCloseEndMapping( SPLIT_READ& Temp_One_Read )
         g_reportLength = Temp_One_Read.getReadLength();
     }
     Temp_One_Read.Used = false;
-    //Temp_One_Read.UniqueAnchor = true;
     Temp_One_Read.UniqueRead = true;
     LOG_DEBUG(cout << Temp_One_Read.MatchedD << "\t" << Temp_One_Read.UP_Close.size() << "\t");
 
@@ -1383,9 +1357,6 @@ void updateReadAfterCloseEndMapping( SPLIT_READ& Temp_One_Read )
 
 void GetCloseEndInner(const std::string & CurrentChrSeq, SPLIT_READ & Temp_One_Read)
 {
-    //Temp_One_Read.setReadLength( Temp_One_Read.getUnmatchedSeq().size() );
-    //Temp_One_Read.setReadLengthMinus( Temp_One_Read.getReadLength() - 1 );
-
     std::string CurrentReadSeq;
     std::vector<unsigned int> PD[Temp_One_Read.getTOTAL_SNP_ERROR_CHECKED()];
     if (Temp_One_Read.InsertSize > g_maxInsertSize) {
@@ -1417,9 +1388,7 @@ void GetCloseEndInner(const std::string & CurrentChrSeq, SPLIT_READ & Temp_One_R
                 }
             }
         }
-        //if (Temp_One_Read.Name == "@1-99550/2") {
-        //    logStream << Temp_One_Read.Name << " PD[0].size() " << PD[0].size() << std::endl;
-        //}
+
         if (PD[0].size())
             CheckLeft_Close(Temp_One_Read, CurrentChrSeq, CurrentReadSeq, PD,
                             BP_Start, BP_End, FirstBase, UP); // LengthStr
@@ -1477,7 +1446,7 @@ void CheckBoth(const SPLIT_READ & OneRead, const std::string & TheInput,
                const std::vector<unsigned int> PD_Minus[], const short &BP_Start,
                const short &BP_End, const short &CurrentLength,
                std::vector<UniquePoint> &UP)
-{   //std::cout << "in " << CurrentLength << std::endl;
+{   
     int Sum;
 
 	UserDefinedSettings *userSettings = UserDefinedSettings::Instance();
@@ -1596,36 +1565,29 @@ void CheckBoth(const SPLIT_READ & OneRead, const std::string & TheInput,
                 for (int j = 0; j < SizeOfCurrent; j++) {
                     pos = PD_Plus[OneRead.getTOTAL_SNP_ERROR_CHECKED_Minus()][j] + 1;
                     if (Match2N[(short) TheInput[pos]] == 'N')
-                        PD_Plus_Output[OneRead.getTOTAL_SNP_ERROR_CHECKED_Minus()]. push_back(
-                            pos);
+                        PD_Plus_Output[OneRead.getTOTAL_SNP_ERROR_CHECKED_Minus()]. push_back( pos);
                 }
             }
             else {
                 for (int j = 0; j < SizeOfCurrent; j++) {
                     pos = PD_Plus[OneRead.getTOTAL_SNP_ERROR_CHECKED_Minus()][j] + 1;
                     if (TheInput[pos] == CurrentChar)
-                        PD_Plus_Output[OneRead.getTOTAL_SNP_ERROR_CHECKED_Minus()]. push_back(
-                            pos);
+                        PD_Plus_Output[OneRead.getTOTAL_SNP_ERROR_CHECKED_Minus()]. push_back( pos);
                 }
             }
-            SizeOfCurrent
-                = PD_Minus[OneRead.getTOTAL_SNP_ERROR_CHECKED_Minus()].size();
+            SizeOfCurrent = PD_Minus[OneRead.getTOTAL_SNP_ERROR_CHECKED_Minus()].size();
             if (CurrentCharRC == 'N') {
                 for (int j = 0; j < SizeOfCurrent; j++) {
-                    pos = PD_Minus[OneRead.getTOTAL_SNP_ERROR_CHECKED_Minus()][j]
-                          - 1;
+                    pos = PD_Minus[OneRead.getTOTAL_SNP_ERROR_CHECKED_Minus()][j] - 1;
                     if (Match2N[(short) TheInput[pos]] == 'N')
-                        PD_Minus_Output[OneRead.getTOTAL_SNP_ERROR_CHECKED_Minus()]. push_back(
-                            pos);
+                        PD_Minus_Output[OneRead.getTOTAL_SNP_ERROR_CHECKED_Minus()]. push_back( pos);
                 }
             }
             else {
                 for (int j = 0; j < SizeOfCurrent; j++) {
-                    pos = PD_Minus[OneRead.getTOTAL_SNP_ERROR_CHECKED_Minus()][j]
-                          - 1;
+                    pos = PD_Minus[OneRead.getTOTAL_SNP_ERROR_CHECKED_Minus()][j] - 1;
                     if (TheInput[pos] == CurrentCharRC)
-                        PD_Minus_Output[OneRead.getTOTAL_SNP_ERROR_CHECKED_Minus()]. push_back(
-                            pos);
+                        PD_Minus_Output[OneRead.getTOTAL_SNP_ERROR_CHECKED_Minus()]. push_back( pos);
                 }
             }
 
@@ -1645,7 +1607,6 @@ void CheckBoth(const SPLIT_READ & OneRead, const std::string & TheInput,
     else {
         return;
     }
-//std::cout << "out " << CurrentLength << std::endl;
 }
 
 void CleanUniquePoints(std::vector<UniquePoint> &Input_UP)
@@ -1659,27 +1620,25 @@ void CleanUniquePoints(std::vector<UniquePoint> &Input_UP)
     if (LastDirection == FORWARD) {
         Terminal = LastUP.AbsLoc - LastUP.LengthStr;
         for (unsigned i = 0; i < Input_UP.size(); i++) {
-            if (Input_UP[i].Direction == LastDirection && Input_UP[i].Strand
-                    == LastStrand) {
-                if (Terminal == Input_UP[i].AbsLoc - Input_UP[i].LengthStr) {
-                    TempUP.push_back(Input_UP[i]);
-                }
-            }
+           if (Input_UP[i].Direction == LastDirection && Input_UP[i].Strand == LastStrand) {
+              if (Terminal == Input_UP[i].AbsLoc - Input_UP[i].LengthStr) {
+                 TempUP.push_back(Input_UP[i]);
+              }
+           }
         }
     }
     else if (LastDirection == BACKWARD) {
-        Terminal = LastUP.AbsLoc + LastUP.LengthStr;
-        for (unsigned i = 0; i < Input_UP.size(); i++) {
-            if (Input_UP[i].Direction == LastDirection && Input_UP[i].Strand
-                    == LastStrand) {
-                if (Terminal == Input_UP[i].AbsLoc + Input_UP[i].LengthStr) {
-                    TempUP.push_back(Input_UP[i]);
-                }
-            }
-        }
+       Terminal = LastUP.AbsLoc + LastUP.LengthStr;
+       for (unsigned i = 0; i < Input_UP.size(); i++) {
+          if (Input_UP[i].Direction == LastDirection && Input_UP[i].Strand == LastStrand) {
+             if (Terminal == Input_UP[i].AbsLoc + Input_UP[i].LengthStr) {
+                TempUP.push_back(Input_UP[i]);
+             }
+          }
+       }
     }
-    Input_UP.clear();
-    Input_UP = TempUP;
+   Input_UP.clear();
+   Input_UP = TempUP;
 }
 
 

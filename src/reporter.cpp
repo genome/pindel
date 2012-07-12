@@ -319,15 +319,13 @@ OutputDeletions (const std::vector < SPLIT_READ > &Deletions,
    }
 }
 
-void
-OutputInversions (const std::vector < SPLIT_READ > &Inv,
+void OutputInversions (const std::vector < SPLIT_READ > &Inv,
                   const std::string & TheInput,
                   const unsigned int &C_S,
                   const unsigned int &C_E,
                   const unsigned int &RealStart,
                   const unsigned int &RealEnd, std::ofstream & InvOutf)
 {
-    //*logStream << "start" << std::endl;
    int LeftNT_index = -1;
    int RightNT_index = -1;
    for (unsigned Index = C_S; Index <= C_E; Index++) {
