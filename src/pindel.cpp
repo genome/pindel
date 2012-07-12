@@ -30,6 +30,7 @@
 
 // Pindel header files
 #include "pindel.h"
+#include "fn_parameters.h"
 #include "bddata.h"
 #include "reader.h"
 #include "searcher.h"
@@ -69,7 +70,6 @@
 const std::string Pindel_Version_str = "Pindel version 0.2.4s, June 18 2012.";
 std::ostream* logStream;
 std::ofstream g_logFile;
-int findParameter(std::string name);
 
 int g_binIndex = -1; // global variable for the bin index, as I cannot easily pass an extra parameter to the diverse functions
 int g_maxPos = -1; // to calculate which is the last position in the chromosome, and hence to calculate the number of bins
@@ -135,23 +135,12 @@ unsigned int g_CloseMappedMinus = 0;
 std::vector<Parameter *> parameters;
 
 // #########################################################
-int ADDITIONAL_MISMATCH = 3; // user
-unsigned int g_minimalAnchorQuality = 20; // true value set in the defineParameters
-int Min_Perfect_Match_Around_BP = 5; // user                   //#
-int MIN_IndelSize_NT = 50; //user            //#
-int MIN_IndelSize_Inversion = 50; //user       //#
-unsigned int BalanceCutoff = 0; //                    //#
-bool Analyze_INV = true; //# user
-bool Analyze_TD = true; //# user
-bool Analyze_LI = true; //user
-bool Analyze_BP = true; // user
-unsigned int NumRead2ReportCutOff = 3; //#
+
 int NumRead2ReportCutOff_BP = 2;
 int MaxRangeIndex = 9; // 5 or 6 or 7 or maximum 8      //# // user
 double MaximumAllowedMismatchRate = 0.1; //#  // user
-int Min_Num_Matched_Bases = 30; //# // user
 int Max_Length_NT = 30; // user
-bool ReportCloseMappedRead = false; // user
+
 const bool ReportSVReads = false;
 const bool ReportLargeInterChrSVReads = false;
 const unsigned short Indel_SV_cutoff = 50;
@@ -201,7 +190,7 @@ unsigned int SPLIT_READ::MaxLenFarEndBackup() const
 
 bool doOutputBreakdancerEvents()
 {
-    return ( UserDefinedSettings::Instance()->breakdancerOutputFilename != "" && parameters[findParameter("-b")]->isSet());
+    return ( UserDefinedSettings::Instance()->breakdancerOutputFilename != "" && parameters[findParameter("-b",parameters)]->isSet());
 }
 
 void outputBreakDancerEvent( const std::string& chromosomeName, const int leftPosition, const int rightPosition,
@@ -324,349 +313,6 @@ std::ostream& operator<<(std::ostream& os, const SPLIT_READ& splitRead)
     os << "NT_size:" << splitRead.NT_size << std::endl;
     return os;
 //	cout << ":" <<  << std::endl;
-}
-
-/* 'defineParameters' defines the parameters to be used by Pindel. Takes the variables from the calling function as argument for those variables which
- do not need to be stored in the par structure. */
-void defineParameters()
-{
-	UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
-   parameters. push_back(
-        new StringParameter(&userSettings->referenceFilename, "-f", "--fasta",
-                            "the reference genome sequences in fasta format", true, ""));
-    parameters. push_back(
-        new StringParameter(
-            &(userSettings->pindelFilename),
-            "-p",
-            "--pindel-file",
-            "the Pindel input file; either this, a pindel configuration file (consisting of multiple pindel filenames) or a bam configuration file is required",
-            false, ""));
-    parameters. push_back(
-        new StringParameter(
-            &userSettings->bamConfigFilename,
-            "-i",
-            "--config-file",
-            "the bam config file; either this, a pindel input file, or a pindel config file is required. Per line: path and file name of bam, insert size and sample tag.     For example: /data/tumour.bam  400  tumour",
-            false, ""));
-    parameters. push_back(
-        new StringParameter(
-            &userSettings->pindelConfigFilename,
-            "-P",
-            "--pindel-config-file",
-            "the pindel config file, containing the names of all Pindel files that need to be sampled; either this, a bam config file or a pindel input file is required. Per line: path and file name of pindel input. Example: /data/tumour.txt",
-            false, ""));
-    parameters. push_back(
-        new StringParameter(&userSettings->outputFilename, "-o", "--output-prefix",
-                            "Output prefix;", true, ""));
-    parameters. push_back(
-        new StringParameter(
-            &userSettings->SearchRegion,
-            "-c",
-            "--chromosome",
-            "Which chr/fragment. Pindel will process reads for one chromosome each time. ChrName must be the same as in reference sequence and in read file. '-c ALL' will make Pindel loop over all chromosomes. The search for indels and SVs can also be limited to a specific region; -c 20:10,000,000 will only look for indels and SVs after position 10,000,000 = [10M, end], -c 20:5,000,000-15,000,000 will report indels in the range between and including the bases at position 5,000,000 and 15,000,000 = [5M, 15M]. (default ALL)",
-            false, "ALL"));
-
-    parameters.push_back(
-        new BoolParameter(&userSettings->showHelp, "-h", "--help",
-                          "show the command line options of Pindel", false, false));
-
-    parameters. push_back(
-        new IntParameter(&userSettings->numThreads, "-T", "--number_of_threads",
-                         "the number of threads Pindel will use (default 1).",
-                         false, 1));
-
-    parameters. push_back(
-        new IntParameter(
-            &userSettings->MaxRangeIndex,
-            "-x",
-            "--max_range_index",
-            "the maximum size of structural variations to be detected; the higher this number, the greater "
-            "the number of SVs reported, but the computational cost and memory requirements increase, as "
-            "does the rate of false "
-            "positives. 1=128, 2=512, 3=2,048, 4=8,092, 5=32,368, 6=129,472, 7=517,888, 8=2,071,552, 9=8,286,208. "
-            "(maximum 9, default 5)", false, 5));
-    parameters. push_back(
-        new FloatParameter(
-            &userSettings->FLOAT_WINDOW_SIZE,
-            "-w",
-            "--window_size",
-            "for saving RAM, divides the reference in bins of X million bases and only analyzes the reads that belong in the current "
-            "bin, " "(default 10 (=10 million))", false, 10.0));
-
-    parameters. push_back(
-        new FloatParameter(&userSettings->Seq_Error_Rate, "-e",
-                           "--sequencing_error_rate",
-                           "the expected fraction of sequencing errors "
-                           "(default 0.03)", false, 0.03));
-
-    parameters. push_back(
-        new FloatParameter(
-            &MaximumAllowedMismatchRate,
-            "-u",
-            "--maximum_allowed_mismatch_rate",
-            "Only reads with no less than this fraction of mismatches than the reference genome will be considered. "
-            "(default 0.05)", false, 0.05));
-
-    parameters. push_back(
-        new BoolParameter(&Analyze_INV, "-r", "--report_inversions",
-                          "report inversions " "(default true)", false, true));
-    parameters. push_back(
-        new BoolParameter(&Analyze_TD, "-t", "--report_duplications",
-                          "report tandem duplications " "(default true)", false, true));
-    parameters. push_back(
-        new BoolParameter(
-            &Analyze_LI,
-            "-l",
-            "--report_long_insertions",
-            "report insertions of which the full sequence cannot be deduced because of their length "
-            "(default true)", false, true));
-    parameters. push_back(
-        new BoolParameter(&Analyze_BP, "-k", "--report_breakpoints",
-                          "report breakpoints " "(default true)", false, true));
-
-    parameters. push_back(
-        new BoolParameter(
-            &ReportCloseMappedRead,
-            "-s",
-            "--report_close_mapped_reads",
-            "report reads of which only one end (the one closest to the mapped read of the paired-end read) "
-            "could be mapped. " "(default false)", false, false));
-
-    parameters. push_back(
-        new BoolParameter(
-            &userSettings->reportOnlyCloseMappedReads,
-            "-S",
-            "--report_only_close_mapped_reads",
-            "do not search for SVs, only report reads of which only one end (the one closest to the mapped read of the paired-end read) "
-            "could be mapped (the output file can then be used as an input file for another run of pindel, which may save size if you need to transfer files). " "(default false)", false, false));
-
-    parameters. push_back(
-        new StringParameter(
-            &userSettings->breakdancerFilename,
-            "-b",
-            "--breakdancer",
-            "Pindel is able to use calls from other SV methods such as BreakDancer to further increase sensitivity and specificity.                    BreakDancer result or calls from any methods must in the format:   ChrA LocA stringA ChrB LocB stringB other",
-            false, ""));
-
-    parameters. push_back(
-        new IntParameter(
-            &ADDITIONAL_MISMATCH,
-            "-a",
-            "--additional_mismatch",
-            "Pindel will only map part of a read to the reference genome if there are no other candidate positions with no more than the specified number of mismatches position. The bigger tha value, the more accurate but less sensitive. (default value 1)",
-            false, 1));
-
-    parameters. push_back(
-        new IntParameter(
-            &Min_Perfect_Match_Around_BP,
-            "-m",
-            "--min_perfect_match_around_BP",
-            "at the point where the read is split into two, there should at least be "
-            "this number of perfectly matching bases between read and reference (default value 3)",
-            false, 3));
-    parameters. push_back(
-        new IntParameter(&MIN_IndelSize_NT, "-n", "--min_NT_size",
-                         "only report inserted (NT) sequences in deletions greater than this size "
-                         "(default 50)", false, 50));
-    // TODO: Make sure MIN_IndelSize_NT is > 0, make into unsigned.
-    parameters. push_back(
-        new IntParameter(&MIN_IndelSize_Inversion, "-v",
-                         "--min_inversion_size",
-                         "only report inversions greater than this number of bases "
-                         "(default 50)", false, 50));
-    parameters. push_back(
-        new IntParameter(
-            &Min_Num_Matched_Bases,
-            "-d",
-            "--min_num_matched_bases",
-            "only consider reads as evidence if they map with more than X bases to the reference. "
-            "(default 30)", false, 30));
-    parameters. push_back(
-        new UIntParameter(
-            &BalanceCutoff,
-            "-B",
-            "--balance_cutoff",
-            "the number of bases of a SV above which a more stringent filter is applied which demands "
-            "that both sides of the SV are mapped with sufficiently long strings of bases "
-            "(default 100)", false, 100));
-    parameters. push_back(
-        new UIntParameter(
-            &g_minimalAnchorQuality,
-            "-A",
-            "--anchor_quality",
-            "the minimal mapping quality of the reads Pindel uses as anchor "
-            "(default 20)", false, 20));
-    parameters. push_back(
-        new UIntParameter(
-            &NumRead2ReportCutOff,
-            "-M",
-            "--minimum_support_for_event",
-            "Pindel only calls events which have this number or more supporting reads "
-            "(default 3)", false, 3));
-    parameters. push_back(
-        new StringParameter(
-            &userSettings->inf_AssemblyInputFilename,
-            "-z",
-            "--input_SV_Calls_for_assembly",
-            "A filename of a list of SV calls for assembling breakpoints \n"
-            "Types: DEL, INS, DUP, INV, CTX and ITX \n"    
-            "File format: Type chrA posA Confidence_Range_A chrB posB Confidence_Range_B \n"
-            "Example: DEL chr1 10000 50 chr2 20000 100 "                
-            "", false, ""));
-    parameters. push_back(
-            new StringParameter(
-                      &userSettings->inf_GenotypingInputFilename,
-                      "-g",
-                      "--genotyping",
-                      "gentype variants if -i is also turn true."
-                      "", false, ""));
-    parameters. push_back(
-        new StringParameter(
-            &userSettings->breakdancerOutputFilename,
-            "-Q",
-            "--output_of_breakdancer_events",
-            "If breakdancer input is used, you can specify a filename here to write the confirmed breakdancer "
-            "events with their exact breakpoints to " "The list of BreakDancer calls with Pindel support information. Format: chr   Loc_left   Loc_right   size   type   index. " "            For example, \"1	72766323 	72811840 	45516	D	11970\" means the deletion event chr1:72766323-72811840 of size 45516 is reported as an event with index 11970 in Pindel report of deletion. "
-            "", false, ""));
-	parameters.push_back( 
-		new StringParameter(
-			&userSettings->logFilename,
-			"-L",
-			"--name_of_logfile",
-			"Specifies a file to write Pindel's log to (default: no logfile, log is written to the screen/stdout)", 
-			false, ""));
-
-}
-
-/* 'findParameter' returns the index of the parameter with name 'name'; -1 if not found.*/
-int findParameter(std::string name)
-{
-    for (unsigned int parameterCounter = 0; parameterCounter
-            < parameters.size(); parameterCounter++) {
-        if (parameters[parameterCounter]->hasName(name)) {
-            return parameterCounter;
-        }
-    }
-    LOG_DEBUG(cout << "Result of FindParameter is -1\n");
-    return -1;
-}
-
-/* 'readParameters' reads the parameters as entered in the command line. */
-void readParameters(int argc, char *argv[])
-{
-    // TODO: Ask Kai whether this can be removed
-    //for (int argumentIndex=1; argumentIndex<argc; argumentIndex++ ) { log << argumentIndex  << ". " << argv[argumentIndex] << endl; }
-
-    for (int argumentIndex = 1; argumentIndex < argc; argumentIndex++) {
-        std::string currentArgument = argv[argumentIndex];
-
-        //find argument in parameterlist
-        int parameterIndex = findParameter(currentArgument);
-        if (parameterIndex == -1) {
-            LOG_ERROR(*logStream << "unknown argument: " << currentArgument << std::endl);
-            return;
-        }
-
-        if (parameters[parameterIndex]->isUnary()) {
-            parameters[parameterIndex]->setValue(true); // default
-            if ((argumentIndex + 1 < argc) && (argv[argumentIndex + 1][0]
-                                               != '-')) { // so there are more arguments, and next one isn't regular -x
-                if (tolower(argv[argumentIndex + 1][0]) == 'f'
-                        || (argv[argumentIndex + 1][0] == '0')) {
-                    parameters[parameterIndex]->setValue(false);
-                }
-                argumentIndex++; // in any case increase the argument index
-            }
-        }
-        else {   // argument needs a parameter
-            argumentIndex++; // move on to next argument in the list
-            if (argumentIndex >= argc) {
-                LOG_ERROR(*logStream << "argument of " << currentArgument << " lacking.\n");
-                return;
-            }
-            if (argv[argumentIndex][0] == '-') {
-                LOG_ERROR(*logStream << "argument of " << currentArgument
-                          << " seems erroneous.\n");
-                return;
-            }
-            // but if everything is allright,
-            LOG_DEBUG(*logStream << "Giving " << currentArgument << " the value " << argv[ argumentIndex ] << std::endl);
-            parameters[parameterIndex]->setValue(
-                std::string(argv[argumentIndex]));
-        }
-    }
-}
-
-/* isReadsFileParam returns whether the parameter points to a read-containing file, and is therefore required,
- even though not both are required. */
-bool isReadsFileParam(Parameter * param)
-{
-    return (param->hasName("-i") || param->hasName("-p"));
-}
-
-/* 'printHelp' prints all parameters available. */
-void printHelp()
-{
-    *logStream << std::endl
-              << "Program:   pindel (detection of indels and structural variations)"
-              << std::endl;
-    *logStream << Pindel_Version_str << std::endl;
-    *logStream << "Contact:   Kai Ye <k.ye@lumc.nl>" << std::endl << std::endl;
-
-    *logStream << "Usage:     pindel -f <reference.fa> -p <pindel_input>"
-              << std::endl;
-    *logStream << "           [and/or -i bam_configuration_file]" << std::endl;
-    *logStream << "           -c <chromosome_name> -o <prefix_for_output_file>"
-              << std::endl << std::endl;
-
-    *logStream << "Required parameters:" << std::endl;
-
-    for (unsigned int i = 0; i < parameters.size(); i++) {
-        if (parameters[i]->isRequired() || isReadsFileParam(parameters[i])) {
-            parameters[i]->describe();
-        }
-    }
-    *logStream << "\nOptional parameters:" << std::endl;
-
-    for (unsigned int parameterIndex = 0; parameterIndex < parameters.size(); parameterIndex++) {
-        if (!parameters[parameterIndex]->isRequired() && !isReadsFileParam(
-                    parameters[parameterIndex])) {
-            parameters[parameterIndex]->describe();
-        }
-    }
-}
-
-/* 'checkParameters' checks whether all required parameters have been set. */
-bool checkParameters()
-{
-    if (UserDefinedSettings::Instance()->showHelp) {
-        printHelp();
-        return false;
-    }
-
-    for (unsigned int parameterIndex = 0; parameterIndex < parameters.size(); parameterIndex++) {
-        if (parameters[parameterIndex]->isRequired()
-                && !parameters[parameterIndex]->isSet()) {
-            LOG_ERROR(*logStream << "Required parameter "
-                      << parameters[parameterIndex]-> getShortName() << "/"
-                      << parameters[parameterIndex]-> getLongName() << " "
-                      << parameters[parameterIndex]-> getDescription()
-                      << " needs to be set." << std::endl);
-            return false;
-        } //if
-    }
-    // here handle the tricky fact that at least one of -i or -p needs be set; both are not required.
-	bool hasBam = parameters[findParameter("-i")]->isSet();
-	bool hasPin = parameters[findParameter("-p")]->isSet();
-	bool hasPinConfig = parameters[findParameter("-P")]->isSet();
-    if (!hasBam && !hasPin && !hasPinConfig) {
-        LOG_ERROR(*logStream
-                  << "Bam and/or pindel input file required, use -p, -P and/or -i to designate input file(s)."
-                  << std::endl);
-        return false;
-    }
-    LOG_DEBUG(*logStream << "chkP4\n");
-    return true;
 }
 
 /** 'eliminate' eliminates a character from the input string. */
@@ -874,17 +520,19 @@ LineReader *getLineReaderByFilename(const char *filename)
 
 int init(int argc, char *argv[], ControlState& currentState )
 {
-    if (NumRead2ReportCutOff == 1) {
-        BalanceCutoff = 300000000;
+	UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
+
+    if (userSettings->NumRead2ReportCutOff == 1) {
+        userSettings->BalanceCutoff = 300000000;
     }
 
     // define all the parameters you have
-    defineParameters();
+    defineParameters( parameters );
 
     // now read the parameters from the command line
-    readParameters(argc, argv);
+    readParameters(argc, argv, parameters);
 
-	UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
+
 
 	if (userSettings->logFilename != "" ) {
 		g_logFile.open( userSettings->logFilename.c_str() );
@@ -894,12 +542,12 @@ int init(int argc, char *argv[], ControlState& currentState )
     *logStream << Pindel_Version_str << std::endl;
 
     if (argc <= 1) { // the user has not given any parameters
-        printHelp();
+        printHelp( parameters );
         return EXIT_FAILURE;
     }
 
     // check parameters
-    if (!checkParameters()) {
+    if (!checkParameters( parameters )) {
         exit ( EXIT_FAILURE);
     }
     if (userSettings->FLOAT_WINDOW_SIZE > 5000.0) {
@@ -918,33 +566,33 @@ int init(int argc, char *argv[], ControlState& currentState )
 
 
 
-    currentState.PindelReadDefined = parameters[findParameter("-p")]->isSet();
+    currentState.PindelReadDefined = parameters[findParameter("-p",parameters)]->isSet();
     if (currentState.PindelReadDefined) {
 		currentState.lineReader= getLineReaderByFilename(userSettings->pindelFilename.c_str());
         currentState.inf_Pindel_Reads = new PindelReadReader(*currentState.lineReader);
     }
-	currentState.pindelConfigDefined = parameters[findParameter("-P")]->isSet();
+	currentState.pindelConfigDefined = parameters[findParameter("-P",parameters)]->isSet();
 	if (currentState.pindelConfigDefined) {
 		readPindelConfigFile( userSettings->pindelConfigFilename, currentState.pindelfilesToParse );
 	}
-    currentState.BAMDefined = parameters[findParameter("-i")]->isSet();
+    currentState.BAMDefined = parameters[findParameter("-i",parameters)]->isSet();
     if (currentState.BAMDefined) {
         readBamConfigFile( userSettings->bamConfigFilename, currentState );
     }
 
     currentState.OutputFolder =  userSettings->outputFilename;
 
-    bool BreakDancerDefined = parameters[findParameter("-b")]->isSet();
+    bool BreakDancerDefined = parameters[findParameter("-b",parameters)]->isSet();
     if (BreakDancerDefined) {
         g_bdData.loadBDFile(userSettings->breakdancerFilename);
     }
 
-    bool AssemblyInputDefined = parameters[findParameter("-z")]->isSet();
+    bool AssemblyInputDefined = parameters[findParameter("-z",parameters)]->isSet();
     if (AssemblyInputDefined) {
         currentState.inf_AssemblyInput.open(userSettings->inf_AssemblyInputFilename.c_str());
     }
     
-    bool GenotypingInputDefined = parameters[findParameter("-g")]->isSet();
+    bool GenotypingInputDefined = parameters[findParameter("-g",parameters)]->isSet();
     if (GenotypingInputDefined) {
         currentState.inf_GenotypingInput.open(userSettings->inf_GenotypingInputFilename.c_str());
     }
@@ -1200,7 +848,7 @@ int main(int argc, char *argv[])
     
     /* Start of shortcut to genotyping */ // currentState.inf_AssemblyInput.open(par.inf_AssemblyInputFilename.c_str());
     //std::cout << "here " << par.AssemblyInputDefined << std::endl;
-	bool GenotypingInputDefined = parameters[findParameter("-g")]->isSet();
+	bool GenotypingInputDefined = parameters[findParameter("-g",parameters)]->isSet();
     if (GenotypingInputDefined) {
         
         std::cout << "Entering genotyping mode ..." << std::endl;
@@ -1214,7 +862,7 @@ int main(int argc, char *argv[])
     
     /* Start of shortcut to assembly */ // currentState.inf_AssemblyInput.open(par.inf_AssemblyInputFilename.c_str());
     //std::cout << "here " << par.AssemblyInputDefined << std::endl;
-    bool AssemblyInputDefined = parameters[findParameter("-z")]->isSet();
+    bool AssemblyInputDefined = parameters[findParameter("-z",parameters)]->isSet();
     if (AssemblyInputDefined) {
         
         std::cout << "Entering assembly mode ..." << std::endl;
@@ -1349,7 +997,7 @@ int main(int argc, char *argv[])
                  << " reads for this chromosome region." << std::endl); // what region?
 
                 int TotalNumReads = currentState.Reads_SR.size();
-                if (ReportCloseMappedRead || userSettings->reportOnlyCloseMappedReads ) {
+                if (userSettings->ReportCloseMappedRead || userSettings->reportOnlyCloseMappedReads ) {
                     std::string CloseEndMappedOutputFilename =
                         currentState.OutputFolder + "_CloseEndMapped";
                     std::ofstream CloseEndMappedOutput(
@@ -1394,12 +1042,12 @@ int main(int argc, char *argv[])
 
                     returnValue = searchIndels(currentState, NumBoxes);
 
-                    if (Analyze_TD) {
+                    if (userSettings->Analyze_TD) {
                         returnValue = searchTandemDuplications(currentState, NumBoxes);
                         returnValue = searchTandemDuplicationsNT(currentState, NumBoxes);
                     }
 
-                    if (Analyze_INV) {
+                    if (userSettings->Analyze_INV) {
                         returnValue = searchInversions(currentState, NumBoxes);
                         returnValue = searchInversionsNT(currentState, NumBoxes);
                     }
@@ -1479,7 +1127,7 @@ int main(int argc, char *argv[])
                     (*logStream << "For LI and BP: " << Count_Unused << std::endl
                      << std::endl);
 
-                    if (Analyze_LI) {
+                    if (userSettings->Analyze_LI) {
                         time_t Time_LI_S, Time_LI_E;
                         Time_LI_S = time(NULL);
                         std::ofstream LargeInsertionOutf(
@@ -1498,7 +1146,7 @@ int main(int argc, char *argv[])
 
                     std::vector<SPLIT_READ> BP_Reads;
                     BP_Reads.clear();
-                    if (Analyze_BP) {
+                    if (userSettings->Analyze_BP) {
                         time_t Time_BP_S, Time_BP_E;
                         Time_BP_S = time(NULL);
                         std::ofstream RestOutf(currentState.RestOutputFilename.c_str(),
@@ -1840,8 +1488,8 @@ void CheckBoth(const SPLIT_READ & OneRead, const std::string & TheInput,
             if (PD_Plus[i].size() + PD_Minus[i].size() == 1 && CurrentLength
                     >= BP_Start + i) {
                 Sum = 0;
-                if (ADDITIONAL_MISMATCH)
-                    for (short j = 0; j <= i + ADDITIONAL_MISMATCH; j++) {
+                if (userSettings->ADDITIONAL_MISMATCH)
+                    for (short j = 0; j <= i + userSettings->ADDITIONAL_MISMATCH; j++) {
                         Sum += PD_Plus[j].size() + PD_Minus[j].size();
                     }
 

@@ -58,12 +58,8 @@ OutputSorter::SortAndOutputNonTemplateInversions (std::vector<SPLIT_READ>& Reads
              Count_INV_NT_output << std::endl << std::endl);
 }
 
-int
-OutputSorter::DoSortAndOutputInversions (std::vector<SPLIT_READ> &Reads,
-      std::vector<unsigned> Inv[],
-      bool isNonTemplateInversion)
+int OutputSorter::DoSortAndOutputInversions (std::vector<SPLIT_READ> &Reads, std::vector<unsigned> Inv[], bool isNonTemplateInversion)
 {
-    //*logStream << "start" << std::endl;
    unsigned int InversionsNum;
    short CompareResult;
    unsigned Temp4Exchange;
@@ -71,12 +67,12 @@ OutputSorter::DoSortAndOutputInversions (std::vector<SPLIT_READ> &Reads,
    std::vector<SPLIT_READ> GoodIndels;
    std::vector<Indel4output> IndelEvents;
    int ReportedEventCount = 0;
-    //*logStream << "start1" << std::endl;
+	UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
+
    for (unsigned Box_index = 0; Box_index < NumBoxes; Box_index++) {
-      if (Inv[Box_index].size () >= NumRead2ReportCutOff) {
+      if (Inv[Box_index].size () >= userSettings->NumRead2ReportCutOff) {
          InversionsNum = Inv[Box_index].size ();
          LOG_DEBUG (*logStream << Box_index << "\t" << Inv[Box_index].size () << std::endl);
-          //*logStream << Box_index << std::endl;
          for (unsigned int First = 0; First < InversionsNum - 1; First++) {
             for (unsigned int Second = First + 1; Second < InversionsNum;
                   Second++) {
@@ -284,39 +280,22 @@ OutputSorter::DoSortAndOutputInversions (std::vector<SPLIT_READ> &Reads,
 int OutputSorter::ReportIndelEvents (std::vector<Indel4output> &IndelEvents,
                                  std::vector<SPLIT_READ> &GoodIndels)
 {  
-    //*logStream << "ReportIndelEvents" << std::endl;
    int ReportedEventCount = 0;
-   for (unsigned EventIndex = 0; EventIndex < IndelEvents.size ();
-         EventIndex++) {
-       //*logStream << EventIndex << std::endl;
-      LOG_DEBUG (*logStream << IndelEvents[EventIndex].Start <<
-                 "\t" << IndelEvents[EventIndex].End <<
-                 "\t" << IndelEvents[EventIndex].Support << std::endl);
+	UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
+
+   for (unsigned EventIndex = 0; EventIndex < IndelEvents.size (); EventIndex++) {
+      LOG_DEBUG (*logStream << IndelEvents[EventIndex].Start << "\t" << IndelEvents[EventIndex].End << "\t" << IndelEvents[EventIndex].Support << std::endl);
       unsigned int RealStart = IndelEvents[EventIndex].RealStart;
       unsigned int RealEnd = IndelEvents[EventIndex].RealEnd;
-      if (IndelEvents[EventIndex].Support < NumRead2ReportCutOff) {
+      if (IndelEvents[EventIndex].Support < userSettings->NumRead2ReportCutOff) {
          continue;
       }
-      // *logStream << "ReportIndelEvents 1" << std::endl;
-      if (GoodIndels[IndelEvents[EventIndex].Start].IndelSize <
-            BalanceCutoff) {
-          //*logStream << "ReportIndelEvents 2" << std::endl;
-         OutputInversions (GoodIndels, *CurrentChr,
-                           IndelEvents[EventIndex].Start,
-                           IndelEvents[EventIndex].End,
-                           RealStart, RealEnd, *InvOutf);
-         // *logStream << "ReportIndelEvents 2'" << std::endl;
+      if (GoodIndels[IndelEvents[EventIndex].Start].IndelSize < UserDefinedSettings::Instance()->BalanceCutoff) {
+         OutputInversions (GoodIndels, *CurrentChr, IndelEvents[EventIndex].Start, IndelEvents[EventIndex].End, RealStart, RealEnd, *InvOutf);
          ReportedEventCount++;
       }
-      else if (ReportEvent
-               (GoodIndels, IndelEvents[EventIndex].Start,
-                IndelEvents[EventIndex].End)) {
-                  // *logStream << "ReportIndelEvents 3" << std::endl;
-         OutputInversions (GoodIndels, *CurrentChr,
-                           IndelEvents[EventIndex].Start,
-                           IndelEvents[EventIndex].End,
-                           RealStart, RealEnd, *InvOutf);
-                  // *logStream << "ReportIndelEvents 3'" << std::endl;
+      else if (ReportEvent(GoodIndels, IndelEvents[EventIndex].Start, IndelEvents[EventIndex].End)) {
+         OutputInversions (GoodIndels, *CurrentChr, IndelEvents[EventIndex].Start, IndelEvents[EventIndex].End, RealStart, RealEnd, *InvOutf);
          ReportedEventCount++;
       }
    }

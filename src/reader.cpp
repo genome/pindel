@@ -460,22 +460,12 @@ ReadInBamReads_SR (const char *bam_path, const std::string & FragName,
 
 bool isGoodAnchor( const flags_hit *read, const bam1_core_t *bamCore )
 {
-   //*logStream << "isGoodAnchor" << std::endl;
-   int maxEdits = int (bamCore->l_qseq * MaximumAllowedMismatchRate) + 1;
+	UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
+   int maxEdits = int (bamCore->l_qseq * userSettings->MaximumAllowedMismatchRate) + 1;
    unsigned int mappingQuality = bamCore->qual;
-   /*
-   *logStream << "mapped " << read->mapped << "\t"
-             << "mappingQuality " << mappingQuality << "\t"
-             << "g_minimalAnchorQuality " << g_minimalAnchorQuality << "\t"
-             << "unique " << read->unique << "\t"
-             << "sw " << read->sw << "\t"
-             << "read->unique || read->sw " << (read->unique || read->sw) << "\t"
-             << "suboptimal " << read->suboptimal << "\t"
-             << "edits " << read->edits << "\t"
-             << "maxEdits " << maxEdits << std::endl;
-    */
+
    return ( read->mapped &&
-            ( mappingQuality >= g_minimalAnchorQuality ) &&
+            ( mappingQuality >= userSettings->minimalAnchorQuality ) &&
             ( read->unique || read->sw ) &&
             ( ! read->suboptimal ) &&
             ( read->edits <= maxEdits )
@@ -484,7 +474,6 @@ bool isGoodAnchor( const flags_hit *read, const bam1_core_t *bamCore )
 
 bool isWeirdRead( const flags_hit *read, const bam1_t * bamOfRead )
 {
-   //*logStream << "isWeirdRead" << std::endl;
    if ( ! read->mapped ) {
       return true;
    }

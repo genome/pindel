@@ -46,81 +46,36 @@ int searchInversionsNT(ControlState& currentState, unsigned NumBoxes)
       }
       CloseIndex = currentRead.UP_Close.size() - 1;
       FarIndex = currentRead.UP_Far.size() - 1;
-      if (currentRead.UP_Far[FarIndex].Mismatches
-            + currentRead.UP_Close[CloseIndex].Mismatches
-            > (short) (1
-                       + userSettings->Seq_Error_Rate
-                       * (currentRead.UP_Far[FarIndex].LengthStr
-                          + currentRead.UP_Close[CloseIndex]. LengthStr))) {
+      if (currentRead.UP_Far[FarIndex].Mismatches + currentRead.UP_Close[CloseIndex].Mismatches > 
+			(short) (1 + userSettings->Seq_Error_Rate * (currentRead.UP_Far[FarIndex].LengthStr + currentRead.UP_Close[CloseIndex].LengthStr))) {
          continue;
       }
-      if (currentRead.UP_Close[0].Strand
-            != currentRead.UP_Far[0].Strand
-            && currentRead.UP_Close[0].Direction
-            == currentRead.UP_Far[0].Direction) {
+      if (currentRead.UP_Close[0].Strand != currentRead.UP_Far[0].Strand && 
+				currentRead.UP_Close[0].Direction == currentRead.UP_Far[0].Direction) {
          if (currentRead.MatchedD == Plus) {
-            if (currentRead.UP_Far[FarIndex]. Direction
-                  == Plus) {
-               if (currentRead.UP_Far[FarIndex]. LengthStr
-                     + currentRead.UP_Close[CloseIndex]. LengthStr
-                     < currentRead.getReadLength()
-                     && currentRead.UP_Far[FarIndex]. AbsLoc
-                     > currentRead.UP_Close[CloseIndex]. AbsLoc
-                     + MIN_IndelSize_Inversion
-                     && currentRead.UP_Far[FarIndex]. LengthStr
-                     + currentRead.UP_Close[CloseIndex]. LengthStr
-                     >= Min_Num_Matched_Bases) {
-                  currentRead.Left
-                     = (currentRead. UP_Close[CloseIndex].AbsLoc
-                        + 1)
-                       - currentRead.UP_Close[CloseIndex]. LengthStr;
-                  currentRead.Right
-                     = currentRead.UP_Far[FarIndex]. AbsLoc
-                       - currentRead.UP_Far[FarIndex]. LengthStr
-                       + currentRead.getReadLength();
-                  currentRead.BP
-                     = currentRead.UP_Close[CloseIndex]. LengthStr
-                       - 1;
+            if (currentRead.UP_Far[FarIndex]. Direction == Plus) {
+               if (currentRead.UP_Far[FarIndex].LengthStr + currentRead.UP_Close[CloseIndex].LengthStr < currentRead.getReadLength() && 
+						 currentRead.UP_Far[FarIndex].AbsLoc > currentRead.UP_Close[CloseIndex].AbsLoc + userSettings->MIN_IndelSize_Inversion && 
+						 currentRead.UP_Far[FarIndex].LengthStr + currentRead.UP_Close[CloseIndex].LengthStr >= userSettings->Min_Num_Matched_Bases ) {
 
-                  currentRead.IndelSize
-                     = currentRead.UP_Far[FarIndex]. AbsLoc
-                       - currentRead.UP_Close[CloseIndex]. AbsLoc;
+                  currentRead.Left = (currentRead. UP_Close[CloseIndex].AbsLoc + 1) - currentRead.UP_Close[CloseIndex].LengthStr;
+                  currentRead.Right = currentRead.UP_Far[FarIndex].AbsLoc - currentRead.UP_Far[FarIndex].LengthStr + currentRead.getReadLength();
+                  currentRead.BP = currentRead.UP_Close[CloseIndex].LengthStr - 1;
 
-                  currentRead.NT_size
-                     = currentRead.getReadLength()
-                       - currentRead.UP_Far[FarIndex].LengthStr
-                       - currentRead.UP_Close[CloseIndex].LengthStr; // NT_2str
-                  currentRead.NT_str
-                     = ReverseComplement(
-                          currentRead. getUnmatchedSeq()). substr(
-                          currentRead.BP + 1,
-                          currentRead.NT_size);
-                  //currentRead.InsertedStr = "";
-                  currentRead.BPLeft
-                     = currentRead.UP_Close[CloseIndex].AbsLoc
-                       + 1 - g_SpacerBeforeAfter;
-                  currentRead.BPRight
-                     = currentRead.UP_Far[FarIndex].AbsLoc
-                       - g_SpacerBeforeAfter;
-                  if (readTransgressesBinBoundaries(
-                           currentRead,
-                           currentState.upperBinBorder)) {
-                     saveReadForNextCycle(currentRead,
-                                          currentState.FutureReads_SR);
+                  currentRead.IndelSize = currentRead.UP_Far[FarIndex].AbsLoc - currentRead.UP_Close[CloseIndex].AbsLoc;
+
+                  currentRead.NT_size = currentRead.getReadLength() - currentRead.UP_Far[FarIndex].LengthStr - currentRead.UP_Close[CloseIndex].LengthStr; // NT_2str
+                  currentRead.NT_str = ReverseComplement( currentRead. getUnmatchedSeq()).substr(currentRead.BP + 1, currentRead.NT_size);
+                  currentRead.BPLeft = currentRead.UP_Close[CloseIndex].AbsLoc + 1 - g_SpacerBeforeAfter;
+                  currentRead.BPRight = currentRead.UP_Far[FarIndex].AbsLoc - g_SpacerBeforeAfter;
+                  if (readTransgressesBinBoundaries( currentRead, currentState.upperBinBorder)) {
+                     saveReadForNextCycle(currentRead, currentState.FutureReads_SR);
                   }
                   else {
-                     if (//currentRead.NT_size
-                         //  <= Max_Length_NT
-                         1
-                         ) {
-                        if (readInSpecifiedRegion(
-                                 currentRead,
-                                 currentState.regionStartDefined,
-                                 currentState.regionEndDefined,
-                                 currentState.startOfRegion,
-                                 currentState.endOfRegion)) {
-                           Inv_NT[(int) currentRead. BPLeft
-                                  / BoxSize]. push_back(ReadIndex);
+                     if ( 1 ) {
+                        if (readInSpecifiedRegion( currentRead, currentState.regionStartDefined, currentState.regionEndDefined,
+                                 currentState.startOfRegion, currentState.endOfRegion)) {
+                           Inv_NT[(int) currentRead. BPLeft / BoxSize]. push_back(ReadIndex);
                            currentRead.Used = true;
                            Count_Inv_NT++;
                            Count_Inv_NT_Plus++;
@@ -130,64 +85,28 @@ int searchInversionsNT(ControlState& currentState, unsigned NumBoxes)
 
                }
                // anchor inside reversed block.
-               if (currentRead.UP_Far[FarIndex]. LengthStr
-                     + currentRead.UP_Close[CloseIndex]. LengthStr
-                     < currentRead.getReadLength()
-                     && currentRead.UP_Far[FarIndex]. AbsLoc
-                     + MIN_IndelSize_Inversion
-                     < currentRead.UP_Close[CloseIndex]. AbsLoc
-                     && currentRead.UP_Far[FarIndex]. LengthStr
-                     + currentRead.UP_Close[CloseIndex]. LengthStr
-                     >= Min_Num_Matched_Bases) {
-                  currentRead.Right
-                     = currentRead.UP_Close[CloseIndex]. AbsLoc
-                       - currentRead.UP_Close[CloseIndex]. LengthStr
-                       + currentRead.getReadLength();
-                  currentRead.Left
-                     = currentRead.UP_Far[FarIndex]. AbsLoc
-                       - currentRead.UP_Far[FarIndex]. LengthStr
-                       + 1;
-                  currentRead.BP
-                     = currentRead.UP_Far[FarIndex]. LengthStr
-                       - 1;
+               if (currentRead.UP_Far[FarIndex].LengthStr + currentRead.UP_Close[CloseIndex].LengthStr < currentRead.getReadLength() && 
+						 currentRead.UP_Far[FarIndex].AbsLoc + userSettings->MIN_IndelSize_Inversion < currentRead.UP_Close[CloseIndex].AbsLoc && 
+                   currentRead.UP_Far[FarIndex].LengthStr + currentRead.UP_Close[CloseIndex].LengthStr >= userSettings->Min_Num_Matched_Bases) {
 
-                  currentRead.IndelSize
-                     = currentRead.UP_Close[CloseIndex]. AbsLoc
-                       - currentRead.UP_Far[FarIndex]. AbsLoc;
+                  currentRead.Right = currentRead.UP_Close[CloseIndex].AbsLoc - currentRead.UP_Close[CloseIndex].LengthStr + currentRead.getReadLength();
+                  currentRead.Left = currentRead.UP_Far[FarIndex].AbsLoc - currentRead.UP_Far[FarIndex].LengthStr + 1;
+                  currentRead.BP = currentRead.UP_Far[FarIndex].LengthStr - 1;
 
-                  currentRead.NT_size
-                     = currentRead.getReadLength()
-                       - currentRead.UP_Far[FarIndex]. LengthStr
-                       - currentRead.UP_Close[CloseIndex]. LengthStr;
-                  currentRead.NT_str
-                     = currentRead.getUnmatchedSeq(). substr(
-                          currentRead.BP + 1,
-                          currentRead.NT_size);
-                  //currentRead.InsertedStr = "";
-                  currentRead.BPRight
-                     = currentRead.UP_Close[CloseIndex].AbsLoc
-                       - g_SpacerBeforeAfter;
-                  currentRead.BPLeft
-                     = (currentRead.UP_Far[FarIndex].AbsLoc
-                        + 1) - g_SpacerBeforeAfter;
+                  currentRead.IndelSize = currentRead.UP_Close[CloseIndex].AbsLoc - currentRead.UP_Far[FarIndex].AbsLoc;
 
-                  if (readTransgressesBinBoundaries(
-                           currentRead,
-                           currentState.upperBinBorder)) {
-                     saveReadForNextCycle(currentRead,
-                                          currentState.FutureReads_SR);
+                  currentRead.NT_size = currentRead.getReadLength() - currentRead.UP_Far[FarIndex].LengthStr - currentRead.UP_Close[CloseIndex].LengthStr;
+                  currentRead.NT_str = currentRead.getUnmatchedSeq(). substr( currentRead.BP + 1, currentRead.NT_size);
+                  currentRead.BPRight = currentRead.UP_Close[CloseIndex].AbsLoc - g_SpacerBeforeAfter;
+                  currentRead.BPLeft = (currentRead.UP_Far[FarIndex].AbsLoc + 1) - g_SpacerBeforeAfter;
+
+                  if (readTransgressesBinBoundaries( currentRead, currentState.upperBinBorder)) {
+                     saveReadForNextCycle(currentRead, currentState.FutureReads_SR);
                   }
                   else {
-                     if (//currentRead.NT_size
-                         //  <= Max_Length_NT && 
-                         readInSpecifiedRegion(
-                              currentRead,
-                              currentState.regionStartDefined,
-                              currentState.regionEndDefined,
-                              currentState.startOfRegion,
-                              currentState.endOfRegion)) {
-                        Inv_NT[(int) currentRead. BPLeft
-                               / BoxSize]. push_back(ReadIndex);
+                     if ( readInSpecifiedRegion( currentRead, currentState.regionStartDefined, currentState.regionEndDefined, 
+								currentState.startOfRegion, currentState.endOfRegion)) {
+                        Inv_NT[(int) currentRead. BPLeft / BoxSize]. push_back(ReadIndex);
                         currentRead.Used = true;
                         Count_Inv_NT++;
                         Count_Inv_NT_Plus++;
@@ -198,66 +117,29 @@ int searchInversionsNT(ControlState& currentState, unsigned NumBoxes)
 
          }
          else if (currentRead.MatchedD == Minus) {
-            if (currentRead.UP_Far[FarIndex]. Direction
-                  == Minus) {
+            if (currentRead.UP_Far[FarIndex]. Direction == Minus) {
                // anchor outside reversed block.
-               if (currentRead.UP_Close[CloseIndex]. LengthStr
-                     + currentRead.UP_Far[FarIndex]. LengthStr
-                     < currentRead.getReadLength()
-                     && currentRead. UP_Close[CloseIndex].AbsLoc
-                     > currentRead.UP_Far[FarIndex]. AbsLoc
-                     + MIN_IndelSize_Inversion
-                     && currentRead.UP_Far[FarIndex]. LengthStr
-                     + currentRead.UP_Close[CloseIndex]. LengthStr
-                     >= Min_Num_Matched_Bases) {
-                  currentRead.Left
-                     = currentRead.UP_Far[FarIndex]. AbsLoc
-                       + currentRead.UP_Far[FarIndex]. LengthStr
-                       - currentRead.getReadLength();
-                  currentRead.Right
-                     = currentRead.UP_Close[CloseIndex]. AbsLoc
-                       + currentRead.UP_Close[CloseIndex]. LengthStr
-                       - 1;
-                  currentRead.BP
-                     = currentRead.UP_Far[FarIndex]. LengthStr
-                       - 1;
+               if (currentRead.UP_Close[CloseIndex].LengthStr  + currentRead.UP_Far[FarIndex].LengthStr < currentRead.getReadLength() && 
+                   currentRead.UP_Close[CloseIndex].AbsLoc > currentRead.UP_Far[FarIndex].AbsLoc + userSettings->MIN_IndelSize_Inversion && 
+                   currentRead.UP_Far[FarIndex].LengthStr + currentRead.UP_Close[CloseIndex].LengthStr >= userSettings->Min_Num_Matched_Bases) {
 
-                  currentRead.IndelSize
-                     = currentRead.UP_Close[CloseIndex]. AbsLoc
-                       - currentRead.UP_Far[FarIndex]. AbsLoc;
+                  currentRead.Left = currentRead.UP_Far[FarIndex].AbsLoc + currentRead.UP_Far[FarIndex].LengthStr - currentRead.getReadLength();
+                  currentRead.Right = currentRead.UP_Close[CloseIndex].AbsLoc + currentRead.UP_Close[CloseIndex].LengthStr - 1;
+                  currentRead.BP = currentRead.UP_Far[FarIndex].LengthStr - 1;
 
-                  currentRead.NT_size
-                     = currentRead.getReadLength()
-                       - currentRead.UP_Far[FarIndex]. LengthStr
-                       - currentRead.UP_Close[CloseIndex]. LengthStr;
-                  currentRead.NT_str
-                     = currentRead.getUnmatchedSeq(). substr(
-                          currentRead.BP + 1,
-                          currentRead.NT_size);
-                  //currentRead.InsertedStr = "";
-                  currentRead.BPLeft
-                     = currentRead.UP_Far[FarIndex].AbsLoc
-                       - g_SpacerBeforeAfter;
-                  currentRead.BPRight
-                     = currentRead.UP_Close[CloseIndex].AbsLoc
-                       - 1 - g_SpacerBeforeAfter;
-                  if (readTransgressesBinBoundaries(
-                           currentRead,
-                           currentState.upperBinBorder)) {
-                     saveReadForNextCycle(currentRead,
-                                          currentState.FutureReads_SR);
+                  currentRead.IndelSize = currentRead.UP_Close[CloseIndex].AbsLoc - currentRead.UP_Far[FarIndex].AbsLoc;
+
+                  currentRead.NT_size = currentRead.getReadLength() - currentRead.UP_Far[FarIndex].LengthStr - currentRead.UP_Close[CloseIndex].LengthStr;
+                  currentRead.NT_str = currentRead.getUnmatchedSeq().substr( currentRead.BP + 1, currentRead.NT_size);
+                  currentRead.BPLeft = currentRead.UP_Far[FarIndex].AbsLoc - g_SpacerBeforeAfter;
+                  currentRead.BPRight = currentRead.UP_Close[CloseIndex].AbsLoc - 1 - g_SpacerBeforeAfter;
+                  if (readTransgressesBinBoundaries( currentRead, currentState.upperBinBorder)) {
+                     saveReadForNextCycle(currentRead, currentState.FutureReads_SR);
                   }
                   else {
-                     if (//currentRead.NT_size
-                         //  <= Max_Length_NT && 
-                         readInSpecifiedRegion(
-                              currentRead,
-                              currentState.regionStartDefined,
-                              currentState.regionEndDefined,
-                              currentState.startOfRegion,
-                              currentState.endOfRegion)) {
-                        Inv_NT[(int) currentRead. BPLeft
-                               / BoxSize]. push_back(ReadIndex);
+                     if ( readInSpecifiedRegion( currentRead, currentState.regionStartDefined, currentState.regionEndDefined,
+                              currentState.startOfRegion, currentState.endOfRegion)) {
+                        Inv_NT[(int) currentRead. BPLeft / BoxSize]. push_back(ReadIndex);
                         currentRead.Used = true;
 
                         Count_Inv_NT++;
@@ -266,65 +148,29 @@ int searchInversionsNT(ControlState& currentState, unsigned NumBoxes)
                   }
                }
                // anchor inside reversed block.
-               if (currentRead.UP_Close[CloseIndex]. LengthStr
-                     + currentRead.UP_Far[FarIndex]. LengthStr
-                     < currentRead.getReadLength()
-                     && currentRead. UP_Close[CloseIndex].AbsLoc
-                     + MIN_IndelSize_Inversion
-                     < currentRead.UP_Far[FarIndex].AbsLoc
-                     && currentRead.UP_Far[FarIndex]. LengthStr
-                     + currentRead.UP_Close[CloseIndex]. LengthStr
-                     >= Min_Num_Matched_Bases) {
-                  currentRead.Right
-                     = currentRead.UP_Far[FarIndex]. AbsLoc
-                       + currentRead.UP_Far[FarIndex]. LengthStr
-                       - 1;
-                  currentRead.Left
-                     = currentRead.UP_Close[CloseIndex]. AbsLoc
-                       + currentRead.UP_Close[CloseIndex]. LengthStr
-                       - currentRead.getReadLength();
-                  currentRead.BP
-                     = currentRead.UP_Close[CloseIndex]. LengthStr
-                       - 1;
+               if (currentRead.UP_Close[CloseIndex].LengthStr + currentRead.UP_Far[FarIndex].LengthStr < currentRead.getReadLength() && 
+                   currentRead.UP_Close[CloseIndex].AbsLoc + userSettings->MIN_IndelSize_Inversion < currentRead.UP_Far[FarIndex].AbsLoc && 
+                   currentRead.UP_Far[FarIndex].LengthStr + currentRead.UP_Close[CloseIndex].LengthStr >= userSettings->Min_Num_Matched_Bases) {
 
-                  currentRead.IndelSize
-                     = currentRead.UP_Far[FarIndex]. AbsLoc
-                       - currentRead.UP_Close[CloseIndex]. AbsLoc;
+                  currentRead.Right = currentRead.UP_Far[FarIndex].AbsLoc + currentRead.UP_Far[FarIndex].LengthStr - 1;
+                  currentRead.Left = currentRead.UP_Close[CloseIndex].AbsLoc + currentRead.UP_Close[CloseIndex].LengthStr - currentRead.getReadLength();
+                  currentRead.BP = currentRead.UP_Close[CloseIndex].LengthStr - 1;
 
-                  currentRead.NT_size
-                     = currentRead.getReadLength()
-                       - currentRead.UP_Far[FarIndex]. LengthStr
-                       - currentRead.UP_Close[CloseIndex]. LengthStr;
-                  currentRead.NT_str
-                     = ReverseComplement(
-                          currentRead. getUnmatchedSeq()). substr(
-                          currentRead.BP + 1,
-                          currentRead.NT_size);
-                  //currentRead.InsertedStr = "";
-                  currentRead.BPLeft
-                     = currentRead.UP_Close[CloseIndex].AbsLoc
-                       - g_SpacerBeforeAfter;
-                  currentRead.BPRight
-                     = currentRead.UP_Far[FarIndex].AbsLoc
-                       - 1 - g_SpacerBeforeAfter;
+                  currentRead.IndelSize = currentRead.UP_Far[FarIndex].AbsLoc - currentRead.UP_Close[CloseIndex].AbsLoc;
 
-                  if (readTransgressesBinBoundaries(
-                           currentRead,
-                           currentState.upperBinBorder)) {
-                     saveReadForNextCycle(currentRead,
-                                          currentState.FutureReads_SR);
+                  currentRead.NT_size = currentRead.getReadLength() - currentRead.UP_Far[FarIndex].LengthStr - currentRead.UP_Close[CloseIndex].LengthStr;
+                  currentRead.NT_str = ReverseComplement( currentRead. getUnmatchedSeq()). substr( currentRead.BP + 1, currentRead.NT_size);
+                  currentRead.BPLeft = currentRead.UP_Close[CloseIndex].AbsLoc - g_SpacerBeforeAfter;
+                  currentRead.BPRight = currentRead.UP_Far[FarIndex].AbsLoc - 1 - g_SpacerBeforeAfter;
+
+                  if (readTransgressesBinBoundaries( currentRead, currentState.upperBinBorder)) {
+                     saveReadForNextCycle(currentRead, currentState.FutureReads_SR);
                   }
                   else {
-                     if (//currentRead.NT_size
-                         //  <= Max_Length_NT && 
-                         readInSpecifiedRegion(
-                              currentRead,
-                              currentState.regionStartDefined,
-                              currentState.regionEndDefined,
-                              currentState.startOfRegion,
-                              currentState.endOfRegion)) {
-                        Inv_NT[(int) currentRead. BPLeft
-                               / BoxSize]. push_back(ReadIndex);
+                     if ( readInSpecifiedRegion( currentRead, currentState.regionStartDefined, currentState.regionEndDefined, currentState.startOfRegion,
+	                     currentState.endOfRegion)) {
+
+                        Inv_NT[(int) currentRead. BPLeft / BoxSize]. push_back(ReadIndex);
                         currentRead.Used = true;
 
                         Count_Inv_NT++;

@@ -25,8 +25,7 @@
 
 
 
-void
-CheckLeft_Close (const SPLIT_READ & OneRead,
+void CheckLeft_Close (const SPLIT_READ & OneRead,
                  const std::string & TheInput,
                  const std::string & CurrentReadSeq,
                  const std::vector < unsigned int >Left_PD[],
@@ -43,8 +42,8 @@ CheckLeft_Close (const SPLIT_READ & OneRead,
       for (short i = 0; i <= OneRead.getMAX_SNP_ERROR(); i++) {
          if (Left_PD[i].size () == 1 && CurrentLength >= BP_Left_Start + i) {
             Sum = 0;
-            if (ADDITIONAL_MISMATCH)
-               for (short j = 0; j <= i + ADDITIONAL_MISMATCH; j++) {
+            if (userSettings->ADDITIONAL_MISMATCH)
+               for (short j = 0; j <= i + userSettings->ADDITIONAL_MISMATCH; j++) {
                   Sum += Left_PD[j].size ();
                }
 
@@ -171,8 +170,8 @@ CheckRight_Close (const SPLIT_READ & OneRead,
       for (short i = 0; i <= OneRead.getMAX_SNP_ERROR(); i++) {
          if (Right_PD[i].size () == 1 && CurrentLength >= BP_Right_Start + i) {
             Sum = 0;
-            if (ADDITIONAL_MISMATCH)
-               for (short j = 0; j <= i+ ADDITIONAL_MISMATCH; j++) {
+            if (userSettings->ADDITIONAL_MISMATCH)
+               for (short j = 0; j <= i+ userSettings->ADDITIONAL_MISMATCH; j++) {
                   Sum += Right_PD[j].size ();
                }
 
@@ -273,14 +272,9 @@ CheckRight_Close (const SPLIT_READ & OneRead,
    }
 }
 
-bool
-CheckMismatches (const std::string & TheInput, const std::string & InputReadSeq,
-                 //const unsigned int & Start,
-                 const UniquePoint & UP)
+bool CheckMismatches (const std::string & TheInput, const std::string & InputReadSeq, const UniquePoint & UP)
 {
-   //return true;  short LengthStr;
-   //unsigned int AbsLoc;
-   //cout << "CheckMismatches1" << endl;
+	int Min_Perfect_Match_Around_BP = UserDefinedSettings::Instance()->Min_Perfect_Match_Around_BP;
    std::string CurrentReadSeq;
    if (UP.Strand == SENSE) {
       CurrentReadSeq = InputReadSeq;
@@ -290,39 +284,23 @@ CheckMismatches (const std::string & TheInput, const std::string & InputReadSeq,
    }
    short CurrentReadLength = CurrentReadSeq.size ();
    unsigned int Start = 0;
-   //cout << "CheckMismatches2" << endl;
    std::string BP_On_Read, BP_On_Ref;
    if (UP.Direction == FORWARD) {
-      //cout << "+s" << endl;
-      //cout << "UP.AbsLoc: " << UP.AbsLoc << "\t" << "UP.LengthStr: " << UP.LengthStr << endl;
 
       Start = UP.AbsLoc - UP.LengthStr + 1;
-      //cout << "Start: " << Start << endl;
-      //cout << "Min_Perfect_Match_Around_BP: " << Min_Perfect_Match_Around_BP << endl;
       if (UP.LengthStr <= Min_Perfect_Match_Around_BP) {
-          //std::cout << "here 1" << std::endl;
          return false;
       }
-      BP_On_Read =
-         CurrentReadSeq.substr (UP.LengthStr - Min_Perfect_Match_Around_BP,
-                                Min_Perfect_Match_Around_BP);
-      //cout << "BP_On_Read: " << BP_On_Read << endl;
-      //if (UP.AbsLoc < Min_Perfect_Match_Around_BP) return false;
-      BP_On_Ref =
-         TheInput.substr (UP.AbsLoc - Min_Perfect_Match_Around_BP + 1,
-                          Min_Perfect_Match_Around_BP);
-      //cout << "BP_On_Ref: " << BP_On_Ref << endl;
+      BP_On_Read = CurrentReadSeq.substr (UP.LengthStr - Min_Perfect_Match_Around_BP, Min_Perfect_Match_Around_BP);
+      BP_On_Ref = TheInput.substr (UP.AbsLoc - Min_Perfect_Match_Around_BP + 1, Min_Perfect_Match_Around_BP);
+
       if (BP_On_Read != BP_On_Ref) {
-          //std::cout << "here 2" << std::endl;
          return false; //#################################
       }
-      //cout << "+e" << endl;
    }
    else if (UP.Direction == BACKWARD) {
-      //cout << "-s" << endl;
       Start = UP.AbsLoc + UP.LengthStr - CurrentReadLength;
       if (CurrentReadLength < UP.LengthStr) {
-          //std::cout << "here 3" << std::endl;
          return false;
       }
       BP_On_Read =
@@ -330,13 +308,10 @@ CheckMismatches (const std::string & TheInput, const std::string & InputReadSeq,
                                 Min_Perfect_Match_Around_BP);
       BP_On_Ref = TheInput.substr (UP.AbsLoc, Min_Perfect_Match_Around_BP);
       if (BP_On_Read != BP_On_Ref) {
-          //std::cout << "here 4" << std::endl;
          return false; //#################################
       }
-      //cout << "-e" << endl;
    }
-   //cout << "CheckMismatches3" << endl;
-   float MAX_ALLOWED_MISMATCHES = CurrentReadSeq.size () * MaximumAllowedMismatchRate;	//
+   float MAX_ALLOWED_MISMATCHES = CurrentReadSeq.size () * UserDefinedSettings::Instance()->MaximumAllowedMismatchRate;	//
 
    short NumMismatches = 0;			// Match2N[(short)'A'] = 'N';
 

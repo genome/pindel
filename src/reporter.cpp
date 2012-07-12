@@ -693,13 +693,13 @@ SortOutputSI (const unsigned &NumBoxes, const std::string & CurrentChr,
    unsigned int SIsNum;
    short CompareResult;
    unsigned Temp4Exchange;
-
    std::vector < SPLIT_READ > GoodIndels;
    unsigned int GoodNum;
    std::vector < Indel4output > IndelEvents;
+	UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
 
    for (unsigned Box_index = 0; Box_index < NumBoxes; Box_index++) {
-      if (SIs[Box_index].size () >= NumRead2ReportCutOff) {
+      if (SIs[Box_index].size () >= userSettings->NumRead2ReportCutOff) {
          SIsNum = SIs[Box_index].size ();
          LOG_DEBUG(*logStream << "SIsNum " << SIsNum << std::endl);
          for (unsigned int First = 0; First < SIsNum - 1; First++) {
@@ -707,21 +707,17 @@ SortOutputSI (const unsigned &NumBoxes, const std::string & CurrentChr,
                for (unsigned int Second = First + 1; Second < SIsNum; Second++) {
                   {  
                       CompareResult = 0;
-                     if (Reads[SIs[Box_index][First]].BPLeft <
-                           Reads[SIs[Box_index][Second]].BPLeft) {
+                     if (Reads[SIs[Box_index][First]].BPLeft < Reads[SIs[Box_index][Second]].BPLeft) {
                         continue;
                      }
-                     else if (Reads[SIs[Box_index][First]].BPLeft >
-                              Reads[SIs[Box_index][Second]].BPLeft) {
+                     else if (Reads[SIs[Box_index][First]].BPLeft > Reads[SIs[Box_index][Second]].BPLeft) {
                         CompareResult = 1;
                      }
                      else {
-                        if (Reads[SIs[Box_index][First]].IndelSize <
-                              Reads[SIs[Box_index][Second]].IndelSize) {
+                        if (Reads[SIs[Box_index][First]].IndelSize < Reads[SIs[Box_index][Second]].IndelSize) {
                            continue;
                         }
-                        else if (Reads[SIs[Box_index][First]].IndelSize >
-                                 Reads[SIs[Box_index][Second]].IndelSize) {
+                        else if (Reads[SIs[Box_index][First]].IndelSize > Reads[SIs[Box_index][Second]].IndelSize) {
                            CompareResult = 1;
                         }
                         else if (Reads[SIs[Box_index][First]].BP > Reads[SIs[Box_index][Second]].BP) {
@@ -836,32 +832,24 @@ SortOutputSI (const unsigned &NumBoxes, const std::string & CurrentChr,
                               RealStart) {
                         continue;
                      }
-                     else if (IndelEvents[EventIndex_left].RealEnd !=
-                              RealEnd) {
+                     else if (IndelEvents[EventIndex_left].RealEnd != RealEnd) {
                         continue;
                      }
-                     else if (IndelEvents[EventIndex_left].IndelSize !=
-                              IndelSize) {
+                     else if (IndelEvents[EventIndex_left].IndelSize != IndelSize) {
                         continue;
                      }
                      else {
-                        IndelEvents[EventIndex_left].WhetherReport =
-                           false;
-                        if (IndelEvents[EventIndex_left].Support >
-                              Max_Support) {
-                           Max_Support =
-                              IndelEvents[EventIndex_left].Support;
+                        IndelEvents[EventIndex_left].WhetherReport = false;
+                        if (IndelEvents[EventIndex_left].Support > Max_Support) {
+                           Max_Support = IndelEvents[EventIndex_left].Support;
                            Max_Support_Index = EventIndex_left;
                         }
                      }
                   }
                   // report max one
                   LOG_DEBUG(*logStream << Max_Support << std::endl);
-                  if (Max_Support >= NumRead2ReportCutOff) {
-                     OutputSIs (GoodIndels, CurrentChr,
-                                IndelEvents[Max_Support_Index].Start,
-                                IndelEvents[Max_Support_Index].End,
-                                RealStart, RealEnd, SIsOutf);
+                  if (Max_Support >= userSettings->NumRead2ReportCutOff) {
+                     OutputSIs (GoodIndels, CurrentChr, IndelEvents[Max_Support_Index].Start, IndelEvents[Max_Support_Index].End, RealStart, RealEnd, SIsOutf);
                      NumberOfSIsInstances++;
                   }
                }
@@ -872,9 +860,7 @@ SortOutputSI (const unsigned &NumBoxes, const std::string & CurrentChr,
    LOG_INFO(*logStream << "Short insertions: " << NumberOfSIsInstances << std::endl << std::endl);
 }
 
-void
-SortAndOutputTandemDuplications (const unsigned &NumBoxes, const std::string & CurrentChr,
-                                 std::vector < SPLIT_READ > &AllReads, std::vector < unsigned >TDs[],
+void SortAndOutputTandemDuplications (const unsigned &NumBoxes, const std::string & CurrentChr, std::vector < SPLIT_READ > &AllReads, std::vector < unsigned >TDs[],
                                  std::ofstream & TDOutf, const bool nonTemplate)
 {
 
@@ -891,33 +877,28 @@ SortAndOutputTandemDuplications (const unsigned &NumBoxes, const std::string & C
    unsigned int GoodNum;
    std::vector < SPLIT_READ > GoodIndels;
    std::vector < Indel4output > IndelEvents;
+	UserDefinedSettings *userSettings = UserDefinedSettings::Instance();
 
    for (unsigned Box_index = 0; Box_index < NumBoxes; Box_index++) {
-      if (TDs[Box_index].size () >= NumRead2ReportCutOff) {
+      if (TDs[Box_index].size () >= userSettings->NumRead2ReportCutOff) {
          TDNum = TDs[Box_index].size ();
 
          for (unsigned int First = 0; First < TDNum - 1; First++) {
             {
-               for (unsigned int Second = First + 1; Second < TDNum;
-                     Second++) {
+               for (unsigned int Second = First + 1; Second < TDNum;  Second++) {
                   {  
                       CompareResult = 0;
-                     if (AllReads[TDs[Box_index][First]].BPLeft <
-                           AllReads[TDs[Box_index][Second]].BPLeft) {
+                     if (AllReads[TDs[Box_index][First]].BPLeft < AllReads[TDs[Box_index][Second]].BPLeft) {
                         continue;
                      }
-                     else if (AllReads[TDs[Box_index][First]].BPLeft >
-                              AllReads[TDs[Box_index][Second]].BPLeft) {
+                     else if (AllReads[TDs[Box_index][First]].BPLeft > AllReads[TDs[Box_index][Second]].BPLeft) {
                         CompareResult = 1;
                      }
-                     else if (AllReads[TDs[Box_index][First]].BPLeft ==
-                              AllReads[TDs[Box_index][Second]].BPLeft) {
-                        if (AllReads[TDs[Box_index][First]].BPRight <
-                              AllReads[TDs[Box_index][Second]].BPRight) {
+                     else if (AllReads[TDs[Box_index][First]].BPLeft == AllReads[TDs[Box_index][Second]].BPLeft) {
+                        if (AllReads[TDs[Box_index][First]].BPRight < AllReads[TDs[Box_index][Second]].BPRight) {
                            continue;
                         }
-                        else if (AllReads[TDs[Box_index][First]].BPRight >
-                                 AllReads[TDs[Box_index][Second]].BPRight) {
+                        else if (AllReads[TDs[Box_index][First]].BPRight > AllReads[TDs[Box_index][Second]].BPRight) {
                            CompareResult = 1;
                         }
                         else if (nonTemplate) {
@@ -1023,42 +1004,26 @@ SortAndOutputTandemDuplications (const unsigned &NumBoxes, const std::string & C
                               RealStart) {
                         continue;
                      }
-                     else if (IndelEvents[EventIndex_left].RealEnd !=
-                              RealEnd) {
+                     else if (IndelEvents[EventIndex_left].RealEnd != RealEnd) {
                         continue;
                      }
                      else {
-                        IndelEvents[EventIndex_left].WhetherReport =
-                           false;
-                        if (IndelEvents[EventIndex_left].Support >
-                              Max_Support) {
-                           Max_Support =
-                              IndelEvents[EventIndex_left].Support;
+                        IndelEvents[EventIndex_left].WhetherReport = false;
+                        if (IndelEvents[EventIndex_left].Support > Max_Support) {
+                           Max_Support = IndelEvents[EventIndex_left].Support;
                            Max_Support_Index = EventIndex_left;
                         }
                      }
                   }
                   // report max one
-                  if (IndelEvents[Max_Support_Index].Support >=
-                        NumRead2ReportCutOff) {
-                     if (GoodIndels
-                           [IndelEvents[Max_Support_Index].Start].
-                           IndelSize < BalanceCutoff) {
-                        OutputTDs (GoodIndels, CurrentChr,
-                                   IndelEvents[Max_Support_Index].Start,
-                                   IndelEvents[Max_Support_Index].End,
-                                   RealStart, RealEnd, TDOutf);
+                  if (IndelEvents[Max_Support_Index].Support >= userSettings->NumRead2ReportCutOff) {
+                     if (GoodIndels[ IndelEvents[Max_Support_Index].Start].IndelSize < userSettings->BalanceCutoff) {
+                        OutputTDs (GoodIndels, CurrentChr, IndelEvents[Max_Support_Index].Start, IndelEvents[Max_Support_Index].End, RealStart, RealEnd, TDOutf);
                         NumberOfTDInstances++;
                         countTandemDuplications++;
                      }
-                     else if (ReportEvent
-                              (GoodIndels,
-                               IndelEvents[Max_Support_Index].Start,
-                               IndelEvents[Max_Support_Index].End)) {
-                        OutputTDs (GoodIndels, CurrentChr,
-                                   IndelEvents[Max_Support_Index].Start,
-                                   IndelEvents[Max_Support_Index].End,
-                                   RealStart, RealEnd, TDOutf);
+                     else if (ReportEvent(GoodIndels, IndelEvents[Max_Support_Index].Start, IndelEvents[Max_Support_Index].End)) {
+                        OutputTDs (GoodIndels, CurrentChr, IndelEvents[Max_Support_Index].Start, IndelEvents[Max_Support_Index].End, RealStart, RealEnd, TDOutf);
                         NumberOfTDInstances++;
                         countTandemDuplications++;
                      }
@@ -1093,36 +1058,29 @@ SortOutputD (const unsigned &NumBoxes, const std::string & CurrentChr,
    unsigned int GoodNum;
    std::vector < SPLIT_READ > GoodIndels;
    std::vector < Indel4output > IndelEvents;
+	UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
 
    for (unsigned Box_index = 0; Box_index < NumBoxes; Box_index++) {
       LOG_DEBUG(*logStream << Box_index << "\t" << NumBoxes << "\t" << Deletions[Box_index].size() << std::endl);
-      if (Deletions[Box_index].size () >= NumRead2ReportCutOff) {
+      if (Deletions[Box_index].size () >= userSettings->NumRead2ReportCutOff) {
          DeletionsNum = Deletions[Box_index].size ();
 
          for (unsigned int First = 0; First < DeletionsNum - 1; First++) {
             {
-               for (unsigned int Second = First + 1; Second < DeletionsNum;
-                     Second++) {
+               for (unsigned int Second = First + 1; Second < DeletionsNum; Second++) {
                   { 
                       CompareResult = 0;
-                     if (Reads[Deletions[Box_index][First]].BPLeft <
-                           Reads[Deletions[Box_index][Second]].BPLeft) {
+                     if (Reads[Deletions[Box_index][First]].BPLeft < Reads[Deletions[Box_index][Second]].BPLeft) {
                         continue;
                      }
-                     else if (Reads[Deletions[Box_index][First]].BPLeft >
-                              Reads[Deletions[Box_index][Second]].BPLeft) {
+                     else if (Reads[Deletions[Box_index][First]].BPLeft > Reads[Deletions[Box_index][Second]].BPLeft) {
                         CompareResult = 1;
                      }
-                     else if (Reads[Deletions[Box_index][First]].BPLeft ==
-                              Reads[Deletions[Box_index][Second]].BPLeft) {
-                        if (Reads[Deletions[Box_index][First]].BPRight <
-                              Reads[Deletions[Box_index][Second]].BPRight) {
+                     else if (Reads[Deletions[Box_index][First]].BPLeft == Reads[Deletions[Box_index][Second]].BPLeft) {
+                        if (Reads[Deletions[Box_index][First]].BPRight < Reads[Deletions[Box_index][Second]].BPRight) {
                            continue;
                         }
-                        else if (Reads[Deletions[Box_index][First]].
-                                 BPRight >
-                                 Reads[Deletions[Box_index][Second]].
-                                 BPRight) {
+                        else if (Reads[Deletions[Box_index][First]].BPRight >Reads[Deletions[Box_index][Second]].BPRight) {
                            CompareResult = 1;
                         }
                         else if (Reads[Deletions[Box_index][First]].BP > Reads[Deletions[Box_index][Second]].BP) CompareResult = 1;
@@ -1212,53 +1170,34 @@ SortOutputD (const unsigned &NumBoxes, const std::string & CurrentChr,
                            false) {
                         continue;
                      }
-                     else if (IndelEvents[EventIndex_left].RealStart !=
-                              RealStart) {
+                     else if (IndelEvents[EventIndex_left].RealStart != RealStart) {
                         continue;
                      }
-                     else if (IndelEvents[EventIndex_left].RealEnd !=
-                              RealEnd) {
+                     else if (IndelEvents[EventIndex_left].RealEnd != RealEnd) {
                         continue;
                      }
                      else {
-                        IndelEvents[EventIndex_left].WhetherReport =
-                           false;
-                        if (IndelEvents[EventIndex_left].Support >
-                              Max_Support) {
-                           Max_Support =
-                              IndelEvents[EventIndex_left].Support;
+                        IndelEvents[EventIndex_left].WhetherReport = false;
+                        if (IndelEvents[EventIndex_left].Support > Max_Support) {
+                           Max_Support = IndelEvents[EventIndex_left].Support;
                            Max_Support_Index = EventIndex_left;
                         }
                      }
                   }
                   // report max one
                   LOG_DEBUG(*logStream << "max" << std::endl);
-                  if (IndelEvents[Max_Support_Index].Support >=
-                        NumRead2ReportCutOff) {
+                  if (IndelEvents[Max_Support_Index].Support >= userSettings->NumRead2ReportCutOff) {
                      LOG_DEBUG(*logStream << "aa" << std::endl);
-                     if (GoodIndels
-                           [IndelEvents[Max_Support_Index].Start].
-                           IndelSize < BalanceCutoff) {
+                     if (GoodIndels[IndelEvents[Max_Support_Index].Start].IndelSize < userSettings->BalanceCutoff) {
                         LOG_DEBUG(*logStream << "ba" << std::endl);
-                        OutputDeletions (GoodIndels, CurrentChr,
-                                         IndelEvents[Max_Support_Index].
-                                         Start,
-                                         IndelEvents[Max_Support_Index].
-                                         End, RealStart, RealEnd,
-                                         DeletionOutf);
+                        OutputDeletions (GoodIndels, CurrentChr, IndelEvents[Max_Support_Index].Start, IndelEvents[Max_Support_Index].End, RealStart,
+									RealEnd, DeletionOutf);
                         deletionFileData.increaseTemplateSvCounter();
                         LOG_DEBUG(*logStream << "bb" << std::endl);
                      }
-                     else if (ReportEvent
-                              (GoodIndels,
-                               IndelEvents[Max_Support_Index].Start,
-                               IndelEvents[Max_Support_Index].End)) {
+                     else if (ReportEvent( GoodIndels, IndelEvents[Max_Support_Index].Start, IndelEvents[Max_Support_Index].End)) {
                         LOG_DEBUG(*logStream << "ca" << std::endl);
-                        OutputDeletions (GoodIndels, CurrentChr,
-                                         IndelEvents[Max_Support_Index].
-                                         Start,
-                                         IndelEvents[Max_Support_Index].
-                                         End, RealStart, RealEnd,
+                        OutputDeletions (GoodIndels, CurrentChr, IndelEvents[Max_Support_Index].Start, IndelEvents[Max_Support_Index].End, RealStart, RealEnd,
                                          DeletionOutf);
                         deletionFileData.increaseTemplateSvCounter();
                         LOG_DEBUG(*logStream << "cb" << std::endl);
@@ -1272,8 +1211,7 @@ SortOutputD (const unsigned &NumBoxes, const std::string & CurrentChr,
    LOG_INFO(*logStream << "Deletions: " << deletionFileData.getTemplateSvCounter() << std::endl << std::endl);
 }
 
-void
-SortOutputInv (const unsigned &NumBoxes, const std::string & CurrentChr,
+void SortOutputInv (const unsigned &NumBoxes, const std::string & CurrentChr,
                std::vector < SPLIT_READ > &Reads, std::vector < unsigned >Inv[],
                std::ofstream & InvOutf)
 {
@@ -1402,38 +1340,32 @@ void SortOutputDI (const unsigned &NumBoxes, const std::string & CurrentChr,
    unsigned int GoodNum;
    std::vector < SPLIT_READ > GoodIndels;
    std::vector < Indel4output > IndelEvents;
+	UserDefinedSettings *userSettings = UserDefinedSettings::Instance();
 
    for (unsigned Box_index = 0; Box_index < NumBoxes; Box_index++) {
       LOG_DEBUG(*logStream << "Box_index: "   << Box_index << std::endl);
-      if (DI[Box_index].size () >= NumRead2ReportCutOff) {
+      if (DI[Box_index].size () >= userSettings->NumRead2ReportCutOff) {
          DINum = DI[Box_index].size ();
          for (unsigned int First = 0; First < DINum - 1; First++) {
             {
-               for (unsigned int Second = First + 1; Second < DINum;
-                     Second++) {
+               for (unsigned int Second = First + 1; Second < DINum; Second++) {
                   {  
-                      CompareResult = 0;
-                     if (Reads[DI[Box_index][First]].BPLeft <
-                           Reads[DI[Box_index][Second]].BPLeft) {
+                     CompareResult = 0;
+                     if (Reads[DI[Box_index][First]].BPLeft < Reads[DI[Box_index][Second]].BPLeft) {
                         continue;
                      }
-                     else if (Reads[DI[Box_index][First]].BPLeft >
-                              Reads[DI[Box_index][Second]].BPLeft) {
+                     else if (Reads[DI[Box_index][First]].BPLeft > Reads[DI[Box_index][Second]].BPLeft) {
                         CompareResult = 1;
                      }
-                     else if (Reads[DI[Box_index][First]].BPLeft ==
-                              Reads[DI[Box_index][Second]].BPLeft) {
-                        if (Reads[DI[Box_index][First]].BPRight
-                              < Reads[DI[Box_index][Second]].BPRight) {
+                     else if (Reads[DI[Box_index][First]].BPLeft == Reads[DI[Box_index][Second]].BPLeft) {
+                        if (Reads[DI[Box_index][First]].BPRight < Reads[DI[Box_index][Second]].BPRight) {
                            continue;
                         }
-                        else if (Reads[DI[Box_index][First]].BPRight >
-                                 Reads[DI[Box_index][Second]].BPRight) {
+                        else if (Reads[DI[Box_index][First]].BPRight > Reads[DI[Box_index][Second]].BPRight) {
                            CompareResult = 1;
                         }
                         else {
-                           if (Reads[DI[Box_index][First]].NT_size <
-                                 Reads[DI[Box_index][Second]].NT_size) {
+                           if (Reads[DI[Box_index][First]].NT_size < Reads[DI[Box_index][Second]].NT_size) {
                               continue;
                            }
                            else if (Reads[DI[Box_index][First]].NT_size >
@@ -1506,10 +1438,10 @@ void SortOutputDI (const unsigned &NumBoxes, const std::string & CurrentChr,
          unsigned int RealStart;
          unsigned int RealEnd;
          for (unsigned EventIndex = 0; EventIndex < IndelEvents.size (); EventIndex++) {
-            if (IndelEvents[EventIndex].End - IndelEvents[EventIndex].Start + 1 >= NumRead2ReportCutOff) {
+            if (IndelEvents[EventIndex].End - IndelEvents[EventIndex].Start + 1 >= userSettings->NumRead2ReportCutOff) {
                RealStart =	GoodIndels[IndelEvents[EventIndex].Start].BPLeft;
                RealEnd = GoodIndels[IndelEvents[EventIndex].Start].BPRight;
-               if (  (GoodIndels[IndelEvents[EventIndex].Start].IndelSize < BalanceCutoff)
+               if (  (GoodIndels[IndelEvents[EventIndex].Start].IndelSize < userSettings->BalanceCutoff)
                      || (ReportEvent(GoodIndels, IndelEvents[EventIndex].Start, IndelEvents[EventIndex].End)) ) {
 
                   if (IsInversion(GoodIndels[IndelEvents[EventIndex].Start], CurrentChr )) {
@@ -1541,6 +1473,7 @@ SortOutputLI (const std::string & CurrentChr, std::vector < SPLIT_READ > &Reads,
    unsigned UP_Close_index;
    unsigned temp_AbsLoc;
    unsigned int LI_BORDER_BUFFER = 4 * g_maxInsertSize;
+	UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
 
    *logStream << "LI: maxInsertSize: " << g_maxInsertSize << std::endl;
 
@@ -1554,20 +1487,16 @@ SortOutputLI (const std::string & CurrentChr, std::vector < SPLIT_READ > &Reads,
    unsigned int absStartBuffered = absStartLIWindow - LI_BORDER_BUFFER;
    unsigned int absEndBuffered = absEndLIWindow + LI_BORDER_BUFFER;
 
-
-
    *logStream << "SBA: " << g_SpacerBeforeAfter << " WS " << windowStart << " Total: " << g_SpacerBeforeAfter + windowStart - LI_BORDER_BUFFER << std::endl;
    ShiftedVector< uint8_t > plus_LI_Pos( absStartBuffered , absEndBuffered , 0 );
    ShiftedVector< uint8_t > minus_LI_Pos( absStartBuffered , absEndBuffered , 0 );
    ShiftedVector< int32_t > EventIndex_Pos( absStartBuffered , absEndBuffered , -1 );
 
    for (unsigned Index = 0; Index < Reads.size (); Index++) {
-      if (Reads[Index].Used
-            || !Reads[Index].UP_Far.empty ()) {
+      if (Reads[Index].Used || !Reads[Index].UP_Far.empty ()) {
          continue;
       }
-      temp_AbsLoc =
-         Reads[Index].UP_Close[Reads[Index].UP_Close.size () - 1].AbsLoc;
+      temp_AbsLoc = Reads[Index].UP_Close[Reads[Index].UP_Close.size () - 1].AbsLoc;
       if (plus_LI_Pos[temp_AbsLoc] < Max_short) {
          if (Reads[Index].MatchedD == Plus) {
             plus_LI_Pos[temp_AbsLoc]++;
@@ -1585,8 +1514,7 @@ SortOutputLI (const std::string & CurrentChr, std::vector < SPLIT_READ > &Reads,
    int LI_Positions_Size = 0;
    bool SkipPlus;
 
-   for (unsigned int Index_Minus = absStartBuffered;
-         Index_Minus < absEndBuffered; Index_Minus++) {
+   for (unsigned int Index_Minus = absStartBuffered; Index_Minus < absEndBuffered; Index_Minus++) {
       SkipPlus = false;
       for (unsigned int MaskedPosIndexMinus = Index_Minus + 10;
             MaskedPosIndexMinus >= Index_Minus - 10; MaskedPosIndexMinus--) {
@@ -1596,14 +1524,10 @@ SortOutputLI (const std::string & CurrentChr, std::vector < SPLIT_READ > &Reads,
             break;
          }
       }
-      if (SkipPlus == false
-            && minus_LI_Pos[Index_Minus] >= NumRead2ReportCutOff) {
-         for (unsigned int Index_Plus = Index_Minus - 1;
-               Index_Plus <= Index_Minus + 30; Index_Plus++) {
+      if (SkipPlus == false && minus_LI_Pos[Index_Minus] >= userSettings->NumRead2ReportCutOff) {
+         for (unsigned int Index_Plus = Index_Minus - 1; Index_Plus <= Index_Minus + 30; Index_Plus++) {
             SkipThis = false;
-            for (unsigned int MaskedPosIndexPlus = Index_Plus + 10;
-                  MaskedPosIndexPlus >= Index_Plus - 10;
-                  MaskedPosIndexPlus--) {
+            for (unsigned int MaskedPosIndexPlus = Index_Plus + 10; MaskedPosIndexPlus >= Index_Plus - 10; MaskedPosIndexPlus--) {
                if (CurrentChrMask[MaskedPosIndexPlus] == 'B') {
                   if ((MaskedPosIndexPlus + 10) > Index_Minus) {
                      Index_Minus = MaskedPosIndexPlus + 10;
@@ -1612,8 +1536,7 @@ SortOutputLI (const std::string & CurrentChr, std::vector < SPLIT_READ > &Reads,
                   break;
                }
             }
-            if (SkipThis == false
-                  && plus_LI_Pos[Index_Plus] >= NumRead2ReportCutOff) {
+            if (SkipThis == false && plus_LI_Pos[Index_Plus] >= userSettings->NumRead2ReportCutOff) {
                temp_LI_pos.Plus_Pos = Index_Plus;
                temp_LI_pos.Minus_Pos = Index_Minus;
                temp_LI_pos.WhetherReport = false;
@@ -1855,8 +1778,7 @@ SortOutputRest (const std::string & CurrentChr,
    ShiftedVector< uint8_t > minus_LI_Pos( absStartBuffered , absEndBuffered , 0 );
 
    for (unsigned Index = 0; Index < Reads.size (); Index++) {
-      if (Reads[Index].Used
-            || !Reads[Index].UP_Far.empty ()) {
+      if (Reads[Index].Used || !Reads[Index].UP_Far.empty ()) {
          continue;
       }
       UP_Close_index = Reads[Index].UP_Close.size () - 1;

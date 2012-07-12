@@ -43,15 +43,14 @@ extern std::set<std::string> g_sampleNames; // EWL: could make this a singleton 
 /*
  * Global variables defined in pindel.cpp
  */
-extern int ADDITIONAL_MISMATCH;
+
 extern char Match[256];
 extern char Match2N[256];
 extern char Convert2RC[256];
 extern char Convert2RC4N[256];
 extern char Cap2LowArray[256];
 extern unsigned int DSizeArray[15];
-extern int Min_Perfect_Match_Around_BP;
-extern double MaximumAllowedMismatchRate;
+//extern double MaximumAllowedMismatchRate;
 extern short g_reportLength;
 extern std::string CurrentChrMask;
 extern unsigned int NumberOfSIsInstances;
@@ -60,7 +59,6 @@ extern unsigned int NumberOfTDInstances;
 extern unsigned int NumberOfDeletionsInstances;
 extern unsigned int g_numberOfInvInstances;
 extern unsigned int NumRead2ReportCutOff;
-extern unsigned int BalanceCutoff;
 extern int NumRead2ReportCutOff_BP;
 extern char Cap2LowArray[256];
 extern int g_maxPos;
@@ -75,17 +73,16 @@ extern unsigned int g_CloseMappedMinus;
 extern int g_binIndex;
 extern short g_MinClose;
 extern int WINDOW_SIZE;
-extern unsigned int g_minimalAnchorQuality;
 extern int g_maxInsertSize;
 extern std::ostream* logStream;
+extern const std::string Pindel_Version_str;
 
 /*
  * For search functions
  */
 extern unsigned int BoxSize;
 extern int MIN_IndelSize_Inversion;
-extern int MIN_IndelSize_NT;
-extern int Min_Num_Matched_Bases;
+//extern int MIN_IndelSize_NT;
 extern int Max_Length_NT;
 
 /*
@@ -177,8 +174,11 @@ struct SPLIT_READ {
 		UnmatchedSeq = unmatchedSeq; 
 		ReadLength = UnmatchedSeq.size();
 		ReadLengthMinus = ReadLength - 1;
-		MAX_SNP_ERROR = (short)(((double)ReadLength * UserDefinedSettings::Instance()->Seq_Error_Rate) + EPSILON);
-		TOTAL_SNP_ERROR_CHECKED_Minus = MAX_SNP_ERROR + ADDITIONAL_MISMATCH;
+
+		UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
+	
+		MAX_SNP_ERROR = (short)(((double)ReadLength * userSettings->Seq_Error_Rate) + EPSILON);
+		TOTAL_SNP_ERROR_CHECKED_Minus = MAX_SNP_ERROR + userSettings->ADDITIONAL_MISMATCH;
 		TOTAL_SNP_ERROR_CHECKED = TOTAL_SNP_ERROR_CHECKED_Minus + 1;
 	}
 	std::string getUnmatchedSeq() const { return UnmatchedSeq; }	
