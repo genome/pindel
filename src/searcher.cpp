@@ -47,8 +47,7 @@ void CheckLeft_Close (const SPLIT_READ & OneRead,
                   Sum += Left_PD[j].size ();
                }
 
-            if (Sum == 1
-                  && i <= (short) (CurrentLength * userSettings->Seq_Error_Rate + 1)) {
+            if (Sum == 1 && i <= (short) (CurrentLength * userSettings->Seq_Error_Rate + 1)) {
                UniquePoint TempOne;
                TempOne.LengthStr = CurrentLength;
                TempOne.AbsLoc = Left_PD[i][0];
@@ -72,7 +71,6 @@ void CheckLeft_Close (const SPLIT_READ & OneRead,
                                                size ());
       }
       const char CurrentChar = CurrentReadSeq[CurrentLength];
-      //const int SizeOfCurrent = Left_PD.size();
       unsigned int pos;
       for (int i = 0; i < OneRead.getTOTAL_SNP_ERROR_CHECKED_Minus(); i++) {
          int SizeOfCurrent = Left_PD[i].size ();
@@ -151,8 +149,7 @@ void CheckLeft_Close (const SPLIT_READ & OneRead,
    }
 }
 
-void
-CheckRight_Close (const SPLIT_READ & OneRead,
+void CheckRight_Close (const SPLIT_READ & OneRead,
                   const std::string & TheInput,
                   const std::string & CurrentReadSeq,
                   const std::vector < unsigned int >Right_PD[],
@@ -327,13 +324,10 @@ bool CheckMismatches (const std::string & TheInput, const std::string & InputRea
          }
       }
    }
-   //cout << "CheckMismatches4" << endl;
-    //std::cout << "NumMismatches " << NumMismatches << "\tMAX_ALLOWED_MISMATCHES " << MAX_ALLOWED_MISMATCHES << std::endl;
    if ((float)NumMismatches > MAX_ALLOWED_MISMATCHES) {
       return true;
    }
    else {
-      // std::cout << "here 5" << std::endl;
       return false;
    }
 }

@@ -444,7 +444,6 @@ void OutputInversions (const std::vector < SPLIT_READ > &Inv,
                   << "\t" << Inv[GoodIndex].Name << std::endl;
       }
    }
-    //*logStream << "-" << std::endl;
    InvOutf <<
            "----------------------------------------------------------------------------------------------------"
            << std::endl;
@@ -460,11 +459,8 @@ void OutputInversions (const std::vector < SPLIT_READ > &Inv,
       }
    }
    InvOutf << TheInput.substr (Inv[C_S].BPRight + 1 + g_SpacerBeforeAfter, g_reportLength) << std::endl;
-    //*logStream << "here" << std::endl;
    for (unsigned int GoodIndex = C_S; GoodIndex <= C_E; GoodIndex++) {
-       //*logStream << GoodIndex << "\t" << C_E << "\t" << Inv[GoodIndex].BP << std::endl;
       if (Inv[GoodIndex].MatchedD == Minus ) {
-          //*logStream << Inv[GoodIndex].BP << "\t<\t" << g_reportLength << std::endl;
          SpaceBeforeReadSeq = g_reportLength - Inv[GoodIndex].BP - 1;
          InvOutf << std::string( SpaceBeforeReadSeq, ' ' );
 
@@ -482,11 +478,9 @@ void OutputInversions (const std::vector < SPLIT_READ > &Inv,
                   << "\t" << Inv[GoodIndex].Name << std::endl;
       }
    }
-    //*logStream << "end" << std::endl;
 }
 
-void
-OutputSIs (const std::vector < SPLIT_READ > &SIs,
+void OutputSIs (const std::vector < SPLIT_READ > &SIs,
            const std::string & TheInput,
            const unsigned int &C_S,
            const unsigned int &C_E,
@@ -720,17 +714,12 @@ SortOutputSI (const unsigned &NumBoxes, const std::string & CurrentChr,
                         }
                         else if (Reads[SIs[Box_index][First]].BP > Reads[SIs[Box_index][Second]].BP) {
                             CompareResult = 1; 
-                            //*logStream << "here" << std::endl;
                         }
                      }
                      if (CompareResult == 1) {
-                          
-                         // *logStream << "there BoxIndex" << Box_index <<std::endl;
-                        // *logStream << "Before " << SIs[Box_index][First] << " " << SIs[Box_index][Second] << std::endl; 
                         Temp4Exchange = SIs[Box_index][First];
                         SIs[Box_index][First] = SIs[Box_index][Second];
                         SIs[Box_index][Second] = Temp4Exchange;
-                        // *logStream << "After " << SIs[Box_index][First] << " " << SIs[Box_index][Second] << std::endl;
                      }
                   }
                }
@@ -738,7 +727,6 @@ SortOutputSI (const unsigned &NumBoxes, const std::string & CurrentChr,
          }
           
          for (unsigned int First = 0; First < SIsNum - 1; First++) {
-             //*logStream << First << " " << Reads[SIs[Box_index][First]].BPLeft << " " << Reads[SIs[Box_index][First]].IndelSize << " " << Reads[SIs[Box_index][First]].BP << " " << Reads[SIs[Box_index][First]].MatchedD << " " << Reads[SIs[Box_index][First]].Tag << std::endl; 
              for (unsigned int Second = First + 1; Second < SIsNum; Second++) {
                  if (Reads[SIs[Box_index][First]].getReadLength() == Reads[SIs[Box_index][Second]].getReadLength()) {
                      if (Reads[SIs[Box_index][First]].LeftMostPos ==
@@ -900,7 +888,6 @@ void SortAndOutputTandemDuplications (const unsigned &NumBoxes, const std::strin
                            CompareResult = 1;
                         }
                         else if (nonTemplate) {
-                           // InputIndels[First].BPRight == InputIndels[Second].BPRight
                            if (AllReads[TDs[Box_index][First]].NT_size <
                                  AllReads[TDs[Box_index][Second]].NT_size) {
                               continue;
@@ -1043,8 +1030,7 @@ void SortAndOutputTandemDuplications (const unsigned &NumBoxes, const std::strin
 }
 
 
-void
-SortOutputD (const unsigned &NumBoxes, const std::string & CurrentChr,
+void SortOutputD (const unsigned &NumBoxes, const std::string & CurrentChr,
              std::vector < SPLIT_READ > &Reads, std::vector < unsigned >Deletions[],
              std::ofstream & DeletionOutf)
 {
@@ -1217,8 +1203,7 @@ void SortOutputInv (const unsigned &NumBoxes, const std::string & CurrentChr,
    os.SortAndOutputInversions(Reads, Inv);
 }
 
-void
-SortOutputInv_NT (const unsigned &NumBoxes, const std::string & CurrentChr,
+void SortOutputInv_NT (const unsigned &NumBoxes, const std::string & CurrentChr,
                   std::vector < SPLIT_READ > &Reads, std::vector < unsigned >Inv[],
                   std::ofstream & InvOutf)
 {
@@ -1316,9 +1301,7 @@ bool IsInversion( const SPLIT_READ& read, const std::string& chromosome )
 {
    if (read.IndelSize == read.NT_size ) {
       std::string replacedString = chromosome.substr( g_SpacerBeforeAfter + 1 + read.BPLeft, read.NT_size );
-//*logStream << "my string is " << read.NT_str << ", the replaced string is " << ReverseComplement(replacedString) << "\n";
       if ( ReverseComplement( replacedString ) == read.NT_str ) {
-         //		*logStream << "Found a tiny inversion!\n";
          return true;
       }
    }
@@ -1753,8 +1736,6 @@ SortOutputRest (const std::string & CurrentChr,
                 const unsigned int windowEnd)
 {
    SPLIT_READ one_BP_read;
-   //std::string HalfMapped, HalfUnmapped;
-   //int HalfMappedIndex, HalfUnmappedIndex;
    unsigned UP_Close_index;
    unsigned temp_AbsLoc;
    LOG_DEBUG(*logStream << "1" << std::endl);
@@ -1837,17 +1818,15 @@ SortOutputRest (const std::string & CurrentChr,
    int Count_BP = 0;
    bool temp_BalancedPlus, temp_BalancedMinus;
    short temp_LengthStr;
-   //std::vector < SPLIT_READ > temp_Pos_Reads;
+
     std::map<std::string,int> sampleToIndexMap;
     std::map<int,std::string> indexToSampleMap;
     createMaps( sampleToIndexMap, indexToSampleMap) ;
    for (unsigned LI_index = 0; LI_index < Rest_Positions.size (); LI_index++) {
-      //temp_Pos_Reads.clear ();
       temp_BalancedPlus = false;
       temp_BalancedMinus = false;
       for (unsigned int i = 0; i < Rest_Positions[LI_index].Pos_Reads.size (); i++) {
          SPLIT_READ & CurrentSupportingRead = Reads[Rest_Positions[LI_index].Pos_Reads[i]];  
-         //temp_Pos_Reads.push_back (Reads[Rest_Positions[LI_index].Pos_Reads[i]]);
          UP_Close_index = CurrentSupportingRead.UP_Close.size () - 1;
          temp_LengthStr = CurrentSupportingRead.UP_Close[UP_Close_index].LengthStr;
          if ((float) temp_LengthStr > CurrentSupportingRead.getReadLength() * 0.5) {
@@ -1864,8 +1843,6 @@ SortOutputRest (const std::string & CurrentChr,
               NumSupportPerTag[i].NumPlus = 0;
               NumSupportPerTag[i].NumMinus = 0;
           }
-
-          //calculateSupportPerTag( DI, C_S, C_E, sampleToIndexMap, NumSupportPerTag);
 
           for (unsigned int readIndex = 0; readIndex < Rest_Positions[LI_index].Pos_Reads.size(); readIndex++) {
              SPLIT_READ & CurrentSupportingRead = Reads[Rest_Positions[LI_index].Pos_Reads[readIndex]];
@@ -1898,8 +1875,6 @@ SortOutputRest (const std::string & CurrentChr,
             Outf_Rest << (CurrentChr.substr (Rest_Positions[LI_index].Pos - g_reportLength + 1, g_reportLength)) 
                       << Cap2Low (CurrentChr.substr(Rest_Positions[LI_index].Pos + 1, g_reportLength))
                       << std::endl;
-            //HalfMappedIndex = 0;
-            //HalfUnmappedIndex = 0;
             for (unsigned int i = 0; i < Rest_Positions[LI_index].Pos_Reads.size(); i++) {
                SPLIT_READ & CurrentSupportingRead = Reads[Rest_Positions[LI_index].Pos_Reads[i]]; 
                UP_Close_index = CurrentSupportingRead.UP_Close.size () - 1;
