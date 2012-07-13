@@ -110,8 +110,8 @@ void doGenotyping (ControlState & CurrentState, std::ifstream& FastaFile ) {
     std::cout << "\n\n";
     
     // step 3 define output
-    std::string GT_OutputFileName = CurrentState.OutputFolder + "_GT";
-    std::ofstream GT_Output(GT_OutputFileName.c_str());
+   // std::string GT_OutputFileName = CurrentState.OutputFolder + "_GT";
+    std::ofstream GT_Output(UserDefinedSettings::Instance()->getGTOutputFilename().c_str());
 
     // step 4 for each variant, do genotyping
     for (unsigned SV_index =0; SV_index < AllSV4Genotyping.size(); SV_index++) {

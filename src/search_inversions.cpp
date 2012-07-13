@@ -31,7 +31,8 @@ int searchInversions(ControlState& currentState, unsigned NumBoxes)
 
    std::vector<unsigned> Inv[NumBoxes];
 
-	int MIN_IndelSize_Inversion = UserDefinedSettings::Instance()->MIN_IndelSize_Inversion;
+	UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
+	int MIN_IndelSize_Inversion = userSettings->MIN_IndelSize_Inversion;
 
    int CloseIndex = 0;
    int FarIndex = 0;
@@ -252,9 +253,9 @@ int searchInversions(ControlState& currentState, unsigned NumBoxes)
          }
       }
    }
-    //*logStream << "end" << std::endl;
+
    LOG_INFO(*logStream << "Total: " << Count_Inv << "\t+" << Count_Inv_Plus << "\t-" << Count_Inv_Minus << std::endl);
-   std::ofstream InversionOutf(currentState.InversionOutputFilename.c_str(), std::ios::app);
+   std::ofstream InversionOutf(userSettings->getINVOutputFilename().c_str(), std::ios::app);
    SortOutputInv(NumBoxes, currentState.CurrentChrSeq, currentState.Reads_SR, Inv, InversionOutf);
    for (unsigned int i = 0; i < NumBoxes; i++) {
       Inv[i].clear();

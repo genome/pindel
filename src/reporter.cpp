@@ -91,8 +91,7 @@ void calculateSupportPerStrand( const std::vector< SPLIT_READ >& reads, const un
    }
 }
 
-void
-OutputTDs (const std::vector < SPLIT_READ > &TDs,
+void OutputTDs (const std::vector < SPLIT_READ > &TDs,
            const std::string & TheInput,
            const unsigned int &C_S,
            const unsigned int &C_E,
@@ -105,8 +104,6 @@ OutputTDs (const std::vector < SPLIT_READ > &TDs,
    unsigned int RightS = 1;
    unsigned int LeftUNum = 0;
    unsigned int RightUNum = 0;
-
-
 
    SupportPerSample NumSupportPerTag[g_sampleNames.size ()];
    std::map<std::string,int> sampleToIndexMap;
@@ -1447,15 +1444,16 @@ void SortOutputDI (const unsigned &NumBoxes, const std::string & CurrentChr,
 
 
 
-void
-SortOutputLI (const std::string & CurrentChr, std::vector < SPLIT_READ > &Reads,
-              std::ofstream & LargeInsertionOutf, const unsigned int windowStart, const unsigned int windowEnd)
+void SortOutputLI (const std::string & CurrentChr, std::vector < SPLIT_READ > &Reads, const unsigned int windowStart, const unsigned int windowEnd, const std::string& filename)
 {
    unsigned UP_Close_index;
    unsigned temp_AbsLoc;
    unsigned int LI_BORDER_BUFFER = 4 * g_maxInsertSize;
 	UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
+	time_t Time_LI_S, Time_LI_E;
+   Time_LI_S = time(NULL);
 
+	std::ofstream LargeInsertionOutf( filename.c_str(), std::ios::app);
    *logStream << "LI: maxInsertSize: " << g_maxInsertSize << std::endl;
 
    unsigned int absStartLIWindow = g_SpacerBeforeAfter + windowStart;
@@ -1724,24 +1722,30 @@ SortOutputLI (const std::string & CurrentChr, std::vector < SPLIT_READ > &Reads,
       }
    }
    LOG_INFO(*logStream << "Breakpoints for large insertions (LI): " << Count_LI << std::endl << std::endl);
+	LargeInsertionOutf.close();
+   Time_LI_E = time(NULL);
+	*logStream << "Mining, Sorting and output LI results: " << (unsigned int) difftime(Time_LI_E, Time_LI_S) << " seconds." << std::endl << std::endl;
 }
 
-
-void
-SortOutputRest (const std::string & CurrentChr, 
+/** writes (appends) breakpoints to the file with the name "filename" */
+void SortOutputRest (const std::string & CurrentChr, 
                 std::vector < SPLIT_READ > &Reads,
                 std::vector < SPLIT_READ > &BP_Reads, 
-                std::ofstream & Outf_Rest, 
                 const unsigned int windowStart, 
-                const unsigned int windowEnd)
+                const unsigned int windowEnd,
+					 const std::string& filename)
 {
    SPLIT_READ one_BP_read;
    unsigned UP_Close_index;
    unsigned temp_AbsLoc;
    LOG_DEBUG(*logStream << "1" << std::endl);
    // find LI combinations
+	time_t Time_BP_S, Time_BP_E;
+   Time_BP_S = time(NULL);
+
 
    const int BP_BORDER_BUFFER = 4 * g_maxInsertSize;
+   std::ofstream Outf_Rest(filename.c_str(), std::ios::app);
 
    unsigned int absStartBPWindow = g_SpacerBeforeAfter + windowStart ;
    unsigned int absEndBPWindow = g_SpacerBeforeAfter + windowEnd ;
@@ -1934,6 +1938,9 @@ SortOutputRest (const std::string & CurrentChr,
       }
    }
    LOG_INFO(*logStream << "Other unassigned breakpoints (BP): " << Count_BP << std::endl << std::endl);
+	Outf_Rest.close();
+   Time_BP_E = time(NULL);
+   *logStream << "Mining, Sorting and output BP results: " << (unsigned int) difftime(Time_BP_E, Time_BP_S) << " seconds." << std::endl << std::endl;
 }
 
 std::string GetConsensusInsertedStr(const std::vector <SPLIT_READ> & Reads, const int & StartIndex, const int & EndIndex) {

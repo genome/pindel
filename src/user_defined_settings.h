@@ -45,6 +45,18 @@ public:
 	double Seq_Error_Rate;
 	bool showHelp;
 
+	bool reportCloseMappedReads() const { return ( ReportCloseMappedRead || reportOnlyCloseMappedReads ); };
+
+	std::string getSIOutputFilename() const { return outputFilename + "_SI"; };
+	std::string getDOutputFilename() const { return outputFilename + "_D"; };
+	std::string getTDOutputFilename() const { return outputFilename + "_TD"; };
+	std::string getINVOutputFilename() const { return outputFilename + "_INV"; };
+	std::string getLIOutputFilename() const { return outputFilename + "_LI"; };
+	std::string getBPOutputFilename() const { return outputFilename + "_BP"; };
+	std::string getCloseEndOutputFilename() const { return outputFilename + "_CloseEndMapped"; };
+	std::string getASMOutputFilename() const { return outputFilename + "_ASM"; };
+	std::string getGTOutputFilename() const { return outputFilename + "_GT"; };
+
 private:
    UserDefinedSettings();
 	static UserDefinedSettings* m_instance;

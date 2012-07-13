@@ -140,9 +140,9 @@ int searchTandemDuplications(ControlState& currentState, unsigned NumBoxes)
          }
       }
    }
-   LOG_INFO(*logStream << "Total: " << Count_TD << "\t+" << Count_TD_Plus << "\t-"
-            << Count_TD_Minus << std::endl);
-   std::ofstream TDOutf(currentState.TDOutputFilename.c_str(), std::ios::app);
+   LOG_INFO(*logStream << "Total: " << Count_TD << "\t+" << Count_TD_Plus << "\t-"  << Count_TD_Minus << std::endl);
+   UserDefinedSettings* userSettings = UserDefinedSettings::Instance(); 
+   std::ofstream TDOutf(userSettings->getTDOutputFilename().c_str(), std::ios::app);
    SortAndOutputTandemDuplications(NumBoxes, currentState.CurrentChrSeq, currentState.Reads_SR, TD, TDOutf, false);
    for (unsigned int i = 0; i < NumBoxes; i++) {
       TD[i].clear();

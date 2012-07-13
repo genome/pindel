@@ -124,12 +124,9 @@ int searchIndels(ControlState& currentState, unsigned NumBoxes)
    }
    LOG_INFO(*logStream << "Total: " << Count_DI << "\t+" << Count_DI_Plus << "\t-"
             << Count_DI_Minus << std::endl);
-   std::ofstream DeletionOutf(currentState.DeletionOutputFilename.c_str(),
-                              std::ios::app);
-   std::ofstream inversionsOutf(currentState.InversionOutputFilename.c_str(),
-                                std::ios::app);
-   SortOutputDI(NumBoxes, currentState.CurrentChrSeq, currentState.Reads_SR, DI,
-                DeletionOutf, inversionsOutf);
+   std::ofstream DeletionOutf( userSettings->getDOutputFilename().c_str(), std::ios::app);
+   std::ofstream inversionsOutf( userSettings->getINVOutputFilename().c_str(), std::ios::app);
+   SortOutputDI(NumBoxes, currentState.CurrentChrSeq, currentState.Reads_SR, DI, DeletionOutf, inversionsOutf);
    DeletionOutf.close();
    for (unsigned int i = 0; i < NumBoxes; i++) {
       DI[i].clear();

@@ -507,6 +507,34 @@ LineReader *getLineReaderByFilename(const char *filename)
 		return new IfstreamLineReader(filename);
 }
 
+void TestFileForOutput( const char* filename )
+{
+   std::ofstream outputfileTest( filename );
+   if (!outputfileTest) {
+      LOG_ERROR(*logStream << "Sorry, cannot write to the file: " << filename << std::endl);
+      exit( EXIT_FAILURE );
+   }
+   outputfileTest.close();
+}
+
+void TestFileForOutput( const std::string& filename )
+{
+	TestFileForOutput( filename.c_str() );
+}
+
+void CheckWhetherFasta( const std::string& filename )
+{
+	std::ifstream FastaFile( filename.c_str() );
+   char FirstCharOfFasta;
+   FastaFile >> FirstCharOfFasta;
+   if (FirstCharOfFasta != '>') {
+      *logStream << "The reference genome must be in fasta format!" << std::endl;
+      exit( EXIT_FAILURE );
+   }
+	FastaFile.close();
+}
+
+
 
 int init(int argc, char *argv[], ControlState& currentState )
 {
@@ -565,7 +593,7 @@ int init(int argc, char *argv[], ControlState& currentState )
         readBamConfigFile( userSettings->bamConfigFilename, currentState );
     }
 
-    currentState.OutputFolder =  userSettings->outputFilename;
+    //currentState.OutputFolder =  userSettings->outputFilename;
 
     bool BreakDancerDefined = parameters[findParameter("-b",parameters)]->isSet();
     if (BreakDancerDefined) {
@@ -591,77 +619,19 @@ int init(int argc, char *argv[], ControlState& currentState )
         userSettings->MaxRangeIndex = 9;
     }
 
-    currentState.SIOutputFilename = currentState.OutputFolder + "_SI"; // output file name
-    std::ofstream SIoutputfile_test(currentState.SIOutputFilename.c_str());
-    if (!SIoutputfile_test) {
-        LOG_ERROR(*logStream << "Sorry, cannot write to the file: "
-                  << currentState.SIOutputFilename << std::endl);
-        return 1;
-    }
-    SIoutputfile_test.close();
+    //currentState.SIOutputFilename = currentState.OutputFolder + "_SI"; // output file name
+	TestFileForOutput( userSettings->getSIOutputFilename() );
+	TestFileForOutput( userSettings->getDOutputFilename() );
+	TestFileForOutput( userSettings->getTDOutputFilename() );
+	TestFileForOutput( userSettings->getINVOutputFilename() );
+	TestFileForOutput( userSettings->getLIOutputFilename() );
+	TestFileForOutput( userSettings->getBPOutputFilename() );
+	TestFileForOutput( userSettings->getCloseEndOutputFilename() );
+	CheckWhetherFasta( userSettings->referenceFilename );
 
-    currentState.DeletionOutputFilename = currentState.OutputFolder + "_D";
-    std::ofstream
-    DeletionOutf_test(currentState.DeletionOutputFilename.c_str());
-    if (!DeletionOutf_test) {
-        LOG_ERROR(*logStream << "Sorry, cannot write to the file: "
-                  << currentState.DeletionOutputFilename << std::endl);
-        return 1;
-    }
-    DeletionOutf_test.close();
-
-    currentState.TDOutputFilename = currentState.OutputFolder + "_TD";
-    std::ofstream TDOutf_test(currentState.TDOutputFilename.c_str());
-    if (!TDOutf_test) {
-        LOG_ERROR(*logStream << "Sorry, cannot write to the file: "
-                  << currentState.TDOutputFilename << std::endl);
-        return 1;
-    }
-    TDOutf_test.close();
-
-    currentState.InversionOutputFilename = currentState.OutputFolder + "_INV";
-    std::ofstream InversionOutf_test(
-        currentState.InversionOutputFilename.c_str());
-    if (!InversionOutf_test) {
-        LOG_ERROR(*logStream << "Sorry, cannot write to the file: "
-                  << currentState.InversionOutputFilename << std::endl);
-        return 1;
-    }
-    InversionOutf_test.close();
-
-    currentState.LargeInsertionOutputFilename = currentState.OutputFolder
-            + "_LI";
-    std::ofstream LargeInsertionOutf_test(
-        currentState.LargeInsertionOutputFilename.c_str());
-    if (!LargeInsertionOutf_test) {
-        LOG_ERROR(*logStream << "Sorry, cannot write to the file: "
-                  << currentState.LargeInsertionOutputFilename << std::endl);
-        return 1;
-    }
-    LargeInsertionOutf_test.close();
-
-    currentState.RestOutputFilename = currentState.OutputFolder + "_BP";
-    std::ofstream RestOutf_test(currentState.RestOutputFilename.c_str());
-    if (!RestOutf_test) {
-        LOG_ERROR(*logStream << "Sorry, cannot write to the file: "
-                  << currentState.RestOutputFilename << std::endl);
-        return 1;
-    }
-    RestOutf_test.close();
-
-    std::string CloseEndMappedOutputFilename = currentState.OutputFolder + "_CloseEndMapped";
-    std::ofstream CloseEndMappedOutput( CloseEndMappedOutputFilename. c_str() );
-
-
-    if ( userSettings->breakdancerOutputFilename.compare("") != 0 ) {
-        std::ofstream bdOutf_test(userSettings->breakdancerOutputFilename.c_str());
-        if (!bdOutf_test) {
-            LOG_ERROR(*logStream << "Sorry, cannot write to the file: "
-                      << userSettings->breakdancerOutputFilename << std::endl);
-            return 1;
-        }
-        bdOutf_test.close();
-    }
+   if ( userSettings->breakdancerOutputFilename != "" ) {
+		TestFileForOutput( userSettings->breakdancerOutputFilename );
+   }
 
     Match[(short) 'A'] = 'A';
     Match[(short) 'C'] = 'C';
@@ -705,20 +675,6 @@ int init(int argc, char *argv[], ControlState& currentState )
 	for (int dIndex=2; dIndex<15; dIndex++ ) {
 		DSizeArray[ dIndex ] = DSizeArray[ dIndex-1 ] * 4;
 	}
-   /* DSizeArray[2] = DSizeArray[1] * 4; // 512
-    DSizeArray[3] = DSizeArray[2] * 4; // 2048
-    DSizeArray[4] = DSizeArray[3] * 4; // 8092
-    DSizeArray[5] = DSizeArray[4] * 4; // 32368
-    DSizeArray[6] = DSizeArray[5] * 4; // 129472
-    DSizeArray[7] = DSizeArray[6] * 4; // 517888
-    DSizeArray[8] = DSizeArray[7] * 4;
-
-    DSizeArray[9] = DSizeArray[8] * 4;
-    DSizeArray[10] = DSizeArray[9] * 4;
-    DSizeArray[11] = DSizeArray[10] * 4;
-    DSizeArray[12] = DSizeArray[11] * 4;
-    DSizeArray[13] = DSizeArray[12] * 4;
-    DSizeArray[14] = DSizeArray[13] * 4;*/
 
     std::vector < std::string > chromosomes;
 
@@ -786,7 +742,44 @@ void SearchFarEnd( const std::string& chromosome, SPLIT_READ& read)
     }
 }
 
+void ReportCloseMappedReads( const std::vector<SPLIT_READ>& reads )
+{
+	std::ofstream CloseEndMappedOutput( UserDefinedSettings::Instance()->getCloseEndOutputFilename().c_str(), std::ios::app);
+	int TotalNumReads = reads.size();
+   for (int Index = 0; Index < TotalNumReads; Index++) {
+		const SPLIT_READ& currentRead = reads[ Index ];
+   	CloseEndMappedOutput 
+			<< currentRead.Name
+         << "\n" << currentRead.getUnmatchedSeq()
+         << "\n" << currentRead.MatchedD
+         << "\t" << currentRead.FragName
+         << "\t" << currentRead.MatchedRelPos
+         << "\t" << currentRead.MS 
+         << "\t" << currentRead.InsertSize 
+         << "\t" << currentRead.Tag << "\n";
+   }
+}
 
+void ReportCloseAndFarEndCounts( const std::vector<SPLIT_READ>& reads )
+{
+	unsigned Count_Far = 0;
+   unsigned Count_Used = 0;
+   unsigned Count_Unused = 0;
+
+   for (int Index = reads.size() - 1; Index >= 0; Index--) {
+		const SPLIT_READ& currentRead = reads[ Index ];
+      if (!currentRead.UP_Far.empty()) {
+         Count_Far++;
+      }
+      if (currentRead.Used) {
+         Count_Used++;
+      }
+   }
+	Count_Unused = reads.size() - Count_Far;
+   *logStream << "Total: " << reads.size() << ";\tClose_end_found " << reads.size() << ";\tFar_end_found " << Count_Far << ";\tUsed\t" << 
+ 		Count_Used << ".\n\n";
+   *logStream << "For LI and BP: " << Count_Unused << "\n\n";
+}
 
 int main(int argc, char *argv[])
 {
@@ -799,35 +792,19 @@ int main(int argc, char *argv[])
     unsigned int AllLoadings = 0;
     unsigned int AllSortReport = 0;
 
-    /* 1 init starts */
-    /* 1 init ends */
-    /* 2 load genome sequences and reads starts */
-    /* 2 load genome sequences and reads ends */
-
     ControlState currentState;
 
-    int returnValue;
-
 	logStream=&std::cout;
-    returnValue = init(argc, argv, currentState );
-    if (returnValue != EXIT_SUCCESS) {
-        return returnValue;
-    }
-
-    std::string emptystr;
+   int returnValue = init(argc, argv, currentState );
+   if (returnValue != EXIT_SUCCESS) {
+      return returnValue;
+   }
 
 	UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
 
 	std::ifstream FastaFile( userSettings->referenceFilename.c_str() );
-    char FirstCharOfFasta;
-    FastaFile >> FirstCharOfFasta;
-    if (FirstCharOfFasta != '>') {
-        *logStream << "The reference genome must be in fasta format!"
-                  << std::endl;
-        return 1;
-    }
-
-    
+   char FirstCharOfFasta;
+   FastaFile >> FirstCharOfFasta;
     /* Start of shortcut to genotyping */ // currentState.inf_AssemblyInput.open(par.inf_AssemblyInputFilename.c_str());
     //std::cout << "here " << par.AssemblyInputDefined << std::endl;
 	bool GenotypingInputDefined = parameters[findParameter("-g",parameters)]->isSet();
@@ -876,16 +853,15 @@ int main(int argc, char *argv[])
 
     while (SpecifiedChrVisited == false && FastaFile >> currentState.CurrentChrName && !FastaFile.eof()) {
         /* 3.1 preparation starts */
-        (*logStream << "Processing chromosome: " << currentState.CurrentChrName
-         << std::endl);
+        *logStream << "Processing chromosome: " << currentState.CurrentChrName << std::endl;
         //TODO: check with Kai what's the use of this line.
         // dangerous, there may be no other elements on the fasta header line
-        std::getline(FastaFile, emptystr);
-        if (currentState.loopOverAllChromosomes) {
-            GetOneChrSeq(FastaFile, currentState.CurrentChrSeq, true);
-            //currentState.WhichChr = currentState.CurrentChrName;
-        }
-        else if (currentState.CurrentChrName == currentState.TargetChrName) {   // just one chr and this is the correct one
+	    std::string emptystr;
+       std::getline(FastaFile, emptystr);
+       if (currentState.loopOverAllChromosomes) {
+          GetOneChrSeq(FastaFile, currentState.CurrentChrSeq, true);
+       }
+       else if (currentState.CurrentChrName == currentState.TargetChrName) {   // just one chr and this is the correct one
             GetOneChrSeq(FastaFile, currentState.CurrentChrSeq, true);
             SpecifiedChrVisited = true;
         }
@@ -956,52 +932,31 @@ int main(int argc, char *argv[])
             g_CloseMappedMinus = 0; // #################
 
             if (displayedStartOfRegion < displayedEndOfRegion) {
-                (*logStream << "\nLooking at chromosome " << currentState.CurrentChrName
-                 << " bases " << displayedStartOfRegion << " to "
-                 << displayedEndOfRegion << "." << std::endl);
+               *logStream << "\nLooking at chromosome " << currentState.CurrentChrName << " bases " << displayedStartOfRegion << " to " << displayedEndOfRegion << 
+						"." << std::endl;
             }
             else {
-                (*logStream
-                 << "Checking out reads near the borders of the specified regions for extra evidence."
-                 << std::endl);
+               *logStream << "Checking out reads near the borders of the specified regions for extra evidence.\n";
             }
 
             if (Time_Load_S == 0) {
                 Time_Load_S = time(NULL);
             }
-            //short ReturnFromReadingReads;
             get_SR_Reads(currentState ); 
             Time_Mine_E = time(NULL);
 
             if (currentState.Reads_SR.size() ) {
-                (*logStream << "There are " << currentState.Reads_SR. size()
-                 << " reads for this chromosome region." << std::endl); // what region?
+                *logStream << "There are " << currentState.Reads_SR.size() << " reads for this chromosome region." << std::endl; // what region?
 
-                int TotalNumReads = currentState.Reads_SR.size();
-                if (userSettings->ReportCloseMappedRead || userSettings->reportOnlyCloseMappedReads ) {
-                    std::string CloseEndMappedOutputFilename =
-                        currentState.OutputFolder + "_CloseEndMapped";
-                    std::ofstream CloseEndMappedOutput(
-                        CloseEndMappedOutputFilename. c_str(), std::ios::app);
-                    for (int Index = 0; Index < TotalNumReads; Index++) {
-                        CloseEndMappedOutput << currentState.Reads_SR[Index].Name
-                                             << "\n" << currentState.Reads_SR[Index].getUnmatchedSeq()
-                                             << "\n" << currentState.Reads_SR[Index].MatchedD
-                                             << "\t" << currentState.Reads_SR[Index].FragName
-                                             << "\t" << currentState.Reads_SR[Index].MatchedRelPos
-                                             << "\t" << currentState.Reads_SR[Index].MS << "\t"
-                                             << currentState.Reads_SR[Index].InsertSize << "\t"
-                                             << currentState.Reads_SR[Index].Tag << "\n";
-                    }
+            //    int TotalNumReads = currentState.Reads_SR.size();
+                if (userSettings->reportCloseMappedReads() ) {
+						 ReportCloseMappedReads( currentState.Reads_SR );       
                 }
                 Time_Load_E = time(NULL);
                 if (!userSettings->reportOnlyCloseMappedReads) {
-
-
                     unsigned int Num_Left;
                     Num_Left = currentState.Reads_SR.size();
                     Const_Log_T = log10((double) Num_Left);
-
 
                     /* 3.2.1 preparation ends */
                     #pragma omp parallel default(shared)
@@ -1012,7 +967,7 @@ int main(int argc, char *argv[])
                         }
                     }
 
-                    (*logStream << "Far end searching completed for this window." << std::endl);
+                    *logStream << "Far end searching completed for this window." << std::endl;
 
                     SearchDeletions searchD;
                     searchD.Search(currentState, NumBoxes);
@@ -1034,7 +989,7 @@ int main(int argc, char *argv[])
                     /* 3.2.8 report starts */
 
 
-                    if (ReportSVReads) {
+                 /*   if (ReportSVReads) {
                         std::string SVReadOutputFilename = currentState.OutputFolder
                                                            + "_SVReads";
                         std::ofstream SVReadOutput(SVReadOutputFilename.c_str(),
@@ -1054,9 +1009,9 @@ int main(int argc, char *argv[])
                                              << "\t" << currentState.Reads_SR[Index].Tag
                                              << "\n";
                         }
-                    }
+                    }*/
 
-                    if (ReportLargeInterChrSVReads) {
+                /*    if (ReportLargeInterChrSVReads) {
                         std::string LargeInterChrSVReadsOutputFilename =
                             currentState.OutputFolder + "_LargeORInterChrReads";
                         std::ofstream LargeInterChrSVReadsOutput(
@@ -1075,67 +1030,21 @@ int main(int argc, char *argv[])
                                         << currentState.Reads_SR[Index].InsertSize << "\t"
                                         << currentState.Reads_SR[Index].Tag << "\n";
                         }
-                    }
+                    }*/
 
-                    unsigned Count_Far = 0;
-                    unsigned Count_Used = 0;
-                    unsigned Count_Unused = 0;
-
-                    for (int Index = TotalNumReads - 1; Index >= 0; Index--) {
-                        if (!currentState.Reads_SR[Index].UP_Far.empty()) {
-                            Count_Far++;
-                        }
-                        if (!currentState.Reads_SR[Index].UP_Far.empty()
-                 ) {
-
-                        }
-                        else {
-                            Count_Unused++;
-                        }
-                        if (currentState.Reads_SR[Index].Used) {
-                            Count_Used++;
-                        }
-                    }
-
-                    (*logStream << "Total: " << TotalNumReads << ";\tClose_end_found "
-                     << TotalNumReads << ";\tFar_end_found " << Count_Far
-                     << ";\tUsed\t" << Count_Used << "." << std::endl
-                     << std::endl);
-                    (*logStream << "For LI and BP: " << Count_Unused << std::endl
-                     << std::endl);
+						ReportCloseAndFarEndCounts( currentState.Reads_SR );
+                   
 
                     if (userSettings->Analyze_LI) {
-                        time_t Time_LI_S, Time_LI_E;
-                        Time_LI_S = time(NULL);
-                        std::ofstream LargeInsertionOutf(
-                            currentState.LargeInsertionOutputFilename. c_str(),
-                            std::ios::app);
-                        SortOutputLI(currentState.CurrentChrSeq, currentState.Reads_SR,
-                                     LargeInsertionOutf, currentState.lowerBinBorder, currentState.upperBinBorder);
-                        LargeInsertionOutf.close();
-                        Time_LI_E = time(NULL);
-                        (*logStream << "Mining, Sorting and output LI results: "
-                         << (unsigned
-                             int) difftime(Time_LI_E, Time_LI_S) << " seconds."
-                         << std::endl << std::endl);
-                        ;
+                        SortOutputLI(currentState.CurrentChrSeq, currentState.Reads_SR, currentState.lowerBinBorder, currentState.upperBinBorder, 
+									userSettings->getLIOutputFilename());
                     }
 
                     std::vector<SPLIT_READ> BP_Reads;
                     BP_Reads.clear();
                     if (userSettings->Analyze_BP) {
-                        time_t Time_BP_S, Time_BP_E;
-                        Time_BP_S = time(NULL);
-                        std::ofstream RestOutf(currentState.RestOutputFilename.c_str(),
-                                               std::ios::app);
-                        SortOutputRest(currentState.CurrentChrSeq, currentState.Reads_SR,
-                                       BP_Reads, RestOutf, currentState.lowerBinBorder, currentState.upperBinBorder);
-                        RestOutf.close();
-                        Time_BP_E = time(NULL);
-                        (*logStream << "Mining, Sorting and output BP results: "
-                         << (unsigned
-                             int) difftime(Time_BP_E, Time_BP_S) << " seconds."
-                         << std::endl << std::endl);
+                       SortOutputRest(currentState.CurrentChrSeq, currentState.Reads_SR, BP_Reads, currentState.lowerBinBorder, currentState.upperBinBorder,
+									userSettings->getBPOutputFilename());
                     }
                 }
                 Time_Sort_E = time(NULL);

@@ -59,7 +59,6 @@ public:
     std::ifstream inf_GenotypingInput;
 	LineReader *lineReader;
 	PindelReadReader *inf_Pindel_Reads;
-	std::string OutputFolder;
 	std::string TargetChrName;
 	std::vector<bam_info> bams_to_parse;
 	std::vector<std::string> pindelfilesToParse;
@@ -67,26 +66,13 @@ public:
 	bool PindelReadDefined;
 	bool pindelConfigDefined;
     
- //   short Min_MQ;
-    
-
-	std::string SIOutputFilename;
-	std::string DeletionOutputFilename;
-	std::string TDOutputFilename;
-	std::string InversionOutputFilename;
-	std::string LargeInsertionOutputFilename;
-	std::string RestOutputFilename;
-	//std::string breakDancerOutputFilename;
-    
-
 	bool loopOverAllChromosomes;
 	std::string CurrentChrSeq;
 	std::string CurrentChrName;
 
 	std::vector<SPLIT_READ> InputReads_SR, Reads_SR, FutureReads_SR;
     std::vector <RPVector> Reads_RP;
-    
-
+ 
 	int lowerBinBorder;
 	int upperBinBorder;
 	int startOfRegion;

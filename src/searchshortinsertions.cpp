@@ -65,7 +65,7 @@ std::string SearchShortInsertions::getInsertedStr2(const SPLIT_READ& read)
 void SearchShortInsertions::outputResults(ControlState& currentState,
       std::vector<unsigned> Vars[], const unsigned NumBoxes)
 {
-   std::ofstream SIoutputfile(currentState.SIOutputFilename.c_str(), std::ios::app);
+   std::ofstream SIoutputfile(UserDefinedSettings::Instance()->getSIOutputFilename().c_str(), std::ios::app);
    SortOutputSI(NumBoxes, currentState.CurrentChrSeq, currentState.Reads_SR, Vars, SIoutputfile);
    SIoutputfile.close();
 }
