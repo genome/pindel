@@ -23,6 +23,7 @@
 #include <vector>
 
 // Pindel header files
+#include "logstream.h"
 #include "control_state.h"
 #include "search_variant.h"
 #include "pindel.h"
@@ -65,7 +66,7 @@ int SearchVariant::Search(ControlState& currentState, const unsigned numBoxes)
    *logStream << "Far ends already mapped " << farEndExists << std::endl;
    *logStream << "Checksum of far ends: " << bpSum << std::endl;
 
-
+	UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
    LOG_INFO(*logStream << "Searching " << typeOfVariant << " ... " << std::endl);
    for (unsigned ReadIndex = 0; ReadIndex < currentState.Reads_SR.size(); ReadIndex++) {
 		SPLIT_READ& currentRead = currentState.Reads_SR[ReadIndex];
@@ -109,8 +110,7 @@ int SearchVariant::Search(ControlState& currentState, const unsigned numBoxes)
                            saveReadForNextCycle( currentRead, currentState.FutureReads_SR);
                         }
                         else {
-                           if (readInSpecifiedRegion( currentRead, currentState.regionStartDefined, currentState.regionEndDefined, currentState.startOfRegion,
-                                    currentState.endOfRegion)) {
+                           if (readInSpecifiedRegion( currentRead, userSettings->getRegion())) {
                               Vars[(int) currentRead. BPLeft / BoxSize]. push_back(ReadIndex);
                               currentRead.Used = true;
                               Count_Var_Plus++;
@@ -161,8 +161,7 @@ int SearchVariant::Search(ControlState& currentState, const unsigned numBoxes)
                            saveReadForNextCycle( currentRead, currentState.FutureReads_SR);
                         }
                         else {
-                           if (readInSpecifiedRegion( currentRead, currentState.regionStartDefined, currentState.regionEndDefined, currentState.startOfRegion,
-                                    currentState.endOfRegion)) {
+                           if (readInSpecifiedRegion( currentRead, userSettings->getRegion())) {
                               Vars[(int) currentRead. BPLeft / BoxSize]. push_back(ReadIndex);
                               currentRead.Used = true;
                               Count_Var++;

@@ -29,6 +29,7 @@
 #include <set>
 
 // Pindel header files
+#include "logstream.h"
 #include "pindel.h"
 #include "fn_parameters.h"
 #include "bddata.h"
@@ -68,7 +69,7 @@
 /* EW: update 0.2.4s: bugfix for -p option of Pindel0.2.4r */
 
 const std::string Pindel_Version_str = "Pindel version 0.2.4s, June 18 2012.";
-std::ostream* logStream;
+
 std::ofstream g_logFile;
 
 int g_binIndex = -1; // global variable for the bin index, as I cannot easily pass an extra parameter to the diverse functions
@@ -227,21 +228,18 @@ bool readTransgressesBinBoundaries(SPLIT_READ & read,
 
 /** 'readInSpecifiedRegion' if a region is specified, check if the read is in it. */
 bool readInSpecifiedRegion(const SPLIT_READ & read, // in: the read
-                           const bool regionStartDefined,
-                           const bool regionEndDefined,
-                           const int startOfRegion, // in: the first base of the specified region
-                           const int endOfRegion // in: the last base of the specified region (-1 if no region has been specified)
+                           const SearchRegion* region
                           )
 {
     bool passesFilter = true;
 
     // if a start position has been defined, and the breakpoint is before it
-    if (regionStartDefined && (read.BPLeft + 1 < (unsigned int) startOfRegion)) {
+    if (region->isStartDefined() && (read.BPLeft + 1 < (unsigned int) region->getStart())) {
         passesFilter = false;
     }
 
     // if an end of the region has been specified
-    if (regionEndDefined && (read.BPLeft + 1 > (unsigned int) endOfRegion)) {
+    if (region->isEndDefined() && (read.BPLeft + 1 > (unsigned int) region->getEnd())) {
         passesFilter = false;
 
     }
@@ -305,67 +303,9 @@ std::ostream& operator<<(std::ostream& os, const SPLIT_READ& splitRead)
     return os;
 }
 
-/** 'eliminate' eliminates a character from the input string. */
-void eliminate(const char ch, // in: character to be eliminated from the string
-               std::string & str // modif: string that needs to be modified
-              )
-{
-    size_t eliminateCharPos = str.find(ch);
-    while (eliminateCharPos != std::string::npos) {
-        str.erase(eliminateCharPos, 1);
-        eliminateCharPos = str.find(ch);
-    }
-}
 
-/** 'parseRegion' interprets the region specified by the user in the -c option. */
-void parseRegion(const std::string & region, // in: region
-                 bool &regionStartDefined,
-                 bool &regionEndDefined,
-                 int &startOfRegion, // out: starting position of the region, -1 if not specified
-                 int &endOfRegion, // out: ending position of the region, -1 if not specified
-                 std::string & chromosomeName, // out: name of the pure chromosome without region information
-                 bool & correctParse // out: whether parsing has succeeded.
-                )
-{
-    size_t separatorPos = region.find(":");
-    regionStartDefined = false;
-    regionEndDefined = false;
-    startOfRegion = -1;
-    endOfRegion = -1;
-    correctParse = false;
 
-    // found a separator
-    if (separatorPos != std::string::npos) {
-        chromosomeName = region.substr(0, separatorPos);
-        std::string coordinates = region.substr(separatorPos + 1);
-        eliminate(',', coordinates); // removes the ',' in 1,000 or 1,000,000 that users may add for readability but wreak havoc with atoi
-        size_t startEndSeparatorPos = coordinates.find("-");
 
-        // there are two coordinates
-        if (startEndSeparatorPos != std::string::npos) {
-            std::string secondPositionStr = coordinates.substr(
-                                                startEndSeparatorPos + 1);
-            endOfRegion = atoi(secondPositionStr.c_str());
-            regionEndDefined = true;
-        }
-        startOfRegion = atoi(coordinates.c_str());
-        regionStartDefined = true;
-
-        LOG_DEBUG(*logStream << "sor: " << startOfRegion << "eor: " << endOfRegion << std::endl);
-        if (startOfRegion < 0 || (regionEndDefined && ( endOfRegion < startOfRegion) )) {
-            correctParse = false;
-        }
-        else {
-            correctParse = true;
-        }
-
-    }
-    // no separator found
-    else {
-        chromosomeName = region;
-        correctParse = true;
-    }
-}
 
 /** 'isFinishedPindel' returns true if there are no more reads to be processed. */
 bool isFinishedPindel(const int lastPositionAnalyzed, // in: last position analyzed so far
@@ -485,14 +425,7 @@ void readPindelConfigFile(std::string& pindelConfigFilename, std::vector<std::st
 }
 
 
-std::string uppercase( const std::string& input )
-{
-    std::string output = input;
-    for(unsigned int pos=0; pos<input.length(); pos++ ) {
-        output[ pos] = toupper( input[pos] );
-    }
-    return output;
-}
+
 
 
 LineReader *getLineReaderByFilename(const char *filename)
@@ -579,21 +512,18 @@ int init(int argc, char *argv[], ControlState& currentState )
 
     // if all parameters are okay, open the files
 
-    currentState.PindelReadDefined = parameters[findParameter("-p",parameters)]->isSet();
-    if (currentState.PindelReadDefined) {
+    if (userSettings->singlePindelFileAsInput()) {
 		currentState.lineReader= getLineReaderByFilename(userSettings->pindelFilename.c_str());
         currentState.inf_Pindel_Reads = new PindelReadReader(*currentState.lineReader);
     }
-	currentState.pindelConfigDefined = parameters[findParameter("-P",parameters)]->isSet();
-	if (currentState.pindelConfigDefined) {
+
+   if (userSettings->pindelConfigFileAsInput()) {
 		readPindelConfigFile( userSettings->pindelConfigFilename, currentState.pindelfilesToParse );
 	}
-    currentState.BAMDefined = parameters[findParameter("-i",parameters)]->isSet();
-    if (currentState.BAMDefined) {
+
+    if (userSettings->bamFilesAsInput()) {
         readBamConfigFile( userSettings->bamConfigFilename, currentState );
     }
-
-    //currentState.OutputFolder =  userSettings->outputFilename;
 
     bool BreakDancerDefined = parameters[findParameter("-b",parameters)]->isSet();
     if (BreakDancerDefined) {
@@ -676,27 +606,10 @@ int init(int argc, char *argv[], ControlState& currentState )
 		DSizeArray[ dIndex ] = DSizeArray[ dIndex-1 ] * 4;
 	}
 
-    std::vector < std::string > chromosomes;
+    //std::vector < std::string > chromosomes;
 
-    currentState.startOfRegion = -1;
-    currentState.endOfRegion = -1;
-    bool correctParse = false;
-    std::string chrName;
-    parseRegion(userSettings->SearchRegion, currentState.regionStartDefined, currentState.regionEndDefined, currentState.startOfRegion,
-                currentState.endOfRegion, chrName, correctParse);
-    if (!correctParse) {
-        LOG_ERROR(*logStream << "I cannot parse the region '" << userSettings->SearchRegion
-                  << "'. Please give region in the format -c ALL, -c <chromosome_name> "
-                  "(for example -c 20) or -c <chromosome_name>:<start_position>[-<end_position>], for example -c II:1,000 or "
-                  "-c II:1,000-50,000. If an end position is specified, it must be larger than the start position."
-                  << std::endl);
-        exit ( EXIT_FAILURE);
-    }
-    currentState.TargetChrName = chrName; // removes the region from the 'pure' chromosome name
-
-    if (uppercase(currentState.TargetChrName).compare("ALL") == 0 && AssemblyInputDefined == false && GenotypingInputDefined == false) {
+    if (!userSettings->getRegion()->isTargetChromosomeDefined() && AssemblyInputDefined == false && GenotypingInputDefined == false) {
         *logStream << "Looping over all chromosomes." << std::endl;
-        currentState.loopOverAllChromosomes = true;
     }
     return EXIT_SUCCESS;
 }
@@ -858,10 +771,10 @@ int main(int argc, char *argv[])
         // dangerous, there may be no other elements on the fasta header line
 	    std::string emptystr;
        std::getline(FastaFile, emptystr);
-       if (currentState.loopOverAllChromosomes) {
+       if (userSettings->loopOverAllChromosomes()) {
           GetOneChrSeq(FastaFile, currentState.CurrentChrSeq, true);
        }
-       else if (currentState.CurrentChrName == currentState.TargetChrName) {   // just one chr and this is the correct one
+       else if (currentState.CurrentChrName == userSettings->getRegion()->getTargetChromosomeName()) {   // just one chr and this is the correct one
             GetOneChrSeq(FastaFile, currentState.CurrentChrSeq, true);
             SpecifiedChrVisited = true;
         }
@@ -893,8 +806,8 @@ int main(int argc, char *argv[])
 
         int startOffSet = 0;
         // if a region has been specified
-        if (currentState.regionStartDefined ) {
-            startOffSet = currentState.startOfRegion - AROUND_REGION_BUFFER;
+        if (userSettings->getRegion()->isStartDefined() ) {
+            startOffSet = userSettings->getRegion()->getStart() - AROUND_REGION_BUFFER;
             if (startOffSet < 0) {
                 startOffSet = 0;
             }
@@ -903,21 +816,21 @@ int main(int argc, char *argv[])
         currentState.upperBinBorder = currentState.lowerBinBorder + WINDOW_SIZE;
 
 
-        if (currentState.regionEndDefined ) {
-            currentState.endRegionPlusBuffer = currentState.endOfRegion + AROUND_REGION_BUFFER;
+        if (userSettings->getRegion()->isEndDefined() ) {
+            currentState.endRegionPlusBuffer = userSettings->getRegion()->getEnd() + AROUND_REGION_BUFFER;
             if (currentState.upperBinBorder > currentState.endRegionPlusBuffer) {
                 currentState.upperBinBorder = currentState.endRegionPlusBuffer;
             }
         }
 
 
-        int displayedStartOfRegion = ((currentState.regionStartDefined) ? (currentState.startOfRegion) : currentState.lowerBinBorder);
+        int displayedStartOfRegion = ((userSettings->getRegion()->isStartDefined()) ? (userSettings->getRegion()->getStart()) : currentState.lowerBinBorder);
         int displayedEndOfRegion = displayedStartOfRegion + WINDOW_SIZE;
         if ( displayedEndOfRegion > currentState.upperBinBorder ) {
             displayedEndOfRegion = currentState.upperBinBorder;
         }
-        if ( currentState.regionEndDefined && displayedEndOfRegion > currentState.endOfRegion ) {
-            displayedEndOfRegion = currentState.endOfRegion;
+        if ( userSettings->getRegion()->isEndDefined() && displayedEndOfRegion > userSettings->getRegion()->getEnd() ) {
+            displayedEndOfRegion = userSettings->getRegion()->getEnd();
         }
         
         // loop over one chromosome
@@ -988,50 +901,6 @@ int main(int argc, char *argv[])
                     searchSI.Search(currentState, NumBoxes);
                     /* 3.2.8 report starts */
 
-
-                 /*   if (ReportSVReads) {
-                        std::string SVReadOutputFilename = currentState.OutputFolder
-                                                           + "_SVReads";
-                        std::ofstream SVReadOutput(SVReadOutputFilename.c_str(),
-                                                   std::ios::app);
-                        for (int Index = 0; Index < TotalNumReads; Index++) {
-                            if (currentState.Reads_SR[Index].IndelSize > Indel_SV_cutoff
-                                    || currentState.Reads_SR[Index].IndelSize == 0)
-                                SVReadOutput << currentState.Reads_SR[Index].Name << "\n"
-                                             << currentState.Reads_SR[Index]. getUnmatchedSeq()
-                                             << "\n" << currentState.Reads_SR[Index]. MatchedD
-                                             << "\t" << currentState.Reads_SR[Index]. FragName
-                                             << "\t"
-                                             << currentState.Reads_SR[Index]. MatchedRelPos
-                                             << "\t" << currentState.Reads_SR[Index]. MS
-                                             << "\t"
-                                             << currentState.Reads_SR[Index]. InsertSize
-                                             << "\t" << currentState.Reads_SR[Index].Tag
-                                             << "\n";
-                        }
-                    }*/
-
-                /*    if (ReportLargeInterChrSVReads) {
-                        std::string LargeInterChrSVReadsOutputFilename =
-                            currentState.OutputFolder + "_LargeORInterChrReads";
-                        std::ofstream LargeInterChrSVReadsOutput(
-                            LargeInterChrSVReadsOutputFilename.c_str(),
-                            std::ios::app);
-                        for (int Index = 0; Index < TotalNumReads; Index++) {
-                            if (currentState.Reads_SR[Index].IndelSize == 0)
-                                LargeInterChrSVReadsOutput
-                                        << currentState.Reads_SR[Index].Name << "\n"
-                                        << currentState.Reads_SR[Index].getUnmatchedSeq()
-                                        << "\n" << currentState.Reads_SR[Index].MatchedD
-                                        << "\t" << currentState.Reads_SR[Index].FragName
-                                        << "\t"
-                                        << currentState.Reads_SR[Index].MatchedRelPos
-                                        << "\t" << currentState.Reads_SR[Index].MS << "\t"
-                                        << currentState.Reads_SR[Index].InsertSize << "\t"
-                                        << currentState.Reads_SR[Index].Tag << "\n";
-                        }
-                    }*/
-
 						ReportCloseAndFarEndCounts( currentState.Reads_SR );
                    
 
@@ -1040,10 +909,8 @@ int main(int argc, char *argv[])
 									userSettings->getLIOutputFilename());
                     }
 
-                    std::vector<SPLIT_READ> BP_Reads;
-                    BP_Reads.clear();
                     if (userSettings->Analyze_BP) {
-                       SortOutputRest(currentState.CurrentChrSeq, currentState.Reads_SR, BP_Reads, currentState.lowerBinBorder, currentState.upperBinBorder,
+                       SortOutputRest(currentState.CurrentChrSeq, currentState.Reads_SR, currentState.lowerBinBorder, currentState.upperBinBorder,
 									userSettings->getBPOutputFilename());
                     }
                 }
@@ -1065,21 +932,20 @@ int main(int argc, char *argv[])
             currentState.upperBinBorder += WINDOW_SIZE;
             displayedStartOfRegion += WINDOW_SIZE;
             displayedEndOfRegion += WINDOW_SIZE;
-            if ( currentState.regionEndDefined && displayedEndOfRegion > currentState.endOfRegion ) {
-                displayedEndOfRegion = currentState.endOfRegion;
+            if ( userSettings->getRegion()->isEndDefined() && displayedEndOfRegion > userSettings->getRegion()->getEnd() ) {
+                displayedEndOfRegion = userSettings->getRegion()->getEnd();
             }
-            if ( currentState.regionEndDefined && currentState.upperBinBorder > currentState.endRegionPlusBuffer ) {
+            if ( userSettings->getRegion()->isEndDefined() && currentState.upperBinBorder > currentState.endRegionPlusBuffer ) {
                 currentState.upperBinBorder = currentState.endRegionPlusBuffer;
             }
             g_binIndex++;
             /* 3.2.8 report ends */
 
         } // do {
-        while (((currentState.PindelReadDefined || currentState.pindelConfigDefined )&& !isFinishedPindel(
-                    currentState.lowerBinBorder, currentState.regionEndDefined, currentState.endRegionPlusBuffer))
-                || (currentState.BAMDefined && !isFinishedBAM(
-                        currentState.lowerBinBorder,
-                        currentState.regionEndDefined,
+        while ((userSettings->pindelFilesAsInput() && !isFinishedPindel( currentState.lowerBinBorder, userSettings->getRegion()->isEndDefined(), currentState.endRegionPlusBuffer))
+                || (userSettings->bamFilesAsInput() && !isFinishedBAM(
+							 currentState.lowerBinBorder,
+                        userSettings->getRegion()->isEndDefined(),
                         currentState.endRegionPlusBuffer,
                         currentState.CurrentChrSeq.size())));
 

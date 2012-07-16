@@ -8,6 +8,26 @@
 #ifndef USER_DEFINED_SETTINGS_H
 #define USER_DEFINED_SETTINGS_H
 
+class SearchRegion {
+
+public:
+	SearchRegion(const std::string& regionString);
+	bool isStartDefined() const; 
+	bool isEndDefined() const;
+	bool isTargetChromosomeDefined() const;
+	std::string getTargetChromosomeName() const;
+	int getStart() const;
+	int getEnd() const;
+
+private:
+	SearchRegion();
+	bool m_startDefined;
+	bool m_endDefined;
+	std::string m_targetChromosomeName;
+	int m_start;
+	int m_end;
+};
+
 class UserDefinedSettings {
 
 public:
@@ -41,11 +61,15 @@ public:
 	std::string referenceFilename;
 	bool ReportCloseMappedRead;
 	bool reportOnlyCloseMappedReads;
-	std::string SearchRegion;
+	std::string userDefinedRegion;
 	double Seq_Error_Rate;
 	bool showHelp;
 
 	bool reportCloseMappedReads() const { return ( ReportCloseMappedRead || reportOnlyCloseMappedReads ); };
+	bool singlePindelFileAsInput() const { return pindelFilename!=""; };
+	bool pindelConfigFileAsInput() const { return pindelConfigFilename != ""; };
+	bool bamFilesAsInput() const { return bamConfigFilename != ""; };
+	bool pindelFilesAsInput() const { return ( singlePindelFileAsInput() || pindelConfigFileAsInput() ); };
 
 	std::string getSIOutputFilename() const { return outputFilename + "_SI"; };
 	std::string getDOutputFilename() const { return outputFilename + "_D"; };
@@ -57,9 +81,14 @@ public:
 	std::string getASMOutputFilename() const { return outputFilename + "_ASM"; };
 	std::string getGTOutputFilename() const { return outputFilename + "_GT"; };
 
+	bool loopOverAllChromosomes() { return ! getRegion()->isTargetChromosomeDefined(); };
+
+	SearchRegion* getRegion();
+
 private:
    UserDefinedSettings();
 	static UserDefinedSettings* m_instance;
+	SearchRegion* m_region; 
 };
 
 #endif

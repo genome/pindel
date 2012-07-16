@@ -59,14 +59,9 @@ public:
     std::ifstream inf_GenotypingInput;
 	LineReader *lineReader;
 	PindelReadReader *inf_Pindel_Reads;
-	std::string TargetChrName;
 	std::vector<bam_info> bams_to_parse;
 	std::vector<std::string> pindelfilesToParse;
-	bool BAMDefined;
-	bool PindelReadDefined;
-	bool pindelConfigDefined;
     
-	bool loopOverAllChromosomes;
 	std::string CurrentChrSeq;
 	std::string CurrentChrName;
 
@@ -75,11 +70,7 @@ public:
  
 	int lowerBinBorder;
 	int upperBinBorder;
-	int startOfRegion;
-	int endOfRegion;
 	int endRegionPlusBuffer;
-	bool regionStartDefined;
-	bool regionEndDefined;
 	int CountFarEnd, CountFarEndPlus, CountFarEndMinus;
 
 	//TODO: explain what are stored in these two vectors.

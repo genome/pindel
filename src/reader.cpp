@@ -34,6 +34,7 @@
 #include "ksort.h"
 
 // Pindel header files
+#include "logstream.h"
 #include "pindel.h"
 #include "reader.h"
 #include "logdef.h"
@@ -836,7 +837,7 @@ short get_RP_Reads(ControlState& currentState ) {
     short ReturnFromReadingReads;
     RPVector TempOneRPVector;
 
-    if (currentState.BAMDefined) {
+    if (UserDefinedSettings::Instance()->bamFilesAsInput()) {
         ReturnFromReadingReads = 0;
         for (unsigned int i = 0; i < currentState.bams_to_parse.size(); i++) {
             currentState.Reads_RP.push_back(TempOneRPVector);
@@ -868,7 +869,7 @@ short get_SR_Reads(ControlState& currentState ) {
     std::cout << "getReads " << currentState.CurrentChrName << " " << currentState.CurrentChrSeq.size() << std::endl;
     short ReturnFromReadingReads;
     ReadBuffer readBuffer(BUFFER_SIZE, currentState.Reads_SR, currentState.CurrentChrSeq);
-    if (currentState.BAMDefined) {
+    if (UserDefinedSettings::Instance()->bamFilesAsInput()) {
         ReturnFromReadingReads = 0;
         for (unsigned int i = 0; i < currentState.bams_to_parse.size(); i++) {
             *logStream << "Insertsize in bamreads: " << currentState.bams_to_parse[i].InsertSize << std::endl;
@@ -898,7 +899,8 @@ short get_SR_Reads(ControlState& currentState ) {
         }
         
     }
-    if (currentState.pindelConfigDefined) {	
+	UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
+    if (userSettings->pindelConfigFileAsInput()) {	
 		for (unsigned int fileIndex=0; fileIndex<currentState.pindelfilesToParse.size(); fileIndex++ ) {
 			const std::string &filename = currentState.pindelfilesToParse[fileIndex];
 			currentState.lineReader = getLineReaderByFilename(filename.c_str());
@@ -912,8 +914,9 @@ short get_SR_Reads(ControlState& currentState ) {
 			delete currentState.lineReader;
 		}
 	}
-	if (currentState.PindelReadDefined) {
-		readInPindelReads(*currentState.inf_Pindel_Reads, UserDefinedSettings::Instance()->pindelFilename, currentState );
+
+	if (userSettings->singlePindelFileAsInput()) {
+		readInPindelReads(*currentState.inf_Pindel_Reads, userSettings->pindelFilename, currentState );
 	}
     return 0;
 }

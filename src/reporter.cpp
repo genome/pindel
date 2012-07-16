@@ -25,6 +25,7 @@
 #include <map>
 
 // Pindel header files
+#include "logstream.h"
 #include "pindel.h"
 #include "logdef.h"
 #include "output_file_data.h"
@@ -1730,7 +1731,7 @@ void SortOutputLI (const std::string & CurrentChr, std::vector < SPLIT_READ > &R
 /** writes (appends) breakpoints to the file with the name "filename" */
 void SortOutputRest (const std::string & CurrentChr, 
                 std::vector < SPLIT_READ > &Reads,
-                std::vector < SPLIT_READ > &BP_Reads, 
+               // std::vector < SPLIT_READ > &BP_Reads, 
                 const unsigned int windowStart, 
                 const unsigned int windowEnd,
 					 const std::string& filename)

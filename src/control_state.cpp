@@ -23,19 +23,10 @@
 
 ControlState::ControlState()
 {
-   BAMDefined = false;
-   PindelReadDefined = false;
-	pindelConfigDefined = false;
-
-   loopOverAllChromosomes = false;
-
    lowerBinBorder = 0;
    upperBinBorder = 0;
-   startOfRegion = 0;
-   endOfRegion = 0;
    endRegionPlusBuffer = 0;
-   regionStartDefined = false;
-   regionEndDefined = false;
+
    CountFarEnd = 0;
    CountFarEndPlus = 0;
    CountFarEndMinus = 0;

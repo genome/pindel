@@ -2,6 +2,7 @@
 
 #include <iostream>
 
+#include "logstream.h"
 #include "user_defined_settings.h"
 #include "fn_parameters.h"
 #include "logdef.h"
@@ -41,7 +42,7 @@ void defineParameters(std::vector<Parameter *>& parameters)
                             "Output prefix;", true, ""));
     parameters.push_back(
         new StringParameter(
-            &userSettings->SearchRegion,
+            &userSettings->userDefinedRegion,
             "-c",
             "--chromosome",
             "Which chr/fragment. Pindel will process reads for one chromosome each time. ChrName must be the same as in reference sequence and in read file. '-c ALL' will make Pindel loop over all chromosomes. The search for indels and SVs can also be limited to a specific region; -c 20:10,000,000 will only look for indels and SVs after position 10,000,000 = [10M, end], -c 20:5,000,000-15,000,000 will report indels in the range between and including the bases at position 5,000,000 and 15,000,000 = [5M, 15M]. (default ALL)",

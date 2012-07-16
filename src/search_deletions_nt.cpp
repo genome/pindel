@@ -19,6 +19,7 @@
  */
 
 // Pindel header files
+#include "logstream.h"
 #include "reporter.h"
 #include "control_state.h"
 #include "logdef.h"
@@ -74,8 +75,7 @@ int searchIndels(ControlState& currentState, unsigned NumBoxes)
                      saveReadForNextCycle(currentRead, currentState.FutureReads_SR);
                   }
                   else {
-                     if (readInSpecifiedRegion( currentRead, currentState.regionStartDefined, currentState.regionEndDefined,
-                              currentState.startOfRegion, currentState.endOfRegion)) {
+                     if (readInSpecifiedRegion( currentRead, userSettings->getRegion() ) ) {
                         DI[(int) currentRead. BPLeft / BoxSize]. push_back(ReadIndex);
                         currentRead.Used = true;
                         Count_DI++;
@@ -108,8 +108,7 @@ int searchIndels(ControlState& currentState, unsigned NumBoxes)
                         saveReadForNextCycle( currentRead, currentState.FutureReads_SR);
                      }
                      else {
-                        if (readInSpecifiedRegion( currentRead, currentState.regionStartDefined, currentState.regionEndDefined,
-                                 currentState.startOfRegion, currentState.endOfRegion)) {
+                        if (readInSpecifiedRegion( currentRead, userSettings->getRegion())) {
                            DI[(int) currentRead. BPLeft / BoxSize]. push_back(ReadIndex);
                            currentRead.Used = true;
                            Count_DI++;

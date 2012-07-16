@@ -19,6 +19,7 @@
  */
 
 // Pindel header files
+#include "logstream.h"
 #include "reporter.h"
 #include "control_state.h"
 #include "logdef.h"
@@ -71,8 +72,7 @@ int searchTandemDuplicationsNT(ControlState& currentState, unsigned NumBoxes)
                   saveReadForNextCycle(currentRead, currentState.FutureReads_SR);
                }
                else {
-                  if ( readInSpecifiedRegion( currentRead, currentState.regionStartDefined, currentState.regionEndDefined,
-                           currentState.startOfRegion, currentState.endOfRegion)) {
+                  if ( readInSpecifiedRegion( currentRead, userSettings->getRegion())) {
                      TD_NT[(int) currentRead. BPLeft / BoxSize]. push_back(ReadIndex);
                      currentRead.Used = true;
                      Count_TD_NT++;
@@ -102,8 +102,7 @@ int searchTandemDuplicationsNT(ControlState& currentState, unsigned NumBoxes)
                   saveReadForNextCycle(currentRead, currentState.FutureReads_SR);
                }
                else {
-                  if ( readInSpecifiedRegion( currentRead, currentState.regionStartDefined, currentState.regionEndDefined,
-                           currentState.startOfRegion, currentState.endOfRegion)) {
+                  if ( readInSpecifiedRegion( currentRead, userSettings->getRegion())) {
                      TD_NT[(int) currentRead. BPLeft / BoxSize]. push_back(ReadIndex);
                      currentRead.Used = true;
 

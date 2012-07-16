@@ -74,7 +74,7 @@ extern int g_binIndex;
 extern short g_MinClose;
 extern int WINDOW_SIZE;
 extern int g_maxInsertSize;
-extern std::ostream* logStream;
+
 extern const std::string Pindel_Version_str;
 
 /*
@@ -411,9 +411,7 @@ bool readTransgressesBinBoundaries(SPLIT_READ & read,
 void saveReadForNextCycle(SPLIT_READ & read,
 		std::vector<SPLIT_READ> &futureReads);
 
-bool readInSpecifiedRegion(const SPLIT_READ & read, const bool regionStartDefined,
-		const bool regionEndDefined, const int startOfRegion,
-		const int endOfRegion);
+bool readInSpecifiedRegion(const SPLIT_READ & read,  const SearchRegion* region );
 void reportBreakDancerEvent( const std::string& chromosomeName, const int leftPosition, const int rightPosition, 
 	                          const int svSize, const std::string& svType, const int svCounter);
 void updateReadAfterCloseEndMapping( SPLIT_READ& Temp_One_Read );

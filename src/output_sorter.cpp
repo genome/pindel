@@ -23,6 +23,7 @@
 #include <fstream>
 
 // Pindel header files
+#include "logstream.h"
 #include "pindel.h"
 #include "logdef.h"
 #include "output_sorter.h"

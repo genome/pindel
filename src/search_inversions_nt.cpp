@@ -19,6 +19,7 @@
  */
 
 // Pindel header files
+#include "logstream.h"
 #include "reporter.h"
 #include "control_state.h"
 #include "logdef.h"
@@ -73,8 +74,7 @@ int searchInversionsNT(ControlState& currentState, unsigned NumBoxes)
                   }
                   else {
                      if ( 1 ) {
-                        if (readInSpecifiedRegion( currentRead, currentState.regionStartDefined, currentState.regionEndDefined,
-                                 currentState.startOfRegion, currentState.endOfRegion)) {
+                        if (readInSpecifiedRegion( currentRead, userSettings->getRegion())) {
                            Inv_NT[(int) currentRead. BPLeft / BoxSize]. push_back(ReadIndex);
                            currentRead.Used = true;
                            Count_Inv_NT++;
@@ -104,8 +104,7 @@ int searchInversionsNT(ControlState& currentState, unsigned NumBoxes)
                      saveReadForNextCycle(currentRead, currentState.FutureReads_SR);
                   }
                   else {
-                     if ( readInSpecifiedRegion( currentRead, currentState.regionStartDefined, currentState.regionEndDefined, 
-								currentState.startOfRegion, currentState.endOfRegion)) {
+                     if ( readInSpecifiedRegion( currentRead, userSettings->getRegion())) {
                         Inv_NT[(int) currentRead. BPLeft / BoxSize]. push_back(ReadIndex);
                         currentRead.Used = true;
                         Count_Inv_NT++;
@@ -137,8 +136,7 @@ int searchInversionsNT(ControlState& currentState, unsigned NumBoxes)
                      saveReadForNextCycle(currentRead, currentState.FutureReads_SR);
                   }
                   else {
-                     if ( readInSpecifiedRegion( currentRead, currentState.regionStartDefined, currentState.regionEndDefined,
-                              currentState.startOfRegion, currentState.endOfRegion)) {
+                     if ( readInSpecifiedRegion( currentRead, userSettings->getRegion())) {
                         Inv_NT[(int) currentRead. BPLeft / BoxSize]. push_back(ReadIndex);
                         currentRead.Used = true;
 
@@ -167,8 +165,7 @@ int searchInversionsNT(ControlState& currentState, unsigned NumBoxes)
                      saveReadForNextCycle(currentRead, currentState.FutureReads_SR);
                   }
                   else {
-                     if ( readInSpecifiedRegion( currentRead, currentState.regionStartDefined, currentState.regionEndDefined, currentState.startOfRegion,
-	                     currentState.endOfRegion)) {
+                     if ( readInSpecifiedRegion( currentRead, userSettings->getRegion())) {
 
                         Inv_NT[(int) currentRead. BPLeft / BoxSize]. push_back(ReadIndex);
                         currentRead.Used = true;

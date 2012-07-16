@@ -19,6 +19,7 @@
  */
 
 // Pindel header files
+#include "logstream.h"
 #include "reporter.h"
 #include "control_state.h"
 #include "logdef.h"
@@ -31,6 +32,8 @@ int searchTandemDuplications(ControlState& currentState, unsigned NumBoxes)
    static int Count_TD_Minus = 0;
 
    std::vector<unsigned> TD[NumBoxes];
+	UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
+
 
    LOG_INFO(*logStream << "Searching tandem duplication events ... " << std::endl);
    for (unsigned ReadIndex = 0; ReadIndex < currentState.Reads_SR.size(); ReadIndex++) {
@@ -75,8 +78,7 @@ int searchTandemDuplications(ControlState& currentState, unsigned NumBoxes)
                            saveReadForNextCycle( currentRead, currentState.FutureReads_SR);
                         }
                         else {
-                           if (readInSpecifiedRegion( currentRead, currentState.regionStartDefined, currentState.regionEndDefined,
-                                    currentState.startOfRegion, currentState.endOfRegion)) {
+                           if (readInSpecifiedRegion( currentRead, userSettings->getRegion())) {
                               TD[(int) currentRead. BPLeft / BoxSize]. push_back(ReadIndex);
                               currentRead.Used = true;
                               Count_TD++;
@@ -124,8 +126,7 @@ int searchTandemDuplications(ControlState& currentState, unsigned NumBoxes)
                            saveReadForNextCycle( currentRead, currentState.FutureReads_SR);
                         }
                         else {
-                           if (readInSpecifiedRegion( currentRead, currentState.regionStartDefined, currentState.regionEndDefined,
-                                    currentState.startOfRegion, currentState.endOfRegion)) {
+                           if (readInSpecifiedRegion( currentRead, userSettings->getRegion())) {
                               TD[(int) currentRead. BPLeft / BoxSize]. push_back(ReadIndex);
                               currentRead.Used = true;
 
@@ -141,7 +142,6 @@ int searchTandemDuplications(ControlState& currentState, unsigned NumBoxes)
       }
    }
    LOG_INFO(*logStream << "Total: " << Count_TD << "\t+" << Count_TD_Plus << "\t-"  << Count_TD_Minus << std::endl);
-   UserDefinedSettings* userSettings = UserDefinedSettings::Instance(); 
    std::ofstream TDOutf(userSettings->getTDOutputFilename().c_str(), std::ios::app);
    SortAndOutputTandemDuplications(NumBoxes, currentState.CurrentChrSeq, currentState.Reads_SR, TD, TDOutf, false);
    for (unsigned int i = 0; i < NumBoxes; i++) {

@@ -52,7 +52,7 @@ void SortOutputLI (const std::string & CurrentChr, std::vector < SPLIT_READ > &R
 							 const unsigned int windowStart, const unsigned int windowEnd, const std::string& filename);
 void SortOutputRest (const std::string & CurrentChr, 
                 std::vector < SPLIT_READ > &Reads,
-                std::vector < SPLIT_READ > &BP_Reads, 
+                //std::vector < SPLIT_READ > &BP_Reads, 
                 const unsigned int windowStart, 
                 const unsigned int windowEnd,
 					 const std::string& filename);
