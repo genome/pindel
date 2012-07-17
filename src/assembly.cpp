@@ -29,7 +29,7 @@
 #include <utility>
 
 void doAssembly (ControlState & CurrentState, std::ifstream& FastaFile ) {
-    
+    std::cout << "Entering assembly mode ..." << std::endl; 
     std::map<std::string,int> ChrName2Index;
     
     std::cout << "Get whole genome sequence..." << std::endl;
@@ -79,6 +79,7 @@ void doAssembly (ControlState & CurrentState, std::ifstream& FastaFile ) {
         std::cout << AllSV4Assembly[SV_index].Type << "\t" << AllSV4Assembly[SV_index].ChrA << "\t" << AllSV4Assembly[SV_index].PosA << "\t" << AllSV4Assembly[SV_index].CI_A << "\t" << AllSV4Assembly[SV_index].ChrB << "\t" << AllSV4Assembly[SV_index].PosB << "\t" << AllSV4Assembly[SV_index].CI_B << std::endl;
         AssembleOneSV(AllChromosomes, ChrName2Index, CurrentState, AllSV4Assembly[SV_index], ASM_Output);
     }
+    std::cout << "Leaving assembly mode and terminating this run." << std::endl;
     return;
 }
 
@@ -157,11 +158,6 @@ short AssembleOneSV(const std::vector <Chromosome> & AllChromosomes, std::map<st
     CONS_Chr_Size = CurrentState.CurrentChrSeq.size() - 2 * g_SpacerBeforeAfter; // #################
     //std::cout << "CONS_Chr_Size " << CONS_Chr_Size << std::endl;
     g_maxPos = 0; // #################
-    g_NumReadInWindow = 0; // #################
-    g_InWinPlus = 0; // #################
-    g_InWinMinus = 0; // #################
-    g_CloseMappedPlus = 0; // #################
-    g_CloseMappedMinus = 0; // #################
     unsigned Left, Right;
 	unsigned int lowerBinBorder = 1;
     if (OneSV.PosA > OneSV.CI_A + 1000)  
@@ -216,11 +212,6 @@ short AssembleOneSV(const std::vector <Chromosome> & AllChromosomes, std::map<st
     CurrentState.CurrentChrSeq = AllChromosomes[ChrName2Index.find(OneSV.ChrB)->second].ChrSeq;
     CONS_Chr_Size = CurrentState.CurrentChrSeq.size() - 2 * g_SpacerBeforeAfter; // #################
     g_maxPos = 0; // #################
-    g_NumReadInWindow = 0; // #################
-    g_InWinPlus = 0; // #################
-    g_InWinMinus = 0; // #################
-    g_CloseMappedPlus = 0; // #################
-    g_CloseMappedMinus = 0; // #################
 	lowerBinBorder = 1;
     if (OneSV.PosB > OneSV.CI_B + 1000)  
         lowerBinBorder = OneSV.PosB - OneSV.CI_B - 1000;

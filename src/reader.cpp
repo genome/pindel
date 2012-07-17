@@ -52,6 +52,13 @@ int32_t bam_cigar2mismatch( const bam1_core_t *readCore, const uint32_t *cigar);
 
 const int BUFFER_SIZE = 50000;
 
+unsigned int g_NumReadInWindow = 0; // #################
+unsigned int g_NumReadScanned = 0;
+unsigned int g_InWinPlus = 0; // #################
+unsigned int g_InWinMinus = 0; // #################
+unsigned int g_CloseMappedPlus = 0; // #################
+unsigned int g_CloseMappedMinus = 0; // #################
+
 // Reader (BamReader and PindelReader)
 
 //init hash/maps for read pairing on the fly
@@ -860,7 +867,14 @@ short get_RP_Reads(ControlState& currentState, const SearchWindow& currentWindow
 
 }
 
-short get_SR_Reads(ControlState& currentState, const SearchWindow& currentWindow ) {
+short get_SR_Reads(ControlState& currentState, const SearchWindow& currentWindow )
+{
+	g_NumReadInWindow = 0; // #################
+	g_NumReadScanned = 0;
+	g_InWinPlus = 0; // #################
+	g_InWinMinus = 0; // #################
+	g_CloseMappedPlus = 0; // #################
+	g_CloseMappedMinus = 0; // #################
     std::cout << "getReads " << currentState.CurrentChrName << " " << currentState.CurrentChrSeq.size() << std::endl;
     short ReturnFromReadingReads;
     ReadBuffer readBuffer(BUFFER_SIZE, currentState.Reads_SR, currentState.CurrentChrSeq);
@@ -927,4 +941,30 @@ void readInPindelReads(PindelReadReader &reader, const std::string& pindelFilena
 	else if (currentState.Reads_SR.size() == 0) {
 		LOG_ERROR(*logStream << "No reads found in " << pindelFilename << std::endl);
 	}
+}
+
+/* 'updateReadAfterCloseEndMapping' (EWL, 31thAug2011) */
+void updateReadAfterCloseEndMapping( SPLIT_READ& Temp_One_Read )
+{
+    if (g_reportLength < Temp_One_Read.getReadLength()) {
+        g_reportLength = Temp_One_Read.getReadLength();
+    }
+    Temp_One_Read.Used = false;
+    Temp_One_Read.UniqueRead = true;
+    LOG_DEBUG(cout << Temp_One_Read.MatchedD << "\t" << Temp_One_Read.UP_Close.size() << "\t");
+
+    CleanUniquePoints (Temp_One_Read.UP_Close);
+
+    LOG_DEBUG(cout << Temp_One_Read.UP_Close.size() << "\t" << Temp_One_Read.UP_Close[0].Direction << endl);
+
+    Temp_One_Read.CloseEndLength = Temp_One_Read.UP_Close[Temp_One_Read.UP_Close.size () - 1].LengthStr;
+
+    if (Temp_One_Read.MatchedD == Plus) {
+        Temp_One_Read.LeftMostPos = Temp_One_Read.UP_Close[0].AbsLoc + 1 - Temp_One_Read.UP_Close[0].LengthStr;
+        g_CloseMappedPlus++;
+    }
+    else {
+        Temp_One_Read.LeftMostPos = Temp_One_Read.UP_Close[0].AbsLoc +	Temp_One_Read.UP_Close[0].LengthStr - Temp_One_Read.getReadLength();
+        g_CloseMappedMinus++;
+    }
 }

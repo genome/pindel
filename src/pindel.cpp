@@ -118,14 +118,6 @@ int g_maxInsertSize=0;
 
 std::string BreakDancerMask;
 std::string CurrentChrMask;
-
-unsigned int g_NumReadScanned = 0;
-unsigned int g_NumReadInWindow = 0;
-unsigned int g_InWinPlus = 0;
-unsigned int g_InWinMinus = 0;
-unsigned int g_CloseMappedPlus = 0;
-unsigned int g_CloseMappedMinus = 0;
-
 std::vector<Parameter *> parameters;
 
 // #########################################################
@@ -373,41 +365,6 @@ std::ostream& operator<<(std::ostream& os, const SPLIT_READ& splitRead)
     os << "NT_size:" << splitRead.NT_size << std::endl;
     return os;
 }
-
-
-
-
-
-/** 'isFinishedPindel' returns true if there are no more reads to be processed. */
-/*bool isFinishedPindel(const int lastPositionAnalyzed, // in: last position analyzed so far
-                      const bool regionEndDefined,
-                      const int endOfScan // in: the last position to be scanned
-                     )
-{
-    // if an endOfScan-value has been set
-    if ( regionEndDefined ) {
-        return (lastPositionAnalyzed >= endOfScan);
-    }
-    else {   // using g_maxPos
-        return (lastPositionAnalyzed >= g_maxPos);
-    }
-}*/
-
-/** 'isFinishedBAM' returns true if there are no more reads to be processed. */
-/*bool isFinishedBAM(const int lastPositionAnalyzed, // in: last position analyzed so far
-                   const bool regionEndDefined,
-                   const int endOfScan, // in: the last position to be scanned
-                   const int chromosomeSize // in: the size of the chromosome
-                  )
-{
-    // if an endOfScan-value has been set
-    if (regionEndDefined) {
-        return (lastPositionAnalyzed >= endOfScan);
-    }
-    else {   // using chromosomeSize
-        return (lastPositionAnalyzed >= chromosomeSize);
-    }
-}*/
 
 bool fileExists(const std::string& filename )
 {
@@ -765,6 +722,53 @@ void ReportCloseAndFarEndCounts( const std::vector<SPLIT_READ>& reads )
    *logStream << "For LI and BP: " << Count_Unused << "\n\n";
 }
 
+void SearchFarEnds( const std::string chromosomeSeq, std::vector<SPLIT_READ>& reads)
+{
+	#pragma omp parallel default(shared)
+   {
+	   #pragma omp for
+      for (int readIndex= 0; readIndex < (int)reads.size(); readIndex++ ) {
+         SearchFarEnd( chromosomeSeq, reads[readIndex] );
+      }
+   }
+   *logStream << "Far end searching completed for this window." << std::endl;
+}
+
+
+void SearchSVs( ControlState& currentState, const int NumBoxes, const SearchWindow& currentWindow )
+{					
+	UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
+
+   SearchDeletions searchD;
+   searchD.Search(currentState, NumBoxes, currentWindow);
+
+   searchIndels(currentState, NumBoxes, currentWindow);
+
+   if (userSettings->Analyze_TD) {
+   	searchTandemDuplications(currentState, NumBoxes, currentWindow);
+   	searchTandemDuplicationsNT(currentState, NumBoxes, currentWindow);
+   }
+
+   if (userSettings->Analyze_INV) {
+   	searchInversions(currentState, NumBoxes, currentWindow);
+   	searchInversionsNT(currentState, NumBoxes, currentWindow);
+   }
+
+   SearchShortInsertions searchSI;
+   searchSI.Search(currentState, NumBoxes, currentWindow);
+
+	ReportCloseAndFarEndCounts( currentState.Reads_SR );                 
+
+   if (userSettings->Analyze_LI) {
+   	SortOutputLI(currentState.CurrentChrSeq, currentState.Reads_SR, currentWindow, userSettings->getLIOutputFilename());
+   }
+
+   if (userSettings->Analyze_BP) {
+   	SortOutputRest(currentState.CurrentChrSeq, currentState.Reads_SR, currentWindow, userSettings->getBPOutputFilename());
+   }
+}
+
+
 int main(int argc, char *argv[])
 {
     //TODO: These are counters that are only used in individual steps. They should be moved to separate functions later.
@@ -805,8 +809,6 @@ int main(int argc, char *argv[])
     //std::cout << "here " << par.AssemblyInputDefined << std::endl;
     bool AssemblyInputDefined = parameters[findParameter("-z",parameters)]->isSet();
     if (AssemblyInputDefined) {
-        
-        std::cout << "Entering assembly mode ..." << std::endl;
         doAssembly(currentState, FastaFile );
         /*
         // step 1: define output file
@@ -817,8 +819,6 @@ int main(int argc, char *argv[])
         
         // step 2: get a list of breakpoints 
          */
-        
-        std::cout << "Leaving assembly mode and terminating this run." << std::endl;
         exit(EXIT_SUCCESS);
     }
     
@@ -874,11 +874,6 @@ int main(int argc, char *argv[])
         // loop over one chromosome
         do {
             /* 3.2.1 preparation starts */
-            g_NumReadInWindow = 0; // #################
-            g_InWinPlus = 0; // #################
-            g_InWinMinus = 0; // #################
-            g_CloseMappedPlus = 0; // #################
-            g_CloseMappedMinus = 0; // #################
 
 				*logStream << currentWindow.display();
 
@@ -896,69 +891,23 @@ int main(int argc, char *argv[])
                 }
                 Time_Load_E = time(NULL);
                 if (!userSettings->reportOnlyCloseMappedReads) {
-                    //unsigned int Num_Left;
-                    //Num_Left = currentState.Reads_SR.size();
-                    //Const_Log_T = log10((double) Num_Left);
-
-                    /* 3.2.1 preparation ends */
-                    #pragma omp parallel default(shared)
-                    {
-                        #pragma omp for
-                        for (int readIndex= 0; readIndex < (int)currentState.Reads_SR.size(); readIndex++ ) {
-                            SearchFarEnd( currentState.CurrentChrSeq, currentState.Reads_SR[readIndex] );
-                        }
-                    }
-
-                    *logStream << "Far end searching completed for this window." << std::endl;
-
-                    SearchDeletions searchD;
-                    searchD.Search(currentState, NumBoxes, currentWindow);
-
-                    returnValue = searchIndels(currentState, NumBoxes, currentWindow);
-
-                    if (userSettings->Analyze_TD) {
-                        returnValue = searchTandemDuplications(currentState, NumBoxes, currentWindow);
-                        returnValue = searchTandemDuplicationsNT(currentState, NumBoxes, currentWindow);
-                    }
-
-                    if (userSettings->Analyze_INV) {
-                        returnValue = searchInversions(currentState, NumBoxes, currentWindow);
-                        returnValue = searchInversionsNT(currentState, NumBoxes, currentWindow);
-                    }
-
-                    SearchShortInsertions searchSI;
-                    searchSI.Search(currentState, NumBoxes, currentWindow);
-                    /* 3.2.8 report starts */
-
-						ReportCloseAndFarEndCounts( currentState.Reads_SR );
-                   
-
-                    if (userSettings->Analyze_LI) {
-                        SortOutputLI(currentState.CurrentChrSeq, currentState.Reads_SR, currentWindow, userSettings->getLIOutputFilename());
-                    }
-
-                    if (userSettings->Analyze_BP) {
-                       SortOutputRest(currentState.CurrentChrSeq, currentState.Reads_SR, currentWindow, userSettings->getBPOutputFilename());
-                    }
+						SearchFarEnds( currentState.CurrentChrSeq, currentState.Reads_SR );
+						SearchSVs( currentState, NumBoxes, currentWindow );
                 }
                 Time_Sort_E = time(NULL);
 
                 AllLoadings += (unsigned int) difftime(Time_Load_E, Time_Load_S);
                 AllSortReport += (unsigned int) difftime(Time_Sort_E, Time_Load_E);
                 currentState.Reads_SR.clear();
-                (*logStream << "There are " << currentState.FutureReads_SR. size()
-                 << " reads saved for the next cycle.\n" << std::endl);
+                *logStream << "There are " << currentState.FutureReads_SR. size()  << " reads saved for the next cycle.\n" << std::endl;
                 currentState.Reads_SR.swap(currentState.FutureReads_SR);
-
             }
             else {
-                (*logStream << "There are no reads for this bin." << std::endl);
+                *logStream << "There are no reads for this bin.\n";
             }
             Time_Load_S = 0;
 				currentWindow.next();
-
             g_binIndex++;
-            /* 3.2.8 report ends */
 
         } // do {
         while (!currentWindow.finished());
@@ -1110,34 +1059,6 @@ std::vector<Region> Merge(const std::vector<Region> &AllRegions)
 {
     return AllRegions;
 }
-
-/* 'updateReadAfterCloseEndMapping' (EWL, 31thAug2011) */
-void updateReadAfterCloseEndMapping( SPLIT_READ& Temp_One_Read )
-{
-    if (g_reportLength < Temp_One_Read.getReadLength()) {
-        g_reportLength = Temp_One_Read.getReadLength();
-    }
-    Temp_One_Read.Used = false;
-    Temp_One_Read.UniqueRead = true;
-    LOG_DEBUG(cout << Temp_One_Read.MatchedD << "\t" << Temp_One_Read.UP_Close.size() << "\t");
-
-    CleanUniquePoints (Temp_One_Read.UP_Close);
-
-    LOG_DEBUG(cout << Temp_One_Read.UP_Close.size() << "\t" << Temp_One_Read.UP_Close[0].Direction << endl);
-
-    Temp_One_Read.CloseEndLength = Temp_One_Read.UP_Close[Temp_One_Read.UP_Close.size () - 1].LengthStr;
-
-    if (Temp_One_Read.MatchedD == Plus) {
-        Temp_One_Read.LeftMostPos = Temp_One_Read.UP_Close[0].AbsLoc + 1 - Temp_One_Read.UP_Close[0].LengthStr;
-        g_CloseMappedPlus++;
-    }
-    else {
-        Temp_One_Read.LeftMostPos = Temp_One_Read.UP_Close[0].AbsLoc +	Temp_One_Read.UP_Close[0].LengthStr - Temp_One_Read.getReadLength();
-        g_CloseMappedMinus++;
-    }
-}
-
-
 
 void GetCloseEndInner(const std::string & CurrentChrSeq, SPLIT_READ & Temp_One_Read)
 {

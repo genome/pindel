@@ -64,12 +64,6 @@ extern char Cap2LowArray[256];
 extern unsigned int g_maxPos;
 extern unsigned int CONS_Chr_Size;
 extern bool FirstChr;
-extern unsigned int g_NumReadScanned;
-extern unsigned int g_NumReadInWindow;
-extern unsigned int g_InWinPlus;
-extern unsigned int g_InWinMinus;
-extern unsigned int g_CloseMappedPlus;
-extern unsigned int g_CloseMappedMinus;
 extern int g_binIndex;
 extern short g_MinClose;
 extern int WINDOW_SIZE;
@@ -195,13 +189,9 @@ struct SPLIT_READ {
 	std::vector<UniquePoint> UP_Far_backup;
    short getReadLength() const { return ReadLength; }
 	short getReadLengthMinus() const { return ReadLengthMinus; }
-	//void setReadLengthMinus(const short readLengthMinus) { ReadLengthMinus = readLengthMinus; }
 	short getMAX_SNP_ERROR() const { return MAX_SNP_ERROR; }
-	//void setMAX_SNP_ERROR(const short max_SNP_ERROR) { MAX_SNP_ERROR = max_SNP_ERROR; }
 	short getTOTAL_SNP_ERROR_CHECKED() const { return TOTAL_SNP_ERROR_CHECKED; }
-	//void setTOTAL_SNP_ERROR_CHECKED(const short total_SNP_ERROR_CHECKED) { TOTAL_SNP_ERROR_CHECKED = total_SNP_ERROR_CHECKED; }
 	short getTOTAL_SNP_ERROR_CHECKED_Minus() const { return TOTAL_SNP_ERROR_CHECKED_Minus; }
-	//void setTOTAL_SNP_ERROR_CHECKED_Minus(const short total_SNP_ERROR_CHECKED_Minus) { TOTAL_SNP_ERROR_CHECKED_Minus = total_SNP_ERROR_CHECKED_Minus; }
 
 	short BP;
 	int Left;
