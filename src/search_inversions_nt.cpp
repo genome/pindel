@@ -24,7 +24,7 @@
 #include "control_state.h"
 #include "logdef.h"
 
-int searchInversionsNT(ControlState& currentState, unsigned NumBoxes)
+int searchInversionsNT(ControlState& currentState, unsigned NumBoxes, const SearchWindow& window)
 {
    static int Count_Inv_NT = 0;
    static int Count_Inv_NT_Plus = 0;
@@ -69,7 +69,7 @@ int searchInversionsNT(ControlState& currentState, unsigned NumBoxes)
                   currentRead.NT_str = ReverseComplement( currentRead. getUnmatchedSeq()).substr(currentRead.BP + 1, currentRead.NT_size);
                   currentRead.BPLeft = currentRead.UP_Close[CloseIndex].AbsLoc + 1 - g_SpacerBeforeAfter;
                   currentRead.BPRight = currentRead.UP_Far[FarIndex].AbsLoc - g_SpacerBeforeAfter;
-                  if (readTransgressesBinBoundaries( currentRead, currentState.upperBinBorder)) {
+                  if (readTransgressesBinBoundaries( currentRead, window.getEnd())) {
                      saveReadForNextCycle(currentRead, currentState.FutureReads_SR);
                   }
                   else {
@@ -100,7 +100,7 @@ int searchInversionsNT(ControlState& currentState, unsigned NumBoxes)
                   currentRead.BPRight = currentRead.UP_Close[CloseIndex].AbsLoc - g_SpacerBeforeAfter;
                   currentRead.BPLeft = (currentRead.UP_Far[FarIndex].AbsLoc + 1) - g_SpacerBeforeAfter;
 
-                  if (readTransgressesBinBoundaries( currentRead, currentState.upperBinBorder)) {
+                  if (readTransgressesBinBoundaries( currentRead, window.getEnd())) {
                      saveReadForNextCycle(currentRead, currentState.FutureReads_SR);
                   }
                   else {
@@ -132,7 +132,7 @@ int searchInversionsNT(ControlState& currentState, unsigned NumBoxes)
                   currentRead.NT_str = currentRead.getUnmatchedSeq().substr( currentRead.BP + 1, currentRead.NT_size);
                   currentRead.BPLeft = currentRead.UP_Far[FarIndex].AbsLoc - g_SpacerBeforeAfter;
                   currentRead.BPRight = currentRead.UP_Close[CloseIndex].AbsLoc - 1 - g_SpacerBeforeAfter;
-                  if (readTransgressesBinBoundaries( currentRead, currentState.upperBinBorder)) {
+                  if (readTransgressesBinBoundaries( currentRead, window.getEnd())) {
                      saveReadForNextCycle(currentRead, currentState.FutureReads_SR);
                   }
                   else {
@@ -161,7 +161,7 @@ int searchInversionsNT(ControlState& currentState, unsigned NumBoxes)
                   currentRead.BPLeft = currentRead.UP_Close[CloseIndex].AbsLoc - g_SpacerBeforeAfter;
                   currentRead.BPRight = currentRead.UP_Far[FarIndex].AbsLoc - 1 - g_SpacerBeforeAfter;
 
-                  if (readTransgressesBinBoundaries( currentRead, currentState.upperBinBorder)) {
+                  if (readTransgressesBinBoundaries( currentRead, window.getEnd())) {
                      saveReadForNextCycle(currentRead, currentState.FutureReads_SR);
                   }
                   else {

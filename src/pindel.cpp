@@ -73,7 +73,7 @@ const std::string Pindel_Version_str = "Pindel version 0.2.4s, June 18 2012.";
 std::ofstream g_logFile;
 
 int g_binIndex = -1; // global variable for the bin index, as I cannot easily pass an extra parameter to the diverse functions
-int g_maxPos = -1; // to calculate which is the last position in the chromosome, and hence to calculate the number of bins
+unsigned int g_maxPos = 0; // to calculate which is the last position in the chromosome, and hence to calculate the number of bins
 short g_MinClose = 8;
 
 std::set<std::string> g_sampleNames;
@@ -144,6 +144,77 @@ const int AROUND_REGION_BUFFER = 10000; // how much earlier reads should be sele
 unsigned int Distance = 300;
 short MinFar_D = 8; //atoi(argv[3]);
 const short MaxDI = 30;
+
+SearchWindow::SearchWindow(const int regionStart, const int regionEnd )
+{
+	m_currentStart = regionStart;
+	m_currentEnd = regionEnd;
+}
+
+LoopingSearchWindow::LoopingSearchWindow(const SearchRegion* region, const int chromosomeSize, const int binSize, const std::string& chromosomeName ) : m_CHROMOSOME_NAME( chromosomeName ), m_BIN_SIZE( binSize )
+{
+	if (region->isStartDefined()) {
+		m_officialStart = region->getStart();
+		// if the user defines a region, you need to start with reads before that, but not before the start of the chromosome
+		m_globalStart = std::max( 0 , region->getStart() - AROUND_REGION_BUFFER ); 
+	}
+	else {
+		m_officialStart = m_globalStart = 0;
+	}
+
+	if (region->isEndDefined()) {
+		m_officialEnd = region->getEnd();
+		// if the user defines a region, you need to end with reads after that, but not after the end of the chromosome
+		m_globalEnd = std::min( chromosomeSize , region->getEnd() + AROUND_REGION_BUFFER ); 
+	}
+	else {
+		m_officialEnd = m_globalEnd = chromosomeSize;
+	}
+
+	m_currentStart = m_globalStart;
+	m_displayedStart = m_officialStart;
+	updateEndPositions();
+}
+
+
+void LoopingSearchWindow::updateEndPositions()
+{
+	m_currentEnd = m_currentStart + m_BIN_SIZE;
+	if (m_currentEnd > m_globalEnd ) { 
+		m_currentEnd = m_globalEnd; 
+	}
+	m_displayedEnd = m_displayedStart + m_BIN_SIZE;
+	if (m_displayedEnd > m_officialEnd ) {
+		m_displayedEnd = m_officialEnd;
+	}
+}
+
+
+void LoopingSearchWindow::next()
+{
+	m_currentStart += m_BIN_SIZE;
+	m_displayedStart += m_BIN_SIZE;
+	updateEndPositions();
+}
+
+std::string LoopingSearchWindow::display() const
+{
+	std::stringstream ss;
+	if (m_displayedStart < m_displayedEnd) {
+      ss << "\nLooking at chromosome " << m_CHROMOSOME_NAME << " bases " << m_displayedStart << " to " << m_displayedEnd << ".\n";
+   }
+   else {
+      ss << "Checking out reads near the borders of the specified regions for extra evidence.\n";
+   }
+	return ss.str();
+}
+
+bool LoopingSearchWindow::finished() const
+{
+	// ugly hack for speed purposes when using Pindel-formatted input
+	if (UserDefinedSettings::Instance()->pindelFilesAsInput() &&  m_currentStart >= g_maxPos ) { return true; }
+	return ( m_currentStart > m_globalEnd );
+}
 
 unsigned int SPLIT_READ::getLastAbsLocCloseEnd() const
 {
@@ -308,7 +379,7 @@ std::ostream& operator<<(std::ostream& os, const SPLIT_READ& splitRead)
 
 
 /** 'isFinishedPindel' returns true if there are no more reads to be processed. */
-bool isFinishedPindel(const int lastPositionAnalyzed, // in: last position analyzed so far
+/*bool isFinishedPindel(const int lastPositionAnalyzed, // in: last position analyzed so far
                       const bool regionEndDefined,
                       const int endOfScan // in: the last position to be scanned
                      )
@@ -320,10 +391,10 @@ bool isFinishedPindel(const int lastPositionAnalyzed, // in: last position analy
     else {   // using g_maxPos
         return (lastPositionAnalyzed >= g_maxPos);
     }
-}
+}*/
 
 /** 'isFinishedBAM' returns true if there are no more reads to be processed. */
-bool isFinishedBAM(const int lastPositionAnalyzed, // in: last position analyzed so far
+/*bool isFinishedBAM(const int lastPositionAnalyzed, // in: last position analyzed so far
                    const bool regionEndDefined,
                    const int endOfScan, // in: the last position to be scanned
                    const int chromosomeSize // in: the size of the chromosome
@@ -336,7 +407,7 @@ bool isFinishedBAM(const int lastPositionAnalyzed, // in: last position analyzed
     else {   // using chromosomeSize
         return (lastPositionAnalyzed >= chromosomeSize);
     }
-}
+}*/
 
 bool fileExists(const std::string& filename )
 {
@@ -698,7 +769,6 @@ int main(int argc, char *argv[])
 {
     //TODO: These are counters that are only used in individual steps. They should be moved to separate functions later.
 
-
     //Below are variables used for cpu time measurement
     time_t Time_Load_S, Time_Load_E, Time_Mine_E, Time_Sort_E;
     Time_Load_S = time(NULL);
@@ -719,7 +789,6 @@ int main(int argc, char *argv[])
    char FirstCharOfFasta;
    FastaFile >> FirstCharOfFasta;
     /* Start of shortcut to genotyping */ // currentState.inf_AssemblyInput.open(par.inf_AssemblyInputFilename.c_str());
-    //std::cout << "here " << par.AssemblyInputDefined << std::endl;
 	bool GenotypingInputDefined = parameters[findParameter("-g",parameters)]->isSet();
     if (GenotypingInputDefined) {
         
@@ -760,7 +829,6 @@ int main(int argc, char *argv[])
 
     // Get a new chromosome again and again until you have visited the specified chromosome or the file ends
     // CurrentChrName stores the name of the chromosome.
-
 
     bool SpecifiedChrVisited = false;
 
@@ -803,65 +871,29 @@ int main(int argc, char *argv[])
 
         /* 3.2 apply sliding windows to input datasets starts. This is the 2nd level while loop */
         g_binIndex = 0; // to start with 0... 
-
-        int startOffSet = 0;
-        // if a region has been specified
-        if (userSettings->getRegion()->isStartDefined() ) {
-            startOffSet = userSettings->getRegion()->getStart() - AROUND_REGION_BUFFER;
-            if (startOffSet < 0) {
-                startOffSet = 0;
-            }
-        }
-        currentState.lowerBinBorder = startOffSet;
-        currentState.upperBinBorder = currentState.lowerBinBorder + WINDOW_SIZE;
-
-
-        if (userSettings->getRegion()->isEndDefined() ) {
-            currentState.endRegionPlusBuffer = userSettings->getRegion()->getEnd() + AROUND_REGION_BUFFER;
-            if (currentState.upperBinBorder > currentState.endRegionPlusBuffer) {
-                currentState.upperBinBorder = currentState.endRegionPlusBuffer;
-            }
-        }
-
-
-        int displayedStartOfRegion = ((userSettings->getRegion()->isStartDefined()) ? (userSettings->getRegion()->getStart()) : currentState.lowerBinBorder);
-        int displayedEndOfRegion = displayedStartOfRegion + WINDOW_SIZE;
-        if ( displayedEndOfRegion > currentState.upperBinBorder ) {
-            displayedEndOfRegion = currentState.upperBinBorder;
-        }
-        if ( userSettings->getRegion()->isEndDefined() && displayedEndOfRegion > userSettings->getRegion()->getEnd() ) {
-            displayedEndOfRegion = userSettings->getRegion()->getEnd();
-        }
-        
+    
+        LoopingSearchWindow currentWindow( userSettings->getRegion(), CONS_Chr_Size, WINDOW_SIZE, currentState.CurrentChrName ); 
         // loop over one chromosome
         do {
 
             /* 3.2.1 preparation starts */
-
             g_NumReadInWindow = 0; // #################
             g_InWinPlus = 0; // #################
             g_InWinMinus = 0; // #################
             g_CloseMappedPlus = 0; // #################
             g_CloseMappedMinus = 0; // #################
 
-            if (displayedStartOfRegion < displayedEndOfRegion) {
-               *logStream << "\nLooking at chromosome " << currentState.CurrentChrName << " bases " << displayedStartOfRegion << " to " << displayedEndOfRegion << 
-						"." << std::endl;
-            }
-            else {
-               *logStream << "Checking out reads near the borders of the specified regions for extra evidence.\n";
-            }
+				*logStream << currentWindow.display();
 
             if (Time_Load_S == 0) {
                 Time_Load_S = time(NULL);
             }
-            get_SR_Reads(currentState ); 
+            get_SR_Reads(currentState, currentWindow ); 
             Time_Mine_E = time(NULL);
 
             if (currentState.Reads_SR.size() ) {
                 *logStream << "There are " << currentState.Reads_SR.size() << " reads for this chromosome region." << std::endl; // what region?
 
-            //    int TotalNumReads = currentState.Reads_SR.size();
                 if (userSettings->reportCloseMappedReads() ) {
 						 ReportCloseMappedReads( currentState.Reads_SR );       
                 }
@@ -883,35 +915,33 @@ int main(int argc, char *argv[])
                     *logStream << "Far end searching completed for this window." << std::endl;
 
                     SearchDeletions searchD;
-                    searchD.Search(currentState, NumBoxes);
+                    searchD.Search(currentState, NumBoxes, currentWindow);
 
-                    returnValue = searchIndels(currentState, NumBoxes);
+                    returnValue = searchIndels(currentState, NumBoxes, currentWindow);
 
                     if (userSettings->Analyze_TD) {
-                        returnValue = searchTandemDuplications(currentState, NumBoxes);
-                        returnValue = searchTandemDuplicationsNT(currentState, NumBoxes);
+                        returnValue = searchTandemDuplications(currentState, NumBoxes, currentWindow);
+                        returnValue = searchTandemDuplicationsNT(currentState, NumBoxes, currentWindow);
                     }
 
                     if (userSettings->Analyze_INV) {
-                        returnValue = searchInversions(currentState, NumBoxes);
-                        returnValue = searchInversionsNT(currentState, NumBoxes);
+                        returnValue = searchInversions(currentState, NumBoxes, currentWindow);
+                        returnValue = searchInversionsNT(currentState, NumBoxes, currentWindow);
                     }
 
                     SearchShortInsertions searchSI;
-                    searchSI.Search(currentState, NumBoxes);
+                    searchSI.Search(currentState, NumBoxes, currentWindow);
                     /* 3.2.8 report starts */
 
 						ReportCloseAndFarEndCounts( currentState.Reads_SR );
                    
 
                     if (userSettings->Analyze_LI) {
-                        SortOutputLI(currentState.CurrentChrSeq, currentState.Reads_SR, currentState.lowerBinBorder, currentState.upperBinBorder, 
-									userSettings->getLIOutputFilename());
+                        SortOutputLI(currentState.CurrentChrSeq, currentState.Reads_SR, currentWindow, userSettings->getLIOutputFilename());
                     }
 
                     if (userSettings->Analyze_BP) {
-                       SortOutputRest(currentState.CurrentChrSeq, currentState.Reads_SR, currentState.lowerBinBorder, currentState.upperBinBorder,
-									userSettings->getBPOutputFilename());
+                       SortOutputRest(currentState.CurrentChrSeq, currentState.Reads_SR, currentWindow, userSettings->getBPOutputFilename());
                     }
                 }
                 Time_Sort_E = time(NULL);
@@ -928,36 +958,19 @@ int main(int argc, char *argv[])
                 (*logStream << "There are no reads for this bin." << std::endl);
             }
             Time_Load_S = 0;
-            currentState.lowerBinBorder += WINDOW_SIZE;
-            currentState.upperBinBorder += WINDOW_SIZE;
-            displayedStartOfRegion += WINDOW_SIZE;
-            displayedEndOfRegion += WINDOW_SIZE;
-            if ( userSettings->getRegion()->isEndDefined() && displayedEndOfRegion > userSettings->getRegion()->getEnd() ) {
-                displayedEndOfRegion = userSettings->getRegion()->getEnd();
-            }
-            if ( userSettings->getRegion()->isEndDefined() && currentState.upperBinBorder > currentState.endRegionPlusBuffer ) {
-                currentState.upperBinBorder = currentState.endRegionPlusBuffer;
-            }
+				currentWindow.next();
+
+
             g_binIndex++;
             /* 3.2.8 report ends */
 
         } // do {
-        while ((userSettings->pindelFilesAsInput() && !isFinishedPindel( currentState.lowerBinBorder, userSettings->getRegion()->isEndDefined(), currentState.endRegionPlusBuffer))
-                || (userSettings->bamFilesAsInput() && !isFinishedBAM(
-							 currentState.lowerBinBorder,
-                        userSettings->getRegion()->isEndDefined(),
-                        currentState.endRegionPlusBuffer,
-                        currentState.CurrentChrSeq.size())));
-
-        // Pindel: stop loop if the lowerBinBorder is past the last read, or past the endRegionPlusBuffer
-        /* 3.2 apply sliding windows to input datasets ends */
+        while (!currentWindow.finished());
 
     } // while ( loopOverAllChromosomes && chromosomeIndex < chromosomes.size() );
 
-    (*logStream << "Loading genome sequences and reads: " << AllLoadings
-     << " seconds." << std::endl);
-    (*logStream << "Mining, Sorting and output results: " << AllSortReport
-     << " seconds." << std::endl);
+    *logStream << "Loading genome sequences and reads: " << AllLoadings << " seconds." << std::endl;
+    *logStream << "Mining, Sorting and output results: " << AllSortReport << " seconds." << std::endl;
     exit( EXIT_SUCCESS) ;
 } //main
 

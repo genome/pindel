@@ -24,7 +24,7 @@
 #include "control_state.h"
 #include "logdef.h"
 
-int searchIndels(ControlState& currentState, unsigned NumBoxes)
+int searchIndels(ControlState& currentState, unsigned NumBoxes, const SearchWindow& window )
 {
 
    static int Count_DI = 0;
@@ -71,7 +71,7 @@ int searchIndels(ControlState& currentState, unsigned NumBoxes)
 
                if (1) {
 
-                  if (readTransgressesBinBoundaries( currentRead, currentState.upperBinBorder)) {
+                  if (readTransgressesBinBoundaries( currentRead, window.getEnd())) {
                      saveReadForNextCycle(currentRead, currentState.FutureReads_SR);
                   }
                   else {
@@ -104,7 +104,7 @@ int searchIndels(ControlState& currentState, unsigned NumBoxes)
                {
                   if ( 1 ) {
 
-                     if (readTransgressesBinBoundaries( currentRead, currentState.upperBinBorder)) {
+                     if (readTransgressesBinBoundaries( currentRead, window.getEnd())) {
                         saveReadForNextCycle( currentRead, currentState.FutureReads_SR);
                      }
                      else {

@@ -264,12 +264,13 @@ short GetRP4OnDEL(const std::vector <Chromosome> & AllChromosomes, std::map<std:
     
     CurrentState.Reads_RP.clear();
     unsigned Overhead = 1000;
+	unsigned int lowerBinBorder = 1;
     if (OneSV.PosA > OneSV.CI_A + Overhead)  
-        CurrentState.lowerBinBorder = OneSV.PosA - OneSV.CI_A - Overhead; //CurrentState.
-    else CurrentState.lowerBinBorder = 1;
-    CurrentState.upperBinBorder = OneSV.PosB + OneSV.CI_B + Overhead;
+        lowerBinBorder = OneSV.PosA - OneSV.CI_A - Overhead; //CurrentState.
+   unsigned int upperBinBorder = OneSV.PosB + OneSV.CI_B + Overhead;
+	SearchWindow window(lowerBinBorder, upperBinBorder); 
     //std::cout << "GetRP4OnDEL 3" << std::endl;
-    get_RP_Reads(CurrentState );
+    get_RP_Reads(CurrentState, window );
     //std::cout << "Reads around BP 1 " << CurrentState.Reads_RP.size() << std::endl;
     //std::cout << "GetRP4OnDEL 4" << std::endl;
     //std::cout << "Reads around both breakpoints " << CurrentState.Reads_RP.size() << std::endl;

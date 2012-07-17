@@ -1445,7 +1445,7 @@ void SortOutputDI (const unsigned &NumBoxes, const std::string & CurrentChr,
 
 
 
-void SortOutputLI (const std::string & CurrentChr, std::vector < SPLIT_READ > &Reads, const unsigned int windowStart, const unsigned int windowEnd, const std::string& filename)
+void SortOutputLI (const std::string & CurrentChr, std::vector < SPLIT_READ > &Reads, const SearchWindow& window, const std::string& filename)
 {
    unsigned UP_Close_index;
    unsigned temp_AbsLoc;
@@ -1457,8 +1457,8 @@ void SortOutputLI (const std::string & CurrentChr, std::vector < SPLIT_READ > &R
 	std::ofstream LargeInsertionOutf( filename.c_str(), std::ios::app);
    *logStream << "LI: maxInsertSize: " << g_maxInsertSize << std::endl;
 
-   unsigned int absStartLIWindow = g_SpacerBeforeAfter + windowStart;
-   unsigned int absEndLIWindow = g_SpacerBeforeAfter + windowEnd;
+   unsigned int absStartLIWindow = g_SpacerBeforeAfter + window.getStart();
+   unsigned int absEndLIWindow = g_SpacerBeforeAfter + window.getEnd();
 
    if (absEndLIWindow > CurrentChr.size() - g_SpacerBeforeAfter ) {
       absEndLIWindow = CurrentChr.size() - g_SpacerBeforeAfter;
@@ -1467,7 +1467,7 @@ void SortOutputLI (const std::string & CurrentChr, std::vector < SPLIT_READ > &R
    unsigned int absStartBuffered = absStartLIWindow - LI_BORDER_BUFFER;
    unsigned int absEndBuffered = absEndLIWindow + LI_BORDER_BUFFER;
 
-   *logStream << "SBA: " << g_SpacerBeforeAfter << " WS " << windowStart << " Total: " << g_SpacerBeforeAfter + windowStart - LI_BORDER_BUFFER << std::endl;
+   //*logStream << "SBA: " << g_SpacerBeforeAfter << " WS " << windowStart << " Total: " << g_SpacerBeforeAfter + windowStart - LI_BORDER_BUFFER << std::endl;
    ShiftedVector< uint8_t > plus_LI_Pos( absStartBuffered , absEndBuffered , 0 );
    ShiftedVector< uint8_t > minus_LI_Pos( absStartBuffered , absEndBuffered , 0 );
    ShiftedVector< int32_t > EventIndex_Pos( absStartBuffered , absEndBuffered , -1 );
@@ -1732,8 +1732,7 @@ void SortOutputLI (const std::string & CurrentChr, std::vector < SPLIT_READ > &R
 void SortOutputRest (const std::string & CurrentChr, 
                 std::vector < SPLIT_READ > &Reads,
                // std::vector < SPLIT_READ > &BP_Reads, 
-                const unsigned int windowStart, 
-                const unsigned int windowEnd,
+					const SearchWindow& window,
 					 const std::string& filename)
 {
    SPLIT_READ one_BP_read;
@@ -1748,8 +1747,8 @@ void SortOutputRest (const std::string & CurrentChr,
    const int BP_BORDER_BUFFER = 4 * g_maxInsertSize;
    std::ofstream Outf_Rest(filename.c_str(), std::ios::app);
 
-   unsigned int absStartBPWindow = g_SpacerBeforeAfter + windowStart ;
-   unsigned int absEndBPWindow = g_SpacerBeforeAfter + windowEnd ;
+   unsigned int absStartBPWindow = g_SpacerBeforeAfter + window.getStart() ;
+   unsigned int absEndBPWindow = g_SpacerBeforeAfter + window.getEnd() ;
    if (absEndBPWindow > CurrentChr.size()- g_SpacerBeforeAfter ) {
       absEndBPWindow = CurrentChr.size()- g_SpacerBeforeAfter;
    }
@@ -1757,7 +1756,7 @@ void SortOutputRest (const std::string & CurrentChr,
    unsigned int absStartBuffered = absStartBPWindow - BP_BORDER_BUFFER;
    unsigned int absEndBuffered = absEndBPWindow + BP_BORDER_BUFFER;
 
-   *logStream << "SBA: " << g_SpacerBeforeAfter << " WS " << windowStart << " Total: " << g_SpacerBeforeAfter + windowStart - BP_BORDER_BUFFER << std::endl;
+   //*logStream << "SBA: " << g_SpacerBeforeAfter << " WS " << windowStart << " Total: " << g_SpacerBeforeAfter + windowStart - BP_BORDER_BUFFER << std::endl;
    ShiftedVector< uint8_t > plus_LI_Pos( absStartBuffered , absEndBuffered , 0 );
    ShiftedVector< uint8_t > minus_LI_Pos( absStartBuffered , absEndBuffered , 0 );
 

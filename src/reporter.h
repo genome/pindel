@@ -48,14 +48,8 @@ void SortOutputInv_NT (const unsigned &NumBoxes,
 void SortOutputDI (const unsigned &NumBoxes, const std::string & CurrentChr,
 							std::vector < SPLIT_READ > &Reads, std::vector < unsigned >DI[],
 							std::ofstream & DIOutf, std::ofstream & InvOutf);
-void SortOutputLI (const std::string & CurrentChr, std::vector < SPLIT_READ > &Reads,
-							 const unsigned int windowStart, const unsigned int windowEnd, const std::string& filename);
-void SortOutputRest (const std::string & CurrentChr, 
-                std::vector < SPLIT_READ > &Reads,
-                //std::vector < SPLIT_READ > &BP_Reads, 
-                const unsigned int windowStart, 
-                const unsigned int windowEnd,
-					 const std::string& filename);
+void SortOutputLI (const std::string & CurrentChr, std::vector < SPLIT_READ > &Reads, const SearchWindow& currentWindow, const std::string& filename);
+void SortOutputRest (const std::string & CurrentChr,  std::vector < SPLIT_READ > &Reads,  const SearchWindow& currentWindow, const std::string& filename);
 
 
 #endif /* REPORTER_H */

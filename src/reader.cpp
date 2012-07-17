@@ -132,7 +132,7 @@ void showReadStats(const std::vector<SPLIT_READ>& Reads)
 
 short ReadInRead (PindelReadReader & inf_ReadSeq, const std::string & FragName,
             const std::string & CurrentChr, std::vector < SPLIT_READ > &Reads,
-            const unsigned int lowerBinBorder, const unsigned int upperBinBorder)
+            const SearchWindow& currentWindow)
 {
    LOG_INFO(*logStream << "Scanning and processing reads anchored in " << FragName << std::endl);
    SPLIT_READ Temp_One_Read;
@@ -168,9 +168,8 @@ short ReadInRead (PindelReadReader & inf_ReadSeq, const std::string & FragName,
          g_maxPos = Temp_One_Read.MatchedRelPos;
       }
 
-      if (Temp_One_Read.FragName == FragName
-            && Temp_One_Read.MatchedRelPos >= lowerBinBorder
-            && Temp_One_Read.MatchedRelPos < upperBinBorder) {
+      if (Temp_One_Read.FragName == FragName && Temp_One_Read.MatchedRelPos >= currentWindow.getStart()
+            && Temp_One_Read.MatchedRelPos < currentWindow.getEnd()) {
          g_NumReadInWindow++;
 
          if (Temp_One_Read.MatchedD == Plus) {
@@ -324,7 +323,7 @@ short ReadInRead (PindelReadReader & inf_ReadSeq, const std::string & FragName,
 
 bool ReadInBamReads_RP (const char *bam_path, const std::string & FragName,
                         std::string * CurrentChrSeq, std::vector <RP_READ> &LeftReads, 
-                        int InsertSize, std::string Tag, int binStart, int binEnd) {
+                        int InsertSize, std::string Tag, const SearchWindow& currentWindow ) {
     // std::cout << FragName << " " << (* CurrentChrSeq).size() << " " << (* CurrentChrSeq).substr(10000000, 10) << " " << binStart << " " << binEnd << std::endl; 
     bamFile fp;
     fp = bam_open (bam_path, "r");
@@ -352,7 +351,7 @@ bool ReadInBamReads_RP (const char *bam_path, const std::string & FragName,
     data.b2_flags = &b2_flags;
     data.InsertSize = InsertSize;
     data.Tag = Tag;
-    bam_fetch (fp, idx, tid, binStart, binEnd, &data, fetch_func_RP);
+    bam_fetch (fp, idx, tid, currentWindow.getStart(), currentWindow.getEnd(), &data, fetch_func_RP);
     
     khint_t key;
     if (kh_size (data.read_to_map_qual) > 0) {
@@ -380,8 +379,7 @@ bool ReadInBamReads_SR (const char *bam_path, const std::string & FragName,
                 std::vector < SPLIT_READ > &LeftReads,
                 int InsertSize,
                 std::string Tag,
-                int binStart,
-                int binEnd,
+                const SearchWindow& window,
                 ReadBuffer& readBuffer)
 {  
    bamFile fp;
@@ -412,7 +410,7 @@ bool ReadInBamReads_SR (const char *bam_path, const std::string & FragName,
    data.Tag = Tag;
    data.readBuffer=&readBuffer;
    //*logStream << "before bam fetch " << LeftReads.size() << std::endl;
-   bam_fetch (fp, idx, tid, binStart, binEnd, &data, fetch_func_SR);
+   bam_fetch (fp, idx, tid, window.getStart(), window.getEnd(), &data, fetch_func_SR);
     readBuffer.flush(); 
    //*logStream << "after bam fetch " << LeftReads.size() << std::endl;
    showReadStats(LeftReads);
@@ -725,19 +723,17 @@ static int fetch_func_RP (const bam1_t * b1, void *data)
 }
 
 /* 'isInBin' returns whether the read "read" is in the designated bin. */
-bool
-isInBin (const SPLIT_READ & read)
+bool isInBin (const SPLIT_READ & read)
 {
-   if ((int)read.MatchedRelPos > g_maxPos) {
-      g_maxPos = (int)read.MatchedRelPos;
+   if (read.MatchedRelPos > g_maxPos) {
+      g_maxPos = read.MatchedRelPos;
    }
-   return (((int)read.MatchedRelPos >= (g_binIndex * WINDOW_SIZE)) &&
-           ((int)read.MatchedRelPos < ((g_binIndex + 1) * WINDOW_SIZE)));
+   return ((read.MatchedRelPos >= (g_binIndex * WINDOW_SIZE)) &&
+           (read.MatchedRelPos < ((g_binIndex + 1) * WINDOW_SIZE)));
 }
 
 
-void
-parse_flags_and_tags (const bam1_t * b, flags_hit * flags)
+void parse_flags_and_tags (const bam1_t * b, flags_hit * flags)
 {
    const bam1_core_t *c = &b->core;
    char xt_code = 0;
@@ -833,7 +829,7 @@ int32_t bam_cigar2mismatch( const bam1_core_t *readCore, const uint32_t *cigar)
    return numberOfMismatches;
 }
 
-short get_RP_Reads(ControlState& currentState ) {
+short get_RP_Reads(ControlState& currentState, const SearchWindow& currentWindow ) {
     short ReturnFromReadingReads;
     RPVector TempOneRPVector;
 
@@ -848,8 +844,7 @@ short get_RP_Reads(ControlState& currentState ) {
                                                        currentState.Reads_RP[i],
                                                        currentState.bams_to_parse[i].InsertSize,
                                                        currentState.bams_to_parse[i].Tag,
-                                                       currentState.lowerBinBorder,
-                                                       currentState.upperBinBorder);
+                                                       currentWindow);
             if (ReturnFromReadingReads == 0) {
                 LOG_ERROR(*logStream << "Bam read failed: "
                           << currentState.bams_to_parse[i].BamFile
@@ -865,7 +860,7 @@ short get_RP_Reads(ControlState& currentState ) {
 
 }
 
-short get_SR_Reads(ControlState& currentState ) {
+short get_SR_Reads(ControlState& currentState, const SearchWindow& currentWindow ) {
     std::cout << "getReads " << currentState.CurrentChrName << " " << currentState.CurrentChrSeq.size() << std::endl;
     short ReturnFromReadingReads;
     ReadBuffer readBuffer(BUFFER_SIZE, currentState.Reads_SR, currentState.CurrentChrSeq);
@@ -880,8 +875,7 @@ short get_SR_Reads(ControlState& currentState ) {
                                                     currentState.Reads_SR,
                                                     currentState.bams_to_parse[i].InsertSize,
                                                     currentState.bams_to_parse[i].Tag,
-                                                    currentState.lowerBinBorder,
-                                                    currentState.upperBinBorder, readBuffer );
+                                                    currentWindow, readBuffer );
             if (ReturnFromReadingReads == 0) {
                 LOG_ERROR(*logStream << "Bam read failed: "
                           << currentState.bams_to_parse[i].BamFile
@@ -906,7 +900,7 @@ short get_SR_Reads(ControlState& currentState ) {
 			currentState.lineReader = getLineReaderByFilename(filename.c_str());
 			currentState.inf_Pindel_Reads = new PindelReadReader(*currentState.lineReader);
 
-			readInPindelReads(*currentState.inf_Pindel_Reads, filename, currentState );
+			readInPindelReads(*currentState.inf_Pindel_Reads, filename, currentState, currentWindow );
 
 			//
 
@@ -916,17 +910,16 @@ short get_SR_Reads(ControlState& currentState ) {
 	}
 
 	if (userSettings->singlePindelFileAsInput()) {
-		readInPindelReads(*currentState.inf_Pindel_Reads, userSettings->pindelFilename, currentState );
+		readInPindelReads(*currentState.inf_Pindel_Reads, userSettings->pindelFilename, currentState, currentWindow );
 	}
     return 0;
 }
 
-void readInPindelReads(PindelReadReader &reader, const std::string& pindelFilename, ControlState& currentState )
+void readInPindelReads(PindelReadReader &reader, const std::string& pindelFilename, ControlState& currentState, const SearchWindow& currentWindow )
 {
 	int ReturnFromReadingReads = ReadInRead(  reader, currentState.CurrentChrName,
                                              currentState.CurrentChrSeq, currentState.Reads_SR,
-                                             currentState.lowerBinBorder,
-                                             currentState.upperBinBorder);
+                                             currentWindow);
 	if (ReturnFromReadingReads == 1) {
 		LOG_ERROR(*logStream << "malformed record detected in " << pindelFilename << std::endl);
 		exit( EXIT_FAILURE );

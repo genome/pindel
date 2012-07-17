@@ -61,7 +61,7 @@ extern unsigned int g_numberOfInvInstances;
 extern unsigned int NumRead2ReportCutOff;
 extern int NumRead2ReportCutOff_BP;
 extern char Cap2LowArray[256];
-extern int g_maxPos;
+extern unsigned int g_maxPos;
 extern unsigned int CONS_Chr_Size;
 extern bool FirstChr;
 extern unsigned int g_NumReadScanned;
@@ -417,5 +417,39 @@ void reportBreakDancerEvent( const std::string& chromosomeName, const int leftPo
 void updateReadAfterCloseEndMapping( SPLIT_READ& Temp_One_Read );
 
 LineReader *getLineReaderByFilename(const char *filename);
+
+class SearchWindow {
+
+public:
+	SearchWindow(const int regionStart, const int regionEnd );
+	SearchWindow() { m_currentStart= m_currentEnd = 0; }
+
+	unsigned int getStart() const { return m_currentStart; }
+	unsigned int getEnd() const { return m_currentEnd; }
+
+protected:
+	unsigned int m_currentStart;
+	unsigned int m_currentEnd;
+};
+
+class LoopingSearchWindow: public SearchWindow {
+
+public:
+	LoopingSearchWindow(const SearchRegion* region, const int chromosomeSize, const int binSize, const std::string& chromosomeName );
+	void next();
+	std::string display() const;
+	bool finished() const;
+
+private:
+	void updateEndPositions();
+	unsigned int m_globalStart;
+	unsigned int m_globalEnd;
+	unsigned int m_officialStart;
+	unsigned int m_officialEnd;
+	unsigned int m_displayedStart;
+	unsigned int m_displayedEnd;
+	const std::string m_CHROMOSOME_NAME;
+	const unsigned int m_BIN_SIZE;
+};
 
 #endif /* PINDEL_H */

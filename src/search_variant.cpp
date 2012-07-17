@@ -42,7 +42,7 @@ SearchVariant::~SearchVariant()
 
 }
 
-int SearchVariant::Search(ControlState& currentState, const unsigned numBoxes)
+int SearchVariant::Search(ControlState& currentState, const unsigned numBoxes, const SearchWindow& window)
 {
    std::vector<unsigned> Vars[numBoxes];
 
@@ -106,7 +106,7 @@ int SearchVariant::Search(ControlState& currentState, const unsigned numBoxes)
 
                         currentRead.BPLeft = currentRead. UP_Close[CloseIndex].AbsLoc - g_SpacerBeforeAfter;
                         currentRead.BPRight = currentRead.UP_Far[FarIndex]. AbsLoc - g_SpacerBeforeAfter;
-                        if (readTransgressesBinBoundaries( currentRead,currentState.upperBinBorder)) {
+                        if (readTransgressesBinBoundaries( currentRead, window.getEnd())) {
                            saveReadForNextCycle( currentRead, currentState.FutureReads_SR);
                         }
                         else {
@@ -157,7 +157,7 @@ int SearchVariant::Search(ControlState& currentState, const unsigned numBoxes)
                         currentRead.BPLeft = currentRead.UP_Far[FarIndex].AbsLoc - g_SpacerBeforeAfter;
                         currentRead.BPRight = currentRead.UP_Close[CloseIndex].AbsLoc - g_SpacerBeforeAfter;
 
-                        if (readTransgressesBinBoundaries( currentRead, currentState.upperBinBorder)) {
+                        if (readTransgressesBinBoundaries( currentRead, window.getEnd())) {
                            saveReadForNextCycle( currentRead, currentState.FutureReads_SR);
                         }
                         else {
@@ -178,7 +178,7 @@ int SearchVariant::Search(ControlState& currentState, const unsigned numBoxes)
    LOG_INFO(*logStream << "Total: " << Count_Var << "\t+" << Count_Var_Plus << "\t-" << Count_Var_Minus << std::endl);
 
 
-   outputResults(currentState, Vars, numBoxes);
+   outputResults(currentState, Vars, numBoxes, window);
 
    for (unsigned int i = 0; i < numBoxes; i++) {
       Vars[i].clear();

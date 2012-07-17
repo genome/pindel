@@ -68,9 +68,6 @@ public:
 	std::vector<SPLIT_READ> InputReads_SR, Reads_SR, FutureReads_SR;
     std::vector <RPVector> Reads_RP;
  
-	int lowerBinBorder;
-	int upperBinBorder;
-	int endRegionPlusBuffer;
 	int CountFarEnd, CountFarEndPlus, CountFarEndMinus;
 
 	//TODO: explain what are stored in these two vectors.

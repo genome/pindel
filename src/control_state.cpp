@@ -23,10 +23,6 @@
 
 ControlState::ControlState()
 {
-   lowerBinBorder = 0;
-   upperBinBorder = 0;
-   endRegionPlusBuffer = 0;
-
    CountFarEnd = 0;
    CountFarEndPlus = 0;
    CountFarEndMinus = 0;

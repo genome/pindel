@@ -6,7 +6,7 @@ public:
 	SearchVariant();
 	virtual ~SearchVariant();
 
-	int Search(ControlState& currentState, const unsigned numBoxes);
+	int Search(ControlState& currentState, const unsigned numBoxes, const SearchWindow& window);
 
 protected:
 	int Count_Var;
@@ -24,7 +24,7 @@ protected:
 	virtual std::string getInsertedStr1(const SPLIT_READ& read ) = 0;
 	virtual std::string getInsertedStr2(const SPLIT_READ& read ) = 0;
 
-	virtual void outputResults(ControlState& currentState, std::vector<unsigned> Vars[], const unsigned NumBoxes) = 0;
+	virtual void outputResults(ControlState& currentState, std::vector<unsigned> Vars[], const unsigned NumBoxes, const SearchWindow& currentWindow) = 0;
 
 private:
 	SearchVariant(const SearchVariant&);

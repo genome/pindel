@@ -163,18 +163,19 @@ short AssembleOneSV(const std::vector <Chromosome> & AllChromosomes, std::map<st
     g_CloseMappedPlus = 0; // #################
     g_CloseMappedMinus = 0; // #################
     unsigned Left, Right;
+	unsigned int lowerBinBorder = 1;
     if (OneSV.PosA > OneSV.CI_A + 1000)  
-        CurrentState.lowerBinBorder = OneSV.PosA - OneSV.CI_A - 1000; //CurrentState.
-    else CurrentState.lowerBinBorder = 1;
-    CurrentState.upperBinBorder = OneSV.PosA + OneSV.CI_A + 1000;
+        lowerBinBorder = OneSV.PosA - OneSV.CI_A - 1000; //CurrentState.
+    unsigned int upperBinBorder = OneSV.PosA + OneSV.CI_A + 1000;
+	SearchWindow window( lowerBinBorder, upperBinBorder );
     Left = OneSV.PosA + g_SpacerBeforeAfter - OneSV.CI_A;
     Right = OneSV.PosA + g_SpacerBeforeAfter + OneSV.CI_A;
 
-    std::cout << "\nFirst BP\tChrName " << CurrentState.CurrentChrName << "\tRange " << CurrentState.lowerBinBorder << " " << CurrentState.upperBinBorder << std::endl;
-    get_SR_Reads(CurrentState );
+    std::cout << "\nFirst BP\tChrName " << CurrentState.CurrentChrName << "\tRange " <<  lowerBinBorder << " " << upperBinBorder << std::endl;
+    get_SR_Reads(CurrentState, window );
 
     //std::cout << "First size: " << CurrentState.Reads_SR.size() << std::endl;
-    CombineAndSort(AllChromosomes, ChrName2Index, CurrentState, OneSV, First, CurrentState.lowerBinBorder, CurrentState.upperBinBorder, WhetherFirstBP);
+    CombineAndSort(AllChromosomes, ChrName2Index, CurrentState, OneSV, First, lowerBinBorder, upperBinBorder, WhetherFirstBP);
 
     CleanUpCloseEnd(First, Left, Right); // vector of reads
 
@@ -220,17 +221,18 @@ short AssembleOneSV(const std::vector <Chromosome> & AllChromosomes, std::map<st
     g_InWinMinus = 0; // #################
     g_CloseMappedPlus = 0; // #################
     g_CloseMappedMinus = 0; // #################
+	lowerBinBorder = 1;
     if (OneSV.PosB > OneSV.CI_B + 1000)  
-        CurrentState.lowerBinBorder = OneSV.PosB - OneSV.CI_B - 1000;
-    else CurrentState.lowerBinBorder = 1;
-    CurrentState.upperBinBorder = OneSV.PosB + OneSV.CI_B + 1000;
+        lowerBinBorder = OneSV.PosB - OneSV.CI_B - 1000;
+    upperBinBorder = OneSV.PosB + OneSV.CI_B + 1000;
+	SearchWindow window2( lowerBinBorder, upperBinBorder );
     Left = OneSV.PosB + g_SpacerBeforeAfter - OneSV.CI_B;
     Right = OneSV.PosB + g_SpacerBeforeAfter + OneSV.CI_B;
 
-    std::cout << "\nSecond BP\tChrName " << CurrentState.CurrentChrName << "\tRange " << CurrentState.lowerBinBorder << " " << CurrentState.upperBinBorder << std::endl;    
-    get_SR_Reads(CurrentState );
+    std::cout << "\nSecond BP\tChrName " << CurrentState.CurrentChrName << "\tRange " << lowerBinBorder << " " << upperBinBorder << std::endl;    
+    get_SR_Reads(CurrentState, window2 );
 
-    CombineAndSort(AllChromosomes, ChrName2Index, CurrentState, OneSV, Second, CurrentState.lowerBinBorder, CurrentState.upperBinBorder, WhetherFirstBP);
+    CombineAndSort(AllChromosomes, ChrName2Index, CurrentState, OneSV, Second, lowerBinBorder, upperBinBorder, WhetherFirstBP);
 
     CleanUpCloseEnd(Second, Left, Right);
 
@@ -276,9 +278,9 @@ void CombineAndSort(const std::vector <Chromosome> & AllChromosomes, std::map<st
     const unsigned AssemblyCutOff = 3;
     const char Plus = '+';
     const char Minus = '-';
-    unsigned WindowSize = (CurrentState.upperBinBorder - CurrentState.lowerBinBorder) * 3;
+    unsigned WindowSize = (upperBinBorder - lowerBinBorder) * 3;
     unsigned OffSet;
-    if (CurrentState.lowerBinBorder * 2 > CurrentState.upperBinBorder) OffSet = CurrentState.lowerBinBorder * 2 - CurrentState.upperBinBorder;
+    if (lowerBinBorder * 2 > upperBinBorder) OffSet = lowerBinBorder * 2 - upperBinBorder;
     else OffSet = 0;
     std::vector<unsigned int> Index_Plus[WindowSize], Index_Minus[WindowSize];
     std::cout << "\nin CombineAndSort..." << std::endl;

@@ -24,7 +24,7 @@
 #include "control_state.h"
 #include "logdef.h"
 
-int searchTandemDuplications(ControlState& currentState, unsigned NumBoxes)
+int searchTandemDuplications(ControlState& currentState, unsigned NumBoxes, const SearchWindow& window)
 {
 
    static int Count_TD = 0;
@@ -74,7 +74,7 @@ int searchTandemDuplications(ControlState& currentState, unsigned NumBoxes)
                         currentRead.BPRight = currentRead.UP_Close[CloseIndex].AbsLoc - g_SpacerBeforeAfter;
                         currentRead.BPLeft = currentRead.UP_Far[FarIndex].AbsLoc - g_SpacerBeforeAfter;
 
-                        if (readTransgressesBinBoundaries( currentRead, currentState.upperBinBorder)) {
+                        if (readTransgressesBinBoundaries( currentRead, window.getEnd())) {
                            saveReadForNextCycle( currentRead, currentState.FutureReads_SR);
                         }
                         else {
@@ -122,7 +122,7 @@ int searchTandemDuplications(ControlState& currentState, unsigned NumBoxes)
                         currentRead.IndelSize = currentRead. UP_Far[FarIndex].AbsLoc - currentRead.UP_Close[CloseIndex].AbsLoc + 1;
                         currentRead.BPRight = currentRead.UP_Far[FarIndex].AbsLoc - g_SpacerBeforeAfter;
                         currentRead.BPLeft = currentRead.UP_Close[CloseIndex].AbsLoc - g_SpacerBeforeAfter;
-                        if (readTransgressesBinBoundaries( currentRead, currentState.upperBinBorder)) {
+                        if (readTransgressesBinBoundaries( currentRead, window.getEnd())) {
                            saveReadForNextCycle( currentRead, currentState.FutureReads_SR);
                         }
                         else {

@@ -24,7 +24,7 @@
 #include "control_state.h"
 #include "logdef.h"
 
-int searchInversions(ControlState& currentState, unsigned NumBoxes)
+int searchInversions(ControlState& currentState, unsigned NumBoxes, const SearchWindow& window)
 {
    static int Count_Inv = 0;
    static int Count_Inv_Plus = 0;
@@ -79,7 +79,7 @@ int searchInversions(ControlState& currentState, unsigned NumBoxes)
 
                               currentRead.BPLeft = currentRead.UP_Close[CloseIndex].AbsLoc + 1 - g_SpacerBeforeAfter;
                               currentRead.BPRight = currentRead.UP_Far[FarIndex].AbsLoc - g_SpacerBeforeAfter;
-                              if (readTransgressesBinBoundaries( currentRead, currentState.upperBinBorder)) {
+                              if (readTransgressesBinBoundaries( currentRead, window.getEnd())) {
                                  saveReadForNextCycle( currentRead, currentState.FutureReads_SR);
                               }
                               else {
@@ -131,7 +131,7 @@ int searchInversions(ControlState& currentState, unsigned NumBoxes)
 
                               currentRead.BPRight = currentRead.UP_Close[CloseIndex].AbsLoc - g_SpacerBeforeAfter;
                               currentRead.BPLeft = (currentRead.UP_Far[FarIndex].AbsLoc + 1) - g_SpacerBeforeAfter;
-                              if (readTransgressesBinBoundaries( currentRead, currentState.upperBinBorder)) {
+                              if (readTransgressesBinBoundaries( currentRead, window.getEnd())) {
                                  saveReadForNextCycle( currentRead, currentState.FutureReads_SR);
                               }
                               else {
