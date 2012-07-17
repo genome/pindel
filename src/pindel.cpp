@@ -90,7 +90,7 @@ unsigned long long int TheMax = 0;
 const short MAX_MISMATCHES = 4;
 float ExtraDistanceRate = 0.1;
 
-double Const_Log_T = 0.0;
+//double Const_Log_T = 0.0;
 double Const_S = 0.0;
 double LOG14 = log10(0.25);
 unsigned int BoxSize = 10000; // 10k is fine
@@ -848,8 +848,7 @@ int main(int argc, char *argv[])
         }
         else {   // not build up sequence
             GetOneChrSeq(FastaFile, currentState.CurrentChrSeq, false);
-            (*logStream << "Skipping chromosome: " << currentState.CurrentChrName
-             << std::endl);
+            (*logStream << "Skipping chromosome: " << currentState.CurrentChrName << std::endl);
             continue;
         }
 
@@ -863,8 +862,7 @@ int main(int argc, char *argv[])
         }
         BoxSize = currentState.CurrentChrSeq.size() / 30000;
         if (BoxSize == 0) BoxSize = 1;
-        unsigned NumBoxes = (unsigned) (currentState.CurrentChrSeq.size() * 2
-                                        / BoxSize) + 1; // box size
+        unsigned NumBoxes = (unsigned) (currentState.CurrentChrSeq.size() * 2 / BoxSize) + 1; // box size
         (*logStream << "NumBoxes: " << NumBoxes << "\tBoxSize: " << BoxSize << std::endl);
 
         /* 3.1 preparation ends */
@@ -875,7 +873,6 @@ int main(int argc, char *argv[])
         LoopingSearchWindow currentWindow( userSettings->getRegion(), CONS_Chr_Size, WINDOW_SIZE, currentState.CurrentChrName ); 
         // loop over one chromosome
         do {
-
             /* 3.2.1 preparation starts */
             g_NumReadInWindow = 0; // #################
             g_InWinPlus = 0; // #################
@@ -899,9 +896,9 @@ int main(int argc, char *argv[])
                 }
                 Time_Load_E = time(NULL);
                 if (!userSettings->reportOnlyCloseMappedReads) {
-                    unsigned int Num_Left;
-                    Num_Left = currentState.Reads_SR.size();
-                    Const_Log_T = log10((double) Num_Left);
+                    //unsigned int Num_Left;
+                    //Num_Left = currentState.Reads_SR.size();
+                    //Const_Log_T = log10((double) Num_Left);
 
                     /* 3.2.1 preparation ends */
                     #pragma omp parallel default(shared)
@@ -959,7 +956,6 @@ int main(int argc, char *argv[])
             }
             Time_Load_S = 0;
 				currentWindow.next();
-
 
             g_binIndex++;
             /* 3.2.8 report ends */
