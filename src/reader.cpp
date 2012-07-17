@@ -197,53 +197,39 @@ short ReadInRead (PindelReadReader & inf_ReadSeq, const std::string & FragName,
             #pragma omp parallel default(shared)
             {
                #pragma omp for
-               for (int BufferReadsIndex = 0; // openMP 2.5 requires signed
-                     BufferReadsIndex < (int)NumberOfReadsPerBuffer;
-                     BufferReadsIndex++) {
+					// openMP 2.5 requires signed loop index
+               for (int BufferReadsIndex = 0;  BufferReadsIndex < (int)NumberOfReadsPerBuffer; BufferReadsIndex++) {
                   GetCloseEnd (CurrentChr, BufferReads[BufferReadsIndex]);
                }
             }
-            for (unsigned int BufferReadsIndex = 0;
-                  BufferReadsIndex < NumberOfReadsPerBuffer;
-                  BufferReadsIndex++) {
-               if (BufferReads[BufferReadsIndex].UP_Close.size ()) {
+            for (unsigned int BufferReadsIndex = 0; BufferReadsIndex < NumberOfReadsPerBuffer; BufferReadsIndex++) {
+					SPLIT_READ& currentRead = BufferReads[BufferReadsIndex];
+               if (currentRead.UP_Close.size ()) {
                   UPCLOSE_COUNTER++;
-                  if (g_reportLength < BufferReads[BufferReadsIndex].getReadLength())
-                     g_reportLength = BufferReads[BufferReadsIndex].getReadLength();
-                  BufferReads[BufferReadsIndex].Used = false;
-                  BufferReads[BufferReadsIndex].UniqueRead = true; 
-                  LOG_DEBUG(*logStream << Temp_One_Read.MatchedD << "\t"
-                            << Temp_One_Read.UP_Close.size() << "\t");
-                  CleanUniquePoints (BufferReads[BufferReadsIndex].
-                                     UP_Close);
-                  LOG_DEBUG(*logStream << Temp_One_Read.UP_Close.size() << "\t"
-                            << Temp_One_Read.UP_Close[0].Direction << std::endl);
-                  BufferReads[BufferReadsIndex].CloseEndLength =
-                     BufferReads[BufferReadsIndex].
-                     UP_Close[BufferReads[BufferReadsIndex].UP_Close.
-                              size () - 1].LengthStr;
-                  if (BufferReads[BufferReadsIndex].MatchedD == Plus)
-                     BufferReads[BufferReadsIndex].LeftMostPos =
-                        BufferReads[BufferReadsIndex].
-                        UP_Close[BufferReads[BufferReadsIndex].UP_Close.
-                                 size () - 1].AbsLoc + 1 -
-                        BufferReads[BufferReadsIndex].CloseEndLength;
-                  else
-                     BufferReads[BufferReadsIndex].LeftMostPos =
-                        BufferReads[BufferReadsIndex].
-                        UP_Close[BufferReads[BufferReadsIndex].UP_Close.
-                                 size () - 1].AbsLoc +
-                        BufferReads[BufferReadsIndex].CloseEndLength -
-                        BufferReads[BufferReadsIndex].getReadLength();
+                  if (g_reportLength < currentRead.getReadLength())
+                     g_reportLength = currentRead.getReadLength();
+                  currentRead.Used = false;
+                  currentRead.UniqueRead = true; 
+                  LOG_DEBUG(*logStream << Temp_One_Read.MatchedD << "\t" << Temp_One_Read.UP_Close.size() << "\t");
+                  CleanUniquePoints (currentRead.UP_Close);
+                  LOG_DEBUG(*logStream << Temp_One_Read.UP_Close.size() << "\t" << Temp_One_Read.UP_Close[0].Direction << std::endl);
+                  currentRead.CloseEndLength = currentRead.UP_Close[currentRead.UP_Close.size() - 1].LengthStr;
+                  if (currentRead.MatchedD == Plus) {
+							currentRead.LeftMostPos = currentRead.UP_Close[currentRead.UP_Close.size() - 1].AbsLoc + 1 - currentRead.CloseEndLength;
+						}
+                  else {
+                     currentRead.LeftMostPos = currentRead.UP_Close[currentRead.UP_Close.size() - 1].AbsLoc + currentRead.CloseEndLength -                      							
+								currentRead.getReadLength();
+						}
                   LOG_DEBUG(*logStream << "Pushing back!" << std::endl);
-                  Reads.push_back (BufferReads[BufferReadsIndex]);
-                  if (BufferReads[BufferReadsIndex].MatchedD == Plus) {
+                  Reads.push_back (currentRead);
+                  if (currentRead.MatchedD == Plus) {
                      g_CloseMappedPlus++;
                   }
                   else {
                      g_CloseMappedMinus++;
                   }
-                  g_sampleNames.insert(BufferReads[BufferReadsIndex].Tag);
+                  g_sampleNames.insert(currentRead.Tag);
                }
             }
             BufferReads.clear ();
@@ -260,48 +246,36 @@ short ReadInRead (PindelReadReader & inf_ReadSeq, const std::string & FragName,
          GetCloseEnd (CurrentChr, BufferReads[BufferReadsIndex]);
       }
    }
-   for (unsigned int BufferReadsIndex = 0; BufferReadsIndex < BufferReads.size ();
-         BufferReadsIndex++) {
-      if (BufferReads[BufferReadsIndex].UP_Close.size ()) {
+   for (unsigned int BufferReadsIndex = 0; BufferReadsIndex < BufferReads.size (); BufferReadsIndex++) {
+		SPLIT_READ& currentRead = BufferReads[BufferReadsIndex];
+      if (currentRead.UP_Close.size ()) {
          UPCLOSE_COUNTER++;
-         if (g_reportLength < BufferReads[BufferReadsIndex].getReadLength()) {
-            g_reportLength = BufferReads[BufferReadsIndex].getReadLength();
+         if (g_reportLength < currentRead.getReadLength()) {
+            g_reportLength = currentRead.getReadLength();
          }
-         BufferReads[BufferReadsIndex].Used = false;
-         BufferReads[BufferReadsIndex].UniqueRead = true; 
-         LOG_DEBUG(*logStream << Temp_One_Read.MatchedD
-                   << "\t" << Temp_One_Read.UP_Close.size() << "\t");
+         currentRead.Used = false;
+         currentRead.UniqueRead = true; 
+         LOG_DEBUG(*logStream << Temp_One_Read.MatchedD  << "\t" << Temp_One_Read.UP_Close.size() << "\t");
 
-         CleanUniquePoints (BufferReads[BufferReadsIndex].UP_Close);
+         CleanUniquePoints (currentRead.UP_Close);
 
-         LOG_DEBUG(*logStream << Temp_One_Read.UP_Close.size()
-                   << "\t" << Temp_One_Read.UP_Close[0].Direction << std::endl);
+         LOG_DEBUG(*logStream << Temp_One_Read.UP_Close.size() << "\t" << Temp_One_Read.UP_Close[0].Direction << std::endl);
 
-         BufferReads[BufferReadsIndex].CloseEndLength =
-            BufferReads[BufferReadsIndex].
-            UP_Close[BufferReads[BufferReadsIndex].UP_Close.size () -
-                     1].LengthStr;
-         if (BufferReads[BufferReadsIndex].MatchedD == Plus)
-            BufferReads[BufferReadsIndex].LeftMostPos =
-               BufferReads[BufferReadsIndex].
-               UP_Close[BufferReads[BufferReadsIndex].UP_Close.size () -
-                        1].AbsLoc + 1 -
-               BufferReads[BufferReadsIndex].CloseEndLength;
-         else
-            BufferReads[BufferReadsIndex].LeftMostPos =
-               BufferReads[BufferReadsIndex].
-               UP_Close[BufferReads[BufferReadsIndex].UP_Close.size () -
-                        1].AbsLoc +
-               BufferReads[BufferReadsIndex].CloseEndLength -
-               BufferReads[BufferReadsIndex].getReadLength();
-         Reads.push_back (BufferReads[BufferReadsIndex]);
-         if (BufferReads[BufferReadsIndex].MatchedD == Plus) {
+         currentRead.CloseEndLength = currentRead.UP_Close[currentRead.UP_Close.size () - 1].LengthStr;
+         if (currentRead.MatchedD == Plus) {
+            currentRead.LeftMostPos = currentRead.UP_Close[currentRead.UP_Close.size () - 1].AbsLoc + 1 - currentRead.CloseEndLength;
+			}
+         else {
+            currentRead.LeftMostPos = currentRead.UP_Close[currentRead.UP_Close.size () - 1].AbsLoc + currentRead.CloseEndLength - currentRead.getReadLength();
+			}
+         Reads.push_back (currentRead);
+         if (currentRead.MatchedD == Plus) {
             g_CloseMappedPlus++;
          }
          else {
             g_CloseMappedMinus++;
          }
-         g_sampleNames.insert(BufferReads[BufferReadsIndex].Tag);
+         g_sampleNames.insert(currentRead.Tag);
       }
    }
    BufferReads.clear ();
@@ -330,8 +304,8 @@ short ReadInRead (PindelReadReader & inf_ReadSeq, const std::string & FragName,
 
 bool ReadInBamReads_RP (const char *bam_path, const std::string & FragName,
                         std::string * CurrentChrSeq, std::vector <RP_READ> &LeftReads, 
-                        int InsertSize, std::string Tag, const SearchWindow& currentWindow ) {
-    // std::cout << FragName << " " << (* CurrentChrSeq).size() << " " << (* CurrentChrSeq).substr(10000000, 10) << " " << binStart << " " << binEnd << std::endl; 
+                        int InsertSize, std::string Tag, const SearchWindow& currentWindow ) 
+{ 
     bamFile fp;
     fp = bam_open (bam_path, "r");
     assert (fp);
@@ -344,9 +318,8 @@ bool ReadInBamReads_RP (const char *bam_path, const std::string & FragName,
     //need thing that converts "tid" to "chromosome name"
     int tid;
     tid = bam_get_tid (header, FragName.c_str ());
-    //kai does the below line in readinreads. dunno why yet
-    
-    
+
+    //kai does the below line in readinreads. dunno why yet  
     fetch_func_data_RP data;
     data.header = header;
     data.CurrentChrSeq = CurrentChrSeq;
@@ -377,7 +350,6 @@ bool ReadInBamReads_RP (const char *bam_path, const std::string & FragName,
     bam_index_destroy (idx);
     bam_close (fp);
     return true;
-
 }
 
 
@@ -401,9 +373,8 @@ bool ReadInBamReads_SR (const char *bam_path, const std::string & FragName,
    //need thing that converts "tid" to "chromosome name"
    int tid;
    tid = bam_get_tid (header, FragName.c_str ());
+
    //kai does the below line in readinreads. dunno why yet
-
-
    fetch_func_data_SR data;
    data.header = header;
    data.CurrentChrSeq = CurrentChrSeq;
@@ -416,12 +387,9 @@ bool ReadInBamReads_SR (const char *bam_path, const std::string & FragName,
    data.InsertSize = InsertSize;
    data.Tag = Tag;
    data.readBuffer=&readBuffer;
-   //*logStream << "before bam fetch " << LeftReads.size() << std::endl;
    bam_fetch (fp, idx, tid, window.getStart(), window.getEnd(), &data, fetch_func_SR);
-    readBuffer.flush(); 
-   //*logStream << "after bam fetch " << LeftReads.size() << std::endl;
+   readBuffer.flush(); 
    showReadStats(LeftReads);
-   //*logStream << "after showReadStats " << LeftReads.size() << std::endl;
 
    khint_t key;
    if (kh_size (data.read_to_map_qual) > 0) {
@@ -471,11 +439,10 @@ bool isWeirdRead( const flags_hit *read, const bam1_t * bamOfRead )
    else {
       return false;
    }
-
 }
 
-void build_record_SR (const bam1_t * mapped_read, const bam1_t * unmapped_read,
-                 void *data)
+
+void build_record_SR (const bam1_t * mapped_read, const bam1_t * unmapped_read, void *data)
 {
     SPLIT_READ Temp_One_Read;
     fetch_func_data_SR *data_for_bam = (fetch_func_data_SR *) data;
@@ -716,7 +683,6 @@ static int fetch_func_RP (const bam1_t * b1, void *data)
         //this seems stupid, but in order to manage the read names, necessary
         free ((char *) kh_key (read_to_map_qual, key));
         kh_del (read_name, read_to_map_qual, key);
-        //std::string c_sequence;
     }
 
     parse_flags_and_tags (b1, b1_flags);
@@ -836,15 +802,16 @@ int32_t bam_cigar2mismatch( const bam1_core_t *readCore, const uint32_t *cigar)
    return numberOfMismatches;
 }
 
-short get_RP_Reads(ControlState& currentState, const SearchWindow& currentWindow ) {
-    short ReturnFromReadingReads;
-    RPVector TempOneRPVector;
+short get_RP_Reads(ControlState& currentState, const SearchWindow& currentWindow ) 
+{
+	short ReturnFromReadingReads;
+   RPVector TempOneRPVector;
 
-    if (UserDefinedSettings::Instance()->bamFilesAsInput()) {
-        ReturnFromReadingReads = 0;
-        for (unsigned int i = 0; i < currentState.bams_to_parse.size(); i++) {
-            currentState.Reads_RP.push_back(TempOneRPVector);
-            ReturnFromReadingReads = ReadInBamReads_RP(
+   if (UserDefinedSettings::Instance()->bamFilesAsInput()) {
+      ReturnFromReadingReads = 0;
+      for (unsigned int i = 0; i < currentState.bams_to_parse.size(); i++) {
+         currentState.Reads_RP.push_back(TempOneRPVector);
+         ReturnFromReadingReads = ReadInBamReads_RP(
                                                        currentState.bams_to_parse[i].BamFile.c_str(),
                                                        currentState.CurrentChrName, 
                                                        &currentState.CurrentChrSeq,
@@ -852,20 +819,17 @@ short get_RP_Reads(ControlState& currentState, const SearchWindow& currentWindow
                                                        currentState.bams_to_parse[i].InsertSize,
                                                        currentState.bams_to_parse[i].Tag,
                                                        currentWindow);
-            if (ReturnFromReadingReads == 0) {
-                LOG_ERROR(*logStream << "Bam read failed: "
-                          << currentState.bams_to_parse[i].BamFile
-                          << std::endl);
-                return 1;
-            }
-            else if (currentState.Reads_RP.size() == 0) {
-            }
-        }
-        
+         if (ReturnFromReadingReads == 0) {
+            LOG_ERROR(*logStream << "Bam read failed: " << currentState.bams_to_parse[i].BamFile << std::endl);
+            return 1;
+         }
+         else if (currentState.Reads_RP.size() == 0) {
+      	}
+    	}  
     }
     return 0;
-
 }
+
 
 short get_SR_Reads(ControlState& currentState, const SearchWindow& currentWindow )
 {
@@ -875,14 +839,14 @@ short get_SR_Reads(ControlState& currentState, const SearchWindow& currentWindow
 	g_InWinMinus = 0; // #################
 	g_CloseMappedPlus = 0; // #################
 	g_CloseMappedMinus = 0; // #################
-    std::cout << "getReads " << currentState.CurrentChrName << " " << currentState.CurrentChrSeq.size() << std::endl;
-    short ReturnFromReadingReads;
-    ReadBuffer readBuffer(BUFFER_SIZE, currentState.Reads_SR, currentState.CurrentChrSeq);
-    if (UserDefinedSettings::Instance()->bamFilesAsInput()) {
-        ReturnFromReadingReads = 0;
-        for (unsigned int i = 0; i < currentState.bams_to_parse.size(); i++) {
-            *logStream << "Insertsize in bamreads: " << currentState.bams_to_parse[i].InsertSize << std::endl;
-            ReturnFromReadingReads = ReadInBamReads_SR(
+   std::cout << "getReads " << currentState.CurrentChrName << " " << currentState.CurrentChrSeq.size() << std::endl;
+   short ReturnFromReadingReads;
+   ReadBuffer readBuffer(BUFFER_SIZE, currentState.Reads_SR, currentState.CurrentChrSeq);
+   if (UserDefinedSettings::Instance()->bamFilesAsInput()) {
+      ReturnFromReadingReads = 0;
+      for (unsigned int i = 0; i < currentState.bams_to_parse.size(); i++) {
+         *logStream << "Insertsize in bamreads: " << currentState.bams_to_parse[i].InsertSize << std::endl;
+         ReturnFromReadingReads = ReadInBamReads_SR(
                                                     currentState.bams_to_parse[i].BamFile.c_str(),
                                                     currentState.CurrentChrName, 
                                                     &currentState.CurrentChrSeq,
@@ -890,33 +854,23 @@ short get_SR_Reads(ControlState& currentState, const SearchWindow& currentWindow
                                                     currentState.bams_to_parse[i].InsertSize,
                                                     currentState.bams_to_parse[i].Tag,
                                                     currentWindow, readBuffer );
-            if (ReturnFromReadingReads == 0) {
-                LOG_ERROR(*logStream << "Bam read failed: "
-                          << currentState.bams_to_parse[i].BamFile
-                          << std::endl);
-                return 1;
-            }
-            else if (currentState.Reads_SR.size() == 0) {
-                LOG_ERROR(*logStream << "No currentState.Reads for "
-                          << currentState.CurrentChrName << " found in "
-                          << currentState.bams_to_parse[i].BamFile
-                          << std::endl);
-            }
-            (*logStream << "BAM file index\t" << i << "\t"
-             << currentState.Reads_SR.size() << std::endl);
-        }
-        
-    }
+         if (ReturnFromReadingReads == 0) {
+            LOG_ERROR(*logStream << "Bam read failed: " << currentState.bams_to_parse[i].BamFile << std::endl);
+            return 1;
+         }
+         else if (currentState.Reads_SR.size() == 0) {
+            LOG_ERROR(*logStream << "No currentState.Reads for " << currentState.CurrentChrName << " found in " << currentState.bams_to_parse[i].BamFile << std::endl);
+         }
+         *logStream << "BAM file index\t" << i << "\t" << currentState.Reads_SR.size() << std::endl;
+      }  
+   }
 	UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
-    if (userSettings->pindelConfigFileAsInput()) {	
+   if (userSettings->pindelConfigFileAsInput()) {	
 		for (unsigned int fileIndex=0; fileIndex<currentState.pindelfilesToParse.size(); fileIndex++ ) {
 			const std::string &filename = currentState.pindelfilesToParse[fileIndex];
 			currentState.lineReader = getLineReaderByFilename(filename.c_str());
 			currentState.inf_Pindel_Reads = new PindelReadReader(*currentState.lineReader);
-
 			readInPindelReads(*currentState.inf_Pindel_Reads, filename, currentState, currentWindow );
-
-			//
 
 			delete currentState.inf_Pindel_Reads;
 			delete currentState.lineReader;
@@ -926,7 +880,7 @@ short get_SR_Reads(ControlState& currentState, const SearchWindow& currentWindow
 	if (userSettings->singlePindelFileAsInput()) {
 		readInPindelReads(*currentState.inf_Pindel_Reads, userSettings->pindelFilename, currentState, currentWindow );
 	}
-    return 0;
+   return 0;
 }
 
 void readInPindelReads(PindelReadReader &reader, const std::string& pindelFilename, ControlState& currentState, const SearchWindow& currentWindow )
