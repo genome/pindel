@@ -865,8 +865,6 @@ int main(int argc, char *argv[])
         unsigned NumBoxes = (unsigned) (currentState.CurrentChrSeq.size() * 2 / BoxSize) + 1; // box size
         (*logStream << "NumBoxes: " << NumBoxes << "\tBoxSize: " << BoxSize << std::endl);
 
-        /* 3.1 preparation ends */
-
         /* 3.2 apply sliding windows to input datasets starts. This is the 2nd level while loop */
         g_binIndex = 0; // to start with 0... 
     
