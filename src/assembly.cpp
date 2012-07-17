@@ -29,6 +29,15 @@
 #include <utility>
 
 void doAssembly (ControlState & CurrentState, std::ifstream& FastaFile ) {
+        /*
+        // step 1: define output file
+       // std:string AssemblyOutputFilename = inf_AssemblyInputFilename + "_ASM";
+        std::ofstream AssemblyOutput(AssemblyOutputFilename.c_str()); 
+        
+        // step 1: get whole genome as vector of chr
+        
+        // step 2: get a list of breakpoints 
+         */
     std::cout << "Entering assembly mode ..." << std::endl; 
     std::map<std::string,int> ChrName2Index;
     

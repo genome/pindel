@@ -497,9 +497,10 @@ void CheckWhetherFasta( const std::string& filename )
 
 
 
-int init(int argc, char *argv[], ControlState& currentState )
+void init(int argc, char *argv[], ControlState& currentState )
 {
 	UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
+
 
     if (userSettings->NumRead2ReportCutOff == 1) {
         userSettings->BalanceCutoff = 300000000;
@@ -511,7 +512,11 @@ int init(int argc, char *argv[], ControlState& currentState )
     // now read the parameters from the command line
     readParameters(argc, argv, parameters);
 
-	if (userSettings->logFilename != "" ) {
+
+	if (userSettings->logFilename == "" ) {
+		logStream=&std::cout;
+	}
+	else {
 		g_logFile.open( userSettings->logFilename.c_str() );
 		logStream = &g_logFile;
 	}
@@ -520,7 +525,7 @@ int init(int argc, char *argv[], ControlState& currentState )
 
     if (argc <= 1) { // the user has not given any parameters
         printHelp( parameters );
-        return EXIT_FAILURE;
+        exit ( EXIT_FAILURE);
     }
 
     // check parameters
@@ -528,9 +533,8 @@ int init(int argc, char *argv[], ControlState& currentState )
         exit ( EXIT_FAILURE);
     }
     if (userSettings->FLOAT_WINDOW_SIZE > 5000.0) {
-        LOG_ERROR(*logStream << "Window size of " << userSettings->FLOAT_WINDOW_SIZE
-                  << " million bases is too large" << std::endl);
-        return 1;
+        LOG_ERROR(*logStream << "Window size of " << userSettings->FLOAT_WINDOW_SIZE << " million bases is too large" << std::endl);
+        exit ( EXIT_FAILURE);
     }
     else if (userSettings->FLOAT_WINDOW_SIZE > 100.0) {
         LOG_ERROR(*logStream << "Window size of " << userSettings->FLOAT_WINDOW_SIZE
@@ -639,7 +643,6 @@ int init(int argc, char *argv[], ControlState& currentState )
     if (!userSettings->getRegion()->isTargetChromosomeDefined() && AssemblyInputDefined == false && GenotypingInputDefined == false) {
         *logStream << "Looping over all chromosomes." << std::endl;
     }
-    return EXIT_SUCCESS;
 }
 
 
@@ -771,96 +774,69 @@ void SearchSVs( ControlState& currentState, const int NumBoxes, const SearchWind
 
 int main(int argc, char *argv[])
 {
-    //TODO: These are counters that are only used in individual steps. They should be moved to separate functions later.
-
-    //Below are variables used for cpu time measurement
-    time_t Time_Load_S, Time_Load_E, Time_Mine_E, Time_Sort_E;
-    Time_Load_S = time(NULL);
-    unsigned int AllLoadings = 0;
-    unsigned int AllSortReport = 0;
-
-    ControlState currentState;
-
-	logStream=&std::cout;
-   int returnValue = init(argc, argv, currentState );
-   if (returnValue != EXIT_SUCCESS) {
-      return returnValue;
-   }
-
+	//TODO: These are counters that are only used in individual steps. They should be moved to separate functions later.
+   //Below are variables used for cpu time measurement
+   time_t Time_Load_S, Time_Load_E, Time_Mine_E, Time_Sort_E;
+   Time_Load_S = time(NULL);
+   unsigned int AllLoadings = 0;
+   unsigned int AllSortReport = 0;
+   ControlState currentState;
 	UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
+
+   init(argc, argv, currentState );
 
 	std::ifstream FastaFile( userSettings->referenceFilename.c_str() );
    char FirstCharOfFasta;
    FastaFile >> FirstCharOfFasta;
     /* Start of shortcut to genotyping */ // currentState.inf_AssemblyInput.open(par.inf_AssemblyInputFilename.c_str());
 	bool GenotypingInputDefined = parameters[findParameter("-g",parameters)]->isSet();
-    if (GenotypingInputDefined) {
-        
-        std::cout << "Entering genotyping mode ..." << std::endl;
-        doGenotyping(currentState, FastaFile );
-       
-        std::cout << "\nLeaving genotyping mode and terminating this run." << std::endl;
-        exit(EXIT_SUCCESS);
-    }
+   if (GenotypingInputDefined) {
+      doGenotyping(currentState, FastaFile );
+      exit(EXIT_SUCCESS);
+   }
     
-    /* End of shortcut to assembly */
-    
-    /* Start of shortcut to assembly */ // currentState.inf_AssemblyInput.open(par.inf_AssemblyInputFilename.c_str());
-    //std::cout << "here " << par.AssemblyInputDefined << std::endl;
-    bool AssemblyInputDefined = parameters[findParameter("-z",parameters)]->isSet();
-    if (AssemblyInputDefined) {
-        doAssembly(currentState, FastaFile );
-        /*
-        // step 1: define output file
-       // std:string AssemblyOutputFilename = inf_AssemblyInputFilename + "_ASM";
-        std::ofstream AssemblyOutput(AssemblyOutputFilename.c_str()); 
-        
-        // step 1: get whole genome as vector of chr
-        
-        // step 2: get a list of breakpoints 
-         */
-        exit(EXIT_SUCCESS);
-    }
-    
-    /* End of shortcut to assembly */
+   bool AssemblyInputDefined = parameters[findParameter("-z",parameters)]->isSet();
+   if (AssemblyInputDefined) {
+      doAssembly(currentState, FastaFile );
+      exit(EXIT_SUCCESS);
+   }
 
+   /* Normal pindel functioning: search SVs*/
 
-    /* 3 loop over chromosomes. this is the most outer loop in the main function. */
+   // Get a new chromosome again and again until you have visited the specified chromosome or the file ends
+   // CurrentChrName stores the name of the chromosome.
 
-    // Get a new chromosome again and again until you have visited the specified chromosome or the file ends
-    // CurrentChrName stores the name of the chromosome.
+   bool SpecifiedChrVisited = false;
 
-    bool SpecifiedChrVisited = false;
+   while (SpecifiedChrVisited == false && FastaFile >> currentState.CurrentChrName && !FastaFile.eof()) {
 
-    while (SpecifiedChrVisited == false && FastaFile >> currentState.CurrentChrName && !FastaFile.eof()) {
-        /* 3.1 preparation starts */
-        *logStream << "Processing chromosome: " << currentState.CurrentChrName << std::endl;
+      *logStream << "Processing chromosome: " << currentState.CurrentChrName << std::endl;
         //TODO: check with Kai what's the use of this line.
         // dangerous, there may be no other elements on the fasta header line
-	    std::string emptystr;
-       std::getline(FastaFile, emptystr);
-       if (userSettings->loopOverAllChromosomes()) {
-          GetOneChrSeq(FastaFile, currentState.CurrentChrSeq, true);
-       }
-       else if (currentState.CurrentChrName == userSettings->getRegion()->getTargetChromosomeName()) {   // just one chr and this is the correct one
-            GetOneChrSeq(FastaFile, currentState.CurrentChrSeq, true);
-            SpecifiedChrVisited = true;
-        }
-        else {   // not build up sequence
-            GetOneChrSeq(FastaFile, currentState.CurrentChrSeq, false);
-            (*logStream << "Skipping chromosome: " << currentState.CurrentChrName << std::endl);
-            continue;
-        }
+	   std::string emptystr;
+      std::getline(FastaFile, emptystr);
+      if (userSettings->loopOverAllChromosomes()) {
+      	GetOneChrSeq(FastaFile, currentState.CurrentChrSeq, true);
+      }
+      else if (currentState.CurrentChrName == userSettings->getRegion()->getTargetChromosomeName()) {   // just one chr and this is the correct one
+         GetOneChrSeq(FastaFile, currentState.CurrentChrSeq, true);
+         SpecifiedChrVisited = true;
+      }
+      else {   // not build up sequence
+         GetOneChrSeq(FastaFile, currentState.CurrentChrSeq, false);
+         *logStream << "Skipping chromosome: " << currentState.CurrentChrName << std::endl;
+         continue;
+      }
 
-        CONS_Chr_Size = currentState.CurrentChrSeq.size() - 2 * g_SpacerBeforeAfter; // #################
-        g_maxPos = 0; // #################
-        (*logStream << "Chromosome Size: " << CONS_Chr_Size << std::endl);
-        CurrentChrMask.resize(currentState.CurrentChrSeq.size());
-        g_bdData.loadChromosome( currentState.CurrentChrName, currentState.CurrentChrSeq.size() );
-        for (unsigned int i = 0; i < currentState.CurrentChrSeq.size(); i++) {
-            CurrentChrMask[i] = 'N';
-        }
-        BoxSize = currentState.CurrentChrSeq.size() / 30000;
+      CONS_Chr_Size = currentState.CurrentChrSeq.size() - 2 * g_SpacerBeforeAfter; // #################
+      g_maxPos = 0; // #################
+      *logStream << "Chromosome Size: " << CONS_Chr_Size << std::endl;
+      CurrentChrMask.resize(currentState.CurrentChrSeq.size());
+      g_bdData.loadChromosome( currentState.CurrentChrName, currentState.CurrentChrSeq.size() );
+      for (unsigned int i = 0; i < currentState.CurrentChrSeq.size(); i++) {
+         CurrentChrMask[i] = 'N';
+      }
+      BoxSize = currentState.CurrentChrSeq.size() / 30000;
         if (BoxSize == 0) BoxSize = 1;
         unsigned NumBoxes = (unsigned) (currentState.CurrentChrSeq.size() * 2 / BoxSize) + 1; // box size
         (*logStream << "NumBoxes: " << NumBoxes << "\tBoxSize: " << BoxSize << std::endl);
