@@ -171,7 +171,7 @@ short ReadInRead (PindelReadReader & inf_ReadSeq, const std::string & FragName,
          return 1;
       }
 
-      if ((signed int)Temp_One_Read.MatchedRelPos > g_maxPos) {
+      if ((signed int)Temp_One_Read.MatchedRelPos > (signed int)g_maxPos) {
          g_maxPos = Temp_One_Read.MatchedRelPos;
       }
 
@@ -701,8 +701,8 @@ bool isInBin (const SPLIT_READ & read)
    if (read.MatchedRelPos > g_maxPos) {
       g_maxPos = read.MatchedRelPos;
    }
-   return ((read.MatchedRelPos >= (g_binIndex * WINDOW_SIZE)) &&
-           (read.MatchedRelPos < ((g_binIndex + 1) * WINDOW_SIZE)));
+   return (((signed int)read.MatchedRelPos >= (signed int)(g_binIndex * WINDOW_SIZE)) &&
+           ((signed int)read.MatchedRelPos < (signed int)((g_binIndex + 1) * WINDOW_SIZE)));
 }
 
 
