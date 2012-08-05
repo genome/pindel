@@ -124,7 +124,7 @@ void doGenotyping (ControlState & CurrentState, std::ifstream& FastaFile ) {
         if (AllSV4Genotyping[SV_index].Type == "DEL") GenotypingOneDEL(AllChromosomes, ChrName2Index, CurrentState, AllSV4Genotyping[SV_index], SampleName2IndexAsMap, GT_Output);
 
         // step 4.2 if type == DUP, GenotypeDup
-        
+        if (AllSV4Genotyping[SV_index].Type == "DUP" || AllSV4Genotyping[SV_index].Type == "TD" || AllSV4Genotyping[SV_index].Type == "GT") GenotypingOneDUP(AllChromosomes, ChrName2Index, CurrentState, AllSV4Genotyping[SV_index], SampleName2IndexAsMap, GT_Output);
         // step 4.3 if type == INV, GenotypeINV
         
         // step 4.4 if type == ITX, GenotypeINV
@@ -151,6 +151,15 @@ short GenotypingOneDEL(const std::vector <Chromosome> & AllChromosomes, std::map
     //<< OneSV.CI_B << std::endl;
     //CountRP();
     
+    return 0;
+}
+
+short GenotypingOneDUP(const std::vector <Chromosome> & AllChromosomes, std::map<std::string,int> &ChrName2Index, ControlState & CurrentState, Genotyping & OneSV, std::map<std::string, unsigned> & SampleName2IndexAsMap, std::ofstream & GT_Output) {
+    std::cout << "\nGenotyping " << OneSV.Type << " " << OneSV.ChrA << " " << OneSV.PosA << " "
+    << OneSV.CI_A << " " << OneSV.ChrB << " " << OneSV.PosB << " " << OneSV.CI_B << std::endl;
+    const std::string & CurrentChrSeq = AllChromosomes[ ChrName2Index[ OneSV.ChrA ]].ChrSeq;
+    CurrentState.CurrentChrName = OneSV.ChrA;
+    getRelativeCoverage(CurrentChrSeq, ChrName2Index[OneSV.ChrA], CurrentState, OneSV);
     return 0;
 }
 
