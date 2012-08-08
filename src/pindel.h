@@ -96,7 +96,6 @@ const char Minus = '-';
 const char FirstCharReadName = '@';
 const short Max_short = 128;
 const unsigned int NumberOfReadsPerBuffer = 1000; // estimate later
-const short FirstBase = 1;
 
 
 /*
@@ -109,6 +108,8 @@ struct UniquePoint {
 	char Strand; // sense antisense
 	short Mismatches;
 
+	UniquePoint( const short lengthStr, const unsigned int absLoc, const char direction, const char strand, const short mismatches );
+	UniquePoint() { UniquePoint(0,0,'N','N',0); };
 	friend std::ostream& operator<<(std::ostream& os, const UniquePoint& up );
 };
 
@@ -205,13 +206,13 @@ struct SPLIT_READ {
 	unsigned short NT_size;
 	bool Used;
 	short CloseEndLength;
-	//bool Found;
 	int LeftMostPos;
     std::map <std::string, int> ReadCountPerSample;
 
 	unsigned int getLastAbsLocCloseEnd() const;
 	bool goodFarEndFound() const;
 	bool hasCloseEnd() const;
+	unsigned int MaxLenCloseEnd() const;
 	unsigned int MaxLenFarEnd() const;
 	unsigned int MaxLenFarEndBackup() const;
 	friend std::ostream& operator<<(std::ostream& os, const SPLIT_READ& splitRead);
@@ -344,21 +345,14 @@ std::string Cap2Low(const std::string & input);
 void GetRealStart4Insertion(const std::string & TheInput,
 		const std::string & InsertedStr, unsigned int &RealStart,
 		unsigned int &RealEnd);
-void GetRealStart4Deletion(const std::string & TheInput,
-		unsigned int &RealStart, unsigned int &RealEnd);
-bool ReportEvent(const std::vector<SPLIT_READ> &Deletions,
-		const unsigned int &Pre_S, const unsigned int &Pre_E);
+void GetRealStart4Deletion(const std::string & TheInput,	unsigned int &RealStart, unsigned int &RealEnd);
+bool ReportEvent(const std::vector<SPLIT_READ> &Deletions, const unsigned int &Pre_S, const unsigned int &Pre_E);
 void GetCloseEnd(const std::string & CurrentChr, SPLIT_READ & Temp_One_Read);
-void GetFarEnd_OtherStrand(const std::string & CurrentChr,
-		SPLIT_READ & Temp_One_Read, const short &RangeIndex);
-void GetFarEnd_SingleStrandDownStream(const std::string & CurrentChr,
-		SPLIT_READ & Temp_One_Read, const short &RangeIndex);
-void GetFarEnd_SingleStrandUpStream(const std::string & CurrentChr,
-		SPLIT_READ & Temp_One_Read, const short &RangeIndex);
-void GetFarEnd_SingleStrandDownStreamInsertions(const std::string & CurrentChr,
-		SPLIT_READ & Temp_One_Read, const short &RangeIndex);
-void GetFarEnd(const std::string & CurrentChr, SPLIT_READ & Temp_One_Read,
-		const int &start, const int &end);
+void GetFarEnd_OtherStrand(const std::string & CurrentChr, SPLIT_READ & Temp_One_Read, const short &RangeIndex);
+void GetFarEnd_SingleStrandDownStream(const std::string & CurrentChr, SPLIT_READ & Temp_One_Read, const short &RangeIndex);
+void GetFarEnd_SingleStrandUpStream(const std::string & CurrentChr, SPLIT_READ & Temp_One_Read, const short &RangeIndex);
+void GetFarEnd_SingleStrandDownStreamInsertions(const std::string & CurrentChr, SPLIT_READ & Temp_One_Read, const short &RangeIndex);
+void GetFarEnd(const std::string & CurrentChr, SPLIT_READ & Temp_One_Read,	const int &start, const int &end);
 void OutputDeletions(const std::vector<SPLIT_READ> &Deletions,
 		const std::string & TheInput, const unsigned int &C_S,
 		const unsigned int &C_E, const unsigned int &RealStart,
@@ -386,8 +380,8 @@ std::string Cap2Low(const std::string & input);
 void CheckBoth(const SPLIT_READ & OneRead, const std::string & TheInput,
 		const std::string & CurrentReadSeq,
 		const std::vector<unsigned int> PD_Plus[],
-		const std::vector<unsigned int> PD_Minus[], const short &BP_Start,
-		const short &BP_End, const short &CurrentLength,
+		const std::vector<unsigned int> PD_Minus[], const short BP_Start,
+		const short BP_End, const short CurrentLength,
 		std::vector<UniquePoint> &UP);
 void GetIndelTypeAndRealStart(const std::string & TheInput,
 		const unsigned int &BPLeft, const unsigned int &IndelSize,

@@ -25,11 +25,20 @@
 
 #include "farend_searcher.h"
 
+// methinks we should make a class out of an upVector-object and make this a class function
+unsigned int MaxEndSize( const std::vector<UniquePoint>& upVector) 
+{
+    if (upVector.size() == 0 ) {
+        return 0;
+    }
+    else {
+        int lastElementIndex = upVector.size()-1;
+        return upVector[ lastElementIndex ].LengthStr;
+    }
+}
+
 void SearchFarEndAtPos( const std::string& chromosome, SPLIT_READ& Temp_One_Read, const unsigned int SearchCenter, const unsigned int Range)
 {
-   short BP_End = Temp_One_Read.getReadLengthMinus(); // matched far end should be between BP_Start and BP_End bases long (including BP_Start and End)
-   std::vector<UniquePoint> UP; // temporary container for unique far ends
-
    std::vector<unsigned int> PD_Plus[Temp_One_Read.getTOTAL_SNP_ERROR_CHECKED()];
    std::vector<unsigned int> PD_Minus[Temp_One_Read.getTOTAL_SNP_ERROR_CHECKED()];
 
@@ -43,42 +52,32 @@ void SearchFarEndAtPos( const std::string& chromosome, SPLIT_READ& Temp_One_Read
 
    char CurrentBase = Temp_One_Read.getUnmatchedSeq()[0];
    char CurrentBaseRC = Convert2RC4N[(short) CurrentBase];
+	
+	if (CurrentBase == 'N' || Temp_One_Read.MaxLenCloseEnd() == 0) return; // ask Kai: correct?
 
-   if (CurrentBase != 'N') {
-      for (int pos = Start; pos < End; pos++) {
-         if (chromosome.at(pos) == CurrentBase) {
-            PD_Plus[0].push_back(pos); // else
-         }
-         else if (chromosome.at(pos) == CurrentBaseRC) {
-            PD_Minus[0].push_back(pos);
-         }
+   for (int pos = Start; pos < End; pos++) {
+      if (chromosome.at(pos) == CurrentBase) {
+         PD_Plus[0].push_back(pos); // else
       }
-   }
-   short BP_Start = 10;
-   if (PD_Minus[0].size() + PD_Plus[0].size() > 0) { // skip all reads starting with 'N'
-      CheckBoth(Temp_One_Read, chromosome, Temp_One_Read.getUnmatchedSeq(), PD_Plus, PD_Minus, BP_Start, BP_End, FirstBase, UP);
+      else if (chromosome.at(pos) == CurrentBaseRC) {
+         PD_Minus[0].push_back(pos);
+      }
    }
 
-   if (UP.empty()) {}
-   else if (UP[UP.size() - 1].LengthStr + Temp_One_Read.UP_Close[Temp_One_Read.UP_Close.size() - 1].LengthStr < Temp_One_Read.getReadLength() && UP[UP.size() - 1].LengthStr > 0 && Temp_One_Read.UP_Close[Temp_One_Read.UP_Close.size() - 1].LengthStr > 0) { // should put into UP_Far_backup
-      if (Temp_One_Read.UP_Far_backup.empty()) { // UP_Far_backup is empty, put it straightforwards
-         Temp_One_Read.UP_Far_backup.swap(UP);
-      }
-      else if (UP[UP.size() - 1].LengthStr > Temp_One_Read.UP_Far_backup[Temp_One_Read.UP_Far_backup.size() - 1].LengthStr) { // check whether the new result is better
-         Temp_One_Read.UP_Far_backup.clear();
-         Temp_One_Read.UP_Far_backup.swap(UP);
-      } // if UP[UP.size()
-   } // if read is incompletely mapped
-   else { // should put into UP_Far
-      if (Temp_One_Read.UP_Far.empty()) {
-         Temp_One_Read.UP_Far.swap(UP);
-      }
-      else {
-         std::cout << "We shouldn't get here: farend_searcher.cpp at line 90" << std::endl;
-      }
-   }
-   UP.clear();
-   // std::cout << "end of SearchFarEndAtPos" << std::endl; 
+   if (PD_Minus[0].size() + PD_Plus[0].size() > 0) { 
+	 	short BP_Start = 10; // perhaps use global constant like "g_MinimumLengthToReportMatch"
+   	short BP_End = Temp_One_Read.getReadLengthMinus(); // matched far end should be between BP_Start and BP_End bases long (including BP_Start and End)
+	   std::vector<UniquePoint> UP; // temporary container for unique far ends
+      CheckBoth(Temp_One_Read, chromosome, Temp_One_Read.getUnmatchedSeq(), PD_Plus, PD_Minus, BP_Start, BP_End, 1, UP);
+   
+		if (MaxEndSize(UP) + Temp_One_Read.MaxLenCloseEnd() >= Temp_One_Read.getReadLength() && Temp_One_Read.UP_Far.empty()) {
+			Temp_One_Read.UP_Far.swap(UP);
+		}
+		else if ( MaxEndSize(UP) > Temp_One_Read.MaxLenFarEndBackup() ) {
+			Temp_One_Read.UP_Far_backup.swap(UP);
+		}
+	   UP.clear(); // may not be necessary as this is deleted from the stack anyway
+	}
 }
 
 FarEndSearcher::~FarEndSearcher()

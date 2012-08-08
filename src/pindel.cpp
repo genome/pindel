@@ -137,6 +137,17 @@ unsigned int Distance = 300;
 short MinFar_D = 8; //atoi(argv[3]);
 const short MaxDI = 30;
 
+	short LengthStr;
+	unsigned int AbsLoc;
+	char Direction; // forward reverse
+	char Strand; // sense antisense
+	short Mismatches;
+
+UniquePoint::UniquePoint( const short lengthStr, const unsigned int absLoc, const char direction, const char strand, const short mismatches ) :
+	LengthStr( lengthStr ), AbsLoc( absLoc ), Direction( direction ), Strand( strand ), Mismatches( mismatches )
+{
+}
+
 SearchWindow::SearchWindow(const int regionStart, const int regionEnd )
 {
 	m_currentStart = regionStart;
@@ -237,6 +248,11 @@ unsigned int SPLIT_READ::MaxEndSize( const std::vector<UniquePoint>& upVector) c
 unsigned int SPLIT_READ::MaxLenFarEnd() const
 {
     return MaxEndSize( UP_Far );
+}
+
+unsigned int SPLIT_READ::MaxLenCloseEnd() const
+{
+    return MaxEndSize( UP_Close );
 }
 
 unsigned int SPLIT_READ::MaxLenFarEndBackup() const
@@ -1070,7 +1086,7 @@ void GetCloseEndInner(const std::string & CurrentChrSeq, SPLIT_READ & Temp_One_R
 
         if (PD[0].size())
             CheckLeft_Close(Temp_One_Read, CurrentChrSeq, CurrentReadSeq, PD,
-                            BP_Start, BP_End, FirstBase, UP); // LengthStr
+                            BP_Start, BP_End, 1, UP); // LengthStr
         if (UP.empty()) {}
         else {
             Temp_One_Read.Used = false;
@@ -1094,7 +1110,7 @@ void GetCloseEndInner(const std::string & CurrentChrSeq, SPLIT_READ & Temp_One_R
 
         LOG_DEBUG(*logStream << "1\t" << PD[0].size() << "\t" << PD[1].size() << std::endl);
         CheckRight_Close(Temp_One_Read, CurrentChrSeq, CurrentReadSeq, PD,
-                         BP_Start, BP_End, FirstBase, UP);
+                         BP_Start, BP_End, 1, UP);
         LOG_DEBUG(*logStream << UP.size() << std::endl);
         if (UP.empty()) {}
         else {
@@ -1122,170 +1138,169 @@ void GetCloseEnd(const std::string & CurrentChrSeq, SPLIT_READ & Temp_One_Read)
 void CheckBoth(const SPLIT_READ & OneRead, const std::string & TheInput,
                const std::string & CurrentReadSeq,
                const std::vector<unsigned int> PD_Plus[],
-               const std::vector<unsigned int> PD_Minus[], const short &BP_Start,
-               const short &BP_End, const short &CurrentLength,
+               const std::vector<unsigned int> PD_Minus[], const short minimumLengthToReportMatch,
+               const short BP_End, const short CurrentLength,
                std::vector<UniquePoint> &UP)
 {   
-    int Sum;
+	int Sum;
 
 	UserDefinedSettings *userSettings = UserDefinedSettings::Instance();
 
-    if (CurrentLength >= BP_Start && CurrentLength <= BP_End) {
-        // put it to LeftUP if unique
-        for (short i = 0; i <= OneRead.getMAX_SNP_ERROR(); i++) {
-            if (PD_Plus[i].size() + PD_Minus[i].size() == 1 && CurrentLength
-                    >= BP_Start + i) {
-                Sum = 0;
-                if (userSettings->ADDITIONAL_MISMATCH)
-                    for (short j = 0; j <= i + userSettings->ADDITIONAL_MISMATCH; j++) {
-                        Sum += PD_Plus[j].size() + PD_Minus[j].size();
-                    }
-
-                if (Sum == 1 && i <= (short) (userSettings->Seq_Error_Rate * CurrentLength
-                                              + 1)) {
-                    UniquePoint TempOne;
-                    TempOne.LengthStr = CurrentLength;
-                    if ((unsigned)TempOne.LengthStr > OneRead.getUnmatchedSeq().size() && TempOne.LengthStr < 0) {
+   if (CurrentLength >= minimumLengthToReportMatch && CurrentLength <= BP_End) {
+      for (short numberOfMismatches = 0; numberOfMismatches <= OneRead.getMAX_SNP_ERROR(); numberOfMismatches++) {
+         if (PD_Plus[numberOfMismatches].size() + PD_Minus[numberOfMismatches].size() == 1 && CurrentLength >= minimumLengthToReportMatch + numberOfMismatches) {
+            Sum = 0;
+            if (userSettings->ADDITIONAL_MISMATCH > 0) { // what if this is ADDITIONAL_MISMATCH is 0? Do you save anything then?
+					// what if j +ADD_MISMATCH exceeds the max allowed number of mismatches (the PD_element does not exist?)
+				
+					// feeling the need to comment here - so factor out?
+					// only report reads if there are no reads with fewer mismatches or only one or two more mismatches
+               for (short mismatchCount = 0; mismatchCount <= numberOfMismatches + userSettings->ADDITIONAL_MISMATCH; mismatchCount++) {
+                  Sum += PD_Plus[mismatchCount].size() + PD_Minus[mismatchCount].size();
+               }
+               if (Sum == 1 && numberOfMismatches <= (short) (userSettings->Seq_Error_Rate * CurrentLength + 1)) {
+							// how would the below if ever happen?
+                   /* if ((unsigned)TempOne.LengthStr > OneRead.getUnmatchedSeq().size() && TempOne.LengthStr < 0) {
                         std::cout << "TempOne.LengthStr " << TempOne.LengthStr << std::endl;
                         return;
-                    }
-                    if (PD_Plus[i].size() == 1) {
-                        TempOne.Direction = FORWARD;
-                        TempOne.Strand = SENSE;
-                        TempOne.AbsLoc = PD_Plus[i][0];
-                        TempOne.Mismatches = i;
-                        if (CheckMismatches(TheInput, OneRead.getUnmatchedSeq(), TempOne)) {
-                            UP.push_back (TempOne);
-                            break;
-                        }
-                    }
-                    else if (PD_Minus[i].size() == 1) {
-                        TempOne.Direction = BACKWARD;
-                        TempOne.Strand = ANTISENSE;
-                        TempOne.AbsLoc = PD_Minus[i][0];
-                        TempOne.Mismatches = i;
-                        if (CheckMismatches(TheInput, OneRead.getUnmatchedSeq(), TempOne)) { // ######################
-                            UP.push_back (TempOne);
-                            break;
-                        } // ######################
-                    }
-                }
-            }
-        }
-    }
-    if (CurrentLength < BP_End) {
-        std::vector<unsigned int>
-        PD_Plus_Output[OneRead.getTOTAL_SNP_ERROR_CHECKED()];
-        std::vector<unsigned int>
-        PD_Minus_Output[OneRead.getTOTAL_SNP_ERROR_CHECKED()];
-        for (int CheckedIndex = 0; CheckedIndex
-                < OneRead.getTOTAL_SNP_ERROR_CHECKED(); CheckedIndex++) {
-            PD_Plus_Output[CheckedIndex].reserve(PD_Plus[CheckedIndex]. size());
-            PD_Minus_Output[CheckedIndex].reserve(
-                PD_Minus[CheckedIndex]. size());
-        }
-        const char CurrentChar = CurrentReadSeq[CurrentLength];
-        const char CurrentCharRC = Convert2RC4N[(short) CurrentChar];
-        {
-            unsigned int pos;
-            int SizeOfCurrent;
-            for (int i = 0; i < OneRead.getTOTAL_SNP_ERROR_CHECKED_Minus(); i++) {
-                SizeOfCurrent = PD_Plus[i].size();
-                if (CurrentChar == 'N') {
-                    for (int j = 0; j < SizeOfCurrent; j++) {
-                        pos = PD_Plus[i][j] + 1;
-                        if (Match2N[(short) TheInput[pos]] == 'N') {
-                            PD_Plus_Output[i].push_back(pos);
-                        }
-                        else {
-                            PD_Plus_Output[i + 1].push_back(pos);
-                        }
-                    }
-                }
-                else {
-                    for (int j = 0; j < SizeOfCurrent; j++) {
-                        pos = PD_Plus[i][j] + 1;
-                        if (TheInput[pos] == CurrentChar) {
-                            PD_Plus_Output[i].push_back(pos);
-                        }
-                        else {
-                            PD_Plus_Output[i + 1].push_back(pos);
-                        }
-                    }
-                }
-                SizeOfCurrent = PD_Minus[i].size();
-                if (CurrentCharRC == 'N') {
-                    for (int j = 0; j < SizeOfCurrent; j++) {
-                        pos = PD_Minus[i][j] - 1;
-                        if (Match2N[(short) TheInput[pos]] == 'N') {
-                            PD_Minus_Output[i].push_back(pos);
-                        }
-                        else {
-                            PD_Minus_Output[i + 1].push_back(pos);
-                        }
-                    }
-                }
-                else {
-                    for (int j = 0; j < SizeOfCurrent; j++) {
-                        pos = PD_Minus[i][j] - 1;
-                        if (TheInput[pos] == CurrentCharRC) {
-                            PD_Minus_Output[i].push_back(pos);
-                        }
-                        else {
-                            PD_Minus_Output[i + 1].push_back(pos);
-                        }
-                    }
-                }
-            }
+                    }*/
+							// why I love constructors
+						UniquePoint MatchPosition;
+                  if (PD_Plus[numberOfMismatches].size() == 1) {
+							UniquePoint PlusMatch( CurrentLength, PD_Plus[numberOfMismatches][0], FORWARD, SENSE, numberOfMismatches );
+							MatchPosition = PlusMatch; 
+                  }
+                  else {
+							UniquePoint MinMatch( CurrentLength, PD_Minus[numberOfMismatches][0], BACKWARD, ANTISENSE, numberOfMismatches );
+							MatchPosition = MinMatch; 
+					   }
+                  if (CheckMismatches(TheInput, OneRead.getUnmatchedSeq(), MatchPosition)) {
+                     UP.push_back (MatchPosition);
+                     break;
+                  } // if CheckMismatches
+               } // if Sum==1
+            } // if AdditionalMismatches
+        	} // if sumsize ==1
+      } // for-loop
+	} // if length of match is sufficient to be reportable
 
-            SizeOfCurrent
-                = PD_Plus[OneRead.getTOTAL_SNP_ERROR_CHECKED_Minus()].size();
-            if (CurrentChar == 'N') {
-                for (int j = 0; j < SizeOfCurrent; j++) {
-                    pos = PD_Plus[OneRead.getTOTAL_SNP_ERROR_CHECKED_Minus()][j] + 1;
-                    if (Match2N[(short) TheInput[pos]] == 'N')
-                        PD_Plus_Output[OneRead.getTOTAL_SNP_ERROR_CHECKED_Minus()]. push_back( pos);
-                }
+   if (CurrentLength < BP_End) {
+		// the below lines give me an odd deja-vu-feeling
+      std::vector<unsigned int> PD_Plus_Output[OneRead.getTOTAL_SNP_ERROR_CHECKED()];
+      std::vector<unsigned int> PD_Minus_Output[OneRead.getTOTAL_SNP_ERROR_CHECKED()];
+		
+      for (int CheckedIndex = 0; CheckedIndex < OneRead.getTOTAL_SNP_ERROR_CHECKED(); CheckedIndex++) {
+         PD_Plus_Output[CheckedIndex].reserve( PD_Plus[CheckedIndex].size());
+         PD_Minus_Output[CheckedIndex].reserve( PD_Minus[CheckedIndex].size());
+      }
+      const char CurrentChar = CurrentReadSeq[CurrentLength];
+      const char CurrentCharRC = Convert2RC4N[(short) CurrentChar];
+      unsigned int pos=0;
+      int SizeOfCurrent=0;
+		for (int i = 0; i < OneRead.getTOTAL_SNP_ERROR_CHECKED_Minus(); i++) {
+			
+         SizeOfCurrent = PD_Plus[i].size();
+         if (CurrentChar == 'N') {
+            for (int j = 0; j < SizeOfCurrent; j++) {
+               pos = PD_Plus[i][j] + 1;
+               if (Match2N[(short) TheInput[pos]] == 'N') {
+                  PD_Plus_Output[i].push_back(pos);
+               }
+               else {
+                  PD_Plus_Output[i + 1].push_back(pos);
+               }
             }
-            else {
-                for (int j = 0; j < SizeOfCurrent; j++) {
-                    pos = PD_Plus[OneRead.getTOTAL_SNP_ERROR_CHECKED_Minus()][j] + 1;
-                    if (TheInput[pos] == CurrentChar)
-                        PD_Plus_Output[OneRead.getTOTAL_SNP_ERROR_CHECKED_Minus()]. push_back( pos);
-                }
+		   }
+         else { // currentChar != 'N'; note that these two loops could be fused if we had a Match function or array that would function properly for normal bases and Ns
+            for (int j = 0; j < SizeOfCurrent; j++) {
+               pos = PD_Plus[i][j] + 1;
+               if (TheInput[pos] == CurrentChar) {
+                  PD_Plus_Output[i].push_back(pos);
+               }
+               else {
+                  PD_Plus_Output[i + 1].push_back(pos);
+               }
             }
-            SizeOfCurrent = PD_Minus[OneRead.getTOTAL_SNP_ERROR_CHECKED_Minus()].size();
-            if (CurrentCharRC == 'N') {
-                for (int j = 0; j < SizeOfCurrent; j++) {
-                    pos = PD_Minus[OneRead.getTOTAL_SNP_ERROR_CHECKED_Minus()][j] - 1;
-                    if (Match2N[(short) TheInput[pos]] == 'N')
-                        PD_Minus_Output[OneRead.getTOTAL_SNP_ERROR_CHECKED_Minus()]. push_back( pos);
-                }
+         }
+			
+			// code repetition; I'd experiment with factoring these two out in a separate function	and check performance
+         SizeOfCurrent = PD_Minus[i].size();
+         if (CurrentCharRC == 'N') {
+            for (int j = 0; j < SizeOfCurrent; j++) {
+               pos = PD_Minus[i][j] - 1;
+               if (Match2N[(short) TheInput[pos]] == 'N') {
+                  PD_Minus_Output[i].push_back(pos);
+               }
+               else {
+                  PD_Minus_Output[i + 1].push_back(pos);
+               }
             }
-            else {
-                for (int j = 0; j < SizeOfCurrent; j++) {
-                    pos = PD_Minus[OneRead.getTOTAL_SNP_ERROR_CHECKED_Minus()][j] - 1;
-                    if (TheInput[pos] == CurrentCharRC)
-                        PD_Minus_Output[OneRead.getTOTAL_SNP_ERROR_CHECKED_Minus()]. push_back( pos);
-                }
+         }
+         else {
+            for (int j = 0; j < SizeOfCurrent; j++) {
+               pos = PD_Minus[i][j] - 1;
+               if (TheInput[pos] == CurrentCharRC) {
+                  PD_Minus_Output[i].push_back(pos);
+               }
+               else {
+                  PD_Minus_Output[i + 1].push_back(pos);
+               }
             }
+         }
+      }
 
-            Sum = 0;
-            for (int i = 0; i <= OneRead.getMAX_SNP_ERROR(); i++) {
-                Sum += PD_Plus_Output[i].size() + PD_Minus_Output[i].size();
-            }
-            if (Sum) {
-                const short CurrentLengthOutput = CurrentLength + 1;
-                CheckBoth(OneRead, TheInput, CurrentReadSeq, PD_Plus_Output, PD_Minus_Output, BP_Start, BP_End, CurrentLengthOutput, UP);
-            }
-            else {
-                return;
-            }
-        }
-    }
-    else {
-        return;
-    }
+		// really strong DEJA-VU-feeling; prime candidate for deduplicating code and testing performance afterwards.
+      SizeOfCurrent = PD_Plus[OneRead.getTOTAL_SNP_ERROR_CHECKED_Minus()].size();
+      if (CurrentChar == 'N') {
+         for (int j = 0; j < SizeOfCurrent; j++) {
+            pos = PD_Plus[OneRead.getTOTAL_SNP_ERROR_CHECKED_Minus()][j] + 1;
+            if (Match2N[(short) TheInput[pos]] == 'N') {
+               PD_Plus_Output[OneRead.getTOTAL_SNP_ERROR_CHECKED_Minus()]. push_back( pos);
+				}
+         }
+      }
+      else {
+         for (int j = 0; j < SizeOfCurrent; j++) {
+            pos = PD_Plus[OneRead.getTOTAL_SNP_ERROR_CHECKED_Minus()][j] + 1;
+            if (TheInput[pos] == CurrentChar) {
+               PD_Plus_Output[OneRead.getTOTAL_SNP_ERROR_CHECKED_Minus()]. push_back( pos);
+				}
+         }
+      }
+      SizeOfCurrent = PD_Minus[OneRead.getTOTAL_SNP_ERROR_CHECKED_Minus()].size();
+      if (CurrentCharRC == 'N') {
+         for (int j = 0; j < SizeOfCurrent; j++) {
+            pos = PD_Minus[OneRead.getTOTAL_SNP_ERROR_CHECKED_Minus()][j] - 1;
+            if (Match2N[(short) TheInput[pos]] == 'N') {
+               PD_Minus_Output[OneRead.getTOTAL_SNP_ERROR_CHECKED_Minus()]. push_back( pos);
+				}
+         }
+      }
+      else {
+         for (int j = 0; j < SizeOfCurrent; j++) {
+            pos = PD_Minus[OneRead.getTOTAL_SNP_ERROR_CHECKED_Minus()][j] - 1;
+            if (TheInput[pos] == CurrentCharRC) {
+               PD_Minus_Output[OneRead.getTOTAL_SNP_ERROR_CHECKED_Minus()]. push_back( pos);
+				}
+         }
+      }
+
+		// this loop looks familiar; candidate for factoring out mini-function?
+      Sum = 0;
+      for (int i = 0; i <= OneRead.getMAX_SNP_ERROR(); i++) {
+         Sum += PD_Plus_Output[i].size() + PD_Minus_Output[i].size();
+      }
+      if (Sum) {
+         const short CurrentLengthOutput = CurrentLength + 1;
+         CheckBoth(OneRead, TheInput, CurrentReadSeq, PD_Plus_Output, PD_Minus_Output, minimumLengthToReportMatch, BP_End, CurrentLengthOutput, UP);
+      }
+      else {
+         return;
+   	} // else-if Sum
+ 	} // if length < BP_End
+ 	else {
+	   return;
+   } // if length>=BP_End
 }
 
 void CleanUniquePoints(std::vector<UniquePoint> &Input_UP)
