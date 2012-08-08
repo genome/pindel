@@ -137,12 +137,6 @@ unsigned int Distance = 300;
 short MinFar_D = 8; //atoi(argv[3]);
 const short MaxDI = 30;
 
-	short LengthStr;
-	unsigned int AbsLoc;
-	char Direction; // forward reverse
-	char Strand; // sense antisense
-	short Mismatches;
-
 UniquePoint::UniquePoint( const short lengthStr, const unsigned int absLoc, const char direction, const char strand, const short mismatches ) :
 	LengthStr( lengthStr ), AbsLoc( absLoc ), Direction( direction ), Strand( strand ), Mismatches( mismatches )
 {
