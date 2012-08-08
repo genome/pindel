@@ -38,5 +38,6 @@ private:
 };
 
 void SearchFarEndAtPos( const std::string& chromosome, SPLIT_READ& Temp_One_Read, const unsigned int SearchCenter, const unsigned int Range);
+void SearchFarEndAtPos( const std::string& chromosome, SPLIT_READ& Temp_One_Read, const std::vector <SearchWindow> & Regions );
 
 #endif /* FARENDSEARCHER_H_ */
