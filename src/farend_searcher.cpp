@@ -25,18 +25,6 @@
 
 #include "farend_searcher.h"
 
-// methinks we should make a class out of an upVector-object and make this a class function
-unsigned int MaxEndSize( const std::vector<UniquePoint>& upVector) 
-{
-    if (upVector.size() == 0 ) {
-        return 0;
-    }
-    else {
-        int lastElementIndex = upVector.size()-1;
-        return upVector[ lastElementIndex ].LengthStr;
-    }
-}
-
 void SearchFarEndAtPos( const std::string& chromosome, SPLIT_READ& Temp_One_Read, const unsigned int SearchCenter, const unsigned int Range)
 {
    std::vector<unsigned int> PD_Plus[Temp_One_Read.getTOTAL_SNP_ERROR_CHECKED()];
@@ -67,14 +55,11 @@ void SearchFarEndAtPos( const std::string& chromosome, SPLIT_READ& Temp_One_Read
    if (PD_Minus[0].size() + PD_Plus[0].size() > 0) { 
 	 	short BP_Start = 10; // perhaps use global constant like "g_MinimumLengthToReportMatch"
    	short BP_End = Temp_One_Read.getReadLengthMinus(); // matched far end should be between BP_Start and BP_End bases long (including BP_Start and End)
-	   std::vector<UniquePoint> UP; // temporary container for unique far ends
+	   SortedUniquePoints UP; // temporary container for unique far ends
       CheckBoth(Temp_One_Read, chromosome, Temp_One_Read.getUnmatchedSeq(), PD_Plus, PD_Minus, BP_Start, BP_End, 1, UP);
    
-		if ((unsigned)(MaxEndSize(UP) + Temp_One_Read.MaxLenCloseEnd()) >= (unsigned)Temp_One_Read.getReadLength() && Temp_One_Read.UP_Far.empty()) {
+		if ( UP.MaxLen() > Temp_One_Read.MaxLenFarEnd() ) {
 			Temp_One_Read.UP_Far.swap(UP);
-		}
-		else if ( MaxEndSize(UP) > Temp_One_Read.MaxLenFarEndBackup() ) {
-			Temp_One_Read.UP_Far_backup.swap(UP);
 		}
 	   UP.clear(); // may not be necessary as this is deleted from the stack anyway
 	}
@@ -88,7 +73,7 @@ void SearchFarEndAtPos( const std::string& chromosome, SPLIT_READ& Temp_One_Read
     //int Start = SearchCenter - Range - Temp_One_Read.getReadLength();
     //int End = SearchCenter + Range + Temp_One_Read.getReadLength();
     int TotalSize = 0;
-    for (int RegionIndex = 0; RegionIndex < Regions.size(); RegionIndex++) {
+    for (unsigned int RegionIndex = 0; RegionIndex < Regions.size(); RegionIndex++) {
         TotalSize += Regions[RegionIndex].getEnd() - Regions[RegionIndex].getStart() + 1;        
     }
     
@@ -118,14 +103,14 @@ void SearchFarEndAtPos( const std::string& chromosome, SPLIT_READ& Temp_One_Read
     if (PD_Minus[0].size() + PD_Plus[0].size() > 0) {
 	 	short BP_Start = 10; // perhaps use global constant like "g_MinimumLengthToReportMatch"
         short BP_End = Temp_One_Read.getReadLengthMinus(); // matched far end should be between BP_Start and BP_End bases long (including BP_Start and End)
-        std::vector<UniquePoint> UP; // temporary container for unique far ends
+        SortedUniquePoints UP; // temporary container for unique far ends
         CheckBoth(Temp_One_Read, chromosome, Temp_One_Read.getUnmatchedSeq(), PD_Plus, PD_Minus, BP_Start, BP_End, 1, UP);
         
-		if ((unsigned)(MaxEndSize(UP) + Temp_One_Read.MaxLenCloseEnd()) >= (unsigned)Temp_One_Read.getReadLength() && Temp_One_Read.UP_Far.empty()) {
+		/*if ((unsigned)(MaxEndSize(UP) + Temp_One_Read.MaxLenCloseEnd()) >= (unsigned)Temp_One_Read.getReadLength() && Temp_One_Read.UP_Far.empty()) {
 			Temp_One_Read.UP_Far.swap(UP);
 		}
-		else if ( MaxEndSize(UP) > Temp_One_Read.MaxLenFarEndBackup() ) {
-			Temp_One_Read.UP_Far_backup.swap(UP);
+		else */ if ( UP.MaxLen() > Temp_One_Read.MaxLenFarEnd() ) {
+			Temp_One_Read.UP_Far.swap(UP);
 		}
         UP.clear(); // may not be necessary as this is deleted from the stack anyway
 	}

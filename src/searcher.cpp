@@ -31,7 +31,7 @@ void CheckLeft_Close (const SPLIT_READ & OneRead,
                  const std::vector < unsigned int >Left_PD[],
                  const short &BP_Left_Start,
                  const short &BP_Left_End,
-                 const short &CurrentLength, std::vector < UniquePoint > &LeftUP)
+                 const short &CurrentLength, SortedUniquePoints &LeftUP)
 {
    int Sum;
 
@@ -155,7 +155,7 @@ void CheckRight_Close (const SPLIT_READ & OneRead,
                   const std::vector < unsigned int >Right_PD[],
                   const short &BP_Right_Start,
                   const short &BP_Right_End,
-                  const short &CurrentLength, std::vector < UniquePoint > &RightUP)
+                  const short &CurrentLength, SortedUniquePoints &RightUP)
 {
    //cout << CurrentLength << "\t" << RightUP.size() << "\t" << Right_PD[0].size() << "\t" << Right_PD[1].size() << endl;
    short ReadLengthMinus = CurrentReadSeq.size () - 1;

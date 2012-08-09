@@ -220,7 +220,7 @@ unsigned int SPLIT_READ::getLastAbsLocCloseEnd() const
 
 bool SPLIT_READ::goodFarEndFound() const
 {
-    return !UP_Far.empty();
+    return UP_Far.MaxLen() + UP_Close.MaxLen() >= UnmatchedSeq.size();
 }
 
 bool SPLIT_READ::hasCloseEnd() const
@@ -228,31 +228,31 @@ bool SPLIT_READ::hasCloseEnd() const
     return !UP_Close.empty();
 }
 
-unsigned int SPLIT_READ::MaxEndSize( const std::vector<UniquePoint>& upVector) const
+unsigned int SortedUniquePoints::MaxLen() const
 {
-    if (upVector.size() == 0 ) {
+    if (m_positions.size() == 0 ) {
         return 0;
     }
     else {
-        int lastElementIndex = upVector.size()-1;
-        return upVector[ lastElementIndex ].LengthStr;
+        int lastElementIndex = m_positions.size()-1;
+        return m_positions[ lastElementIndex ].LengthStr;
     }
 }
 
 unsigned int SPLIT_READ::MaxLenFarEnd() const
 {
-    return MaxEndSize( UP_Far );
+    return UP_Far.MaxLen();
 }
 
 unsigned int SPLIT_READ::MaxLenCloseEnd() const
 {
-    return MaxEndSize( UP_Close );
+    return UP_Close.MaxLen();
 }
 
-unsigned int SPLIT_READ::MaxLenFarEndBackup() const
+/*unsigned int SPLIT_READ::MaxLenFarEndBackup() const
 {
     return MaxEndSize( UP_Far_backup);
-}
+}*/
 
 bool doOutputBreakdancerEvents()
 {
@@ -354,10 +354,10 @@ std::ostream& operator<<(std::ostream& os, const SPLIT_READ& splitRead)
         os << "[" << i << "]=" << splitRead.UP_Far[i] << " ";
     }
     os << std::endl;
-    os << "UP_Far_backup: " ;
+    /*os << "UP_Far_backup: " ;
     for (unsigned int i=0; i<splitRead.UP_Far_backup.size(); i++) {
         os << "[" << i << "]=" << splitRead.UP_Far_backup[i] << " ";
-    }
+    }*/
     os << std::endl;
     os << "ReadLength: " << splitRead.getReadLength() << std::endl;
     os << "ReadLengthMinus: " << splitRead.getReadLengthMinus() << std::endl;
@@ -691,9 +691,9 @@ void SearchFarEnd( const std::string& chromosome, SPLIT_READ& read)
     }
 
     // if no perfect far end has been found
-    if (read.MaxLenFarEndBackup() > read.MaxLenFarEnd() ) {
+    /*if (read.MaxLenFarEndBackup() > read.MaxLenFarEnd() ) {
         read.UP_Far.swap(read.UP_Far_backup);
-    }
+    }*/
 }
 
 void ReportCloseMappedReads( const std::vector<SPLIT_READ>& reads )
@@ -1054,7 +1054,7 @@ void GetCloseEndInner(const std::string & CurrentChrSeq, SPLIT_READ & Temp_One_R
     for (int CheckIndex = 0; CheckIndex < Temp_One_Read.getTOTAL_SNP_ERROR_CHECKED(); CheckIndex++) {
         PD[CheckIndex].reserve(3 * Temp_One_Read.InsertSize);
     }
-    std::vector<UniquePoint> UP;
+    SortedUniquePoints UP;
     int Start, End;
     short BP_Start; // = MinClose;
     short BP_End; // = ReadLength - MinClose;
@@ -1134,7 +1134,7 @@ void CheckBoth(const SPLIT_READ & OneRead, const std::string & TheInput,
                const std::vector<unsigned int> PD_Plus[],
                const std::vector<unsigned int> PD_Minus[], const short minimumLengthToReportMatch,
                const short BP_End, const short CurrentLength,
-               std::vector<UniquePoint> &UP)
+               SortedUniquePoints &UP)
 {   
 	int Sum;
 
@@ -1297,9 +1297,9 @@ void CheckBoth(const SPLIT_READ & OneRead, const std::string & TheInput,
    } // if length>=BP_End
 }
 
-void CleanUniquePoints(std::vector<UniquePoint> &Input_UP)
+void CleanUniquePoints(SortedUniquePoints &Input_UP)
 {
-    std::vector<UniquePoint> TempUP; //vector <UniquePoint> UP_Close; UP_Far
+    SortedUniquePoints TempUP; //vector <UniquePoint> UP_Close; UP_Far
     UniquePoint LastUP = Input_UP[Input_UP.size() - 1];
     char LastDirection = LastUP.Direction;
     char LastStrand = LastUP.Strand;

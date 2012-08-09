@@ -113,6 +113,22 @@ struct UniquePoint {
 	friend std::ostream& operator<<(std::ostream& os, const UniquePoint& up );
 };
 
+class SortedUniquePoints { // ask Kai for naming feedback
+
+public:
+	void push_back( const UniquePoint& up ) { m_positions.push_back( up ); }// make inline?
+	unsigned int size() const { return m_positions.size(); }
+	unsigned int MaxLen() const;
+	bool empty() const { return m_positions.empty(); } 
+	const UniquePoint& operator[](const unsigned int pos) const { return m_positions[pos]; } 
+	UniquePoint& operator[](const unsigned int pos) { return m_positions[pos]; }
+	void clear() { m_positions.clear(); }
+	void swap(SortedUniquePoints& otherPV) { m_positions.swap( otherPV.m_positions ); };
+
+private:
+	std::vector< UniquePoint> m_positions;
+};
+
 struct RP_READ {
     std::string ReadName;
     std::string ChrNameA;
@@ -185,9 +201,9 @@ struct SPLIT_READ {
 	short InsertSize;
 	std::string Tag; // rename SampleName ?
     unsigned Thickness;
-	std::vector<UniquePoint> UP_Close; // partial alignment of the unmapped reads close to the mapped read
-	std::vector<UniquePoint> UP_Far;
-	std::vector<UniquePoint> UP_Far_backup;
+	SortedUniquePoints UP_Close; // partial alignment of the unmapped reads close to the mapped read
+	SortedUniquePoints UP_Far;
+	//std::vector<UniquePoint> UP_Far_backup;
    short getReadLength() const { return ReadLength; }
 	short getReadLengthMinus() const { return ReadLengthMinus; }
 	short getMAX_SNP_ERROR() const { return MAX_SNP_ERROR; }
@@ -214,7 +230,7 @@ struct SPLIT_READ {
 	bool hasCloseEnd() const;
 	unsigned int MaxLenCloseEnd() const;
 	unsigned int MaxLenFarEnd() const;
-	unsigned int MaxLenFarEndBackup() const;
+	//unsigned int MaxLenFarEndBackup() const;
 	friend std::ostream& operator<<(std::ostream& os, const SPLIT_READ& splitRead);
 
 private:
@@ -224,8 +240,6 @@ private:
 	short TOTAL_SNP_ERROR_CHECKED; // = MAX_SNP_ERROR + ADDITIONAL_MISMATCH + 1;
 	short TOTAL_SNP_ERROR_CHECKED_Minus; // = MAX_SNP_ERROR + ADDITIONAL_MISMATCH;
 	std::string UnmatchedSeq;
-   unsigned int MaxEndSize( const std::vector<UniquePoint>& upVector) const;
-
 };
 
 struct SupportPerSample {
@@ -382,12 +396,12 @@ void CheckBoth(const SPLIT_READ & OneRead, const std::string & TheInput,
 		const std::vector<unsigned int> PD_Plus[],
 		const std::vector<unsigned int> PD_Minus[], const short BP_Start,
 		const short BP_End, const short CurrentLength,
-		std::vector<UniquePoint> &UP);
+		SortedUniquePoints &UP);
 void GetIndelTypeAndRealStart(const std::string & TheInput,
 		const unsigned int &BPLeft, const unsigned int &IndelSize,
 		const std::string & IndelStr, std::string & IndelType,
 		unsigned int &RealStart, const bool & WhetherD);
-void CleanUniquePoints(std::vector<UniquePoint> &Input_UP);
+void CleanUniquePoints(SortedUniquePoints &Input_UP);
 
 bool readTransgressesBinBoundaries(SPLIT_READ & read,
 		const unsigned int &upperBinBorder);

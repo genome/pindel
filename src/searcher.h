@@ -32,7 +32,7 @@ void CheckLeft_Far (SPLIT_READ & OneRead,
 										const short &BP_Left_Start,
 										const short &BP_Left_End,
 										const short &CurrentLength,
-										std::vector < UniquePoint > &LeftUP);
+										SortedUniquePoints &LeftUP);
 
 void CheckRight_Far (SPLIT_READ & OneRead,
 										 const std::string & TheInput,
@@ -41,7 +41,7 @@ void CheckRight_Far (SPLIT_READ & OneRead,
 										 const short &BP_Right_Start,
 										 const short &BP_Right_End,
 										 const short &CurrentPos,
-										 std::vector < UniquePoint > &RightUP);
+										 SortedUniquePoints &RightUP);
 
 void CheckLeft_Close (const SPLIT_READ & OneRead,
 											const std::string & TheInput,
@@ -50,7 +50,7 @@ void CheckLeft_Close (const SPLIT_READ & OneRead,
 											const short &BP_Left_Start,
 											const short &BP_Left_End,
 											const short &CurrentLength,
-											std::vector < UniquePoint > &LeftUP);
+											SortedUniquePoints &LeftUP);
 
 void CheckRight_Close (const SPLIT_READ & OneRead,
 											 const std::string & TheInput,
@@ -59,6 +59,6 @@ void CheckRight_Close (const SPLIT_READ & OneRead,
 											 const short &BP_Right_Start,
 											 const short &BP_Right_End,
 											 const short &CurrentPos,
-											 std::vector < UniquePoint > &RightUP);
+											 SortedUniquePoints &RightUP);
 
 #endif /* SEARCHER_H */
