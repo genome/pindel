@@ -496,7 +496,7 @@ void CheckWhetherFasta( const std::string& filename )
 void init(int argc, char *argv[], ControlState& currentState )
 {
 	UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
-
+	logStream=&std::cout;
 
     if (userSettings->NumRead2ReportCutOff == 1) {
         userSettings->BalanceCutoff = 300000000;
@@ -508,11 +508,7 @@ void init(int argc, char *argv[], ControlState& currentState )
     // now read the parameters from the command line
     readParameters(argc, argv, parameters);
 
-
-	if (userSettings->logFilename == "" ) {
-		logStream=&std::cout;
-	}
-	else {
+	if (userSettings->logFilename != "" ) {
 		g_logFile.open( userSettings->logFilename.c_str() );
 		logStream = &g_logFile;
 	}
