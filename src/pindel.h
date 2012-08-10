@@ -50,7 +50,6 @@ extern char Convert2RC[256];
 extern char Convert2RC4N[256];
 extern char Cap2LowArray[256];
 extern unsigned int DSizeArray[15];
-//extern double MaximumAllowedMismatchRate;
 extern short g_reportLength;
 extern std::string CurrentChrMask;
 extern unsigned int NumberOfSIsInstances;
@@ -76,7 +75,6 @@ extern const std::string Pindel_Version_str;
  */
 extern unsigned int BoxSize;
 extern int MIN_IndelSize_Inversion;
-//extern int MIN_IndelSize_NT;
 extern int Max_Length_NT;
 
 /*
@@ -113,7 +111,7 @@ struct UniquePoint {
 	friend std::ostream& operator<<(std::ostream& os, const UniquePoint& up );
 };
 
-class SortedUniquePoints { // ask Kai for naming feedback
+class SortedUniquePoints { 
 
 public:
 	void push_back( const UniquePoint& up ) { m_positions.push_back( up ); }// make inline?
@@ -166,13 +164,11 @@ struct SPLIT_READ {
 		BPLeft = 0;
 		BPRight = 0; 
 		IndelSize = 0;
-		//UniqueAnchor = false;
         UniqueRead = false;
 		NT_str = "";
 		NT_size = 0;
 		Used = false;
 		CloseEndLength = 0;
-		//Found = false;
 		LeftMostPos = 0;
 	}
 	std::string FragName;
@@ -203,7 +199,6 @@ struct SPLIT_READ {
     unsigned Thickness;
 	SortedUniquePoints UP_Close; // partial alignment of the unmapped reads close to the mapped read
 	SortedUniquePoints UP_Far;
-	//std::vector<UniquePoint> UP_Far_backup;
    short getReadLength() const { return ReadLength; }
 	short getReadLengthMinus() const { return ReadLengthMinus; }
 	short getMAX_SNP_ERROR() const { return MAX_SNP_ERROR; }
@@ -230,7 +225,6 @@ struct SPLIT_READ {
 	bool hasCloseEnd() const;
 	unsigned int MaxLenCloseEnd() const;
 	unsigned int MaxLenFarEnd() const;
-	//unsigned int MaxLenFarEndBackup() const;
 	friend std::ostream& operator<<(std::ostream& os, const SPLIT_READ& splitRead);
 
 private:
@@ -330,25 +324,16 @@ struct flags_hit {
 /*
  * Function definitions
  */
-void
-ReadInOneChr(std::ifstream & inf_Seq, std::string & TheInput,
-		const std::string & ChrName);
-void
-parse_flags_and_tags(const bam1_t * b, flags_hit * flags);
-int32_t
-bam_cigar2len(const bam1_core_t * c, const uint32_t * cigar);
-void
-build_record(const bam1_t * mapped_read, const bam1_t * unmapped_read,
-		void *data);
+void ReadInOneChr(std::ifstream & inf_Seq, std::string & TheInput, const std::string & ChrName);
+void parse_flags_and_tags(const bam1_t * b, flags_hit * flags);
+int32_t bam_cigar2len(const bam1_core_t * c, const uint32_t * cigar);
+void build_record(const bam1_t * mapped_read, const bam1_t * unmapped_read, void *data);
 
 #ifdef __cplusplus
 extern "C" {
-int32_t
-bam_get_tid(const bam_header_t * header, const char *seq_name);
-int32_t
-bam_aux2i(const uint8_t * s);
-void
-bam_init_header_hash(bam_header_t * header);
+int32_t bam_get_tid(const bam_header_t * header, const char *seq_name);
+int32_t bam_aux2i(const uint8_t * s);
+void bam_init_header_hash(bam_header_t * header);
 }
 #endif
 
@@ -403,13 +388,11 @@ void GetIndelTypeAndRealStart(const std::string & TheInput,
 		unsigned int &RealStart, const bool & WhetherD);
 void CleanUniquePoints(SortedUniquePoints &Input_UP);
 
-bool readTransgressesBinBoundaries(SPLIT_READ & read,
-		const unsigned int &upperBinBorder);
+bool readTransgressesBinBoundaries(SPLIT_READ & read,	const unsigned int &upperBinBorder);
 
-void saveReadForNextCycle(SPLIT_READ & read,
-		std::vector<SPLIT_READ> &futureReads);
+void saveReadForNextCycle(SPLIT_READ & read,	std::vector<SPLIT_READ> &futureReads);
 
-bool readInSpecifiedRegion(const SPLIT_READ & read,  const SearchRegion* region );
+bool readInSpecifiedRegion(const SPLIT_READ & read, const SearchRegion* region );
 void reportBreakDancerEvent( const std::string& chromosomeName, const int leftPosition, const int rightPosition, 
 	                          const int svSize, const std::string& svType, const int svCounter);
 void updateReadAfterCloseEndMapping( SPLIT_READ& Temp_One_Read );

@@ -90,7 +90,6 @@ unsigned long long int TheMax = 0;
 const short MAX_MISMATCHES = 4;
 float ExtraDistanceRate = 0.1;
 
-//double Const_Log_T = 0.0;
 double Const_S = 0.0;
 double LOG14 = log10(0.25);
 unsigned int BoxSize = 10000; // 10k is fine
@@ -249,10 +248,6 @@ unsigned int SPLIT_READ::MaxLenCloseEnd() const
     return UP_Close.MaxLen();
 }
 
-/*unsigned int SPLIT_READ::MaxLenFarEndBackup() const
-{
-    return MaxEndSize( UP_Far_backup);
-}*/
 
 bool doOutputBreakdancerEvents()
 {
@@ -339,8 +334,6 @@ std::ostream& operator<<(std::ostream& os, const SPLIT_READ& splitRead)
     os << "Fragname: " << splitRead.FragName << std::endl;
     os << "Name: " << splitRead.Name << std::endl;
     os << "UnmatchedSeq: " << splitRead.getUnmatchedSeq() << std::endl;
-    //os << "HalfMapped: " << splitRead.HalfMapped << std::endl;
-    //os << "HalfUnMapped: " << splitRead.HalfUnmapped << std::endl;
     os << "MatchedD: " << splitRead.MatchedD << " * MatchedRelPos: " << splitRead.MatchedRelPos << " * MS: " << splitRead.MS << " * ";
     os << "InsertSize: " << splitRead.InsertSize << std::endl;
     os << "Tag: " << splitRead.Tag << std::endl;
@@ -354,10 +347,6 @@ std::ostream& operator<<(std::ostream& os, const SPLIT_READ& splitRead)
         os << "[" << i << "]=" << splitRead.UP_Far[i] << " ";
     }
     os << std::endl;
-    /*os << "UP_Far_backup: " ;
-    for (unsigned int i=0; i<splitRead.UP_Far_backup.size(); i++) {
-        os << "[" << i << "]=" << splitRead.UP_Far_backup[i] << " ";
-    }*/
     os << std::endl;
     os << "ReadLength: " << splitRead.getReadLength() << std::endl;
     os << "ReadLengthMinus: " << splitRead.getReadLengthMinus() << std::endl;
@@ -461,9 +450,6 @@ void readPindelConfigFile(std::string& pindelConfigFilename, std::vector<std::st
 		exit( EXIT_FAILURE );
 	}
 }
-
-
-
 
 
 LineReader *getLineReaderByFilename(const char *filename)
@@ -591,7 +577,6 @@ void init(int argc, char *argv[], ControlState& currentState )
         userSettings->MaxRangeIndex = 9;
     }
 
-    //currentState.SIOutputFilename = currentState.OutputFolder + "_SI"; // output file name
 	TestFileForOutput( userSettings->getSIOutputFilename() );
 	TestFileForOutput( userSettings->getDOutputFilename() );
 	TestFileForOutput( userSettings->getTDOutputFilename() );
@@ -648,8 +633,6 @@ void init(int argc, char *argv[], ControlState& currentState )
 		DSizeArray[ dIndex ] = DSizeArray[ dIndex-1 ] * 4;
 	}
 
-    //std::vector < std::string > chromosomes;
-
     if (!userSettings->getRegion()->isTargetChromosomeDefined() && AssemblyInputDefined == false && GenotypingInputDefined == false) {
         *logStream << "Looping over all chromosomes." << std::endl;
     }
@@ -689,11 +672,6 @@ void SearchFarEnd( const std::string& chromosome, SPLIT_READ& read)
             return;
         }
     }
-
-    // if no perfect far end has been found
-    /*if (read.MaxLenFarEndBackup() > read.MaxLenFarEnd() ) {
-        read.UP_Far.swap(read.UP_Far_backup);
-    }*/
 }
 
 void ReportCloseMappedReads( const std::vector<SPLIT_READ>& reads )
@@ -1153,11 +1131,6 @@ void CheckBoth(const SPLIT_READ & OneRead, const std::string & TheInput,
                   Sum += PD_Plus[mismatchCount].size() + PD_Minus[mismatchCount].size();
                }
                if (Sum == 1 && numberOfMismatches <= (short) (userSettings->Seq_Error_Rate * CurrentLength + 1)) {
-							// how would the below if ever happen?
-                   /* if ((unsigned)TempOne.LengthStr > OneRead.getUnmatchedSeq().size() && TempOne.LengthStr < 0) {
-                        std::cout << "TempOne.LengthStr " << TempOne.LengthStr << std::endl;
-                        return;
-                    }*/
 							// why I love constructors
 						UniquePoint MatchPosition;
                   if (PD_Plus[numberOfMismatches].size() == 1) {
