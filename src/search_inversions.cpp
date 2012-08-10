@@ -24,6 +24,8 @@
 #include "control_state.h"
 #include "logdef.h"
 
+
+// EW: McCabe complexity through the roof here; extract some blocks
 int searchInversions(ControlState& currentState, unsigned NumBoxes, const SearchWindow& window)
 {
    static int Count_Inv = 0;
@@ -47,7 +49,7 @@ int searchInversions(ControlState& currentState, unsigned NumBoxes, const Search
             && currentRead.UP_Close[0].Direction == currentRead.UP_Far[0].Direction) {
 
          if (currentRead.MatchedD == Plus) {
-            if (currentRead.UP_Far[0].AbsLoc > currentRead.UP_Close[currentRead. UP_Close.size() - 1].AbsLoc + MIN_IndelSize_Inversion) { // normal situation
+            if (currentRead.UP_Far[0].AbsLoc > currentRead.getLastAbsLocCloseEnd() + MIN_IndelSize_Inversion) { // normal situation
                for (short MAX_SNP_ERROR_index = 0; MAX_SNP_ERROR_index <= currentRead.getMAX_SNP_ERROR(); MAX_SNP_ERROR_index++) {
                   for (CloseIndex = (int) currentRead.UP_Close.size() - 1; CloseIndex >= 0; CloseIndex--) {
                      if (currentRead.Used) {

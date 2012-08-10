@@ -65,7 +65,7 @@ extern unsigned int CONS_Chr_Size;
 extern bool FirstChr;
 extern int g_binIndex;
 extern short g_MinClose;
-extern int WINDOW_SIZE;
+extern unsigned int WINDOW_SIZE;
 extern int g_maxInsertSize;
 
 extern const std::string Pindel_Version_str;

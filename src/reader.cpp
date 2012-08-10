@@ -107,8 +107,7 @@ struct fetch_func_data_RP {
     int InsertSize;
 };
 
-void
-GetOneChrSeq (std::ifstream & fastaFile, std::string & chromosomeSequence, bool WhetherBuildUp)
+void GetOneChrSeq (std::ifstream & fastaFile, std::string & chromosomeSequence, bool WhetherBuildUp)
 {
    RefReader* rr = new RefReader(fastaFile, chromosomeSequence );
    rr->ReadSeq(WhetherBuildUp);
@@ -137,6 +136,7 @@ void showReadStats(const std::vector<SPLIT_READ>& Reads)
    *logStream << std::endl;
 }
 
+/** 'ReadInRead' reads in reads from Pindel input file. */
 short ReadInRead (PindelReadReader & inf_ReadSeq, const std::string & FragName,
             const std::string & CurrentChr, std::vector < SPLIT_READ > &Reads,
             const SearchWindow& currentWindow)
@@ -144,22 +144,21 @@ short ReadInRead (PindelReadReader & inf_ReadSeq, const std::string & FragName,
    LOG_INFO(*logStream << "Scanning and processing reads anchored in " << FragName << std::endl);
    SPLIT_READ Temp_One_Read;
    std::vector < SPLIT_READ > BufferReads;
+	// LeftReads does not seem to be defined here... remove line?
    LOG_DEBUG(*logStream << LeftReads.size() << std::endl);
    std::string TempQC, TempLine, TempStr, TempFragName;
 
 	inf_ReadSeq.Reset();
 	
-   LOG_DEBUG(*logStream << "MINUSEXTRA!" << std::endl);
    int UPCLOSE_COUNTER = 0;
    //loop over all reads in the file
    while (inf_ReadSeq.HasNext()) {
 	   Temp_One_Read = inf_ReadSeq.NextRead();
-      if (Temp_One_Read.Name[0] != FirstCharReadName) {
-         // !='@'
-         LOG_WARN(*logStream << "Something wrong with the read name: " << Temp_One_Read.
-                  Name << std::endl);
+		// first character of readname should be '@'
+      if (Temp_One_Read.Name[0] != FirstCharReadName) { 
+         LOG_WARN(*logStream << "Something wrong with the read name: " << Temp_One_Read.Name << std::endl);
          Reads.clear ();
-         return 1;
+         return EXIT_FAILURE;
       }
       g_NumReadScanned++;
 
@@ -168,10 +167,10 @@ short ReadInRead (PindelReadReader & inf_ReadSeq, const std::string & FragName,
                   << Temp_One_Read.getUnmatchedSeq() << std::endl
                   << Temp_One_Read.MatchedD << " ..." << std::endl);
          LOG_INFO(*logStream << "+/-" << std::endl);
-         return 1;
+         return EXIT_FAILURE;
       }
 
-      if ((signed int)Temp_One_Read.MatchedRelPos > (signed int)g_maxPos) {
+      if (Temp_One_Read.MatchedRelPos > g_maxPos) {
          g_maxPos = Temp_One_Read.MatchedRelPos;
       }
 
@@ -183,17 +182,16 @@ short ReadInRead (PindelReadReader & inf_ReadSeq, const std::string & FragName,
             g_InWinPlus++;
          }
          else {
-            g_InWinMinus++;   // this seems to be going correctly
+            g_InWinMinus++; 
          }
-         if (Temp_One_Read.MatchedRelPos > CONS_Chr_Size) {
+         if (Temp_One_Read.MatchedRelPos > CONS_Chr_Size) { // perhaps make setter for MatchedRelpos, so these details can be factored out?
             Temp_One_Read.MatchedRelPos = CONS_Chr_Size;
          }
-         if (Temp_One_Read.MatchedRelPos < 1) {
+         if (Temp_One_Read.MatchedRelPos < 0) {
             Temp_One_Read.MatchedRelPos = 0;
          }
-         BufferReads.push_back (Temp_One_Read);
+         BufferReads.push_back(Temp_One_Read);
          if (BufferReads.size () >= NumberOfReadsPerBuffer) {
-            LOG_DEBUG(*logStream << "here" << std::endl);
             #pragma omp parallel default(shared)
             {
                #pragma omp for
@@ -202,25 +200,32 @@ short ReadInRead (PindelReadReader & inf_ReadSeq, const std::string & FragName,
                   GetCloseEnd (CurrentChr, BufferReads[BufferReadsIndex]);
                }
             }
+				// EW: would it be useful to fuse this loop with the previous one?
             for (unsigned int BufferReadsIndex = 0; BufferReadsIndex < NumberOfReadsPerBuffer; BufferReadsIndex++) {
 					SPLIT_READ& currentRead = BufferReads[BufferReadsIndex];
                if (currentRead.UP_Close.size ()) {
+						// remove UPCLOSE_COUNTER? It seems to duplicate the effort of g_CloseMappedPlus/Minus
                   UPCLOSE_COUNTER++;
-                  if (g_reportLength < currentRead.getReadLength())
+                  if (g_reportLength < currentRead.getReadLength()) {
                      g_reportLength = currentRead.getReadLength();
+                  }
+						// are the next two default settings? If so, we can put them in the SPLIT_READ constructor.
                   currentRead.Used = false;
                   currentRead.UniqueRead = true; 
+
                   LOG_DEBUG(*logStream << Temp_One_Read.MatchedD << "\t" << Temp_One_Read.UP_Close.size() << "\t");
                   CleanUniquePoints (currentRead.UP_Close);
                   LOG_DEBUG(*logStream << Temp_One_Read.UP_Close.size() << "\t" << Temp_One_Read.UP_Close[0].Direction << std::endl);
+						
+						// CloseEndLength duplicates MaxLenCloseEnd() (and is only used in reader, so does not seem time-saving) remove?
                   currentRead.CloseEndLength = currentRead.UP_Close[currentRead.UP_Close.size() - 1].LengthStr;
                   if (currentRead.MatchedD == Plus) {
 							currentRead.LeftMostPos = currentRead.UP_Close[currentRead.UP_Close.size() - 1].AbsLoc + 1 - currentRead.CloseEndLength;
 						}
                   else {
-                     currentRead.LeftMostPos = currentRead.UP_Close[currentRead.UP_Close.size() - 1].AbsLoc + currentRead.CloseEndLength -                      							
-								currentRead.getReadLength();
+                     currentRead.LeftMostPos = currentRead.UP_Close[currentRead.UP_Close.size() - 1].AbsLoc + currentRead.CloseEndLength -                      										currentRead.getReadLength();
 						}
+						// we may want to remove some of the LOG_DEBUG statements; these mainly increase code-reading time
                   LOG_DEBUG(*logStream << "Pushing back!" << std::endl);
                   Reads.push_back (currentRead);
                   if (currentRead.MatchedD == Plus) {
@@ -236,13 +241,12 @@ short ReadInRead (PindelReadReader & inf_ReadSeq, const std::string & FragName,
          }										// if buffer-reads threatens to overflow
       }												// if the read is in the correct bin
    }														// while loop over each read
-   LOG_INFO(*logStream << "last one: " << BufferReads.
-            size () << " and UPCLOSE= " << UPCLOSE_COUNTER << std::endl);
+   LOG_INFO(*logStream << "last one: " << BufferReads.size () << " and UPCLOSE= " << UPCLOSE_COUNTER << std::endl);
+	// the below can be fused with the above
    #pragma omp parallel default(shared)
    {
       #pragma omp for
-      for (int BufferReadsIndex = 0; BufferReadsIndex < (int)BufferReads.size ();
-            BufferReadsIndex++) { // signed type required by OpenMP 2.5
+      for (int BufferReadsIndex = 0; BufferReadsIndex < (int)BufferReads.size (); BufferReadsIndex++) { // signed type required by OpenMP 2.5
          GetCloseEnd (CurrentChr, BufferReads[BufferReadsIndex]);
       }
    }
@@ -280,8 +284,10 @@ short ReadInRead (PindelReadReader & inf_ReadSeq, const std::string & FragName,
    }
    BufferReads.clear ();
 
+	// what do we want with this? If we want to keep it like this, we would not want to keep it a global boolean, but a static function boolean. Or for none or all chromosomes?
    if (FirstChr) {
       LOG_INFO(*logStream << std::endl << "The last read Pindel scanned: " << std::endl);
+		// we may want to factor this out into a function "ReportBasicReadData" or such...
       LOG_INFO(*logStream << Temp_One_Read.Name << std::endl
                << Temp_One_Read.getUnmatchedSeq() << std::endl
                << Temp_One_Read.MatchedD << "\t"
@@ -293,8 +299,8 @@ short ReadInRead (PindelReadReader & inf_ReadSeq, const std::string & FragName,
    }
    showReadStats(Reads);
 
-
-   if (Reads.size () == 0) {
+	// 0 means "success?" basically just let caller find out that there are no reads.
+   if (Reads.size() == 0) {
       return 0;
    }
    LOG_DEBUG(*logStream << LeftReads.size() << std::endl);
@@ -696,14 +702,14 @@ static int fetch_func_RP (const bam1_t * b1, void *data)
 }
 
 /* 'isInBin' returns whether the read "read" is in the designated bin. */
-bool isInBin (const SPLIT_READ & read)
+/*bool isInBin (const SPLIT_READ & read)
 {
    if (read.MatchedRelPos > g_maxPos) {
       g_maxPos = read.MatchedRelPos;
    }
    return (((signed int)read.MatchedRelPos >= (signed int)(g_binIndex * WINDOW_SIZE)) &&
            ((signed int)read.MatchedRelPos < (signed int)((g_binIndex + 1) * WINDOW_SIZE)));
-}
+}*/
 
 
 void parse_flags_and_tags (const bam1_t * b, flags_hit * flags)
@@ -842,7 +848,8 @@ short get_SR_Reads(ControlState& currentState, const SearchWindow& currentWindow
    std::cout << "getReads " << currentState.CurrentChrName << " " << currentState.CurrentChrSeq.size() << std::endl;
    short ReturnFromReadingReads;
    ReadBuffer readBuffer(BUFFER_SIZE, currentState.Reads_SR, currentState.CurrentChrSeq);
-   if (UserDefinedSettings::Instance()->bamFilesAsInput()) {
+	UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
+   if (userSettings->bamFilesAsInput()) {
       ReturnFromReadingReads = 0;
       for (unsigned int i = 0; i < currentState.bams_to_parse.size(); i++) {
          *logStream << "Insertsize in bamreads: " << currentState.bams_to_parse[i].InsertSize << std::endl;
@@ -854,9 +861,9 @@ short get_SR_Reads(ControlState& currentState, const SearchWindow& currentWindow
                                                     currentState.bams_to_parse[i].InsertSize,
                                                     currentState.bams_to_parse[i].Tag,
                                                     currentWindow, readBuffer );
-         if (ReturnFromReadingReads == 0) {
+         if (ReturnFromReadingReads == 0) { // perhaps 'false'? ReadInBamReads returns a boolean...
             LOG_ERROR(*logStream << "Bam read failed: " << currentState.bams_to_parse[i].BamFile << std::endl);
-            return 1;
+            return EXIT_FAILURE;
          }
          else if (currentState.Reads_SR.size() == 0) {
             LOG_ERROR(*logStream << "No currentState.Reads for " << currentState.CurrentChrName << " found in " << currentState.bams_to_parse[i].BamFile << std::endl);
@@ -864,7 +871,7 @@ short get_SR_Reads(ControlState& currentState, const SearchWindow& currentWindow
          *logStream << "BAM file index\t" << i << "\t" << currentState.Reads_SR.size() << std::endl;
       }  
    }
-	UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
+
    if (userSettings->pindelConfigFileAsInput()) {	
 		for (unsigned int fileIndex=0; fileIndex<currentState.pindelfilesToParse.size(); fileIndex++ ) {
 			const std::string &filename = currentState.pindelfilesToParse[fileIndex];
@@ -900,6 +907,7 @@ void readInPindelReads(PindelReadReader &reader, const std::string& pindelFilena
 /* 'updateReadAfterCloseEndMapping' (EWL, 31thAug2011) */
 void updateReadAfterCloseEndMapping( SPLIT_READ& Temp_One_Read )
 {
+	// do we define g_reportLength if we read in BAM files? =>EW: well, this is only called by ReadBuffer::Flush
     if (g_reportLength < Temp_One_Read.getReadLength()) {
         g_reportLength = Temp_One_Read.getReadLength();
     }
@@ -911,7 +919,7 @@ void updateReadAfterCloseEndMapping( SPLIT_READ& Temp_One_Read )
 
     LOG_DEBUG(cout << Temp_One_Read.UP_Close.size() << "\t" << Temp_One_Read.UP_Close[0].Direction << endl);
 
-    Temp_One_Read.CloseEndLength = Temp_One_Read.UP_Close[Temp_One_Read.UP_Close.size () - 1].LengthStr;
+    Temp_One_Read.CloseEndLength = Temp_One_Read.UP_Close[Temp_One_Read.UP_Close.size () - 1].LengthStr; // possibly remove CloseEndLength
 
     if (Temp_One_Read.MatchedD == Plus) {
         Temp_One_Read.LeftMostPos = Temp_One_Read.UP_Close[0].AbsLoc + 1 - Temp_One_Read.UP_Close[0].LengthStr;

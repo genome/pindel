@@ -128,7 +128,7 @@ int Max_Length_NT = 30; // user
 const bool ReportSVReads = false;
 const bool ReportLargeInterChrSVReads = false;
 const unsigned short Indel_SV_cutoff = 50;
-int WINDOW_SIZE = 10000000;
+unsigned int WINDOW_SIZE = 10000000;
 const int AROUND_REGION_BUFFER = 10000; // how much earlier reads should be selected if only a region of the chromosome needs be specified.
 // #########################################################
 
@@ -536,7 +536,7 @@ void init(int argc, char *argv[], ControlState& currentState )
         LOG_ERROR(*logStream << "Window size of " << userSettings->FLOAT_WINDOW_SIZE
                   << " million bases is rather large; this may produce bad::allocs or segmentation faults. If that happens, either try to reduce the window size or deactivate the searching for breakpoints and long insertions by adding the command-line options \"-l false -k false\"." << std::endl);
     }
-    WINDOW_SIZE = (int)(1000000 * userSettings->FLOAT_WINDOW_SIZE);
+    WINDOW_SIZE = (unsigned int)(1000000 * userSettings->FLOAT_WINDOW_SIZE);
 
     // if all parameters are okay, open the files
 
