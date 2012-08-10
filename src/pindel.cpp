@@ -43,6 +43,7 @@
 #include "search_inversions_nt.h"
 #include "search_tandem_duplications.h"
 #include "search_tandem_duplications_nt.h"
+#include "search_MEI.h"
 #include "read_buffer.h"
 #include "farend_searcher.h"
 #include "search_variant.h"
@@ -784,6 +785,12 @@ int main(int argc, char *argv[])
       doAssembly(currentState, FastaFile );
       exit(EXIT_SUCCESS);
    }
+    
+    
+    // If -q parameter given, search for mobile element insertions and quit.
+    if (parameters[findParameter("-q", parameters)]->isSet()) {
+        exit(searchMEImain(currentState, FastaFile, userSettings));
+    }
 
    /* Normal pindel functioning: search SVs*/
 

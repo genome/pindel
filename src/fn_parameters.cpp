@@ -217,6 +217,9 @@ void defineParameters(std::vector<Parameter *>& parameters)
 			"--name_of_logfile",
 			"Specifies a file to write Pindel's log to (default: no logfile, log is written to the screen/stdout)", 
 			false, ""));
+    parameters.push_back(new BoolParameter(&userSettings->Analyze_MEI, "-q", "--detect_MEI", 
+                                           "Flag indicating whether to search for mobile element insertions.", false, 
+                                           false));
 
 }
 

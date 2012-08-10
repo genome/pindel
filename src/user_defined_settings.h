@@ -38,6 +38,7 @@ public:
 	bool Analyze_INV; 
 	bool Analyze_LI; 
 	bool Analyze_TD; 
+    bool Analyze_MEI;
 	unsigned int BalanceCutoff;
 	std::string bamConfigFilename;
 	std::string breakdancerFilename;
