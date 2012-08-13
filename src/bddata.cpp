@@ -8,9 +8,107 @@ BDData::BDData()
    //m_currentChrName = "";
 }
 
+bool isNumber(const std::string & input) {
+    for (unsigned int index = 0; index < input.size(); index++) {
+        switch (input[index]) {
+            case '0':
+                break;
+            case '1':
+                break;
+            case '2':
+                break;
+            case '3':
+                break;
+            case '4':
+                break;
+            case '5':
+                break;
+            case '6':
+                break;
+            case '7':
+                break;
+            case '8':
+                break;
+            case '9':
+                break;
+            default:
+                return false;
+                //break;
+        }
+    }
+    return true;
+}
+
+
+bool AtLeast6Fields(const std::string & input) {
+    unsigned NumSpaceFields = 0;
+    bool InSpace = false;
+    unsigned InputSize = input.size();
+    if (input[0] == '\t' || input[0] == ' ') return false; // must start with non-space char.
+    for (unsigned index = 1; index < InputSize; index++) {
+        if (input[index] == '\t' || input[index] == ' ') { // if current char is space, set InSpace to true
+            InSpace = true;
+        }
+        else if (InSpace == true) { // not a space, NumSpaceFields++ if previous char is a space
+            NumSpaceFields++;
+            InSpace = false;
+        }
+    }
+    if (NumSpaceFields >= 5) return true;
+    else return false;
+}
+
+
+short CheckBreakDancerFileFormat(const std::string& filename) {
+    std::ifstream CheckbdFileFirst( filename.c_str() );
+    std::ifstream CheckbdFileSecond( filename.c_str() );
+    char firstChar = 'k';
+    std::string tempLine, errorLine;
+    std::string Pos1, Pos2;
+    
+    while (!CheckbdFileFirst.eof()) {
+        CheckbdFileFirst >> firstChar;
+        //CheckbdFileFirst >> tempLine;
+        //std::cout << "firstChar:" << firstChar << ":" << tempLine << std::endl;
+        if (firstChar == '#') {
+            std::getline(CheckbdFileFirst, tempLine);
+            std::getline(CheckbdFileSecond, tempLine);
+            //std::cout << "#" << tempLine << std::endl;
+        }
+        else {
+            std::getline(CheckbdFileFirst, errorLine);
+            //std::cout << "else " << errorLine << std::endl;
+            if (AtLeast6Fields(errorLine)) {
+                CheckbdFileSecond >> tempLine >> Pos1 >> tempLine
+                >> tempLine >> Pos2 >> tempLine;
+                std::getline(CheckbdFileSecond, tempLine);  // get rest of line
+                if (isNumber(Pos1) && isNumber(Pos2)) {
+                    
+                }
+                else {
+                    std::cout << "something is wrong with this line \"" << firstChar << errorLine << "\"" << std::endl;
+                    return 1;
+                }
+            }
+            else {
+                std::cout << "something is wrong with this line \"" << firstChar << errorLine << "\"" << std::endl;
+                return 1;
+            }
+        }
+    }
+    return 0;
+}
+
+
+
+
 
 void BDData::loadBDFile(const std::string& filename)
 {
+	if (CheckBreakDancerFileFormat(filename) == 1) {
+        std::cout << "\nIgnore breakdancer file due to an error in the BreakDancer file format.\n" << std::endl;
+        return; // if lines not start with #, there must be at least 6 fields and NO. 2 and No. 5 must be int.
+    }
    std::ifstream bdFile( filename.c_str() );
    if (!bdFile.good()) {
       std::cout << "Error: cannot load breakdancer file '" << filename << std::endl;
