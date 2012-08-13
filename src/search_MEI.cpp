@@ -167,7 +167,7 @@ static int get_split_reads_for_cluster(std::vector<bam_info>& bam_sources, bool 
             lower_bound = outer_pos - 2 * source.InsertSize;
             upper_bound = outer_pos + source.InsertSize;
         }
-        SearchWindow search_window(lower_bound, upper_bound);
+        SearchWindow search_window(chr_name, lower_bound, upper_bound);
 
         // Read split reads in defined window.
         ReadBuffer read_buffer(SPLIT_READ_BUFFER_SIZE, split_reads, chr_sequence);
