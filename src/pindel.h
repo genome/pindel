@@ -164,6 +164,7 @@ struct SPLIT_READ {
 		BPLeft = 0;
 		BPRight = 0; 
 		IndelSize = 0;
+		Investigated = false; // whether far end has been searched for
         UniqueRead = false;
 		NT_str = "";
 		NT_size = 0;
@@ -216,6 +217,7 @@ struct SPLIT_READ {
 	std::string NT_str;
 	unsigned short NT_size;
 	bool Used;
+	bool Investigated;
 	short CloseEndLength;
 	int LeftMostPos;
     std::map <std::string, int> ReadCountPerSample;
@@ -399,16 +401,23 @@ void updateReadAfterCloseEndMapping( SPLIT_READ& Temp_One_Read );
 
 LineReader *getLineReaderByFilename(const char *filename);
 
+// note: in future, want to move to having a pointer to a Chromosome structure instead of a ChrID-string
 class SearchWindow {
 
 public:
-	SearchWindow(const int regionStart, const int regionEnd );
-	SearchWindow() { m_currentStart= m_currentEnd = 0; }
+	SearchWindow(const std::string& chromosomeName, const int regionStart, const int regionEnd );
+	SearchWindow() : m_CHROMOSOME_NAME("") { m_currentStart= m_currentEnd = 0; }
 
 	unsigned int getStart() const { return m_currentStart; }
 	unsigned int getEnd() const { return m_currentEnd; }
+	void setStart( const unsigned int newStart ) { m_currentStart = newStart; }	
+	void setEnd( const unsigned int newEnd ) { m_currentEnd = newEnd; }
+	const std::string getChromosomeName() const { return m_CHROMOSOME_NAME; }
+	unsigned int getSize() const { return 1 + m_currentEnd - m_currentStart; }
+	SearchWindow makePindelCoordinateCopy() const { SearchWindow temp( m_CHROMOSOME_NAME, m_currentStart + g_SpacerBeforeAfter, m_currentEnd + g_SpacerBeforeAfter ); return temp; }; 
 
 protected:
+	std::string m_CHROMOSOME_NAME;
 	unsigned int m_currentStart;
 	unsigned int m_currentEnd;
 };
@@ -429,7 +438,6 @@ private:
 	unsigned int m_officialEnd;
 	unsigned int m_displayedStart;
 	unsigned int m_displayedEnd;
-	const std::string m_CHROMOSOME_NAME;
 	const unsigned int m_BIN_SIZE;
 };
 
