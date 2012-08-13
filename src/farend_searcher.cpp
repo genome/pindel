@@ -70,8 +70,6 @@ void SearchFarEndAtPos( const std::string& chromosome, SPLIT_READ& Temp_One_Read
     std::vector<unsigned int> PD_Plus[Temp_One_Read.getTOTAL_SNP_ERROR_CHECKED()];
     std::vector<unsigned int> PD_Minus[Temp_One_Read.getTOTAL_SNP_ERROR_CHECKED()];
     
-    //int Start = SearchCenter - Range - Temp_One_Read.getReadLength();
-    //int End = SearchCenter + Range + Temp_One_Read.getReadLength();
     int TotalSize = 0;
     for (unsigned int RegionIndex = 0; RegionIndex < Regions.size(); RegionIndex++) {
         TotalSize += Regions[RegionIndex].getEnd() - Regions[RegionIndex].getStart() + 1;        
@@ -85,7 +83,7 @@ void SearchFarEndAtPos( const std::string& chromosome, SPLIT_READ& Temp_One_Read
     char CurrentBase = Temp_One_Read.getUnmatchedSeq()[0];
     char CurrentBaseRC = Convert2RC4N[(short) CurrentBase];
 	
-	if (CurrentBase == 'N' || Temp_One_Read.MaxLenCloseEnd() == 0) return; // ask Kai: correct?
+	if (CurrentBase == 'N' || Temp_One_Read.MaxLenCloseEnd() == 0) return; 
     int CurrentReadLength = Temp_One_Read.getReadLength();
     for (unsigned RegionIndex = 0; RegionIndex < Regions.size(); RegionIndex++) {
         int Start = Regions[RegionIndex].getStart() - CurrentReadLength;

@@ -29,23 +29,32 @@
 #include "pindel.h"
 #include "pindel_read_reader.h"
 
-struct BreakDancer {
-	BreakDancer() { 
-		ChrName_A=""; 
-		ChrName_B=""; 
-		Size=0; 
-		Score=0; 
-		POS1=0;
-		POS2=0;
-	}
-	std::string ChrName_A;
-	std::string ChrName_B;
-	std::string Type;
-	int Size;
-	int Score;
-	unsigned POS1;
-	unsigned POS2;
+
+
+struct BreakDancerCoordinate {
+	static const unsigned int BREAKDANCER_WINDOWSPAN = 200;
+
+	std::string chromosomeName;
+	unsigned int position;
+
+	BreakDancerCoordinate( const std::string& chrName, const unsigned int pos ) : chromosomeName( chrName ), position (pos) {};
+	unsigned int startOfWindow() const;
+	unsigned int endOfWindow() const; // NOTE: this is dangerous unless we also save the chromosome size somewhere...
+	bool operator<(const BreakDancerCoordinate& other ) const;
+	bool operator!=(const BreakDancerCoordinate& other ) const { return ( chromosomeName!=other.chromosomeName || position!=other.position ); }
 };
+
+struct BreakDancerEvent {
+	BreakDancerCoordinate first, second;
+
+	BreakDancerEvent( const BreakDancerCoordinate& bd1, const BreakDancerCoordinate& bd2 ) : first( bd1 ), second (bd2 ) {};
+	
+	friend bool sortOnFirstBDCoordinate( const BreakDancerEvent& event1, const BreakDancerEvent& event2 );
+	friend bool sortOnSecondBDCoordinate( const BreakDancerEvent& event1, const BreakDancerEvent& event2 );
+};
+
+bool sortOnFirstBDCoordinate( const BreakDancerEvent& event1, const BreakDancerEvent& event2 );
+bool sortOnSecondBDCoordinate( const BreakDancerEvent& event1, const BreakDancerEvent& event2 );
 
 typedef std::vector< RP_READ> RPVector; 
 
@@ -71,7 +80,7 @@ public:
 	int CountFarEnd, CountFarEndPlus, CountFarEndMinus;
 
 	//TODO: explain what are stored in these two vectors.
-	std::vector<BreakDancer> All_BD_events_WG, All_BD_events;
+	std::vector<BreakDancerEvent> All_BD_events_WG, All_BD_events;
 };
 
 #endif /* CONTROLSTATE_H_ */

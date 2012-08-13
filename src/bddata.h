@@ -13,20 +13,27 @@
 
 #include "control_state.h"
 
+typedef std::vector< SearchWindow > SearchWindowCluster;
+typedef std::vector< BreakDancerEvent>::iterator BDIterator;
+
 class BDData {
 
 public:
 	BDData();
+	void createRegionCluster(const BDIterator& startOfEventList, const BDIterator& endOfEventList, SearchWindowCluster& newCluster);
 	void loadBDFile(const std::string& filename);
-	void loadChromosome( const std::string& chromosomeName, const unsigned int chromosomeSize );
+	void loadRegion( const SearchWindow& searchWindow );
 	bool isBreakDancerEvent( const unsigned int leftPosition, const unsigned int rightPosition ) const;
 	// returns positions belonging to the the complementary breakdancer calls
-	void getCorrespondingEvents( const SPLIT_READ& read, std::vector<unsigned int>& complementaryPositions ) const; 
+	const SearchWindowCluster& getCorrespondingSearchWindowCluster( const SPLIT_READ& read ) const; 
 
 private: 
-   int *m_breakDancerMask;
-	std::vector<BreakDancer> m_bdEvents; 
-	std::string m_currentChrName;
+   unsigned int *m_breakDancerMask;
+	std::vector<BreakDancerEvent> m_bdEvents; 
+
+	std::vector<SearchWindowCluster> m_regionsToScanCollection;
+	//std::string m_currentChrName;
+	SearchWindow m_currentWindow;
 };
 
 #endif /* BDDATA_H_ */

@@ -41,9 +41,9 @@
 #include "search_deletions_nt.h"
 #include "search_inversions.h"
 #include "search_inversions_nt.h"
+#include "search_MEI.h"
 #include "search_tandem_duplications.h"
 #include "search_tandem_duplications_nt.h"
-#include "search_MEI.h"
 #include "read_buffer.h"
 #include "farend_searcher.h"
 #include "search_variant.h"
@@ -142,13 +142,14 @@ UniquePoint::UniquePoint( const short lengthStr, const unsigned int absLoc, cons
 {
 }
 
-SearchWindow::SearchWindow(const int regionStart, const int regionEnd )
+SearchWindow::SearchWindow(const std::string& chromosomeName, const int regionStart, const int regionEnd ) : m_CHROMOSOME_NAME( chromosomeName )
 {
 	m_currentStart = regionStart;
 	m_currentEnd = regionEnd;
 }
 
-LoopingSearchWindow::LoopingSearchWindow(const SearchRegion* region, const int chromosomeSize, const int binSize, const std::string& chromosomeName ) : m_CHROMOSOME_NAME( chromosomeName ), m_BIN_SIZE( binSize )
+LoopingSearchWindow::LoopingSearchWindow(const SearchRegion* region, const int chromosomeSize, const int binSize, const std::string& chromosomeName ) : 
+	SearchWindow(chromosomeName,0,chromosomeSize), m_BIN_SIZE( binSize )
 {
 	if (region->isStartDefined()) {
 		m_officialStart = region->getStart();
@@ -289,8 +290,7 @@ std::string TempLine_DB_Unique;
 std::vector<Region>
 Merge(const std::vector<Region> &AllRegions);
 
-bool readTransgressesBinBoundaries(SPLIT_READ & read,
-                                   const unsigned int &upperBinBorder)
+bool readTransgressesBinBoundaries(SPLIT_READ & read, const unsigned int &upperBinBorder)
 {
     return (read.BPRight > upperBinBorder - 2 * read.InsertSize);
 }
@@ -638,37 +638,41 @@ void init(int argc, char *argv[], ControlState& currentState )
 
 void SearchFarEnd( const std::string& chromosome, SPLIT_READ& read)
 {
-    const int BD_SPAN = 200;
-    const int START_SEARCH_SPAN = 128;
+   const int START_SEARCH_SPAN = 128;
 
-    // when using bins, some reads may already have been assigned far ends already if they were members of the previous bins; they
-    // can be skipped here
-    if (read.goodFarEndFound()) {
-        return;
-    }
+   // when using bins, some reads may already have been assigned far ends already if they were members of the previous bins; they
+   // can be skipped here
+   if (read.Investigated) {
+       return;
+   }
 
-    std::vector<unsigned int> bdEvents;
+	const std::vector< SearchWindow>& searchCluster =  g_bdData.getCorrespondingSearchWindowCluster( read );
+	if (searchCluster.size()!=0) {
+		//std::cout << "Starting read searching with cluster size " << searchCluster.size() << " at read " << read.getLastAbsLocCloseEnd() << std::endl;
+      SearchFarEndAtPos( chromosome, read, searchCluster);
+		//std::cout << "Ending read searching with cluster size " << searchCluster.size() << std::endl;
+		if (read.goodFarEndFound()) {
+			read.Investigated = true;
+	      return;
+		}
+   }
 
-    g_bdData.getCorrespondingEvents( read, bdEvents );
-    for (unsigned int bdEventIndex=0; bdEventIndex<bdEvents.size(); bdEventIndex++ ) {
-        SearchFarEndAtPos( chromosome, read, bdEvents[ bdEventIndex ], BD_SPAN );
-        if (read.goodFarEndFound()) {
-            return;
-        }
-    }
-	
    UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
 
     // if breakdancer does not find the event, or not find an event we trust, we turn to regular pattern matching
     int searchSpan=START_SEARCH_SPAN;
     int centerOfSearch = read.getLastAbsLocCloseEnd();
+	//std::cout << "Starting regular searching"  << " at read " << read.getLastAbsLocCloseEnd() << "\n";
     for (int rangeIndex=1; rangeIndex<=userSettings->MaxRangeIndex; rangeIndex++ ) {
         SearchFarEndAtPos( chromosome, read, centerOfSearch, searchSpan );
         searchSpan *= 4;
         if (read.goodFarEndFound()) {
+				//std::cout << "Ending regular searching\n";
+				read.Investigated = true;
             return;
         }
     }
+	read.Investigated = true;
 }
 
 void ReportCloseMappedReads( const std::vector<SPLIT_READ>& reads )
@@ -785,8 +789,7 @@ int main(int argc, char *argv[])
       doAssembly(currentState, FastaFile );
       exit(EXIT_SUCCESS);
    }
-    
-    
+
     // If -q parameter given, search for mobile element insertions and quit.
     if (parameters[findParameter("-q", parameters)]->isSet()) {
         exit(searchMEImain(currentState, FastaFile, userSettings));
@@ -823,7 +826,7 @@ int main(int argc, char *argv[])
       g_maxPos = 0; // #################
       *logStream << "Chromosome Size: " << CONS_Chr_Size << std::endl;
       CurrentChrMask.resize(currentState.CurrentChrSeq.size());
-      g_bdData.loadChromosome( currentState.CurrentChrName, currentState.CurrentChrSeq.size() );
+
       for (unsigned int i = 0; i < currentState.CurrentChrSeq.size(); i++) {
          CurrentChrMask[i] = 'N';
       }
@@ -836,11 +839,15 @@ int main(int argc, char *argv[])
         g_binIndex = 0; // to start with 0... 
     
         LoopingSearchWindow currentWindow( userSettings->getRegion(), CONS_Chr_Size, WINDOW_SIZE, currentState.CurrentChrName ); 
+			
+
         // loop over one chromosome
         do {
             /* 3.2.1 preparation starts */
 
 				*logStream << currentWindow.display();
+			SearchWindow currentWindow_cs = currentWindow.makePindelCoordinateCopy(); // _cs means computer science coordinates
+	     g_bdData.loadRegion( currentWindow_cs );
 
             if (Time_Load_S == 0) {
                 Time_Load_S = time(NULL);
@@ -1060,8 +1067,7 @@ void GetCloseEndInner(const std::string & CurrentChrSeq, SPLIT_READ & Temp_One_R
         }
 
         if (PD[0].size())
-            CheckLeft_Close(Temp_One_Read, CurrentChrSeq, CurrentReadSeq, PD,
-                            BP_Start, BP_End, 1, UP); // LengthStr
+            CheckLeft_Close(Temp_One_Read, CurrentChrSeq, CurrentReadSeq, PD, BP_Start, BP_End, 1, UP); // LengthStr
         if (UP.empty()) {}
         else {
             Temp_One_Read.Used = false;

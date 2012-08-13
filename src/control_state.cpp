@@ -21,6 +21,55 @@
 // Pindel header files
 #include "control_state.h"
 
+unsigned int BreakDancerCoordinate::startOfWindow() const
+{
+	if ( position>=BREAKDANCER_WINDOWSPAN) { return position - BREAKDANCER_WINDOWSPAN; }
+	else { return 0; }
+}
+
+
+unsigned int BreakDancerCoordinate::endOfWindow() const // NOTE: this is dangerous unless we also save the chromosome size somewhere...
+{
+	return position + BREAKDANCER_WINDOWSPAN;
+}
+
+bool BreakDancerCoordinate::operator<(const BreakDancerCoordinate& other ) const
+{
+	if (chromosomeName!=other.chromosomeName) {
+		return (chromosomeName < other.chromosomeName );
+	}
+	else if (position!=other.position ) {
+		return (position < other.position );
+	} 	
+	else {
+		return false; // are equal, so no <
+	}
+}
+
+bool sortOnFirstBDCoordinate( const BreakDancerEvent& event1, const BreakDancerEvent& event2 )
+{
+	if (event1.first != event2.first ) {
+		return (event1.first < event2.first );
+	}
+	else if (event1.second != event2.second ) {
+		return (event1.second < event2.second );
+	}
+	else return false; // they're exactly equal so event1 is not 'smaller than' event2
+}
+
+bool sortOnSecondBDCoordinate( const BreakDancerEvent& event1, const BreakDancerEvent& event2 )
+{
+	if (event1.second != event2.second ) {
+		return (event1.second < event2.second );
+	}
+	else if (event1.first != event2.first ) {
+		return (event1.first < event2.first );
+	}
+	else return false; // they're exactly equal so event1 is not 'smaller than' event2
+}
+
+
+
 ControlState::ControlState()
 {
    CountFarEnd = 0;

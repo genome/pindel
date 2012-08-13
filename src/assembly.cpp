@@ -171,7 +171,7 @@ short AssembleOneSV(const std::vector <Chromosome> & AllChromosomes, std::map<st
     if (OneSV.PosA > OneSV.CI_A + 1000)  
         lowerBinBorder = OneSV.PosA - OneSV.CI_A - 1000; //CurrentState.
     unsigned int upperBinBorder = OneSV.PosA + OneSV.CI_A + 1000;
-	SearchWindow window( lowerBinBorder, upperBinBorder );
+	SearchWindow window( CurrentState.CurrentChrName, lowerBinBorder, upperBinBorder );
     Left = OneSV.PosA + g_SpacerBeforeAfter - OneSV.CI_A;
     Right = OneSV.PosA + g_SpacerBeforeAfter + OneSV.CI_A;
 
@@ -219,7 +219,7 @@ short AssembleOneSV(const std::vector <Chromosome> & AllChromosomes, std::map<st
     if (OneSV.PosB > OneSV.CI_B + 1000)  
         lowerBinBorder = OneSV.PosB - OneSV.CI_B - 1000;
     upperBinBorder = OneSV.PosB + OneSV.CI_B + 1000;
-	SearchWindow window2( lowerBinBorder, upperBinBorder );
+	SearchWindow window2( CurrentState.CurrentChrName, lowerBinBorder, upperBinBorder );
     Left = OneSV.PosB + g_SpacerBeforeAfter - OneSV.CI_B;
     Right = OneSV.PosB + g_SpacerBeforeAfter + OneSV.CI_B;
 

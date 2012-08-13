@@ -277,7 +277,7 @@ short GetRP4OnDEL(const std::vector <Chromosome> & AllChromosomes, std::map<std:
     if (OneSV.PosA > OneSV.CI_A + Overhead)  
         lowerBinBorder = OneSV.PosA - OneSV.CI_A - Overhead; //CurrentState.
    unsigned int upperBinBorder = OneSV.PosB + OneSV.CI_B + Overhead;
-	SearchWindow window(lowerBinBorder, upperBinBorder); 
+	SearchWindow window(CurrentState.CurrentChrName,lowerBinBorder, upperBinBorder); 
     //std::cout << "GetRP4OnDEL 3" << std::endl;
     get_RP_Reads(CurrentState, window );
     //std::cout << "Reads around BP 1 " << CurrentState.Reads_RP.size() << std::endl;
