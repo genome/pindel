@@ -7,6 +7,9 @@
 	e.m.w.lameijer@lumc.nl
 	+31(0)71-526 9745
 
+	Version 0.5.0 [July 9th, 2012] removed small error that caused the -c option to process all other chromosomes as well...
+	Version 0.4.9 [July 2nd, 2012] added -P option to allow fusing all output files of one pindel run 
+	Version 0.4.8 [July 2nd, 2012] debugged .:10 genotype (due to 'dual-encoding' of genotype, while Pindel not having actual chromosome data
 	Version 0.4.7 [June 21th, 2012] LI now also have proper labels <as per updated Pindel>
 	Version 0.4.6 [June 20th, 2012] END-position now proper according to http://www.1000genomes.org/wiki/Analysis/Variant%20Call%20Format/vcf-variant-call-format-version-41, access date June 20, 2012
 	Version 0.4.5 [June 20th, 2012] displays proper warnings when using the -G option
@@ -67,7 +70,7 @@ const int FIRST_SAMPLE_INDEX = 32; // index of first sample name
 
 using namespace std;
 
-string g_versionString = "0.3.9";
+string g_versionString = "0.5.0";
 string g_programName = "pindel2vcf";
 
 bool g_normalBaseArray[256];
@@ -78,6 +81,7 @@ struct ParameterSettings {
    string referenceName;
    string referenceDate;
    string pindelfile;
+	string pindelroot;
    string vcffile;
    string chromosome;
 	int windowSize;
@@ -130,8 +134,88 @@ void createComplement( const string& dna, string& complement )
    }
 }
 
+/** 'InputReader' can house a vector of files, allowing access as if it were one huge file. */
+class InputReader {
+
+public:
+	InputReader();
+
+	string getLine();
+	bool eof();
+	void addFile(const string filename);
+	void rewind();
 
 
+private:
+	vector<string> m_filenames;
+	int m_nextFileIndex;
+	bool m_readable;
+	ifstream m_currentFile;
+
+	bool canReadMore();
+	void moveToNextFile();
+};
+
+string InputReader::getLine() 
+{
+	if (canReadMore()) {
+		string line;
+		getline( m_currentFile, line );
+		return line;
+	}
+	else {
+		return "";
+	}
+}
+
+bool InputReader::canReadMore()
+{
+	// default case: current file is okay
+	if (m_currentFile && !m_currentFile.eof()) {
+		return true;
+	}
+	
+	while (!m_currentFile || m_currentFile.eof()) {
+		moveToNextFile();
+		if (!m_readable) { break; } // final EOF
+	}
+
+	return m_readable;
+}
+
+void InputReader::moveToNextFile()
+{
+	if (m_nextFileIndex<m_filenames.size()) {
+		m_currentFile.close();
+		m_currentFile.open( m_filenames[ m_nextFileIndex ].c_str() );
+		m_nextFileIndex++;	
+	} 
+	else {
+		m_readable = false;
+	}
+}
+
+void InputReader::rewind()
+{
+	m_currentFile.open("");
+	m_nextFileIndex = 0;
+	m_readable = true;
+}
+
+InputReader::InputReader()
+{
+	rewind();
+}
+
+void InputReader::addFile(const string filename)
+{
+	m_filenames.push_back( filename );
+}
+
+bool InputReader::eof()
+{
+	return !canReadMore();
+}
 
 /* 'Parameter' stores an individual parameter; it is set by the command line parameters, and used by the program. */
 class Parameter
@@ -578,11 +662,9 @@ class Genotype
 
 public:
    Genotype();
-   Genotype( int genFirstChrom, int genSecondChrom, int readDepthPlus, int readDepthMinus );
+   Genotype( int readDepthPlus, int readDepthMinus );
    void fuse( const Genotype& gt );
    void reset() {
-      d_genFirstChromosome=0;
-      d_genSecondChromosome=0;
       d_readDepthPlus=0;
       d_readDepthMinus=0;
    }
@@ -597,21 +679,17 @@ public:
    }
 
 private:
-   int d_genFirstChromosome;
-   int d_genSecondChromosome;
    int d_readDepthPlus;
    int d_readDepthMinus;
 };
 
 Genotype::Genotype()
 {
-   Genotype( 0, 0, 0, 0 );
+   Genotype( 0, 0 );
 }
 
-Genotype::Genotype( int genFirstChrom, int genSecondChrom, int readDepthPlus, int readDepthMinus )
+Genotype::Genotype( int readDepthPlus, int readDepthMinus )
 {
-   d_genFirstChromosome = genFirstChrom;
-   d_genSecondChromosome = genSecondChrom;
    d_readDepthPlus = readDepthPlus;
    d_readDepthMinus = readDepthMinus;
 }
@@ -625,7 +703,7 @@ void Genotype::fuse( const Genotype& gt )
 ostream& operator<<(ostream& os, const Genotype& gt)
 {
 	if (g_par.gatkCompatible) {
-		if (gt.d_genFirstChromosome==0 && gt.d_genSecondChromosome==0) {
+		if (gt.d_readDepthPlus==0 && gt.d_readDepthMinus==0) {
 	      os << "0/0";
 	   }
 	   else { // at least one genotype is 1
@@ -635,7 +713,7 @@ ostream& operator<<(ostream& os, const Genotype& gt)
 
 	}
    else { 
-		if (gt.d_genFirstChromosome==0 && gt.d_genSecondChromosome==0) {
+		if (gt.d_readDepthPlus==0 && gt.d_readDepthMinus==0) {
 	      os << ".";
 	   }
 	   else { // at least one genotype is 1
@@ -729,8 +807,7 @@ public:
 
    //void setSupportingReads(const int supportingreads) { d_supportingreads = supportingreads; }
    void addGenotype(const int sampleID, const int readDepthPlus, const int readDepthMinus) {
-      int secondGenome = ( ( (readDepthPlus+readDepthMinus) > 0) ? 1 : 0 );
-      Genotype gt(0,secondGenome,readDepthPlus,readDepthMinus);
+      Genotype gt(readDepthPlus,readDepthMinus);
       d_format[ sampleID ] = gt ;
    }
 
@@ -865,7 +942,7 @@ SVData::SVData(const int genotypeTotal) // default settings
    if (numberOfSamples<=0) {
       numberOfSamples=1;
    }
-   d_format.resize( numberOfSamples, Genotype(0,0,0,0) );
+   d_format.resize( numberOfSamples, Genotype(0,0) );
 };
 
 
@@ -1137,15 +1214,15 @@ string fetchElement( istream& instream, const int index )
    return element;
 }
 
-void getSampleNamesAndChromosomeNames(ifstream& svfile, set<string>& sampleNames, set<string>&chromosomeNames)
+void getSampleNamesAndChromosomeNames(InputReader& pindelInput, set<string>& sampleNames, set<string>&chromosomeNames)
 {
    string line;
-   while (!svfile.eof()) {
+   while (!pindelInput.eof()) {
       do {
-         getline( svfile, line );
+         line = pindelInput.getLine();
       }
-      while (!svfile.eof() && !isdigit(line[0]));   // skip ###-lines
-      if (svfile.eof()) {
+      while (!pindelInput.eof() && !isdigit(line[0]));   // skip ###-lines
+      if (pindelInput.eof()) {
          return;
       }
       stringstream lineStream;
@@ -1200,16 +1277,16 @@ void showSet( set<string> aSet )
 
 
 /* 'convertIndelToSVdata' converts insertions and deletions to nicely formatted SV-data. */
-void convertIndelToSVdata( ifstream& svfile, map< string, int>& sampleMap, Genome& genome, SVData& svd, const string& targetChromosomeID)
+void convertIndelToSVdata( InputReader& pindelInput, map< string, int>& sampleMap, Genome& genome, SVData& svd, const string& targetChromosomeID)
 {
    string line;
 	svd.setGenome( genome );
    do {
-      getline( svfile, line );
+      line = pindelInput.getLine();
    }
-   while (!svfile.eof() && !isdigit(line[0]));
+   while (!pindelInput.eof() && !isdigit(line[0]));
 
-   if (svfile.eof()) {
+   if (pindelInput.eof()) {
       return;
    }
 
@@ -1410,7 +1487,10 @@ void createParameters()
    parameters.push_back(
       new StringParameter( &g_par.referenceDate, "-d", "--reference_date", "The date of the version of the reference genome used", true, "" ) );
    parameters.push_back(
-      new StringParameter( &g_par.pindelfile, "-p", "--pindel_output", "The name of the pindel output file containing the SVs", true, "" ) );
+      new StringParameter( &g_par.pindelfile, "-p", "--pindel_output", "The name of the pindel output file containing the SVs", false, "" ) );
+	parameters.push_back(
+      new StringParameter( &g_par.pindelroot, "-P", "--pindel_output_root", "The root-name of the pindel output file; this will result in one big output file containing\
+                                                     deletions, short and long insertions, tandem duplications and inversions", false, "" ) );
    parameters.push_back(
       new StringParameter( &g_par.vcffile, "-v", "--vcf", "The name of the output vcf-file (default: name of pindel output file +\".vcf\"", false, "" ) );
    parameters.push_back(
@@ -1526,6 +1606,9 @@ void printHelp()
    exit( EXIT_SUCCESS );
 }
 
+bool isRegularPindelInput() { return parameters[ findParameter("-p") ]->isSet(); }
+bool isRootPindelInput() { return parameters[ findParameter("-P") ]->isSet(); }
+
 /* 'checkParameters' checks whether all required parameters have been set. */
 bool checkParameters()
 {
@@ -1541,6 +1624,16 @@ bool checkParameters()
          canRun = false;
       }  //if
    }
+
+	if ( isRegularPindelInput() && isRootPindelInput() ) {
+		cout << "Sorry, you can't use -p and -P at the same time, please choose one option.\n\n";
+		canRun = false;
+	}
+	else if ( !isRegularPindelInput() && !isRootPindelInput() ) {
+		cout << "Pindel2vcf needs a pindel input file, either use the -p or the -P option, please.\n\n";
+		canRun = false;
+	}
+
    if (!canRun) {
       cout << "For further information, please run " << g_programName <<" without arguments or with option -h/--help.\n\n";
    }
@@ -1552,7 +1645,16 @@ void setParameters()
 {
    g_par.vcffile = parameters[ findParameter( "-v" )]->getSValue();
    if (g_par.vcffile.compare("")==0) {
-      g_par.vcffile = g_par.pindelfile + ".vcf";   // default
+		if (isRegularPindelInput()) {
+	      g_par.vcffile = g_par.pindelfile + ".vcf";   // default
+		}
+		else if (isRootPindelInput()) {
+			g_par.vcffile = g_par.pindelroot + ".vcf";
+		}
+		else {
+			cout << "Error trying to construct output filename!\n";
+			exit( EXIT_FAILURE );
+		}
    }
 }
 
@@ -1621,7 +1723,7 @@ void initBaseArray()
    g_normalBaseArray['N'] = true;
 }
 
-void reportSVsInChromosome(const string& chromosomeID, const set<string>& chromosomeNames, const set<string>& sampleNames, ifstream& svfile, map< string, int >& sampleMap, Genome& genome, ofstream& vcfFile )
+void reportSVsInChromosome(const string& chromosomeID, const set<string>& chromosomeNames, const set<string>& sampleNames, InputReader& pindelInput, map< string, int >& sampleMap, Genome& genome, ofstream& vcfFile )
 {
 		// if no reads have been found for this chromosome, skip it
 		if (chromosomeNames.find(chromosomeID) == chromosomeNames.end() ) {
@@ -1637,15 +1739,14 @@ void reportSVsInChromosome(const string& chromosomeID, const set<string>& chromo
       do {
 			regionEnd = regionStart + g_par.windowSize*1000000;
 			cout << "Reading region " << regionStart << "-" << regionEnd << endl;
-	      svfile.clear();
-   	   svfile.seekg(0);
+	      pindelInput.rewind();
    	   int counter=0;
    	   vector<SVData> svs;
 			if (backupAvailable) { svs.push_back( backupSV ); }
-   	   while (!svfile.eof()) {
+   	   while (!pindelInput.eof()) {
    	      SVData svd( sampleNames.size() );
-   	      convertIndelToSVdata( svfile, sampleMap, genome, svd, chromosomeID);
-   	      if (!svfile.eof() && ( chromosomeID=="" || (svd.getChromosome()==chromosomeID && svd.getPosition()>=regionStart && svd.getPosition()<regionEnd)) ) {
+   	      convertIndelToSVdata( pindelInput, sampleMap, genome, svd, chromosomeID);
+   	      if (!pindelInput.eof() && ( chromosomeID=="" || (svd.getChromosome()==chromosomeID && svd.getPosition()>=regionStart && svd.getPosition()<regionEnd)) ) {
    	         svs.push_back( svd );
    	      }
    	      counter++;
@@ -1697,12 +1798,24 @@ int main(int argc, char* argv[])
    ofstream vcfFile(g_par.vcffile.c_str());
    set<string> sampleNames;
 	set<string> chromosomeNames;
-   ifstream svfile(g_par.pindelfile.c_str());
-   if (!svfile) {
+
+	InputReader pindelInput;
+	if (isRegularPindelInput()) {
+		pindelInput.addFile( g_par.pindelfile );
+	}
+	else if (isRootPindelInput()) {
+		string rootFilename = g_par.pindelroot;
+		pindelInput.addFile( rootFilename + "_D");
+		pindelInput.addFile( rootFilename + "_SI");
+		pindelInput.addFile( rootFilename + "_LI");
+		pindelInput.addFile( rootFilename + "_INV");
+		pindelInput.addFile( rootFilename + "_TD");
+	}
+   if (pindelInput.eof()) {
       cout << "The pindel file (-p) does not exist.\n";
       exit( EXIT_FAILURE );
    }
-   getSampleNamesAndChromosomeNames(svfile,sampleNames,chromosomeNames);
+   getSampleNamesAndChromosomeNames(pindelInput,sampleNames,chromosomeNames);
 	cout<< "Samples:\n";
    showSet( sampleNames );
 	cout << "Chromosomes in which SVs have been found:\n";
@@ -1718,10 +1831,10 @@ int main(int argc, char* argv[])
 	
 	if (g_par.chromosome != "" ) {
 		// a specific chromosome has been specified
-		reportSVsInChromosome( g_par.chromosome, chromosomeNames, sampleNames, svfile, sampleMap, genome, vcfFile );
+		reportSVsInChromosome( g_par.chromosome, chromosomeNames, sampleNames, pindelInput, sampleMap, genome, vcfFile );
 	}
-   for (int chromosomeCount=0; chromosomeCount<genome.d_chromosomes.size(); chromosomeCount++ ) {
-      reportSVsInChromosome( genome.d_chromosomes[ chromosomeCount ].getID(), chromosomeNames, sampleNames, svfile, sampleMap, genome, vcfFile );
+   else for (int chromosomeCount=0; chromosomeCount<genome.d_chromosomes.size(); chromosomeCount++ ) {
+      reportSVsInChromosome( genome.d_chromosomes[ chromosomeCount ].getID(), chromosomeNames, sampleNames, pindelInput, sampleMap, genome, vcfFile );
       genome.d_chromosomes[ chromosomeCount ].removeFromMemory(); // to prevent memory overload
    } 
 

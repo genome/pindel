@@ -1,0 +1,4 @@
+Pindel 0.2.4t August 13, 2012
+- resolved bug in which using pindel with a single incorrect option (like ./pindel -g) caused a segmentation fault
+- updated pindel2vcf to version 0.5.0; -G (GATK-compatibility option) now works properly even for unusual SVs; END positions updated according to http://www.1000genomes.org/wiki/Analysis/Variant%20Call%20Format/vcf-variant-call-format-version-41, resolved mysterious ".:10" genotypes, and added -P option to allow fusing all output files into one.
+- if an event is near multiple breakdancer events, all of these events will be investigated now
