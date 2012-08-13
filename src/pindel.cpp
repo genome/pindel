@@ -142,7 +142,12 @@ UniquePoint::UniquePoint( const short lengthStr, const unsigned int absLoc, cons
 {
 }
 
-SearchWindow::SearchWindow(const std::string& chromosomeName, const int regionStart, const int regionEnd ) : m_CHROMOSOME_NAME( chromosomeName )
+bool SearchWindow::encompasses( const std::string& chromosomeName, const unsigned int position ) const
+{
+	return ( ( m_chromosomeName == chromosomeName ) && ( position >= m_currentStart ) && ( position <= m_currentEnd ) );
+}
+
+SearchWindow::SearchWindow(const std::string& chromosomeName, const int regionStart, const int regionEnd ) : m_chromosomeName( chromosomeName )
 {
 	m_currentStart = regionStart;
 	m_currentEnd = regionEnd;
@@ -199,7 +204,7 @@ std::string LoopingSearchWindow::display() const
 {
 	std::stringstream ss;
 	if (m_displayedStart < m_displayedEnd) {
-      ss << "\nLooking at chromosome " << m_CHROMOSOME_NAME << " bases " << m_displayedStart << " to " << m_displayedEnd << ".\n";
+      ss << "\nLooking at chromosome " << m_chromosomeName << " bases " << m_displayedStart << " to " << m_displayedEnd << ".\n";
    }
    else {
       ss << "Checking out reads near the borders of the specified regions for extra evidence.\n";

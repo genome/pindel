@@ -213,6 +213,16 @@ const SearchWindowCluster& BDData::getCorrespondingSearchWindowCluster( const SP
 
 }
 
+bool haveCommonBDEvent( const SearchWindowCluster& event, const unsigned int position, const std::string& chromosomeName )
+{
+	for (unsigned int index=0; index<event.size(); index++) {
+		if (event[ index ].encompasses( chromosomeName, position )) {
+			return true;	
+		}
+	}
+	return false;
+} 
+
 /* 'isBreakdancerEvent' returns whether an event between leftPosition and rightPosition in the current chromosome
 	is confirmed by a breakdancer result. */
 bool BDData::isBreakDancerEvent( const unsigned int leftPosition, const unsigned int rightPosition ) const
@@ -220,9 +230,11 @@ bool BDData::isBreakDancerEvent( const unsigned int leftPosition, const unsigned
    unsigned int rawLeftPosition = leftPosition + g_SpacerBeforeAfter;
    unsigned int rawRightPosition = rightPosition + g_SpacerBeforeAfter;
 
-   if ( m_breakDancerMask[ rawLeftPosition ]!=0  &&
-         m_breakDancerMask[ rawLeftPosition ] == -m_breakDancerMask[ rawRightPosition ] ) {
-      return true;
+   if ( m_breakDancerMask[ rawLeftPosition - m_currentWindow.getStart() ]!=0  &&
+		  m_breakDancerMask[ rawRightPosition - m_currentWindow.getStart() ]!=0 ) {
+        
+		return haveCommonBDEvent( m_regionsToScanCollection[ m_breakDancerMask[ rawLeftPosition - m_currentWindow.getStart() ] ],
+				rawRightPosition - m_currentWindow.getStart(), m_currentWindow.getChromosomeName() );
    }
    else {
       return false;
