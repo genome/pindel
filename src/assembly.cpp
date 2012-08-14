@@ -186,12 +186,15 @@ short AssembleOneSV(const std::vector <Chromosome> & AllChromosomes, std::map<st
     std::cout << "\nFirst size " << First.size() << std::endl;
     SearchRange = OneSV.CI_B + 1000;
     SearchCenter = OneSV.PosB + g_SpacerBeforeAfter;
+	std::vector< SearchWindow > searchCluster;
+	searchCluster.push_back( SearchWindow( AllChromosomes[ChrName2Index.find(OneSV.ChrB)->second].ChrName, SearchCenter-SearchRange, SearchCenter+SearchRange ) );
     Left = OneSV.PosB + g_SpacerBeforeAfter - OneSV.CI_B;
     Right = OneSV.PosB + g_SpacerBeforeAfter + OneSV.CI_B;
     
-    for (unsigned ReadIndex = 0; ReadIndex < First.size(); ReadIndex++) {
-        First[ReadIndex].FarFragName = OneSV.ChrB;
-        SearchFarEndAtPos(AllChromosomes[ChrName2Index.find(OneSV.ChrB)->second].ChrSeq, First[ReadIndex], SearchCenter, SearchRange);
+	for (unsigned ReadIndex = 0; ReadIndex < First.size(); ReadIndex++) {
+      First[ReadIndex].FarFragName = OneSV.ChrB;
+      SearchFarEndAtPos(AllChromosomes[ChrName2Index.find(OneSV.ChrB)->second].ChrSeq, First[ReadIndex], SearchCenter, SearchRange);
+		//SearchFarEndAtPos(AllChromosomes[ChrName2Index.find(OneSV.ChrB)->second].ChrSeq, First[ReadIndex], searchCluster);
     }
     //std::cout << "AssembleOneSV 7" << std::endl;
 

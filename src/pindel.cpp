@@ -644,7 +644,7 @@ void init(int argc, char *argv[], ControlState& currentState )
 
 void SearchFarEnd( const std::string& chromosome, SPLIT_READ& read)
 {
-   const int START_SEARCH_SPAN = 128;
+	const int START_SEARCH_SPAN = 128;
 
    // when using bins, some reads may already have been assigned far ends already if they were members of the previous bins; they
    // can be skipped here
@@ -665,19 +665,22 @@ void SearchFarEnd( const std::string& chromosome, SPLIT_READ& read)
 
    UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
 
-    // if breakdancer does not find the event, or not find an event we trust, we turn to regular pattern matching
-    int searchSpan=START_SEARCH_SPAN;
-    int centerOfSearch = read.getLastAbsLocCloseEnd();
-	//std::cout << "Starting regular searching"  << " at read " << read.getLastAbsLocCloseEnd() << "\n";
-    for (int rangeIndex=1; rangeIndex<=userSettings->MaxRangeIndex; rangeIndex++ ) {
-        SearchFarEndAtPos( chromosome, read, centerOfSearch, searchSpan );
-        searchSpan *= 4;
-        if (read.goodFarEndFound()) {
-				//std::cout << "Ending regular searching\n";
-				read.Investigated = true;
-            return;
-        }
-    }
+   // if breakdancer does not find the event, or not find an event we trust, we turn to regular pattern matching
+   unsigned int searchSpan=START_SEARCH_SPAN;
+   int centerOfSearch = read.getLastAbsLocCloseEnd();
+	
+   for (int rangeIndex=1; rangeIndex<=userSettings->MaxRangeIndex; rangeIndex++ ) {
+		// note: searching the central range again and again may seem overkill, but since Pindel at the moment wants an unique best point, you can't skip the middle part
+		// may be stuff for future changes/refactorings though
+		std::vector< SearchWindow > aroundCESearchCluster;
+		aroundCESearchCluster.push_back( SearchWindow( read.FragName, centerOfSearch-searchSpan, centerOfSearch+searchSpan ) );
+      SearchFarEndAtPos( chromosome, read, aroundCESearchCluster );
+      searchSpan *= 4;
+      if (read.goodFarEndFound()) {
+			read.Investigated = true;
+         return;
+      }
+   }
 	read.Investigated = true;
 }
 

@@ -67,50 +67,47 @@ void SearchFarEndAtPos( const std::string& chromosome, SPLIT_READ& Temp_One_Read
 
 void SearchFarEndAtPos( const std::string& chromosome, SPLIT_READ& Temp_One_Read, const std::vector <SearchWindow> & Regions )
 {
-    std::vector<unsigned int> PD_Plus[Temp_One_Read.getTOTAL_SNP_ERROR_CHECKED()];
-    std::vector<unsigned int> PD_Minus[Temp_One_Read.getTOTAL_SNP_ERROR_CHECKED()];
+   std::vector<unsigned int> PD_Plus[Temp_One_Read.getTOTAL_SNP_ERROR_CHECKED()];
+   std::vector<unsigned int> PD_Minus[Temp_One_Read.getTOTAL_SNP_ERROR_CHECKED()];
     
-    int TotalSize = 0;
-    for (unsigned int RegionIndex = 0; RegionIndex < Regions.size(); RegionIndex++) {
-        TotalSize += Regions[RegionIndex].getEnd() - Regions[RegionIndex].getStart() + 1;        
-    }
+   int TotalSize = 0;
+   for (unsigned int RegionIndex = 0; RegionIndex < Regions.size(); RegionIndex++) {
+      TotalSize += Regions[RegionIndex].getEnd() - Regions[RegionIndex].getStart() + 1;        
+   }
     
-    for (int CheckIndex = 0; CheckIndex < Temp_One_Read.getTOTAL_SNP_ERROR_CHECKED(); CheckIndex++) {
-        PD_Plus[CheckIndex].reserve(TotalSize);
-        PD_Minus[CheckIndex].reserve(TotalSize);
-    }
+   for (int CheckIndex = 0; CheckIndex < Temp_One_Read.getTOTAL_SNP_ERROR_CHECKED(); CheckIndex++) {
+      PD_Plus[CheckIndex].reserve(TotalSize);
+      PD_Minus[CheckIndex].reserve(TotalSize);
+   }
     
-    char CurrentBase = Temp_One_Read.getUnmatchedSeq()[0];
-    char CurrentBaseRC = Convert2RC4N[(short) CurrentBase];
+   char CurrentBase = Temp_One_Read.getUnmatchedSeq()[0];
+   char CurrentBaseRC = Convert2RC4N[(short) CurrentBase];
 	
 	if (CurrentBase == 'N' || Temp_One_Read.MaxLenCloseEnd() == 0) return; 
-    int CurrentReadLength = Temp_One_Read.getReadLength();
-    for (unsigned RegionIndex = 0; RegionIndex < Regions.size(); RegionIndex++) {
-        int Start = Regions[RegionIndex].getStart() - CurrentReadLength;
-        int End = Regions[RegionIndex].getEnd() + CurrentReadLength;
-        for (int pos = Start; pos < End; pos++) {
-            if (chromosome.at(pos) == CurrentBase) {
-                PD_Plus[0].push_back(pos); // else
-            }
-            else if (chromosome.at(pos) == CurrentBaseRC) {
-                PD_Minus[0].push_back(pos);
-            }
-        }
-    }
+   int CurrentReadLength = Temp_One_Read.getReadLength();
+   for (unsigned RegionIndex = 0; RegionIndex < Regions.size(); RegionIndex++) {
+      int Start = Regions[RegionIndex].getStart() - CurrentReadLength;
+      int End = Regions[RegionIndex].getEnd() + CurrentReadLength;
+      for (int pos = Start; pos < End; pos++) {
+         if (chromosome.at(pos) == CurrentBase) {
+            PD_Plus[0].push_back(pos); // else
+         }
+         else if (chromosome.at(pos) == CurrentBaseRC) {
+            PD_Minus[0].push_back(pos);
+         }
+      }
+   }
 
-    if (PD_Minus[0].size() + PD_Plus[0].size() > 0) {
-	 	short BP_Start = 10; // perhaps use global constant like "g_MinimumLengthToReportMatch"
-        short BP_End = Temp_One_Read.getReadLengthMinus(); // matched far end should be between BP_Start and BP_End bases long (including BP_Start and End)
-        SortedUniquePoints UP; // temporary container for unique far ends
-        CheckBoth(Temp_One_Read, chromosome, Temp_One_Read.getUnmatchedSeq(), PD_Plus, PD_Minus, BP_Start, BP_End, 1, UP);
+	if (PD_Minus[0].size() + PD_Plus[0].size() > 0) {
+		short BP_Start = 10; // perhaps use global constant like "g_MinimumLengthToReportMatch"
+      short BP_End = Temp_One_Read.getReadLengthMinus(); // matched far end should be between BP_Start and BP_End bases long (including BP_Start and End)
+      SortedUniquePoints UP; // temporary container for unique far ends
+      CheckBoth(Temp_One_Read, chromosome, Temp_One_Read.getUnmatchedSeq(), PD_Plus, PD_Minus, BP_Start, BP_End, 1, UP);
         
-		/*if ((unsigned)(MaxEndSize(UP) + Temp_One_Read.MaxLenCloseEnd()) >= (unsigned)Temp_One_Read.getReadLength() && Temp_One_Read.UP_Far.empty()) {
+		if ( UP.MaxLen() > Temp_One_Read.MaxLenFarEnd() ) {
 			Temp_One_Read.UP_Far.swap(UP);
 		}
-		else */ if ( UP.MaxLen() > Temp_One_Read.MaxLenFarEnd() ) {
-			Temp_One_Read.UP_Far.swap(UP);
-		}
-        UP.clear(); // may not be necessary as this is deleted from the stack anyway
+      UP.clear(); // may not be necessary as this is deleted from the stack anyway
 	}
 }
 
