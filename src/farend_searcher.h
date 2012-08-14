@@ -21,23 +21,6 @@
 #ifndef FARENDSEARCHER_H_
 #define FARENDSEARCHER_H_
 
-class FarEndSearcher {
-public:
-	FarEndSearcher(const std::string & CurrentChr_in, SPLIT_READ & Temp_One_Read_in);
-    void GetFarEnd(const int &in_start, const int &in_end);
-    void GetFarEnd_OtherStrand(const short &RangeIndex);
-    void GetFarEnd_SingleStrandUpStream(const short &RangeIndex);
-    void GetFarEnd_SingleStrandDownStream(const short &RangeIndex);
-    //void SearchFarEndAtPos( const std::string& chromosome, SPLIT_READ& read, const unsigned int searchCenter, const unsigned int range);
-	virtual ~FarEndSearcher();
-
-private:
-	void GetFarEnd_General(const int &in_start, const int &in_end, const bool &UseRangeIndex, const short &RangeIndex);
-	const std::string* CurrentChr;
-	SPLIT_READ* Temp_One_Read;
-};
-
-void SearchFarEndAtPos( const std::string& chromosome, SPLIT_READ& Temp_One_Read, const unsigned int SearchCenter, const unsigned int Range);
 void SearchFarEndAtPos( const std::string& chromosome, SPLIT_READ& Temp_One_Read, const std::vector <SearchWindow> & Regions );
 
 #endif /* FARENDSEARCHER_H_ */

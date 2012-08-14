@@ -193,8 +193,8 @@ short AssembleOneSV(const std::vector <Chromosome> & AllChromosomes, std::map<st
     
 	for (unsigned ReadIndex = 0; ReadIndex < First.size(); ReadIndex++) {
       First[ReadIndex].FarFragName = OneSV.ChrB;
-      SearchFarEndAtPos(AllChromosomes[ChrName2Index.find(OneSV.ChrB)->second].ChrSeq, First[ReadIndex], SearchCenter, SearchRange);
-		//SearchFarEndAtPos(AllChromosomes[ChrName2Index.find(OneSV.ChrB)->second].ChrSeq, First[ReadIndex], searchCluster);
+      //SearchFarEndAtPos(AllChromosomes[ChrName2Index.find(OneSV.ChrB)->second].ChrSeq, First[ReadIndex], SearchCenter, SearchRange);
+		SearchFarEndAtPos(AllChromosomes[ChrName2Index.find(OneSV.ChrB)->second].ChrSeq, First[ReadIndex], searchCluster);
     }
     //std::cout << "AssembleOneSV 7" << std::endl;
 
@@ -238,11 +238,14 @@ short AssembleOneSV(const std::vector <Chromosome> & AllChromosomes, std::map<st
     SearchCenter = OneSV.PosA + g_SpacerBeforeAfter;
     Left = OneSV.PosA + g_SpacerBeforeAfter - OneSV.CI_A;
     Right = OneSV.PosA + g_SpacerBeforeAfter + OneSV.CI_A;
-    
-    for (unsigned ReadIndex = 0; ReadIndex < Second.size(); ReadIndex++) {
-        Second[ReadIndex].FarFragName = OneSV.ChrA;
-        SearchFarEndAtPos(AllChromosomes[ChrName2Index.find(OneSV.ChrA)->second].ChrSeq, Second[ReadIndex], SearchCenter, SearchRange);
-    }
+	searchCluster.clear();
+	searchCluster.push_back( SearchWindow( AllChromosomes[ChrName2Index.find(OneSV.ChrA)->second].ChrName, SearchCenter-SearchRange, SearchCenter+SearchRange ) );
+  
+   for (unsigned ReadIndex = 0; ReadIndex < Second.size(); ReadIndex++) {
+      Second[ReadIndex].FarFragName = OneSV.ChrA;
+      //SearchFarEndAtPos(AllChromosomes[ChrName2Index.find(OneSV.ChrA)->second].ChrSeq, Second[ReadIndex], SearchCenter, SearchRange);
+		SearchFarEndAtPos(AllChromosomes[ChrName2Index.find(OneSV.ChrA)->second].ChrSeq, Second[ReadIndex], searchCluster);  
+   }
 
     CleanUpFarEnd(Second, Left, Right);
 
@@ -644,7 +647,11 @@ void ReportLI(const std::vector <Chromosome> & AllChromosomes, std::map<std::str
     GetCloseEnd(AllChromosomes[ChrName2Index.find(OneSV.ChrB)->second].ChrSeq, OneRead); //        
     unsigned SearchRange = OneSV.CI_A + 1000;
     unsigned SearchCenter = OneSV.PosA + g_SpacerBeforeAfter;
-    SearchFarEndAtPos(AllChromosomes[ChrName2Index.find(OneSV.ChrA)->second].ChrSeq, OneRead, SearchCenter, SearchRange);
+	std::vector< SearchWindow > searchCluster;
+	searchCluster.push_back( SearchWindow( AllChromosomes[ChrName2Index.find(OneSV.ChrA)->second].ChrName, SearchCenter-SearchRange, SearchCenter+SearchRange ) );
+
+   //SearchFarEndAtPos(AllChromosomes[ChrName2Index.find(OneSV.ChrA)->second].ChrSeq, OneRead, SearchCenter, SearchRange);
+	SearchFarEndAtPos(AllChromosomes[ChrName2Index.find(OneSV.ChrA)->second].ChrSeq, OneRead, searchCluster);
     std::cout << OneRead.UP_Close.size() << " " << OneRead.UP_Far.size() << " " << "\n"; // OneRead.UP_Far.size() << std::endl;
     if (OneRead.UP_Far.size()) {
         if (OneRead.MatchedD == '+') {
