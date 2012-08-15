@@ -32,21 +32,32 @@
 
 
 struct BreakDancerCoordinate {
+
+private:
+	unsigned int m_genomeIndex;
+
+public:
 	static const unsigned int BREAKDANCER_WINDOWSPAN = 200;
+	//const BreakDancerCoordinate& operator=( const BreakDancerCoordinate& other );
 
-	std::string chromosomeName;
+
 	unsigned int position;
-
-	BreakDancerCoordinate( const std::string& chrName, const unsigned int pos ) : chromosomeName( chrName ), position (pos) {};
+	//BreakDancerCoordinate( const BreakDancerCoordinate& other );
+	BreakDancerCoordinate( const std::string& chromosomeName, const unsigned int pos );
+	BreakDancerCoordinate( const Chromosome& chromosome, const unsigned int pos );
 	unsigned int startOfWindow() const;
 	unsigned int endOfWindow() const; // NOTE: this is dangerous unless we also save the chromosome size somewhere...
 	bool operator<(const BreakDancerCoordinate& other ) const;
-	bool operator!=(const BreakDancerCoordinate& other ) const { return ( chromosomeName!=other.chromosomeName || position!=other.position ); }
+	bool operator!=(const BreakDancerCoordinate& other ) const { return ( getChromosomeName()!=other.getChromosomeName() || position!=other.position ); }
+	const std::string& getChromosomeName() const { return g_genome.getChr(m_genomeIndex).getName(); }
+	const Chromosome& getChromosome() const { return g_genome.getChr(m_genomeIndex); }
+
+
 };
 
 struct BreakDancerEvent {
 	BreakDancerCoordinate first, second;
-
+	BreakDancerEvent( const BreakDancerEvent& other );
 	BreakDancerEvent( const BreakDancerCoordinate& bd1, const BreakDancerCoordinate& bd2 ) : first( bd1 ), second (bd2 ) {};
 	
 	friend bool sortOnFirstBDCoordinate( const BreakDancerEvent& event1, const BreakDancerEvent& event2 );

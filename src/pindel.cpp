@@ -72,6 +72,8 @@
 
 const std::string Pindel_Version_str = "Pindel version 0.2.4t, August 13 2012.";
 
+const Chromosome g_dummyChromosome("","");
+Genome g_genome;
 std::ofstream g_logFile;
 
 int g_binIndex = -1; // global variable for the bin index, as I cannot easily pass an extra parameter to the diverse functions
@@ -138,24 +140,60 @@ unsigned int Distance = 300;
 short MinFar_D = 8; //atoi(argv[3]);
 const short MaxDI = 30;
 
+void Genome::addChromosome( const Chromosome& newChromosome ) 
+{ 
+	for (unsigned int i=0; i<m_chromosomes.size(); i++ ) {
+		if ( m_chromosomes[ i ].getName() == newChromosome.getName() ) {
+			m_chromosomes[ i ] = newChromosome;
+		}
+	}
+	m_chromosomes.push_back( newChromosome );
+}
+
+unsigned int Genome::chrNameToChrIndex( const std::string chromosomeName )
+{
+	for (unsigned int i=0; i<m_chromosomes.size(); i++ ) {
+		if ( m_chromosomes[ i ].getName() == chromosomeName ) {
+			//std::cout << "Finding chromosome " << chromosomeName << "\n";
+			return i;
+		}
+	}
+	//std::cout << "Chromosome " << chromosomeName << " not read yet.\n";
+	m_chromosomes.push_back( Chromosome( chromosomeName, "" ) );
+	return m_chromosomes.size() - 1;
+}
+
 UniquePoint::UniquePoint( const short lengthStr, const unsigned int absLoc, const char direction, const char strand, const short mismatches ) :
 	LengthStr( lengthStr ), AbsLoc( absLoc ), Direction( direction ), Strand( strand ), Mismatches( mismatches )
 {
 }
 
-bool SearchWindow::encompasses( const std::string& chromosomeName, const unsigned int position ) const
+SearchWindow& SearchWindow::operator=(const SearchWindow& other )
 {
-	return ( ( m_chromosomeName == chromosomeName ) && ( position >= m_currentStart ) && ( position <= m_currentEnd ) );
+   if (this != &other) {
+      this->SearchWindow::~SearchWindow(); // explicit non-virtual destructor
+      new (this) SearchWindow( other ); // placement new
+   }
+   return *this;
 }
 
-SearchWindow::SearchWindow(const std::string& chromosomeName, const int regionStart, const int regionEnd ) : m_chromosomeName( chromosomeName )
+bool SearchWindow::encompasses( const std::string& chromosomeName, const unsigned int position ) const
+{
+	return ( ( m_chromosome.getName() == chromosomeName ) && ( position >= m_currentStart ) && ( position <= m_currentEnd ) );
+}
+
+SearchWindow::SearchWindow(const Chromosome& chromosome, const unsigned int regionStart, const unsigned int regionEnd ) : m_chromosome( chromosome )
 {
 	m_currentStart = regionStart;
 	m_currentEnd = regionEnd;
 }
 
-LoopingSearchWindow::LoopingSearchWindow(const SearchRegion* region, const int chromosomeSize, const int binSize, const std::string& chromosomeName ) : 
-	SearchWindow(chromosomeName,0,chromosomeSize), m_BIN_SIZE( binSize )
+SearchWindow::SearchWindow(const SearchWindow& other) : 
+	m_chromosome(other.m_chromosome), m_currentStart( other.m_currentStart ), m_currentEnd( other.m_currentEnd) 
+{}
+
+LoopingSearchWindow::LoopingSearchWindow(const SearchRegion* region, const int chromosomeSize, const int binSize, const Chromosome& chromosome) : 
+	SearchWindow(chromosome,0,chromosomeSize), m_BIN_SIZE( binSize )
 {
 	if (region->isStartDefined()) {
 		m_officialStart = region->getStart();
@@ -205,7 +243,7 @@ std::string LoopingSearchWindow::display() const
 {
 	std::stringstream ss;
 	if (m_displayedStart < m_displayedEnd) {
-      ss << "\nLooking at chromosome " << m_chromosomeName << " bases " << m_displayedStart << " to " << m_displayedEnd << ".\n";
+      ss << "\nLooking at chromosome " << m_chromosome.getName() << " bases " << m_displayedStart << " to " << m_displayedEnd << ".\n";
    }
    else {
       ss << "Checking out reads near the borders of the specified regions for extra evidence.\n";
@@ -642,7 +680,7 @@ void init(int argc, char *argv[], ControlState& currentState )
 }
 
 
-void SearchFarEnd( const std::string& chromosome, SPLIT_READ& read)
+void SearchFarEnd( const std::string& chromosome, SPLIT_READ& read, const Chromosome& currentChromosome)
 {
 	const int START_SEARCH_SPAN = 128;
 
@@ -654,9 +692,7 @@ void SearchFarEnd( const std::string& chromosome, SPLIT_READ& read)
 
 	const std::vector< SearchWindow>& searchCluster =  g_bdData.getCorrespondingSearchWindowCluster( read );
 	if (searchCluster.size()!=0) {
-		//std::cout << "Starting read searching with cluster size " << searchCluster.size() << " at read " << read.getLastAbsLocCloseEnd() << std::endl;
       SearchFarEndAtPos( chromosome, read, searchCluster);
-		//std::cout << "Ending read searching with cluster size " << searchCluster.size() << std::endl;
 		if (read.goodFarEndFound()) {
 			read.Investigated = true;
 	      return;
@@ -673,7 +709,8 @@ void SearchFarEnd( const std::string& chromosome, SPLIT_READ& read)
 		// note: searching the central range again and again may seem overkill, but since Pindel at the moment wants an unique best point, you can't skip the middle part
 		// may be stuff for future changes/refactorings though
 		std::vector< SearchWindow > aroundCESearchCluster;
-		aroundCESearchCluster.push_back( SearchWindow( read.FragName, centerOfSearch-searchSpan, centerOfSearch+searchSpan ) );
+		SearchWindow regularWindow( currentChromosome, centerOfSearch-searchSpan, centerOfSearch+searchSpan );
+		aroundCESearchCluster.push_back( regularWindow );
       SearchFarEndAtPos( chromosome, read, aroundCESearchCluster );
       searchSpan *= 4;
       if (read.goodFarEndFound()) {
@@ -723,13 +760,13 @@ void ReportCloseAndFarEndCounts( const std::vector<SPLIT_READ>& reads )
    *logStream << "For LI and BP: " << Count_Unused << "\n\n";
 }
 
-void SearchFarEnds( const std::string chromosomeSeq, std::vector<SPLIT_READ>& reads)
+void SearchFarEnds( const std::string chromosomeSeq, std::vector<SPLIT_READ>& reads, const Chromosome& currentChromosome)
 {
 	#pragma omp parallel default(shared)
    {
 	   #pragma omp for
       for (int readIndex= 0; readIndex < (int)reads.size(); readIndex++ ) {
-         SearchFarEnd( chromosomeSeq, reads[readIndex] );
+         SearchFarEnd( chromosomeSeq, reads[readIndex], currentChromosome );
       }
    }
    *logStream << "Far end searching completed for this window." << std::endl;
@@ -787,7 +824,7 @@ int main(int argc, char *argv[])
    char FirstCharOfFasta;
    FastaFile >> FirstCharOfFasta;
     /* Start of shortcut to genotyping */ // currentState.inf_AssemblyInput.open(par.inf_AssemblyInputFilename.c_str());
-	bool GenotypingInputDefined = parameters[findParameter("-g",parameters)]->isSet();
+	/*bool GenotypingInputDefined = parameters[findParameter("-g",parameters)]->isSet();
    if (GenotypingInputDefined) {
       doGenotyping(currentState, FastaFile );
       exit(EXIT_SUCCESS);
@@ -797,12 +834,12 @@ int main(int argc, char *argv[])
    if (AssemblyInputDefined) {
       doAssembly(currentState, FastaFile );
       exit(EXIT_SUCCESS);
-   }
+   }*/
 
     // If -q parameter given, search for mobile element insertions and quit.
-    if (parameters[findParameter("-q", parameters)]->isSet()) {
+   /* if (parameters[findParameter("-q", parameters)]->isSet()) {
         exit(searchMEImain(currentState, FastaFile, userSettings));
-    }
+    }*/
 
    /* Normal pindel functioning: search SVs*/
 
@@ -830,7 +867,8 @@ int main(int argc, char *argv[])
          *logStream << "Skipping chromosome: " << currentState.CurrentChrName << std::endl;
          continue;
       }
-
+		Chromosome currentChromosome( currentState.CurrentChrName, currentState.CurrentChrSeq );
+		g_genome.addChromosome( currentChromosome );
       CONS_Chr_Size = currentState.CurrentChrSeq.size() - 2 * g_SpacerBeforeAfter; // #################
       g_maxPos = 0; // #################
       *logStream << "Chromosome Size: " << CONS_Chr_Size << std::endl;
@@ -847,7 +885,7 @@ int main(int argc, char *argv[])
         /* 3.2 apply sliding windows to input datasets starts. This is the 2nd level while loop */
         g_binIndex = 0; // to start with 0... 
     
-        LoopingSearchWindow currentWindow( userSettings->getRegion(), CONS_Chr_Size, WINDOW_SIZE, currentState.CurrentChrName ); 
+        LoopingSearchWindow currentWindow( userSettings->getRegion(), CONS_Chr_Size, WINDOW_SIZE, currentChromosome ); 
 			
 
         // loop over one chromosome
@@ -856,6 +894,8 @@ int main(int argc, char *argv[])
 
 				*logStream << currentWindow.display();
 			SearchWindow currentWindow_cs = currentWindow.makePindelCoordinateCopy(); // _cs means computer science coordinates
+			//std::cout << "cs-window goes from " << currentWindow_cs.getStart() << " to " << currentWindow_cs.getEnd() << "\n";			
+			//std::cout << "window goes from " << currentWindow.getStart() << " to " << currentWindow.getEnd() << "\n";
 	     g_bdData.loadRegion( currentWindow_cs );
 
             if (Time_Load_S == 0) {
@@ -872,7 +912,7 @@ int main(int argc, char *argv[])
                 }
                 Time_Load_E = time(NULL);
                 if (!userSettings->reportOnlyCloseMappedReads) {
-						SearchFarEnds( currentState.CurrentChrSeq, currentState.Reads_SR );
+						SearchFarEnds( currentState.CurrentChrSeq, currentState.Reads_SR, currentChromosome );
 						SearchSVs( currentState, NumBoxes, currentWindow );
                 }
                 Time_Sort_E = time(NULL);

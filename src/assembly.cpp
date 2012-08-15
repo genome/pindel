@@ -44,7 +44,7 @@ void doAssembly (ControlState & CurrentState, std::ifstream& FastaFile ) {
     std::cout << "Get whole genome sequence..." << std::endl;
     // step 1. get the whole genome sequence
 
-    std::vector <Chromosome> AllChromosomes;
+    std::vector <AChromosome> AllChromosomes;
     getWholeGenome(FastaFile, AllChromosomes);
     
     for (unsigned i = 0; i < AllChromosomes.size(); i++) {
@@ -91,12 +91,12 @@ void doAssembly (ControlState & CurrentState, std::ifstream& FastaFile ) {
     return;
 }
 
-short getWholeGenome(std::ifstream& FastaFile, std::vector <Chromosome> & AllChromosomes) {
+short getWholeGenome(std::ifstream& FastaFile, std::vector <AChromosome> & AllChromosomes) {
     std::string Spacer = "";
     for (unsigned i = 0; i < g_SpacerBeforeAfter; i++) Spacer += "N";
     //std::string Spacer("N", g_SpacerBeforeAfter);
     //std::cout << "2" << std::endl;
-    Chromosome OneChr;
+    AChromosome OneChr;
     std::string TempLine;
     char TempChar;
     FastaFile.clear();
@@ -146,7 +146,7 @@ short getWholeGenome(std::ifstream& FastaFile, std::vector <Chromosome> & AllChr
     return 0;
 }
 
-short AssembleOneSV(const std::vector <Chromosome> & AllChromosomes, std::map<std::string,int> &ChrName2Index, ControlState & CurrentState, const Assembly & OneSV, std::ofstream & ASM_Output) {
+short AssembleOneSV(const std::vector <AChromosome> & AllChromosomes, std::map<std::string,int> &ChrName2Index, ControlState & CurrentState, const Assembly & OneSV, std::ofstream & ASM_Output) {
     //std::cout << "AssembleOneSV 1" << std::endl;
     //short Max_NT_Size = 30;
     bool WhetherFirstBP = true;
@@ -270,7 +270,7 @@ short AssembleOneSV(const std::vector <Chromosome> & AllChromosomes, std::map<st
     return 0;
 }
 
-void CombineAndSort(const std::vector <Chromosome> & AllChromosomes, std::map<std::string,int> &ChrName2Index, ControlState & CurrentState, const Assembly & OneSV, std::vector <SPLIT_READ> & output_reads, const unsigned & lowerBinBorder, const unsigned & upperBinBorder, const bool & First) {
+void CombineAndSort(const std::vector <AChromosome> & AllChromosomes, std::map<std::string,int> &ChrName2Index, ControlState & CurrentState, const Assembly & OneSV, std::vector <SPLIT_READ> & output_reads, const unsigned & lowerBinBorder, const unsigned & upperBinBorder, const bool & First) {
     
     const unsigned AssemblyCutOff = 3;
     const char Plus = '+';
@@ -513,7 +513,7 @@ void CombineReads(const std::string & CurrentChrSeq, const char & Strand, const 
     }
 }
 
-void OutputCurrentRead(const std::vector <Chromosome> & AllChromosomes, std::map<std::string,int> & ChrName2Index, ControlState & CurrentState, const Assembly & OneSV, SPLIT_READ & OneRead, std::ofstream & ASM_Output) {
+void OutputCurrentRead(const std::vector <AChromosome> & AllChromosomes, std::map<std::string,int> & ChrName2Index, ControlState & CurrentState, const Assembly & OneSV, SPLIT_READ & OneRead, std::ofstream & ASM_Output) {
     int CountSupportingSamples;
     //std::cout << "start of OutputCurrentRead" << std::endl;
     //if (OneRead.UP_Far_backup.size())
@@ -543,7 +543,7 @@ void OutputCurrentRead(const std::vector <Chromosome> & AllChromosomes, std::map
     }   
 }
 
-void TryLI(const std::vector <Chromosome> & AllChromosomes, std::map<std::string,int> & ChrName2Index, ControlState & CurrentState, const Assembly & OneSV,  std::vector <SPLIT_READ> & First, std::vector <SPLIT_READ> & Second, std::ofstream & ASM_Output) {
+void TryLI(const std::vector <AChromosome> & AllChromosomes, std::map<std::string,int> & ChrName2Index, ControlState & CurrentState, const Assembly & OneSV,  std::vector <SPLIT_READ> & First, std::vector <SPLIT_READ> & Second, std::ofstream & ASM_Output) {
     short MinimumOverlap = 10;
     short MaximumOverlap;// = min();
     short MaxMismatch = 3;
@@ -588,7 +588,7 @@ void TryLI(const std::vector <Chromosome> & AllChromosomes, std::map<std::string
     }
 }
 
-/*void ReportLI(const std::vector <Chromosome> & AllChromosomes, std::map<std::string,int> & ChrName2Index, ControlState & CurrentState, const Assembly & OneSV,  SPLIT_READ & First, SPLIT_READ & Second, const std::string & MergedString, short & OverlapCount, std::ofstream & ASM_Output){
+/*void ReportLI(const std::vector <AChromosome> & AllChromosomes, std::map<std::string,int> & ChrName2Index, ControlState & CurrentState, const Assembly & OneSV,  SPLIT_READ & First, SPLIT_READ & Second, const std::string & MergedString, short & OverlapCount, std::ofstream & ASM_Output){
     
     unsigned CountSupportingSamples = 0;
     SPLIT_READ OneRead = Second;
@@ -635,7 +635,7 @@ void TryLI(const std::vector <Chromosome> & AllChromosomes, std::map<std::string
     }
 }*/
 
-void ReportLI(const std::vector <Chromosome> & AllChromosomes, std::map<std::string,int> & ChrName2Index, ControlState & CurrentState, const Assembly & OneSV,  SPLIT_READ & First, SPLIT_READ & Second, const std::string & MergedString, short & OverlapCount, std::ofstream & ASM_Output){
+void ReportLI(const std::vector <AChromosome> & AllChromosomes, std::map<std::string,int> & ChrName2Index, ControlState & CurrentState, const Assembly & OneSV,  SPLIT_READ & First, SPLIT_READ & Second, const std::string & MergedString, short & OverlapCount, std::ofstream & ASM_Output){
     
     unsigned CountSupportingSamples = 0;
     SPLIT_READ OneRead = Second;

@@ -21,10 +21,38 @@
 // Pindel header files
 #include "control_state.h"
 
+BreakDancerCoordinate::BreakDancerCoordinate( const std::string& chromosomeName, const unsigned int pos )
+{
+	m_genomeIndex = g_genome.chrNameToChrIndex( chromosomeName );
+	position = pos;
+}
+
+BreakDancerCoordinate::BreakDancerCoordinate( const Chromosome& chromosome, const unsigned int pos )
+{
+	m_genomeIndex = g_genome.chrNameToChrIndex( chromosome.getName() );
+	position = pos;
+}
+
 unsigned int BreakDancerCoordinate::startOfWindow() const
 {
 	if ( position>=BREAKDANCER_WINDOWSPAN) { return position - BREAKDANCER_WINDOWSPAN; }
 	else { return 0; }
+}
+
+/*BreakDancerCoordinate::BreakDancerCoordinate( const BreakDancerCoordinate& other ) : m_chromosome( other.m_chromosome ), position (other.position)
+{}*/
+
+/*const BreakDancerCoordinate& BreakDancerCoordinate::operator=( const BreakDancerCoordinate& other ) 
+{ 
+   if (this != &other) {
+      this->BreakDancerCoordinate::~BreakDancerCoordinate(); // explicit non-virtual destructor
+      new (this) BreakDancerCoordinate( other ); // placement new
+   }
+   return *this;
+}*/
+
+BreakDancerEvent::BreakDancerEvent( const BreakDancerEvent& other ) : first (other.first), second( other.second)
+{
 }
 
 
@@ -35,8 +63,8 @@ unsigned int BreakDancerCoordinate::endOfWindow() const // NOTE: this is dangero
 
 bool BreakDancerCoordinate::operator<(const BreakDancerCoordinate& other ) const
 {
-	if (chromosomeName!=other.chromosomeName) {
-		return (chromosomeName < other.chromosomeName );
+	if (getChromosomeName()!=other.getChromosomeName()) {
+		return (getChromosomeName() < other.getChromosomeName() );
 	}
 	else if (position!=other.position ) {
 		return (position < other.position );

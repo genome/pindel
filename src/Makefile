@@ -8,10 +8,15 @@ SOURCES=pindel.cpp reader.cpp reporter.cpp searcher.cpp parameter.cpp \
     search_tandem_duplications.cpp search_tandem_duplications_nt.cpp \
     output_sorter.cpp farend_searcher.cpp search_variant.cpp \
     searchshortinsertions.cpp searchdeletions.cpp output_file_data.cpp \
-    bddata.cpp shifted_vector.cpp read_buffer.cpp assembly.cpp genotyping.cpp\
+    bddata.cpp shifted_vector.cpp read_buffer.cpp \
     line_reader.cpp ifstream_line_reader.cpp gz_line_reader.cpp\
     pindel_read_reader.cpp user_defined_settings.cpp \
-    fn_parameters.cpp logstream.cpp search_MEI.cpp
+    fn_parameters.cpp logstream.cpp 
+
+#search_MEI.cpp
+
+
+#   bddata.cpp shifted_vector.cpp read_buffer.cpp assembly.cpp genotyping.cpp\
  
 all:	pindel pindel-debug
 -include $(SOURCES:.cpp=.d)

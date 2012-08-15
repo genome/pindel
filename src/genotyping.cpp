@@ -45,7 +45,7 @@ void doGenotyping (ControlState & CurrentState, std::ifstream& FastaFile ) {
     std::cout << "Get whole genome sequence..." << std::endl;
     // step 1. get the whole genome sequence
     
-    std::vector <Chromosome> AllChromosomes;
+    std::vector <AChromosome> AllChromosomes;
     getWholeGenome(FastaFile, AllChromosomes);
     
     for (unsigned i = 0; i < AllChromosomes.size(); i++) {
@@ -133,7 +133,7 @@ void doGenotyping (ControlState & CurrentState, std::ifstream& FastaFile ) {
     }
 }
 
-short GenotypingOneDEL(const std::vector <Chromosome> & AllChromosomes, std::map<std::string,int> &ChrName2Index, ControlState & CurrentState, Genotyping & OneSV, std::map<std::string, unsigned> & SampleName2IndexAsMap, std::ofstream & GT_Output) {
+short GenotypingOneDEL(const std::vector <AChromosome> & AllChromosomes, std::map<std::string,int> &ChrName2Index, ControlState & CurrentState, Genotyping & OneSV, std::map<std::string, unsigned> & SampleName2IndexAsMap, std::ofstream & GT_Output) {
     std::cout << "\nGenotyping " << OneSV.Type << " " << OneSV.ChrA << " " << OneSV.PosA << " " 
     << OneSV.CI_A << " " << OneSV.ChrB << " " << OneSV.PosB << " " << OneSV.CI_B << std::endl;
     // get RD signals
@@ -144,7 +144,7 @@ short GenotypingOneDEL(const std::vector <Chromosome> & AllChromosomes, std::map
     //std::cout << "2" << std::endl;
     GetRP4OnDEL(AllChromosomes, ChrName2Index, CurrentState, OneSV, SampleName2IndexAsMap, GT_Output);
     //std::cout << "3" << std::endl;
-    //short AssembleOneSV(const std::vector <Chromosome> & AllChromosomes, std::map<std::string,int> & ChrName2Index, ControlState & CurrentState, ParCollection & par, const Assembly & OneSV, std::ofstream & ASM_Output);
+    //short AssembleOneSV(const std::vector <AChromosome> & AllChromosomes, std::map<std::string,int> & ChrName2Index, ControlState & CurrentState, ParCollection & par, const Assembly & OneSV, std::ofstream & ASM_Output);
     //getRP_counts4DEL(CurrentChrSeq, ChrName2Index[OneSV.ChrA], CurrentState, OneSV);
     //std::cout << "after getRelativeCoverage " << OneSV.Type << " " << OneSV.ChrA << " " << OneSV.PosA << " " 
     //<< OneSV.CI_A << " " << OneSV.ChrB << " " << OneSV.PosB << " " 
@@ -154,7 +154,7 @@ short GenotypingOneDEL(const std::vector <Chromosome> & AllChromosomes, std::map
     return 0;
 }
 
-short GenotypingOneDUP(const std::vector <Chromosome> & AllChromosomes, std::map<std::string,int> &ChrName2Index, ControlState & CurrentState, Genotyping & OneSV, std::map<std::string, unsigned> & SampleName2IndexAsMap, std::ofstream & GT_Output) {
+short GenotypingOneDUP(const std::vector <AChromosome> & AllChromosomes, std::map<std::string,int> &ChrName2Index, ControlState & CurrentState, Genotyping & OneSV, std::map<std::string, unsigned> & SampleName2IndexAsMap, std::ofstream & GT_Output) {
     std::cout << "\nGenotyping " << OneSV.Type << " " << OneSV.ChrA << " " << OneSV.PosA << " "
     << OneSV.CI_A << " " << OneSV.ChrB << " " << OneSV.PosB << " " << OneSV.CI_B << std::endl;
     const std::string & CurrentChrSeq = AllChromosomes[ ChrName2Index[ OneSV.ChrA ]].ChrSeq;
@@ -257,7 +257,7 @@ void CountRPSupport4DEL(const std::vector <RPVector> & Reads_RP, const std::vect
     //std::cout << "leaving CountRPSupport4DEL ..." << std::endl;
 }
 
-short GetRP4OnDEL(const std::vector <Chromosome> & AllChromosomes, std::map<std::string,int> & ChrName2Index, ControlState & CurrentState, const Genotyping & OneSV, std::map<std::string, unsigned> & SampleName2IndexAsMap, std::ofstream & GT_Output) {
+short GetRP4OnDEL(const std::vector <AChromosome> & AllChromosomes, std::map<std::string,int> & ChrName2Index, ControlState & CurrentState, const Genotyping & OneSV, std::map<std::string, unsigned> & SampleName2IndexAsMap, std::ofstream & GT_Output) {
     //std::vector <RP_READ> ALL_RP_reads;
     //std::cout << "GetRP4OnDEL 1" << std::endl;
     short Min_MQ = 20;

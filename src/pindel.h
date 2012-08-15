@@ -402,23 +402,51 @@ void updateReadAfterCloseEndMapping( SPLIT_READ& Temp_One_Read );
 LineReader *getLineReaderByFilename(const char *filename);
 
 // note: in future, want to move to having a pointer to a Chromosome structure instead of a ChrID-string
+
+class Chromosome {
+
+public:
+	Chromosome( const std::string& name, const std::string& sequence ) { m_name = name; m_sequence = sequence; };
+	const std::string& getName() const { return m_name; }
+
+private:
+	std::string m_name;
+	std::string m_sequence;
+};
+
+extern const Chromosome g_dummyChromosome;
+
+class Genome {
+public:
+	void addChromosome( const Chromosome& newChromosome );
+	unsigned int chrNameToChrIndex( const std::string chromosomeName );
+	const Chromosome& getChr( unsigned int index ) const { if (index<m_chromosomes.size()) return m_chromosomes[ index ]; else return g_dummyChromosome; }
+
+private:
+	std::vector< Chromosome > m_chromosomes;
+};
+
+extern Genome g_genome;
+
 class SearchWindow {
 
 public:
-	SearchWindow(const std::string& chromosomeName, const int regionStart, const int regionEnd );
-	SearchWindow() : m_chromosomeName("") { m_currentStart= m_currentEnd = 0; }
+	SearchWindow(const Chromosome& chromosome, const unsigned int regionStart, const unsigned int regionEnd );
+	SearchWindow(const SearchWindow& other); 
 
 	unsigned int getStart() const { return m_currentStart; }
 	unsigned int getEnd() const { return m_currentEnd; }
 	void setStart( const unsigned int newStart ) { m_currentStart = newStart; }	
 	void setEnd( const unsigned int newEnd ) { m_currentEnd = newEnd; }
-	const std::string getChromosomeName() const { return m_chromosomeName; }
+	const std::string& getChromosomeName() const { return m_chromosome.getName(); }
+	const Chromosome& getChromosome() const { return m_chromosome; }
 	unsigned int getSize() const { return 1 + m_currentEnd - m_currentStart; }
 	bool encompasses( const std::string& chromosomeName, const unsigned int position ) const;
-	SearchWindow makePindelCoordinateCopy() const { SearchWindow temp( m_chromosomeName, m_currentStart + g_SpacerBeforeAfter, m_currentEnd + g_SpacerBeforeAfter ); return temp; }; 
+	SearchWindow makePindelCoordinateCopy() const { SearchWindow temp( m_chromosome, m_currentStart + g_SpacerBeforeAfter, m_currentEnd + g_SpacerBeforeAfter ); return temp; }; 
+	SearchWindow& operator=(const SearchWindow& other );
 
 protected:
-	std::string m_chromosomeName;
+	const Chromosome& m_chromosome;
 	unsigned int m_currentStart;
 	unsigned int m_currentEnd;
 };
@@ -426,7 +454,7 @@ protected:
 class LoopingSearchWindow: public SearchWindow {
 
 public:
-	LoopingSearchWindow(const SearchRegion* region, const int chromosomeSize, const int binSize, const std::string& chromosomeName );
+	LoopingSearchWindow(const SearchRegion* region, const int chromosomeSize, const int binSize, const Chromosome& chromosome );
 	void next();
 	std::string display() const;
 	bool finished() const;
@@ -441,5 +469,7 @@ private:
 	unsigned int m_displayedEnd;
 	const unsigned int m_BIN_SIZE;
 };
+
+
 
 #endif /* PINDEL_H */
