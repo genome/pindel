@@ -179,10 +179,10 @@ SearchWindow& SearchWindow::operator=(const SearchWindow& other )
 
 bool SearchWindow::encompasses( const std::string& chromosomeName, const unsigned int position ) const
 {
-	return ( ( m_chromosome.getName() == chromosomeName ) && ( position >= m_currentStart ) && ( position <= m_currentEnd ) );
+	return ( ( m_chromosome->getName() == chromosomeName ) && ( position >= m_currentStart ) && ( position <= m_currentEnd ) );
 }
 
-SearchWindow::SearchWindow(const Chromosome& chromosome, const unsigned int regionStart, const unsigned int regionEnd ) : m_chromosome( chromosome )
+SearchWindow::SearchWindow( const Chromosome* chromosome, const unsigned int regionStart, const unsigned int regionEnd ) : m_chromosome( chromosome )
 {
 	m_currentStart = regionStart;
 	m_currentEnd = regionEnd;
@@ -192,7 +192,7 @@ SearchWindow::SearchWindow(const SearchWindow& other) :
 	m_chromosome(other.m_chromosome), m_currentStart( other.m_currentStart ), m_currentEnd( other.m_currentEnd) 
 {}
 
-LoopingSearchWindow::LoopingSearchWindow(const SearchRegion* region, const int chromosomeSize, const int binSize, const Chromosome& chromosome) : 
+LoopingSearchWindow::LoopingSearchWindow(const SearchRegion* region, const int chromosomeSize, const int binSize, const Chromosome* chromosome) : 
 	SearchWindow(chromosome,0,chromosomeSize), m_BIN_SIZE( binSize )
 {
 	if (region->isStartDefined()) {
@@ -243,7 +243,7 @@ std::string LoopingSearchWindow::display() const
 {
 	std::stringstream ss;
 	if (m_displayedStart < m_displayedEnd) {
-      ss << "\nLooking at chromosome " << m_chromosome.getName() << " bases " << m_displayedStart << " to " << m_displayedEnd << ".\n";
+      ss << "\nLooking at chromosome " << m_chromosome->getName() << " bases " << m_displayedStart << " to " << m_displayedEnd << ".\n";
    }
    else {
       ss << "Checking out reads near the borders of the specified regions for extra evidence.\n";
@@ -709,7 +709,7 @@ void SearchFarEnd( const std::string& chromosome, SPLIT_READ& read, const Chromo
 		// note: searching the central range again and again may seem overkill, but since Pindel at the moment wants an unique best point, you can't skip the middle part
 		// may be stuff for future changes/refactorings though
 		std::vector< SearchWindow > aroundCESearchCluster;
-		SearchWindow regularWindow( currentChromosome, centerOfSearch-searchSpan, centerOfSearch+searchSpan );
+		SearchWindow regularWindow( &currentChromosome, centerOfSearch-searchSpan, centerOfSearch+searchSpan );
 		aroundCESearchCluster.push_back( regularWindow );
       SearchFarEndAtPos( chromosome, read, aroundCESearchCluster );
       searchSpan *= 4;
@@ -885,7 +885,7 @@ int main(int argc, char *argv[])
         /* 3.2 apply sliding windows to input datasets starts. This is the 2nd level while loop */
         g_binIndex = 0; // to start with 0... 
     
-        LoopingSearchWindow currentWindow( userSettings->getRegion(), CONS_Chr_Size, WINDOW_SIZE, currentChromosome ); 
+        LoopingSearchWindow currentWindow( userSettings->getRegion(), CONS_Chr_Size, WINDOW_SIZE, &currentChromosome ); 
 			
 
         // loop over one chromosome

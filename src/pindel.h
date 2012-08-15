@@ -431,22 +431,22 @@ extern Genome g_genome;
 class SearchWindow {
 
 public:
-	SearchWindow(const Chromosome& chromosome, const unsigned int regionStart, const unsigned int regionEnd );
+	SearchWindow( const Chromosome* chromosome, const unsigned int regionStart, const unsigned int regionEnd );
 	SearchWindow(const SearchWindow& other); 
 
 	unsigned int getStart() const { return m_currentStart; }
 	unsigned int getEnd() const { return m_currentEnd; }
 	void setStart( const unsigned int newStart ) { m_currentStart = newStart; }	
 	void setEnd( const unsigned int newEnd ) { m_currentEnd = newEnd; }
-	const std::string& getChromosomeName() const { return m_chromosome.getName(); }
-	const Chromosome& getChromosome() const { return m_chromosome; }
+	const std::string& getChromosomeName() const { return m_chromosome->getName(); }
+	const Chromosome& getChromosome() const { return *m_chromosome; }
 	unsigned int getSize() const { return 1 + m_currentEnd - m_currentStart; }
 	bool encompasses( const std::string& chromosomeName, const unsigned int position ) const;
 	SearchWindow makePindelCoordinateCopy() const { SearchWindow temp( m_chromosome, m_currentStart + g_SpacerBeforeAfter, m_currentEnd + g_SpacerBeforeAfter ); return temp; }; 
 	SearchWindow& operator=(const SearchWindow& other );
 
 protected:
-	const Chromosome& m_chromosome;
+	const Chromosome* m_chromosome;
 	unsigned int m_currentStart;
 	unsigned int m_currentEnd;
 };
@@ -454,7 +454,7 @@ protected:
 class LoopingSearchWindow: public SearchWindow {
 
 public:
-	LoopingSearchWindow(const SearchRegion* region, const int chromosomeSize, const int binSize, const Chromosome& chromosome );
+	LoopingSearchWindow(const SearchRegion* region, const int chromosomeSize, const int binSize, const Chromosome* chromosome );
 	void next();
 	std::string display() const;
 	bool finished() const;

@@ -2,7 +2,7 @@
 #include <fstream>
 #include "bddata.h"
 
-BDData::BDData() : 	m_currentWindow( g_dummyChromosome, 0, 0 )
+BDData::BDData() : 	m_currentWindow( &g_dummyChromosome, 0, 0 )
 {
    m_breakDancerMask = NULL;
 
@@ -166,7 +166,7 @@ void BDData::createRegionCluster(const BDIterator& startOfEventList, const BDIte
 			std::cout << "Possible translocation from chromosome " << m_currentWindow.getChromosomeName() << " to chromosome " << eventIter->second.getChromosomeName() << "\n";
 		}
 		else {
-			SearchWindow currentEventWindow( eventIter->second.getChromosome(), eventIter->second.startOfWindow(), eventIter->second.endOfWindow() );
+			SearchWindow currentEventWindow( &(eventIter->second.getChromosome()), eventIter->second.startOfWindow(), eventIter->second.endOfWindow() );
 			while ( eventIter+1!=relevantSubcluster.end() && regionsOverlap( eventIter, eventIter+1 ) ) {
 				eventIter++;
 				currentEventWindow.setEnd( eventIter->second.endOfWindow() );
