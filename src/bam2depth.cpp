@@ -138,14 +138,15 @@ void getRelativeCoverageInternal(const std::string & chromosomeName, const int c
     }
 }
 
-void getRelativeCoverage(const std::string & CurrentChrSeq, const int chromosomeID, const ControlState& allGlobalData, Genotyping & OneSV)
+void getRelativeCoverage(const std::string & CurrentChrSeq, const int chromosomeID, const ControlState& allGlobalData, Genotyping & OneSV, const Chromosome& currentChromosome)
                          //const int startPos, const int endPos, std::vector<double> & standardizedDepthPerBam ) RD_signals
+							// fuse currentChromosome with CurrentChrSeq, as well as add Chromosome* to OneSV
 {
     std::cout.precision(2);
     const int startPos = OneSV.PosA;
     const int endPos   = OneSV.PosB;
     
-    std::string chromosomeName = allGlobalData.CurrentChrName;
+    std::string chromosomeName = currentChromosome.getName();
 	int chromosomeSize = CurrentChrSeq.size() - 2 * g_SpacerBeforeAfter;
 	const int MIN_BASE_QUALITY_READDEPTH = 0;
 	const int MIN_MAPPING_QUALITY_READDEPTH = 20;

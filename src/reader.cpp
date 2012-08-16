@@ -64,13 +64,21 @@ unsigned int g_CloseMappedMinus = 0; // #################
 //init hash/maps for read pairing on the fly
 KSORT_INIT_GENERIC (uint32_t) KHASH_MAP_INIT_STR (read_name, bam1_t *)
 struct fetch_func_data_SR {
-   fetch_func_data_SR () {
+   fetch_func_data_SR () : CurrentChrSeq( NULL ){
       LeftReads = NULL;
       read_to_map_qual = NULL;
       header = NULL;
       b1_flags = NULL;
-      b2_flags = NULL;
-      CurrentChrSeq = NULL;
+      b2_flags = NULL;   
+      Tag = "";
+      InsertSize = 0;
+   }
+   fetch_func_data_SR (const std::string* chromosomeSeq) : CurrentChrSeq( chromosomeSeq ){
+      LeftReads = NULL;
+      read_to_map_qual = NULL;
+      header = NULL;
+      b1_flags = NULL;
+      b2_flags = NULL;   
       Tag = "";
       InsertSize = 0;
    }
@@ -80,13 +88,13 @@ struct fetch_func_data_SR {
    bam_header_t *header;
    flags_hit *b1_flags;
    flags_hit *b2_flags;
-   std::string * CurrentChrSeq;
+   const std::string * CurrentChrSeq;
    std::string Tag;
    int InsertSize;
 };
 
 struct fetch_func_data_RP {
-    fetch_func_data_RP () {
+    fetch_func_data_RP () : CurrentChrSeq( NULL ){
         LeftReads = NULL;
         read_to_map_qual = NULL;
         header = NULL;
@@ -96,13 +104,22 @@ struct fetch_func_data_RP {
         Tag = "";
         InsertSize = 0;
     }
+   fetch_func_data_RP (const std::string* chromosomeSeq) : CurrentChrSeq( chromosomeSeq ){
+      LeftReads = NULL;
+      read_to_map_qual = NULL;
+      header = NULL;
+      b1_flags = NULL;
+      b2_flags = NULL;   
+      Tag = "";
+      InsertSize = 0;
+   }
     //ReadBuffer *readBuffer;
     std::vector < RP_READ > *LeftReads;
     khash_t (read_name) * read_to_map_qual;
     bam_header_t *header;
     flags_hit *b1_flags;
     flags_hit *b2_flags;
-    std::string * CurrentChrSeq;
+    const std::string * CurrentChrSeq;
     std::string Tag;
     int InsertSize;
 };
@@ -309,7 +326,7 @@ short ReadInRead (PindelReadReader & inf_ReadSeq, const std::string & FragName,
 }
 
 bool ReadInBamReads_RP (const char *bam_path, const std::string & FragName,
-                        std::string * CurrentChrSeq, std::vector <RP_READ> &LeftReads, 
+                        const std::string * CurrentChrSeq, std::vector <RP_READ> &LeftReads, 
                         int InsertSize, std::string Tag, const SearchWindow& currentWindow ) 
 { 
     bamFile fp;
@@ -326,9 +343,9 @@ bool ReadInBamReads_RP (const char *bam_path, const std::string & FragName,
     tid = bam_get_tid (header, FragName.c_str ());
 
     //kai does the below line in readinreads. dunno why yet  
-    fetch_func_data_RP data;
+    fetch_func_data_RP data( CurrentChrSeq );
     data.header = header;
-    data.CurrentChrSeq = CurrentChrSeq;
+    //data.CurrentChrSeq = CurrentChrSeq;
     data.LeftReads = &LeftReads;
     data.read_to_map_qual = NULL;
     data.read_to_map_qual = kh_init (read_name);
@@ -360,7 +377,7 @@ bool ReadInBamReads_RP (const char *bam_path, const std::string & FragName,
 
 
 bool ReadInBamReads_SR (const char *bam_path, const std::string & FragName,
-                std::string * CurrentChrSeq,
+                const std::string * CurrentChrSeq,
                 std::vector < SPLIT_READ > &LeftReads,
                 int InsertSize,
                 std::string Tag,
@@ -381,9 +398,9 @@ bool ReadInBamReads_SR (const char *bam_path, const std::string & FragName,
    tid = bam_get_tid (header, FragName.c_str ());
 
    //kai does the below line in readinreads. dunno why yet
-   fetch_func_data_SR data;
+   fetch_func_data_SR data( CurrentChrSeq );
    data.header = header;
-   data.CurrentChrSeq = CurrentChrSeq;
+   //data.CurrentChrSeq = CurrentChrSeq;
    data.LeftReads = &LeftReads;
    data.read_to_map_qual = NULL;
    data.read_to_map_qual = kh_init (read_name);
@@ -819,8 +836,9 @@ short get_RP_Reads(ControlState& currentState, const SearchWindow& currentWindow
          currentState.Reads_RP.push_back(TempOneRPVector);
          ReturnFromReadingReads = ReadInBamReads_RP(
                                                        currentState.bams_to_parse[i].BamFile.c_str(),
-                                                       currentState.CurrentChrName, 
-                                                       &currentState.CurrentChrSeq,
+                                                       currentWindow.getChromosome().getName(), 
+																		 &currentWindow.getChromosome().getSeq(),
+                                                       //&currentState.CurrentChrSeq,
                                                        currentState.Reads_RP[i],
                                                        currentState.bams_to_parse[i].InsertSize,
                                                        currentState.bams_to_parse[i].Tag,
@@ -838,9 +856,9 @@ short get_RP_Reads(ControlState& currentState, const SearchWindow& currentWindow
 
 void readInPindelReads(PindelReadReader &reader, const std::string& pindelFilename, ControlState& currentState, const SearchWindow& currentWindow )
 {
-	int ReturnFromReadingReads = ReadInRead(  reader, currentState.CurrentChrName,
-//                                             currentWindow.getChromosome().getSeq(), 
-															currentState.CurrentChrSeq,
+	int ReturnFromReadingReads = ReadInRead(  reader, currentWindow.getChromosome().getName(),
+                                             currentWindow.getChromosome().getSeq(), 
+//															currentState.CurrentChrSeq,
 															currentState.Reads_SR,
                                              currentWindow);
 	if (ReturnFromReadingReads == 1) {
@@ -861,7 +879,7 @@ short get_SR_Reads(ControlState& currentState, const SearchWindow& currentWindow
 	g_InWinMinus = 0; // #################
 	g_CloseMappedPlus = 0; // #################
 	g_CloseMappedMinus = 0; // #################
-   std::cout << "getReads " << currentState.CurrentChrName << " " << currentWindow.getChromosome().getSeq().size() << std::endl;
+   std::cout << "getReads " << currentWindow.getChromosome().getName() << " " << currentWindow.getChromosome().getSeq().size() << std::endl;
    short ReturnFromReadingReads;
    ReadBuffer readBuffer(BUFFER_SIZE, currentState.Reads_SR, currentWindow.getChromosome().getSeq());
 	UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
@@ -871,9 +889,9 @@ short get_SR_Reads(ControlState& currentState, const SearchWindow& currentWindow
          *logStream << "Insertsize in bamreads: " << currentState.bams_to_parse[i].InsertSize << std::endl;
          ReturnFromReadingReads = ReadInBamReads_SR(
                                                     currentState.bams_to_parse[i].BamFile.c_str(),
-                                                    currentState.CurrentChrName, 
-                                                   // &currentWindow.getChromosome().getSeq(),
-																		&currentState.CurrentChrSeq, 
+                                                    currentWindow.getChromosome().getName(), 
+                                                    &currentWindow.getChromosome().getSeq(),
+																	//	&currentState.CurrentChrSeq, 
                                                     currentState.Reads_SR,
                                                     currentState.bams_to_parse[i].InsertSize,
                                                     currentState.bams_to_parse[i].Tag,
@@ -883,7 +901,7 @@ short get_SR_Reads(ControlState& currentState, const SearchWindow& currentWindow
             return EXIT_FAILURE;
          }
          else if (currentState.Reads_SR.size() == 0) {
-            LOG_ERROR(*logStream << "No currentState.Reads for " << currentState.CurrentChrName << " found in " << currentState.bams_to_parse[i].BamFile << std::endl);
+            LOG_ERROR(*logStream << "No currentState.Reads for " << currentWindow.getChromosome().getName() << " found in " << currentState.bams_to_parse[i].BamFile << std::endl);
          }
          *logStream << "BAM file index\t" << i << "\t" << currentState.Reads_SR.size() << std::endl;
       }  
