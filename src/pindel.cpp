@@ -163,6 +163,49 @@ unsigned int Genome::chrNameToChrIndex( const std::string chromosomeName )
 	return m_chromosomes.size() - 1;
 }
 
+const Chromosome& Genome::loadChromosome( std::ifstream& fastaFile )
+{	
+	chromosome.Name = "";
+	chromosome.Seq = "";
+	if (m_referenceFile.eof()) {
+		return g_dummyChromosome;
+	}
+	char chrIndicatorChar; // '>' preceeds all chromosome names in a FASTA file
+	m_referenceFile >> chrIndicatorChar;
+	if (chrIndicatorChar != '>' ) {
+		std::cout << "Error: fasta line starts with " << chrIndicatorChar << " instead of '>'. Aborting.\n";
+		exit( EXIT_FAILURE );
+		return g_dummyChromosome;
+	}
+	m_referenceFile >> chromosome.Name;
+	std::string restOfChromosomeHeadline;
+	getline( m_referenceFile, restOfChromosomeHeadline );
+	char ch;
+	do {
+		m_referenceFile >> ch;
+		if (ch=='>') {
+			// next chromosome
+			m_referenceFile.putback( ch );
+			break;
+		} 
+		else {
+			ch = toupper( ch );
+			if (ch!='A' && ch!='C' && ch!='G' && ch!='T') { 
+				ch='N';
+			}
+			chromosome.Seq += ch;
+		}		
+	} while (!m_referenceFile.eof() );
+
+   std::string Spacer = "";
+   for (unsigned i = 0; i < g_SpacerBeforeAfter; i++) {
+      Spacer += "N";
+   }
+   chromosome.Seq = Spacer + chromosome.Seq + Spacer;
+
+	return chromosome;
+}
+
 UniquePoint::UniquePoint( const short lengthStr, const unsigned int absLoc, const char direction, const char strand, const short mismatches ) :
 	LengthStr( lengthStr ), AbsLoc( absLoc ), Direction( direction ), Strand( strand ), Mismatches( mismatches )
 {

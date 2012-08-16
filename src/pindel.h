@@ -403,7 +403,11 @@ LineReader *getLineReaderByFilename(const char *filename);
 
 // note: in future, want to move to having a pointer to a Chromosome structure instead of a ChrID-string
 
+class Genome;
+
 class Chromosome {
+
+friend Genome;
 
 public:
 	Chromosome( const std::string& name, const std::string& sequence ) { m_name = name; m_sequence = sequence; };
@@ -422,6 +426,7 @@ public:
 	void addChromosome( const Chromosome& newChromosome );
 	unsigned int chrNameToChrIndex( const std::string chromosomeName );
 	const Chromosome& getChr( unsigned int index ) const { if (index<m_chromosomes.size()) return m_chromosomes[ index ]; else return g_dummyChromosome; }
+	const Chromosome& loadChromosome( std::ifstream& fastaFile );
 
 private:
 	std::vector< Chromosome > m_chromosomes;
