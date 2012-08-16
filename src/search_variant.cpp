@@ -45,7 +45,7 @@ SearchVariant::~SearchVariant()
 int SearchVariant::Search(ControlState& currentState, const unsigned numBoxes, const SearchWindow& window)
 {
    std::vector<unsigned> Vars[numBoxes];
-
+    
    unsigned int farEndExists = 0;
    unsigned int readsUsed = 0;
    unsigned int bpSum = 0;
@@ -70,6 +70,7 @@ int SearchVariant::Search(ControlState& currentState, const unsigned numBoxes, c
    LOG_INFO(*logStream << "Searching " << typeOfVariant << " ... " << std::endl);
    for (unsigned ReadIndex = 0; ReadIndex < currentState.Reads_SR.size(); ReadIndex++) {
 		SPLIT_READ& currentRead = currentState.Reads_SR[ReadIndex];
+
       if (currentRead.Used || currentRead.UP_Far.empty()) {
          continue;
       }
@@ -106,6 +107,21 @@ int SearchVariant::Search(ControlState& currentState, const unsigned numBoxes, c
 
                         currentRead.BPLeft = currentRead. UP_Close[CloseIndex].AbsLoc - g_SpacerBeforeAfter;
                         currentRead.BPRight = currentRead.UP_Far[FarIndex]. AbsLoc - g_SpacerBeforeAfter;
+                         unsigned RealBP_left= currentRead.BPLeft;
+                         unsigned RealBP_right = currentRead.BPRight;//, DIFF;
+                         if (currentRead.NT_str.size()) {
+                             GetRealStart4Insertion(window.getChromosome()->getSeq(), currentRead.NT_str, RealBP_left, RealBP_right);
+                         }
+                         else {
+                             GetRealStart4Deletion(window.getChromosome()->getSeq(), RealBP_left, RealBP_right);
+                         }
+                         unsigned DIFF = currentRead.BPLeft - RealBP_left;
+                         if (DIFF) {
+                             //std::cout << DIFF << std::endl;
+                             currentRead.BP -= DIFF;
+                             currentRead.BPLeft -= DIFF;
+                             currentRead.BPRight  -= DIFF;
+                         }
                         if (readTransgressesBinBoundaries( currentRead, window.getEnd())) {
                            saveReadForNextCycle( currentRead, currentState.FutureReads_SR);
                         }
@@ -156,7 +172,21 @@ int SearchVariant::Search(ControlState& currentState, const unsigned numBoxes, c
 
                         currentRead.BPLeft = currentRead.UP_Far[FarIndex].AbsLoc - g_SpacerBeforeAfter;
                         currentRead.BPRight = currentRead.UP_Close[CloseIndex].AbsLoc - g_SpacerBeforeAfter;
-
+                         unsigned RealBP_left= currentRead.BPLeft;
+                         unsigned RealBP_right = currentRead.BPRight;//, DIFF;
+                         if (currentRead.NT_str.size()) {
+                             GetRealStart4Insertion(window.getChromosome()->getSeq(), currentRead.NT_str, RealBP_left, RealBP_right);
+                         }
+                         else {
+                             GetRealStart4Deletion(window.getChromosome()->getSeq(), RealBP_left, RealBP_right);
+                         }
+                         unsigned DIFF = currentRead.BPLeft - RealBP_left;
+                         if (DIFF) {
+                             // std::cout << DIFF << std::endl;
+                             currentRead.BP -= DIFF;
+                             currentRead.BPLeft -= DIFF;
+                             currentRead.BPRight  -= DIFF;
+                         }
                         if (readTransgressesBinBoundaries( currentRead, window.getEnd())) {
                            saveReadForNextCycle( currentRead, currentState.FutureReads_SR);
                         }
