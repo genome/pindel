@@ -116,7 +116,7 @@ int searchTandemDuplicationsNT(ControlState& currentState, unsigned NumBoxes, co
    }
    LOG_INFO(*logStream << "Total: " << Count_TD_NT << "\t+" << Count_TD_NT_Plus << "\t-" << Count_TD_NT_Minus << std::endl);
    std::ofstream TDOutf(userSettings->getTDOutputFilename().c_str(), std::ios::app);
-   SortAndOutputTandemDuplications(NumBoxes, window.getChromosome().getSeq(), currentState.Reads_SR, TD_NT, TDOutf, true);
+   SortAndOutputTandemDuplications(NumBoxes, window.getChromosome()->getSeq(), currentState.Reads_SR, TD_NT, TDOutf, true);
    TDOutf.close();
    for (unsigned int i = 0; i < NumBoxes; i++) {
       TD_NT[i].clear();

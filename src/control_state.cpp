@@ -27,9 +27,14 @@ BreakDancerCoordinate::BreakDancerCoordinate( const std::string& chromosomeName,
 	position = pos;
 }
 
-BreakDancerCoordinate::BreakDancerCoordinate( const Chromosome& chromosome, const unsigned int pos )
+BreakDancerCoordinate::BreakDancerCoordinate( const Chromosome* const chromosome, const unsigned int pos )
 {
-	m_genomeIndex = g_genome.chrNameToChrIndex( chromosome.getName() );
+	//std::cout << "Start X" << chromosome << "\n";
+	//std::cout << "BDC: chrName: " << chromosome->getName() << "\n";
+	//std::cout << "Start X1\n";
+	//std::cout << "BDC: chrName: " << chromosome->getName() << "\n";
+	m_genomeIndex = g_genome.chrNameToChrIndex( chromosome->getName() );
+	//std::cout << "LKAS\n";
 	position = pos;
 }
 

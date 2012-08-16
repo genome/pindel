@@ -413,6 +413,8 @@ public:
 	Chromosome( const std::string& name, const std::string& sequence ) { m_name = name; m_sequence = sequence; };
 	const std::string& getName() const { return m_name; }
 	const std::string& getSeq() const { return m_sequence; }
+	const unsigned int getCompSize() const { return m_sequence.size(); }
+	const unsigned int getBiolSize() const { return m_sequence.size() - 2 * g_SpacerBeforeAfter; }
 
 private:
 	std::string m_name;
@@ -423,13 +425,13 @@ extern const Chromosome g_dummyChromosome;
 
 class Genome {
 public:
-	const Chromosome& addChromosome( const Chromosome& newChromosome );
+	const Chromosome* addChromosome( Chromosome* newChromosome );
 	unsigned int chrNameToChrIndex( const std::string chromosomeName );
-	const Chromosome& getChr( unsigned int index ) const { if (index<m_chromosomes.size()) return m_chromosomes[ index ]; else return g_dummyChromosome; }
-	const Chromosome& loadChromosome( std::ifstream& fastaFile );
+	const Chromosome& getChr( unsigned int index ) const { if (index<m_chromosomes.size()) return *m_chromosomes[ index ]; else return g_dummyChromosome; }
+	const Chromosome* loadChromosome( std::ifstream& fastaFile );
 
 private:
-	std::vector< Chromosome > m_chromosomes;
+	std::vector< Chromosome* > m_chromosomes;
 };
 
 extern Genome g_genome;
@@ -445,7 +447,7 @@ public:
 	void setStart( const unsigned int newStart ) { m_currentStart = newStart; }	
 	void setEnd( const unsigned int newEnd ) { m_currentEnd = newEnd; }
 	const std::string& getChromosomeName() const { return m_chromosome->getName(); }
-	const Chromosome& getChromosome() const { return *m_chromosome; }
+	const Chromosome* getChromosome() const { return m_chromosome; }
 	unsigned int getSize() const { return 1 + m_currentEnd - m_currentStart; }
 	bool encompasses( const std::string& chromosomeName, const unsigned int position ) const;
 	SearchWindow makePindelCoordinateCopy() const { SearchWindow temp( m_chromosome, m_currentStart + g_SpacerBeforeAfter, m_currentEnd + g_SpacerBeforeAfter ); return temp; }; 

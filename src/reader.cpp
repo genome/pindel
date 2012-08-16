@@ -836,8 +836,8 @@ short get_RP_Reads(ControlState& currentState, const SearchWindow& currentWindow
          currentState.Reads_RP.push_back(TempOneRPVector);
          ReturnFromReadingReads = ReadInBamReads_RP(
                                                        currentState.bams_to_parse[i].BamFile.c_str(),
-                                                       currentWindow.getChromosome().getName(), 
-																		 &currentWindow.getChromosome().getSeq(),
+                                                       currentWindow.getChromosome()->getName(), 
+																		 &currentWindow.getChromosome()->getSeq(),
                                                        //&currentState.CurrentChrSeq,
                                                        currentState.Reads_RP[i],
                                                        currentState.bams_to_parse[i].InsertSize,
@@ -856,8 +856,8 @@ short get_RP_Reads(ControlState& currentState, const SearchWindow& currentWindow
 
 void readInPindelReads(PindelReadReader &reader, const std::string& pindelFilename, ControlState& currentState, const SearchWindow& currentWindow )
 {
-	int ReturnFromReadingReads = ReadInRead(  reader, currentWindow.getChromosome().getName(),
-                                             currentWindow.getChromosome().getSeq(), 
+	int ReturnFromReadingReads = ReadInRead(  reader, currentWindow.getChromosome()->getName(),
+                                             currentWindow.getChromosome()->getSeq(), 
 //															currentState.CurrentChrSeq,
 															currentState.Reads_SR,
                                              currentWindow);
@@ -879,9 +879,9 @@ short get_SR_Reads(ControlState& currentState, const SearchWindow& currentWindow
 	g_InWinMinus = 0; // #################
 	g_CloseMappedPlus = 0; // #################
 	g_CloseMappedMinus = 0; // #################
-   std::cout << "getReads " << currentWindow.getChromosome().getName() << " " << currentWindow.getChromosome().getSeq().size() << std::endl;
+   std::cout << "getReads " << currentWindow.getChromosome()->getName() << " " << currentWindow.getChromosome()->getSeq().size() << std::endl;
    short ReturnFromReadingReads;
-   ReadBuffer readBuffer(BUFFER_SIZE, currentState.Reads_SR, currentWindow.getChromosome().getSeq());
+   ReadBuffer readBuffer(BUFFER_SIZE, currentState.Reads_SR, currentWindow.getChromosome()->getSeq());
 	UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
    if (userSettings->bamFilesAsInput()) {
       ReturnFromReadingReads = 0;
@@ -889,8 +889,8 @@ short get_SR_Reads(ControlState& currentState, const SearchWindow& currentWindow
          *logStream << "Insertsize in bamreads: " << currentState.bams_to_parse[i].InsertSize << std::endl;
          ReturnFromReadingReads = ReadInBamReads_SR(
                                                     currentState.bams_to_parse[i].BamFile.c_str(),
-                                                    currentWindow.getChromosome().getName(), 
-                                                    &currentWindow.getChromosome().getSeq(),
+                                                    currentWindow.getChromosome()->getName(), 
+                                                    &currentWindow.getChromosome()->getSeq(),
 																	//	&currentState.CurrentChrSeq, 
                                                     currentState.Reads_SR,
                                                     currentState.bams_to_parse[i].InsertSize,
@@ -901,7 +901,7 @@ short get_SR_Reads(ControlState& currentState, const SearchWindow& currentWindow
             return EXIT_FAILURE;
          }
          else if (currentState.Reads_SR.size() == 0) {
-            LOG_ERROR(*logStream << "No currentState.Reads for " << currentWindow.getChromosome().getName() << " found in " << currentState.bams_to_parse[i].BamFile << std::endl);
+            LOG_ERROR(*logStream << "No currentState.Reads for " << currentWindow.getChromosome()->getName() << " found in " << currentState.bams_to_parse[i].BamFile << std::endl);
          }
          *logStream << "BAM file index\t" << i << "\t" << currentState.Reads_SR.size() << std::endl;
       }  

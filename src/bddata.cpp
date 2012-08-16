@@ -86,12 +86,12 @@ short CheckBreakDancerFileFormat(const std::string& filename) {
                     
                 }
                 else {
-                    std::cout << "something is wrong with this line \"" << firstChar << errorLine << "\"" << std::endl;
+                    //std::cout << "something is wrong with this line \"" << firstChar << errorLine << "\"" << std::endl;
                     return 1;
                 }
             }
             else {
-                std::cout << "something is wrong with this line \"" << firstChar << errorLine << "\"" << std::endl;
+                //std::cout << "something is wrong with this line \"" << firstChar << errorLine << "\"" << std::endl;
                 return 1;
             }
         }
@@ -106,12 +106,12 @@ short CheckBreakDancerFileFormat(const std::string& filename) {
 void BDData::loadBDFile(const std::string& filename)
 {
 	if (CheckBreakDancerFileFormat(filename) == 1) {
-        std::cout << "\nIgnore breakdancer file due to an error in the BreakDancer file format.\n" << std::endl;
+        //std::cout << "\nIgnore breakdancer file due to an error in the BreakDancer file format.\n" << std::endl;
         return; // if lines not start with #, there must be at least 6 fields and NO. 2 and No. 5 must be int.
     }
    std::ifstream bdFile( filename.c_str() );
    if (!bdFile.good()) {
-      std::cout << "Error: cannot load breakdancer file '" << filename << std::endl;
+      //std::cout << "Error: cannot load breakdancer file '" << filename << std::endl;
       exit( EXIT_FAILURE );
    }
 
@@ -144,7 +144,7 @@ void BDData::loadBDFile(const std::string& filename)
       }
    }
 	sort( m_bdEvents.begin(), m_bdEvents.end(), sortOnFirstBDCoordinate ); 
-   std::cout << "BreakDancer events: " << m_bdEvents.size()/2 << std::endl;
+   //std::cout << "BreakDancer events: " << m_bdEvents.size()/2 << std::endl;
 }
 
 
@@ -163,7 +163,7 @@ void BDData::createRegionCluster(const BDIterator& startOfEventList, const BDIte
 	for (BDIterator eventIter=relevantSubcluster.begin(); eventIter!=relevantSubcluster.end(); eventIter++ ) {
 		// NOTE: below code will be removed once we start working on interchromosomal translocations
 		if (eventIter->second.getChromosomeName() != m_currentWindow.getChromosomeName() ) {
-			std::cout << "Possible translocation from chromosome " << m_currentWindow.getChromosomeName() << " to chromosome " << eventIter->second.getChromosomeName() << "\n";
+			//std::cout << "Possible translocation from chromosome " << m_currentWindow.getChromosomeName() << " to chromosome " << eventIter->second.getChromosomeName() << "\n";
 		}
 		else {
 			SearchWindow currentEventWindow( &(eventIter->second.getChromosome()), eventIter->second.startOfWindow(), eventIter->second.endOfWindow() );
@@ -190,14 +190,22 @@ void BDData::loadRegion( const SearchWindow& searchWindow  )
 	else {
 		m_currentWindow.setStart( 0 ); 
 	}
+	//std::cout << "chromosomePtr=" << m_currentWindow.getChromosome() << "\n";	
+	//std::cout << "m_currentWindow start " << m_currentWindow.getChromosome()->getName() << " z " << m_currentWindow.getStart() << " end " << m_currentWindow.getEnd() << "size" << m_currentWindow.getSize()<< "\n";
 	/*for (unsigned int i=0; i<m_bdEvents.size(); i++ ) {
-		std::cout << m_bdEvents[i].first.getChromosomeName() <<" " << m_bdEvents[i].first.position << " - " << m_bdEvents[i].second.position << "\n";
+		//std::cout << m_bdEvents[i].first.getChromosomeName() <<" " << m_bdEvents[i].first.position << " - " << m_bdEvents[i].second.position << "\n";
 	}*/
-
+//std::cout << "X\n";
+//std::cout << "m_currentWindow startA " << m_currentWindow.getChromosome()->getName() << "\n";
 	m_currentWindow.setEnd( m_currentWindow.getEnd() + 3*INSERT_SIZE );
+//std::cout << "m_currentWindow startB " << m_currentWindow.getChromosome()->getName() << "\n";
 	BreakDancerCoordinate emptyBDCoord("",0);
+//std::cout << "m_currentWindow startC " << m_currentWindow.getChromosome()->getName() << "\n";
+//std::cout << "Y\n";
 	BreakDancerCoordinate startOfWindowBDCoord( m_currentWindow.getChromosome(), m_currentWindow.getStart() );
+//std::cout << "Z\n";
 	BDIterator startRegionInBDEvents = lower_bound( m_bdEvents.begin(), m_bdEvents.end(), BreakDancerEvent(startOfWindowBDCoord, emptyBDCoord), sortOnFirstBDCoordinate );
+//std::cout << "Z1\n";
 	BreakDancerCoordinate endOfWindowBDCoord( m_currentWindow.getChromosome(), m_currentWindow.getEnd() );
 //std::cout << "Last coordinate: " << endOfWindowBDCoord.position << std::endl;
 	BreakDancerEvent endEvent(endOfWindowBDCoord, emptyBDCoord);
@@ -212,14 +220,14 @@ void BDData::loadRegion( const SearchWindow& searchWindow  )
 	SearchWindowCluster emptyCluster;	
 	m_regionsToScanCollection.clear();
 	m_regionsToScanCollection.push_back( emptyCluster );
-	//std::cout << "Continuing LoadRegion\n";		
+	////std::cout << "Continuing LoadRegion\n";		
 	BDIterator startOfEventList = startRegionInBDEvents;
 	BDIterator endOfEventList = startRegionInBDEvents;
 	int index = 0;
 	
 	for ( unsigned int position=m_currentWindow.getStart(); position< m_currentWindow.getEnd(); position++ ) {
 		bool changed = false;
-	//std::cout << "At position " << position << "\n";	
+	////std::cout << "At position " << position << "\n";	
 
 		// remove events that have been passed already
 		for ( BDIterator eventIter=startOfEventList; eventIter<endOfEventList; eventIter++ ) {
@@ -254,7 +262,7 @@ void BDData::loadRegion( const SearchWindow& searchWindow  )
 				m_regionsToScanCollection.push_back( newCluster );
 			}
 			m_breakDancerMask[ position-m_currentWindow.getStart() ] = index;
-			//if (index%50==0) { std::cout << "Mask making: position " << position << " has index " << index << "\n"; }
+			//if (index%50==0) { //std::cout << "Mask making: position " << position << " has index " << index << "\n"; }
 		}	
 	}
 }
@@ -263,8 +271,8 @@ void BDData::loadRegion( const SearchWindow& searchWindow  )
 const SearchWindowCluster& BDData::getCorrespondingSearchWindowCluster( const SPLIT_READ& read ) const
 {
 	if ( read.getLastAbsLocCloseEnd() - m_currentWindow.getStart() < 0 || read.getLastAbsLocCloseEnd() - m_currentWindow.getStart() > m_currentWindow.getSize() ) {
-		std::cout << "Coordinate of the close end " << read.getLastAbsLocCloseEnd() << " is bad.\n";
-		std::cout << "Start: " << m_currentWindow.getStart() << " end " << m_currentWindow.getEnd() << " size " << m_currentWindow.getSize() << "\n";
+		//std::cout << "Coordinate of the close end " << read.getLastAbsLocCloseEnd() << " is bad.\n";
+		//std::cout << "Start: " << m_currentWindow.getStart() << " end " << m_currentWindow.getEnd() << " size " << m_currentWindow.getSize() << "\n";
 		exit( EXIT_FAILURE );		
 	}
 	unsigned int clusterIndex = m_breakDancerMask[ read.getLastAbsLocCloseEnd() - m_currentWindow.getStart() ];
@@ -290,7 +298,7 @@ bool BDData::isBreakDancerEvent( const unsigned int leftPosition, const unsigned
 
    if ( m_breakDancerMask[ rawLeftPosition - m_currentWindow.getStart() ]!=0  &&
 		  m_breakDancerMask[ rawRightPosition - m_currentWindow.getStart() ]!=0 ) {
-		std::cout << "Found breakdancerEvent near " << leftPosition << "-" << rightPosition << "\n";
+		//std::cout << "Found breakdancerEvent near " << leftPosition << "-" << rightPosition << "\n";
         
 		return haveCommonBDEvent( m_regionsToScanCollection[ m_breakDancerMask[ rawLeftPosition - m_currentWindow.getStart() ] ],
 				rawRightPosition - m_currentWindow.getStart(), m_currentWindow.getChromosomeName() );

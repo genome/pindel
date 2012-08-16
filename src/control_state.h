@@ -44,7 +44,7 @@ public:
 	unsigned int position;
 	//BreakDancerCoordinate( const BreakDancerCoordinate& other );
 	BreakDancerCoordinate( const std::string& chromosomeName, const unsigned int pos );
-	BreakDancerCoordinate( const Chromosome& chromosome, const unsigned int pos );
+	BreakDancerCoordinate( const Chromosome* const chromosome, const unsigned int pos );
 	unsigned int startOfWindow() const;
 	unsigned int endOfWindow() const; // NOTE: this is dangerous unless we also save the chromosome size somewhere...
 	bool operator<(const BreakDancerCoordinate& other ) const;

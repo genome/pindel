@@ -140,44 +140,46 @@ unsigned int Distance = 300;
 short MinFar_D = 8; //atoi(argv[3]);
 const short MaxDI = 30;
 
-const Chromosome& Genome::addChromosome( const Chromosome& newChromosome ) 
+const Chromosome* Genome::addChromosome( Chromosome* newChromosome ) 
 { 
 	for (unsigned int i=0; i<m_chromosomes.size(); i++ ) {
-		if ( m_chromosomes[ i ].getName() == newChromosome.getName() ) {
+		if ( m_chromosomes[ i ]->getName() == newChromosome->getName() ) {
+			delete m_chromosomes[ i ];
 			m_chromosomes[ i ] = newChromosome;
-			return m_chromosomes[ i ];
+			return newChromosome;
 		}
 	}
 	m_chromosomes.push_back( newChromosome );
-	return m_chromosomes[ m_chromosomes.size() - 1 ];
+	return newChromosome;
 }
 
 unsigned int Genome::chrNameToChrIndex( const std::string chromosomeName )
 {
 	for (unsigned int i=0; i<m_chromosomes.size(); i++ ) {
-		if ( m_chromosomes[ i ].getName() == chromosomeName ) {
+		if ( m_chromosomes[ i ]->getName() == chromosomeName ) {
 			//std::cout << "Finding chromosome " << chromosomeName << "\n";
 			return i;
 		}
 	}
 	//std::cout << "Chromosome " << chromosomeName << " not read yet.\n";
-	m_chromosomes.push_back( Chromosome( chromosomeName, "" ) );
+	Chromosome* newChromosome= new Chromosome( chromosomeName, "" ); 
+	m_chromosomes.push_back( newChromosome );
 	return m_chromosomes.size() - 1;
 }
 
-const Chromosome& Genome::loadChromosome( std::ifstream& fastaFile )
+const Chromosome* Genome::loadChromosome( std::ifstream& fastaFile )
 {	
 	std::string chromosomeName = "";
 	std::string chromosomeSeq = "";
 	if (fastaFile.eof()) {
-		return g_dummyChromosome;
+		return &g_dummyChromosome;
 	}
 	char chrIndicatorChar; // '>' preceeds all chromosome names in a FASTA file
 	fastaFile >> chrIndicatorChar;
 	if (chrIndicatorChar != '>' ) {
 		std::cout << "Error: fasta line starts with " << chrIndicatorChar << " instead of '>'. Aborting.\n";
 		exit( EXIT_FAILURE );
-		return g_dummyChromosome;
+		return &g_dummyChromosome;
 	}
 	fastaFile >> chromosomeName;
 	std::string restOfChromosomeHeadline;
@@ -204,8 +206,8 @@ const Chromosome& Genome::loadChromosome( std::ifstream& fastaFile )
       Spacer += "N";
    }
    chromosomeSeq = Spacer + chromosomeSeq + Spacer;
-	
-	return addChromosome( Chromosome( chromosomeName, chromosomeSeq ));
+	Chromosome* newChromosome= new Chromosome( chromosomeName, chromosomeSeq );
+	return addChromosome( newChromosome );
 
 }
 
@@ -736,6 +738,7 @@ void SearchFarEnd( const std::string& chromosome, SPLIT_READ& read, const Chromo
        return;
    }
 
+//std::cout << "CurrentChromosome name /seq =" << currentChromosome.getName() << " = " << currentChromosome.getSeq() << "\n";
 	const std::vector< SearchWindow>& searchCluster =  g_bdData.getCorrespondingSearchWindowCluster( read );
 	if (searchCluster.size()!=0) {
       SearchFarEndAtPos( chromosome, read, searchCluster);
@@ -844,11 +847,11 @@ void SearchSVs( ControlState& currentState, const int NumBoxes, const SearchWind
 	ReportCloseAndFarEndCounts( currentState.Reads_SR );                 
 
    if (userSettings->Analyze_LI) {
-   	SortOutputLI(currentWindow.getChromosome().getSeq(), currentState.Reads_SR, currentWindow, userSettings->getLIOutputFilename());
+   	SortOutputLI(currentWindow.getChromosome()->getSeq(), currentState.Reads_SR, currentWindow, userSettings->getLIOutputFilename());
    }
 
    if (userSettings->Analyze_BP) {
-   	SortOutputRest(currentWindow.getChromosome().getSeq(), currentState.Reads_SR, currentWindow, userSettings->getBPOutputFilename());
+   	SortOutputRest(currentWindow.getChromosome()->getSeq(), currentState.Reads_SR, currentWindow, userSettings->getBPOutputFilename());
    }
 }
 
@@ -895,9 +898,9 @@ int main(int argc, char *argv[])
    bool SpecifiedChrVisited = false;
 
    while (!FastaFile.eof() && SpecifiedChrVisited == false ) {
-		const Chromosome& currentChromosome = g_genome.loadChromosome( FastaFile );
+		const Chromosome* currentChromosome = g_genome.loadChromosome( FastaFile );
 		if (!userSettings->loopOverAllChromosomes()) {
-			if (currentState.CurrentChrName == userSettings->getRegion()->getTargetChromosomeName() ) {
+			if (currentChromosome->getName() == userSettings->getRegion()->getTargetChromosomeName() ) {
 				SpecifiedChrVisited = true;
 			}
 			else {
@@ -925,39 +928,43 @@ int main(int argc, char *argv[])
       }
 		Chromosome currentChromosome( currentState.CurrentChrName, currentState.CurrentChrSeq );
 		g_genome.addChromosome( currentChromosome );*/
-      CONS_Chr_Size = currentChromosome.getSize() - 2 * g_SpacerBeforeAfter; // #################
+      CONS_Chr_Size = currentChromosome->getBiolSize(); // #################
       g_maxPos = 0; // #################
       *logStream << "Chromosome Size: " << CONS_Chr_Size << std::endl;
-      CurrentChrMask.resize(currentChromosome.getSize());
+      CurrentChrMask.resize(currentChromosome->getCompSize());
 
-      for (unsigned int i = 0; i < currentChromosome.getSize(); i++) {
+      for (unsigned int i = 0; i < currentChromosome->getCompSize(); i++) {
          CurrentChrMask[i] = 'N';
       }
-      BoxSize = currentChromosome.getSize()/ 30000;
+      BoxSize = currentChromosome->getCompSize()/ 30000;
         if (BoxSize == 0) BoxSize = 1;
-        unsigned NumBoxes = (unsigned) (currentChromosome.getSize() * 2 / BoxSize) + 1; // box size
+        unsigned NumBoxes = (unsigned) (currentChromosome->getCompSize() * 2 / BoxSize) + 1; // box size
         (*logStream << "NumBoxes: " << NumBoxes << "\tBoxSize: " << BoxSize << std::endl);
 
         /* 3.2 apply sliding windows to input datasets starts. This is the 2nd level while loop */
         g_binIndex = 0; // to start with 0... 
     
-        LoopingSearchWindow currentWindow( userSettings->getRegion(), CONS_Chr_Size, WINDOW_SIZE, &currentChromosome ); 
+        LoopingSearchWindow currentWindow( userSettings->getRegion(), CONS_Chr_Size, WINDOW_SIZE, currentChromosome ); 
 			
+std::cout << "ChromName" << currentWindow.getChromosomeName() << "seq" <<  currentWindow.getChromosome()->getSeq()[10] << "\n";
 
         // loop over one chromosome
         do {
             /* 3.2.1 preparation starts */
-
+std::cout << "Before display\n";
 				*logStream << currentWindow.display();
+std::cout << "Before Copy\n";
 			SearchWindow currentWindow_cs = currentWindow.makePindelCoordinateCopy(); // _cs means computer science coordinates
 			//std::cout << "cs-window goes from " << currentWindow_cs.getStart() << " to " << currentWindow_cs.getEnd() << "\n";			
 			//std::cout << "window goes from " << currentWindow.getStart() << " to " << currentWindow.getEnd() << "\n";
+std::cout << "Before loadRegion\n";
 	     g_bdData.loadRegion( currentWindow_cs );
-
+std::cout << "After loadRegion\n";
             if (Time_Load_S == 0) {
                 Time_Load_S = time(NULL);
             }
             get_SR_Reads(currentState, currentWindow ); 
+std::cout << "After SRReads\n";
             Time_Mine_E = time(NULL);
 
             if (currentState.Reads_SR.size() ) {
@@ -968,7 +975,7 @@ int main(int argc, char *argv[])
                 }
                 Time_Load_E = time(NULL);
                 if (!userSettings->reportOnlyCloseMappedReads) {
-						SearchFarEnds( currentChromosome.getSeq(), currentState.Reads_SR, currentChromosome );
+						SearchFarEnds( currentChromosome->getSeq(), currentState.Reads_SR, *currentChromosome );
 						SearchSVs( currentState, NumBoxes, currentWindow );
                 }
                 Time_Sort_E = time(NULL);

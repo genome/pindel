@@ -255,7 +255,7 @@ int searchInversions(ControlState& currentState, unsigned NumBoxes, const Search
 
    LOG_INFO(*logStream << "Total: " << Count_Inv << "\t+" << Count_Inv_Plus << "\t-" << Count_Inv_Minus << std::endl);
    std::ofstream InversionOutf(userSettings->getINVOutputFilename().c_str(), std::ios::app);
-   SortOutputInv(NumBoxes, window.getChromosome().getSeq(), currentState.Reads_SR, Inv, InversionOutf);
+   SortOutputInv(NumBoxes, window.getChromosome()->getSeq(), currentState.Reads_SR, Inv, InversionOutf);
    for (unsigned int i = 0; i < NumBoxes; i++) {
       Inv[i].clear();
    }
