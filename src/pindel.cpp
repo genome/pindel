@@ -798,11 +798,11 @@ void SearchSVs( ControlState& currentState, const int NumBoxes, const SearchWind
 	ReportCloseAndFarEndCounts( currentState.Reads_SR );                 
 
    if (userSettings->Analyze_LI) {
-   	SortOutputLI(currentState.CurrentChrSeq, currentState.Reads_SR, currentWindow, userSettings->getLIOutputFilename());
+   	SortOutputLI(currentWindow.getChromosome().getSeq(), currentState.Reads_SR, currentWindow, userSettings->getLIOutputFilename());
    }
 
    if (userSettings->Analyze_BP) {
-   	SortOutputRest(currentState.CurrentChrSeq, currentState.Reads_SR, currentWindow, userSettings->getBPOutputFilename());
+   	SortOutputRest(currentWindow.getChromosome().getSeq(), currentState.Reads_SR, currentWindow, userSettings->getBPOutputFilename());
    }
 }
 
@@ -912,7 +912,7 @@ int main(int argc, char *argv[])
                 }
                 Time_Load_E = time(NULL);
                 if (!userSettings->reportOnlyCloseMappedReads) {
-						SearchFarEnds( currentState.CurrentChrSeq, currentState.Reads_SR, currentChromosome );
+						SearchFarEnds( currentChromosome.getSeq(), currentState.Reads_SR, currentChromosome );
 						SearchSVs( currentState, NumBoxes, currentWindow );
                 }
                 Time_Sort_E = time(NULL);

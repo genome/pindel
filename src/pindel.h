@@ -408,6 +408,7 @@ class Chromosome {
 public:
 	Chromosome( const std::string& name, const std::string& sequence ) { m_name = name; m_sequence = sequence; };
 	const std::string& getName() const { return m_name; }
+	const std::string& getSeq() const { return m_sequence; }
 
 private:
 	std::string m_name;

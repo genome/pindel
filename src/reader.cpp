@@ -836,6 +836,22 @@ short get_RP_Reads(ControlState& currentState, const SearchWindow& currentWindow
     return 0;
 }
 
+void readInPindelReads(PindelReadReader &reader, const std::string& pindelFilename, ControlState& currentState, const SearchWindow& currentWindow )
+{
+	int ReturnFromReadingReads = ReadInRead(  reader, currentState.CurrentChrName,
+//                                             currentWindow.getChromosome().getSeq(), 
+															currentState.CurrentChrSeq,
+															currentState.Reads_SR,
+                                             currentWindow);
+	if (ReturnFromReadingReads == 1) {
+		LOG_ERROR(*logStream << "malformed record detected in " << pindelFilename << std::endl);
+		exit( EXIT_FAILURE );
+	}
+	else if (currentState.Reads_SR.size() == 0) {
+		LOG_ERROR(*logStream << "No reads found in " << pindelFilename << std::endl);
+	}
+}
+
 
 short get_SR_Reads(ControlState& currentState, const SearchWindow& currentWindow )
 {
@@ -845,9 +861,9 @@ short get_SR_Reads(ControlState& currentState, const SearchWindow& currentWindow
 	g_InWinMinus = 0; // #################
 	g_CloseMappedPlus = 0; // #################
 	g_CloseMappedMinus = 0; // #################
-   std::cout << "getReads " << currentState.CurrentChrName << " " << currentState.CurrentChrSeq.size() << std::endl;
+   std::cout << "getReads " << currentState.CurrentChrName << " " << currentWindow.getChromosome().getSeq().size() << std::endl;
    short ReturnFromReadingReads;
-   ReadBuffer readBuffer(BUFFER_SIZE, currentState.Reads_SR, currentState.CurrentChrSeq);
+   ReadBuffer readBuffer(BUFFER_SIZE, currentState.Reads_SR, currentWindow.getChromosome().getSeq());
 	UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
    if (userSettings->bamFilesAsInput()) {
       ReturnFromReadingReads = 0;
@@ -856,7 +872,8 @@ short get_SR_Reads(ControlState& currentState, const SearchWindow& currentWindow
          ReturnFromReadingReads = ReadInBamReads_SR(
                                                     currentState.bams_to_parse[i].BamFile.c_str(),
                                                     currentState.CurrentChrName, 
-                                                    &currentState.CurrentChrSeq,
+                                                   // &currentWindow.getChromosome().getSeq(),
+																		&currentState.CurrentChrSeq, 
                                                     currentState.Reads_SR,
                                                     currentState.bams_to_parse[i].InsertSize,
                                                     currentState.bams_to_parse[i].Tag,
@@ -890,19 +907,7 @@ short get_SR_Reads(ControlState& currentState, const SearchWindow& currentWindow
    return 0;
 }
 
-void readInPindelReads(PindelReadReader &reader, const std::string& pindelFilename, ControlState& currentState, const SearchWindow& currentWindow )
-{
-	int ReturnFromReadingReads = ReadInRead(  reader, currentState.CurrentChrName,
-                                             currentState.CurrentChrSeq, currentState.Reads_SR,
-                                             currentWindow);
-	if (ReturnFromReadingReads == 1) {
-		LOG_ERROR(*logStream << "malformed record detected in " << pindelFilename << std::endl);
-		exit( EXIT_FAILURE );
-	}
-	else if (currentState.Reads_SR.size() == 0) {
-		LOG_ERROR(*logStream << "No reads found in " << pindelFilename << std::endl);
-	}
-}
+
 
 /* 'updateReadAfterCloseEndMapping' (EWL, 31thAug2011) */
 void updateReadAfterCloseEndMapping( SPLIT_READ& Temp_One_Read )
