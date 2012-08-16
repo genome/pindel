@@ -16,16 +16,16 @@ public:
 	bool isEndDefined() const;
 	bool isTargetChromosomeDefined() const;
 	std::string getTargetChromosomeName() const;
-	int getStart() const;
-	int getEnd() const;
+	unsigned int getStart() const;
+	unsigned int getEnd() const;
 
 private:
 	SearchRegion();
 	bool m_startDefined;
 	bool m_endDefined;
 	std::string m_targetChromosomeName;
-	int m_start;
-	int m_end;
+	unsigned int m_start;
+	unsigned int m_end;
 };
 
 class UserDefinedSettings {

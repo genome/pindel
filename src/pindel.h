@@ -61,7 +61,7 @@ extern unsigned int NumRead2ReportCutOff;
 extern int NumRead2ReportCutOff_BP;
 extern char Cap2LowArray[256];
 extern unsigned int g_maxPos;
-extern unsigned int CONS_Chr_Size;
+//extern unsigned int CONS_Chr_Size;
 extern bool FirstChr;
 extern int g_binIndex;
 extern short g_MinClose;
@@ -462,7 +462,7 @@ protected:
 class LoopingSearchWindow: public SearchWindow {
 
 public:
-	LoopingSearchWindow(const SearchRegion* region, const int chromosomeSize, const int binSize, const Chromosome* chromosome );
+	LoopingSearchWindow(const SearchRegion* region, const Chromosome* chromosome, const int binSize  );
 	void next();
 	std::string display() const;
 	bool finished() const;

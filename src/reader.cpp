@@ -201,8 +201,8 @@ short ReadInRead (PindelReadReader & inf_ReadSeq, const std::string & FragName,
          else {
             g_InWinMinus++; 
          }
-         if (Temp_One_Read.MatchedRelPos > CONS_Chr_Size) { // perhaps make setter for MatchedRelpos, so these details can be factored out?
-            Temp_One_Read.MatchedRelPos = CONS_Chr_Size;
+         if (Temp_One_Read.MatchedRelPos > currentWindow.getChromosome()->getBiolSize()) { // perhaps make setter for MatchedRelpos, so these details can be factored out?
+            Temp_One_Read.MatchedRelPos = currentWindow.getChromosome()->getBiolSize();
          }
          if (Temp_One_Read.MatchedRelPos < 0) {
             Temp_One_Read.MatchedRelPos = 0;
@@ -575,8 +575,8 @@ void build_record_SR (const bam1_t * mapped_read, const bam1_t * unmapped_read, 
     else {
         g_InWinMinus++;
     }
-    if (Temp_One_Read.MatchedRelPos > CONS_Chr_Size) {
-        Temp_One_Read.MatchedRelPos = CONS_Chr_Size;
+    if (Temp_One_Read.MatchedRelPos > data_for_bam->CurrentChrSeq->size()-2 * g_SpacerBeforeAfter) {
+        Temp_One_Read.MatchedRelPos = data_for_bam->CurrentChrSeq->size()-2 * g_SpacerBeforeAfter;
     }
     if (Temp_One_Read.MatchedRelPos < 1) {
         Temp_One_Read.MatchedRelPos = 0;

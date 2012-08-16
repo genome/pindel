@@ -82,8 +82,8 @@ public:
 	std::vector<bam_info> bams_to_parse;
 	std::vector<std::string> pindelfilesToParse;
     
-	std::string CurrentChrSeq;
-	std::string CurrentChrName;
+	//std::string CurrentChrSeq;
+	//std::string CurrentChrName;
 
 	std::vector<SPLIT_READ> InputReads_SR, Reads_SR, FutureReads_SR;
     std::vector <RPVector> Reads_RP;

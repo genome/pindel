@@ -57,7 +57,7 @@ std::string SearchRegion::getTargetChromosomeName() const
 	return m_targetChromosomeName;
 } 
 
-int SearchRegion::getStart() const
+unsigned int SearchRegion::getStart() const
 {
 	if (!m_startDefined) {
 		std::cout << "Error, the region start is requested but has not been defined!\n";
@@ -66,7 +66,7 @@ int SearchRegion::getStart() const
 	return m_start;
 } 
 
-int SearchRegion::getEnd() const
+unsigned int SearchRegion::getEnd() const
 {
 	if (!m_endDefined) {
 		std::cout << "Error, the region end is requested but has not been defined!\n";

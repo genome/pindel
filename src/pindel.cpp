@@ -115,7 +115,7 @@ char Convert2RC4N[256];
 char Cap2LowArray[256];
 bool FirstChr = true;
 const double InsertSizeExtra = 2;
-unsigned int CONS_Chr_Size;
+//unsigned int CONS_Chr_Size;
 unsigned int DSizeArray[15];
 int g_maxInsertSize=0;
 
@@ -133,7 +133,7 @@ const bool ReportSVReads = false;
 const bool ReportLargeInterChrSVReads = false;
 const unsigned short Indel_SV_cutoff = 50;
 unsigned int WINDOW_SIZE = 10000000;
-const int AROUND_REGION_BUFFER = 10000; // how much earlier reads should be selected if only a region of the chromosome needs be specified.
+const unsigned int AROUND_REGION_BUFFER = 10000; // how much earlier reads should be selected if only a region of the chromosome needs be specified.
 // #########################################################
 
 unsigned int Distance = 300;
@@ -240,13 +240,13 @@ SearchWindow::SearchWindow(const SearchWindow& other) :
 	m_chromosome(other.m_chromosome), m_currentStart( other.m_currentStart ), m_currentEnd( other.m_currentEnd) 
 {}
 
-LoopingSearchWindow::LoopingSearchWindow(const SearchRegion* region, const int chromosomeSize, const int binSize, const Chromosome* chromosome) : 
-	SearchWindow(chromosome,0,chromosomeSize), m_BIN_SIZE( binSize )
+LoopingSearchWindow::LoopingSearchWindow(const SearchRegion* region, const Chromosome* chromosome, const int binSize ) : 
+	SearchWindow(chromosome,0,chromosome->getBiolSize()), m_BIN_SIZE( binSize )
 {
 	if (region->isStartDefined()) {
 		m_officialStart = region->getStart();
 		// if the user defines a region, you need to start with reads before that, but not before the start of the chromosome
-		m_globalStart = std::max( 0 , region->getStart() - AROUND_REGION_BUFFER ); 
+		m_globalStart = ( region->getStart() >= AROUND_REGION_BUFFER ? region->getStart() - AROUND_REGION_BUFFER : 0); 
 	}
 	else {
 		m_officialStart = m_globalStart = 0;
@@ -255,10 +255,10 @@ LoopingSearchWindow::LoopingSearchWindow(const SearchRegion* region, const int c
 	if (region->isEndDefined()) {
 		m_officialEnd = region->getEnd();
 		// if the user defines a region, you need to end with reads after that, but not after the end of the chromosome
-		m_globalEnd = std::min( chromosomeSize , region->getEnd() + AROUND_REGION_BUFFER ); 
+		m_globalEnd = std::min( chromosome->getBiolSize() , region->getEnd() + AROUND_REGION_BUFFER ); 
 	}
 	else {
-		m_officialEnd = m_globalEnd = chromosomeSize;
+		m_officialEnd = m_globalEnd = chromosome->getBiolSize();
 	}
 
 	m_currentStart = m_globalStart;
@@ -904,33 +904,17 @@ int main(int argc, char *argv[])
 				SpecifiedChrVisited = true;
 			}
 			else {
-         	*logStream << "Skipping chromosome: " << currentState.CurrentChrName << std::endl;
+         	*logStream << "Skipping chromosome: " << currentChromosome->getName() << std::endl;
 				continue;
 			}
 		}
 
-      *logStream << "Processing chromosome: " << currentState.CurrentChrName << std::endl;
+      *logStream << "Processing chromosome: " << currentChromosome->getName() << std::endl;
         //TODO: check with Kai what's the use of this line.
         // dangerous, there may be no other elements on the fasta header line
-	  /* std::string emptystr;
-      std::getline(FastaFile, emptystr);
-      if (userSettings->loopOverAllChromosomes()) {
-      	GetOneChrSeq(FastaFile, currentState.CurrentChrSeq, true);
-      }
-      else if (currentState.CurrentChrName == userSettings->getRegion()->getTargetChromosomeName()) {   // just one chr and this is the correct one
-         GetOneChrSeq(FastaFile, currentState.CurrentChrSeq, true);
-         SpecifiedChrVisited = true;
-      }
-      else {   // not build up sequence
-         GetOneChrSeq(FastaFile, currentState.CurrentChrSeq, false);
-         *logStream << "Skipping chromosome: " << currentState.CurrentChrName << std::endl;
-         continue;
-      }
-		Chromosome currentChromosome( currentState.CurrentChrName, currentState.CurrentChrSeq );
-		g_genome.addChromosome( currentChromosome );*/
-      CONS_Chr_Size = currentChromosome->getBiolSize(); // #################
+
       g_maxPos = 0; // #################
-      *logStream << "Chromosome Size: " << CONS_Chr_Size << std::endl;
+      *logStream << "Chromosome Size: " << currentChromosome->getBiolSize() << std::endl;
       CurrentChrMask.resize(currentChromosome->getCompSize());
 
       for (unsigned int i = 0; i < currentChromosome->getCompSize(); i++) {
@@ -944,7 +928,7 @@ int main(int argc, char *argv[])
         /* 3.2 apply sliding windows to input datasets starts. This is the 2nd level while loop */
         g_binIndex = 0; // to start with 0... 
     
-        LoopingSearchWindow currentWindow( userSettings->getRegion(), CONS_Chr_Size, WINDOW_SIZE, currentChromosome ); 
+        LoopingSearchWindow currentWindow( userSettings->getRegion(), currentChromosome, WINDOW_SIZE ); 
 			
 //std::cout << "ChromName" << currentWindow.getChromosomeName() << "seq" <<  currentWindow.getChromosome()->getSeq()[10] << "\n";
 
