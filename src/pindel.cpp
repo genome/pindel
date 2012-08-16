@@ -946,25 +946,25 @@ int main(int argc, char *argv[])
     
         LoopingSearchWindow currentWindow( userSettings->getRegion(), CONS_Chr_Size, WINDOW_SIZE, currentChromosome ); 
 			
-std::cout << "ChromName" << currentWindow.getChromosomeName() << "seq" <<  currentWindow.getChromosome()->getSeq()[10] << "\n";
+//std::cout << "ChromName" << currentWindow.getChromosomeName() << "seq" <<  currentWindow.getChromosome()->getSeq()[10] << "\n";
 
         // loop over one chromosome
         do {
             /* 3.2.1 preparation starts */
-std::cout << "Before display\n";
+//std::cout << "Before display\n";
 				*logStream << currentWindow.display();
-std::cout << "Before Copy\n";
+//std::cout << "Before Copy\n";
 			SearchWindow currentWindow_cs = currentWindow.makePindelCoordinateCopy(); // _cs means computer science coordinates
 			//std::cout << "cs-window goes from " << currentWindow_cs.getStart() << " to " << currentWindow_cs.getEnd() << "\n";			
 			//std::cout << "window goes from " << currentWindow.getStart() << " to " << currentWindow.getEnd() << "\n";
-std::cout << "Before loadRegion\n";
+//std::cout << "Before loadRegion\n";
 	     g_bdData.loadRegion( currentWindow_cs );
-std::cout << "After loadRegion\n";
+//std::cout << "After loadRegion\n";
             if (Time_Load_S == 0) {
                 Time_Load_S = time(NULL);
             }
             get_SR_Reads(currentState, currentWindow ); 
-std::cout << "After SRReads\n";
+//std::cout << "After SRReads\n";
             Time_Mine_E = time(NULL);
 
             if (currentState.Reads_SR.size() ) {
