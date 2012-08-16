@@ -867,8 +867,8 @@ int main(int argc, char *argv[])
    init(argc, argv, currentState );
 
 	std::ifstream FastaFile( userSettings->referenceFilename.c_str() );
-   char FirstCharOfFasta;
-   FastaFile >> FirstCharOfFasta;
+   //char FirstCharOfFasta;
+   //FastaFile >> FirstCharOfFasta;
     /* Start of shortcut to genotyping */ // currentState.inf_AssemblyInput.open(par.inf_AssemblyInputFilename.c_str());
 	/*bool GenotypingInputDefined = parameters[findParameter("-g",parameters)]->isSet();
    if (GenotypingInputDefined) {
@@ -894,12 +894,22 @@ int main(int argc, char *argv[])
 
    bool SpecifiedChrVisited = false;
 
-   while (SpecifiedChrVisited == false && FastaFile >> currentState.CurrentChrName && !FastaFile.eof()) {
+   while (!FastaFile.eof() && SpecifiedChrVisited == false ) {
+		const Chromosome& currentChromosome = g_genome.loadChromosome( FastaFile );
+		if (!userSettings->loopOverAllChromosomes()) {
+			if (currentState.CurrentChrName == userSettings->getRegion()->getTargetChromosomeName() ) {
+				SpecifiedChrVisited = true;
+			}
+			else {
+         	*logStream << "Skipping chromosome: " << currentState.CurrentChrName << std::endl;
+				continue;
+			}
+		}
 
       *logStream << "Processing chromosome: " << currentState.CurrentChrName << std::endl;
         //TODO: check with Kai what's the use of this line.
         // dangerous, there may be no other elements on the fasta header line
-	   std::string emptystr;
+	  /* std::string emptystr;
       std::getline(FastaFile, emptystr);
       if (userSettings->loopOverAllChromosomes()) {
       	GetOneChrSeq(FastaFile, currentState.CurrentChrSeq, true);
@@ -914,18 +924,18 @@ int main(int argc, char *argv[])
          continue;
       }
 		Chromosome currentChromosome( currentState.CurrentChrName, currentState.CurrentChrSeq );
-		g_genome.addChromosome( currentChromosome );
-      CONS_Chr_Size = currentState.CurrentChrSeq.size() - 2 * g_SpacerBeforeAfter; // #################
+		g_genome.addChromosome( currentChromosome );*/
+      CONS_Chr_Size = currentChromosome.getSize() - 2 * g_SpacerBeforeAfter; // #################
       g_maxPos = 0; // #################
       *logStream << "Chromosome Size: " << CONS_Chr_Size << std::endl;
-      CurrentChrMask.resize(currentState.CurrentChrSeq.size());
+      CurrentChrMask.resize(currentChromosome.getSize());
 
-      for (unsigned int i = 0; i < currentState.CurrentChrSeq.size(); i++) {
+      for (unsigned int i = 0; i < currentChromosome.getSize(); i++) {
          CurrentChrMask[i] = 'N';
       }
-      BoxSize = currentState.CurrentChrSeq.size() / 30000;
+      BoxSize = currentChromosome.getSize()/ 30000;
         if (BoxSize == 0) BoxSize = 1;
-        unsigned NumBoxes = (unsigned) (currentState.CurrentChrSeq.size() * 2 / BoxSize) + 1; // box size
+        unsigned NumBoxes = (unsigned) (currentChromosome.getSize() * 2 / BoxSize) + 1; // box size
         (*logStream << "NumBoxes: " << NumBoxes << "\tBoxSize: " << BoxSize << std::endl);
 
         /* 3.2 apply sliding windows to input datasets starts. This is the 2nd level while loop */
