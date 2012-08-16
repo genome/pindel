@@ -79,7 +79,7 @@ void defineParameters(std::vector<Parameter *>& parameters)
         new FloatParameter(&userSettings->Seq_Error_Rate, "-e",
                            "--sequencing_error_rate",
                            "the expected fraction of sequencing errors "
-                           "(default 0.03)", false, 0.03));
+                           "(default 0.02)", false, 0.02));
 
     parameters.push_back(
         new FloatParameter(
@@ -87,7 +87,7 @@ void defineParameters(std::vector<Parameter *>& parameters)
             "-u",
             "--maximum_allowed_mismatch_rate",
             "Only reads with no less than this fraction of mismatches than the reference genome will be considered. "
-            "(default 0.05)", false, 0.05));
+            "(default 0.01)", false, 0.01));
 
     parameters.push_back(
         new BoolParameter(&userSettings->Analyze_INV, "-r", "--report_inversions",
@@ -135,7 +135,7 @@ void defineParameters(std::vector<Parameter *>& parameters)
             &userSettings->ADDITIONAL_MISMATCH,
             "-a",
             "--additional_mismatch",
-            "Pindel will only map part of a read to the reference genome if there are no other candidate positions with no more than the specified number of mismatches position. The bigger tha value, the more accurate but less sensitive. (default value 1)",
+            "Pindel will only map part of a read to the reference genome if there are no other candidate positions with no more than the specified number of mismatches position. The bigger tha value, the more accurate but less sensitive. (default value 2)",
             false, 1));
 
     parameters.push_back(
