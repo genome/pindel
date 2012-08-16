@@ -140,14 +140,16 @@ unsigned int Distance = 300;
 short MinFar_D = 8; //atoi(argv[3]);
 const short MaxDI = 30;
 
-void Genome::addChromosome( const Chromosome& newChromosome ) 
+const Chromosome& Genome::addChromosome( const Chromosome& newChromosome ) 
 { 
 	for (unsigned int i=0; i<m_chromosomes.size(); i++ ) {
 		if ( m_chromosomes[ i ].getName() == newChromosome.getName() ) {
 			m_chromosomes[ i ] = newChromosome;
+			return m_chromosomes[ i ];
 		}
 	}
 	m_chromosomes.push_back( newChromosome );
+	return m_chromosomes[ m_chromosomes.size() - 1 ];
 }
 
 unsigned int Genome::chrNameToChrIndex( const std::string chromosomeName )
@@ -165,27 +167,27 @@ unsigned int Genome::chrNameToChrIndex( const std::string chromosomeName )
 
 const Chromosome& Genome::loadChromosome( std::ifstream& fastaFile )
 {	
-	chromosome.Name = "";
-	chromosome.Seq = "";
-	if (m_referenceFile.eof()) {
+	std::string chromosomeName = "";
+	std::string chromosomeSeq = "";
+	if (fastaFile.eof()) {
 		return g_dummyChromosome;
 	}
 	char chrIndicatorChar; // '>' preceeds all chromosome names in a FASTA file
-	m_referenceFile >> chrIndicatorChar;
+	fastaFile >> chrIndicatorChar;
 	if (chrIndicatorChar != '>' ) {
 		std::cout << "Error: fasta line starts with " << chrIndicatorChar << " instead of '>'. Aborting.\n";
 		exit( EXIT_FAILURE );
 		return g_dummyChromosome;
 	}
-	m_referenceFile >> chromosome.Name;
+	fastaFile >> chromosomeName;
 	std::string restOfChromosomeHeadline;
-	getline( m_referenceFile, restOfChromosomeHeadline );
+	getline( fastaFile, restOfChromosomeHeadline );
 	char ch;
 	do {
-		m_referenceFile >> ch;
+		fastaFile >> ch;
 		if (ch=='>') {
 			// next chromosome
-			m_referenceFile.putback( ch );
+			fastaFile.putback( ch );
 			break;
 		} 
 		else {
@@ -193,17 +195,18 @@ const Chromosome& Genome::loadChromosome( std::ifstream& fastaFile )
 			if (ch!='A' && ch!='C' && ch!='G' && ch!='T') { 
 				ch='N';
 			}
-			chromosome.Seq += ch;
+			chromosomeSeq += ch;
 		}		
-	} while (!m_referenceFile.eof() );
+	} while (!fastaFile.eof() );
 
    std::string Spacer = "";
    for (unsigned i = 0; i < g_SpacerBeforeAfter; i++) {
       Spacer += "N";
    }
-   chromosome.Seq = Spacer + chromosome.Seq + Spacer;
+   chromosomeSeq = Spacer + chromosomeSeq + Spacer;
+	
+	return addChromosome( Chromosome( chromosomeName, chromosomeSeq ));
 
-	return chromosome;
 }
 
 UniquePoint::UniquePoint( const short lengthStr, const unsigned int absLoc, const char direction, const char strand, const short mismatches ) :
