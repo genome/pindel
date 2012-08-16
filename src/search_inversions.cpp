@@ -23,6 +23,7 @@
 #include "reporter.h"
 #include "control_state.h"
 #include "logdef.h"
+#include "search_inversions.h"
 
 
 // EW: McCabe complexity through the roof here; extract some blocks
@@ -81,6 +82,7 @@ int searchInversions(ControlState& currentState, unsigned NumBoxes, const Search
 
                               currentRead.BPLeft = currentRead.UP_Close[CloseIndex].AbsLoc + 1 - g_SpacerBeforeAfter;
                               currentRead.BPRight = currentRead.UP_Far[FarIndex].AbsLoc - g_SpacerBeforeAfter;
+                               LeftMostINV(currentState, currentRead, window);
                               if (readTransgressesBinBoundaries( currentRead, window.getEnd())) {
                                  saveReadForNextCycle( currentRead, currentState.FutureReads_SR);
                               }
@@ -133,6 +135,7 @@ int searchInversions(ControlState& currentState, unsigned NumBoxes, const Search
 
                               currentRead.BPRight = currentRead.UP_Close[CloseIndex].AbsLoc - g_SpacerBeforeAfter;
                               currentRead.BPLeft = (currentRead.UP_Far[FarIndex].AbsLoc + 1) - g_SpacerBeforeAfter;
+                               LeftMostINV(currentState, currentRead, window);
                               if (readTransgressesBinBoundaries( currentRead, window.getEnd())) {
                                  saveReadForNextCycle( currentRead, currentState.FutureReads_SR);
                               }
@@ -187,6 +190,7 @@ int searchInversions(ControlState& currentState, unsigned NumBoxes, const Search
 
                               currentRead.BPLeft = currentRead.UP_Far[FarIndex].AbsLoc - g_SpacerBeforeAfter;
                               currentRead.BPRight = currentRead.UP_Close[CloseIndex].AbsLoc - 1 - g_SpacerBeforeAfter;
+                               LeftMostINV(currentState, currentRead, window);
                               if (readInSpecifiedRegion( currentRead, userSettings->getRegion())) {
                                  Inv[(int) (currentRead. BPLeft + currentRead. BPRight) / BoxSize]. push_back( ReadIndex);
                                  currentRead. Used = true;
@@ -234,6 +238,7 @@ int searchInversions(ControlState& currentState, unsigned NumBoxes, const Search
 
                               currentRead.BPLeft = currentRead.UP_Close[CloseIndex].AbsLoc - g_SpacerBeforeAfter;
                               currentRead.BPRight = currentRead.UP_Far[FarIndex].AbsLoc - 1 - g_SpacerBeforeAfter;
+                               LeftMostINV(currentState, currentRead, window);
                               if (readInSpecifiedRegion( currentRead, userSettings->getRegion())) {
                                  Inv[(int) (currentRead. BPLeft + currentRead. BPRight) / BoxSize]. push_back( ReadIndex);
                                  currentRead. Used = true;
@@ -262,3 +267,69 @@ int searchInversions(ControlState& currentState, unsigned NumBoxes, const Search
 
    return EXIT_SUCCESS;
 }
+
+void LeftMostINV(ControlState& currentState, SPLIT_READ & currentRead, const SearchWindow& window) {
+    // window.getChromosome()->getSeq()
+}
+
+/*
+void GetRealStart4Deletion(const std::string & TheInput,
+                           unsigned int &RealStart, unsigned int &RealEnd)
+{
+    unsigned int PosIndex = RealStart + g_SpacerBeforeAfter;
+    unsigned int Start = PosIndex + 1;
+    unsigned int End = RealEnd + g_SpacerBeforeAfter - 1;
+    while (TheInput[PosIndex] == TheInput[End]) {
+        --PosIndex;
+        --End;
+    }
+    RealStart = PosIndex - g_SpacerBeforeAfter;
+    PosIndex = RealEnd + g_SpacerBeforeAfter;
+    while (TheInput[PosIndex] == TheInput[Start]) {
+        ++PosIndex;
+        ++Start;
+    }
+    RealEnd = PosIndex - g_SpacerBeforeAfter;
+}
+
+void GetRealStart4Insertion(const std::string & TheInput,
+                            std::string & InsertedStr, unsigned int &RealStart,
+                            unsigned int &RealEnd)
+{
+    unsigned int IndelSize = InsertedStr.size();
+    unsigned int PosIndex = RealStart + g_SpacerBeforeAfter;
+    unsigned int original_RealStart = RealStart;
+    
+    for (int i = IndelSize - 1; i >= 0; i--) {
+        if (TheInput[PosIndex] == InsertedStr[i]) {
+            PosIndex--;
+        }
+        else {
+            break;
+        }
+    }
+    if (PosIndex == RealStart + g_SpacerBeforeAfter - IndelSize) {
+        while (TheInput[PosIndex] == TheInput[PosIndex + IndelSize]) {
+            PosIndex--;
+        }
+    }
+    RealStart = PosIndex - g_SpacerBeforeAfter;
+    PosIndex = RealEnd + g_SpacerBeforeAfter;
+    for (unsigned int i = 0; i < IndelSize; i++) {
+        if (TheInput[PosIndex] == InsertedStr[i]) {
+            PosIndex++;
+        }
+        else {
+            break;
+        }
+    }
+    if (PosIndex == RealEnd + g_SpacerBeforeAfter + IndelSize) {
+        while (TheInput[PosIndex] == TheInput[PosIndex - IndelSize]) {
+            PosIndex++;
+        }
+    }
+    RealEnd = PosIndex - g_SpacerBeforeAfter;
+    unsigned DIFF = RealStart - original_RealStart;
+    InsertedStr = InsertedStr.substr(0, IndelSize - DIFF) + InsertedStr.substr(IndelSize, DIFF);
+}
+*/

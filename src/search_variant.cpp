@@ -21,6 +21,8 @@
 // System header files
 #include <string>
 #include <vector>
+#include <algorithm>
+
 
 // Pindel header files
 #include "logstream.h"
@@ -115,7 +117,8 @@ int SearchVariant::Search(ControlState& currentState, const unsigned numBoxes, c
                          else {
                              GetRealStart4Deletion(window.getChromosome()->getSeq(), RealBP_left, RealBP_right);
                          }
-                         unsigned DIFF = currentRead.BPLeft - RealBP_left;
+                         short DIFF = currentRead.BPLeft - RealBP_left;
+                         DIFF = !((currentRead.BP - 1)<DIFF)?DIFF:(currentRead.BP - 1); // min(DIFF, currentRead.BP - 1);
                          if (DIFF) {
                              //std::cout << DIFF << std::endl;
                              currentRead.BP -= DIFF;
@@ -180,7 +183,8 @@ int SearchVariant::Search(ControlState& currentState, const unsigned numBoxes, c
                          else {
                              GetRealStart4Deletion(window.getChromosome()->getSeq(), RealBP_left, RealBP_right);
                          }
-                         unsigned DIFF = currentRead.BPLeft - RealBP_left;
+                         short DIFF = currentRead.BPLeft - RealBP_left;
+                         DIFF = !((currentRead.BP - 1)<DIFF)?DIFF:(currentRead.BP - 1);
                          if (DIFF) {
                              // std::cout << DIFF << std::endl;
                              currentRead.BP -= DIFF;

@@ -1086,11 +1086,12 @@ void GetRealStart4Deletion(const std::string & TheInput,
 }
 
 void GetRealStart4Insertion(const std::string & TheInput,
-                            const std::string & InsertedStr, unsigned int &RealStart,
+                            std::string & InsertedStr, unsigned int &RealStart,
                             unsigned int &RealEnd)
 {
     unsigned int IndelSize = InsertedStr.size();
     unsigned int PosIndex = RealStart + g_SpacerBeforeAfter;
+    unsigned int original_RealStart = RealStart;
 
     for (int i = IndelSize - 1; i >= 0; i--) {
         if (TheInput[PosIndex] == InsertedStr[i]) {
@@ -1121,6 +1122,8 @@ void GetRealStart4Insertion(const std::string & TheInput,
         }
     }
     RealEnd = PosIndex - g_SpacerBeforeAfter;
+    unsigned DIFF = RealStart - original_RealStart;
+    InsertedStr = InsertedStr.substr(0, IndelSize - DIFF) + InsertedStr.substr(IndelSize, DIFF);
 }
 
 std::vector<Region> Merge(const std::vector<Region> &AllRegions)

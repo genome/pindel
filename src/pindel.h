@@ -344,7 +344,7 @@ ReverseComplement(const std::vector<std::string> &input);
 std::string ReverseComplement(const std::string & InputPattern);
 std::string Cap2Low(const std::string & input);
 void GetRealStart4Insertion(const std::string & TheInput,
-		const std::string & InsertedStr, unsigned int &RealStart,
+		std::string & InsertedStr, unsigned int &RealStart,
 		unsigned int &RealEnd);
 void GetRealStart4Deletion(const std::string & TheInput,	unsigned int &RealStart, unsigned int &RealEnd);
 bool ReportEvent(const std::vector<SPLIT_READ> &Deletions, const unsigned int &Pre_S, const unsigned int &Pre_E);
