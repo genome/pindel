@@ -427,8 +427,9 @@ extern const Chromosome g_dummyChromosome;
 
 class Genome {
 public:
-	unsigned int chrNameToChrIndex( const std::string chromosomeName );
-	const Chromosome& getChr( unsigned int index ) const { if (index<m_chromosomes.size()) return *m_chromosomes[ index ]; else return g_dummyChromosome; }
+	//unsigned int chrNameToChrIndex( const std::string chromosomeName );
+	const Chromosome* getChr( unsigned int index ) const;
+	const Chromosome* getChr( const std::string& chromosomeName ) const; 
 	void load( const std::string& referenceFileName );
 	void loadAll(const std::string& referenceFileName);
 	const Chromosome* getNextChromosome();

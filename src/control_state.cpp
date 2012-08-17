@@ -21,21 +21,37 @@
 // Pindel header files
 #include "control_state.h"
 
-BreakDancerCoordinate::BreakDancerCoordinate( const std::string& chromosomeName, const unsigned int pos )
+BreakDancerCoordinate::BreakDancerCoordinate( const std::string& chromosomeName, const unsigned int pos ) : m_chromosomeName ( chromosomeName )
 {
-	m_genomeIndex = g_genome.chrNameToChrIndex( chromosomeName );
 	position = pos;
 }
 
-BreakDancerCoordinate::BreakDancerCoordinate( const Chromosome* const chromosome, const unsigned int pos )
+BreakDancerCoordinate::BreakDancerCoordinate( const Chromosome* const chromosome, const unsigned int pos ): m_chromosomeName( chromosome->getName() )
 {
-	//std::cout << "Start X" << chromosome << "\n";
-	//std::cout << "BDC: chrName: " << chromosome->getName() << "\n";
-	//std::cout << "Start X1\n";
-	//std::cout << "BDC: chrName: " << chromosome->getName() << "\n";
-	m_genomeIndex = g_genome.chrNameToChrIndex( chromosome->getName() );
-	//std::cout << "LKAS\n";
 	position = pos;
+}
+
+BreakDancerCoordinate::BreakDancerCoordinate( const BreakDancerCoordinate& other ) : m_chromosomeName ( other.m_chromosomeName ), position (other.position )
+{}
+
+
+BreakDancerCoordinate& BreakDancerCoordinate::operator=(const BreakDancerCoordinate& other)
+{
+   if (this != &other) {
+      this->BreakDancerCoordinate::~BreakDancerCoordinate(); // explicit non-virtual destructor
+      new (this) BreakDancerCoordinate( other ); // placement new
+   }
+   return *this;
+}
+
+const Chromosome* BreakDancerCoordinate::getChromosome() const 
+{ 
+	const Chromosome* foundChromosome = g_genome.getChr(m_chromosomeName); 
+	if (foundChromosome==NULL) {
+		std::cout << "Error: chromosome with name : " << m_chromosomeName << " not yet loaded into memory. Aborting.\n";
+		exit( EXIT_FAILURE );
+	}
+	return foundChromosome;
 }
 
 unsigned int BreakDancerCoordinate::startOfWindow() const
@@ -44,22 +60,9 @@ unsigned int BreakDancerCoordinate::startOfWindow() const
 	else { return 0; }
 }
 
-/*BreakDancerCoordinate::BreakDancerCoordinate( const BreakDancerCoordinate& other ) : m_chromosome( other.m_chromosome ), position (other.position)
-{}*/
-
-/*const BreakDancerCoordinate& BreakDancerCoordinate::operator=( const BreakDancerCoordinate& other ) 
-{ 
-   if (this != &other) {
-      this->BreakDancerCoordinate::~BreakDancerCoordinate(); // explicit non-virtual destructor
-      new (this) BreakDancerCoordinate( other ); // placement new
-   }
-   return *this;
-}*/
-
 BreakDancerEvent::BreakDancerEvent( const BreakDancerEvent& other ) : first (other.first), second( other.second)
 {
 }
-
 
 unsigned int BreakDancerCoordinate::endOfWindow() const // NOTE: this is dangerous unless we also save the chromosome size somewhere...
 {

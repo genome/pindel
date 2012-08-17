@@ -34,25 +34,22 @@
 struct BreakDancerCoordinate {
 
 private:
-	unsigned int m_genomeIndex;
+	const std::string m_chromosomeName;
 
 public:
 	static const unsigned int BREAKDANCER_WINDOWSPAN = 200;
-	//const BreakDancerCoordinate& operator=( const BreakDancerCoordinate& other );
-
+	BreakDancerCoordinate& operator=( const BreakDancerCoordinate& other );
 
 	unsigned int position;
-	//BreakDancerCoordinate( const BreakDancerCoordinate& other );
+	BreakDancerCoordinate( const BreakDancerCoordinate& other );
 	BreakDancerCoordinate( const std::string& chromosomeName, const unsigned int pos );
 	BreakDancerCoordinate( const Chromosome* const chromosome, const unsigned int pos );
 	unsigned int startOfWindow() const;
 	unsigned int endOfWindow() const; // NOTE: this is dangerous unless we also save the chromosome size somewhere...
 	bool operator<(const BreakDancerCoordinate& other ) const;
 	bool operator!=(const BreakDancerCoordinate& other ) const { return ( getChromosomeName()!=other.getChromosomeName() || position!=other.position ); }
-	const std::string& getChromosomeName() const { return g_genome.getChr(m_genomeIndex).getName(); }
-	const Chromosome& getChromosome() const { return g_genome.getChr(m_genomeIndex); }
-
-
+	const std::string& getChromosomeName() const { return m_chromosomeName; }
+	const Chromosome* getChromosome() const;
 };
 
 struct BreakDancerEvent {

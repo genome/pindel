@@ -126,6 +126,22 @@ const Chromosome* Genome::addChromosome( Chromosome* newChromosome )
 	return newChromosome;
 }
 
+const Chromosome* Genome::getChr( unsigned int index ) const 
+{ 
+	if (index<m_chromosomes.size()) return m_chromosomes[ index ]; 
+	else return NULL; 
+}
+
+const Chromosome* Genome::getChr( const std::string& chromosomeName ) const 
+{ 
+	for (unsigned int i=0; i<m_chromosomes.size(); i++ ) {
+		if ( m_chromosomes[ i ]->getName() == chromosomeName ) {
+			return m_chromosomes[ i ];
+		}
+	}
+	return NULL;
+}
+
 void Genome::clear()
 {
 	for (unsigned int i=0; i<m_chromosomes.size(); i++ ) {
@@ -177,19 +193,17 @@ const Chromosome* Genome::getNextChromosome()
 }
 
 
-unsigned int Genome::chrNameToChrIndex( const std::string chromosomeName )
+/*unsigned int Genome::chrNameToChrIndex( const std::string chromosomeName )
 {
 	for (unsigned int i=0; i<m_chromosomes.size(); i++ ) {
 		if ( m_chromosomes[ i ]->getName() == chromosomeName ) {
-			//std::cout << "Finding chromosome " << chromosomeName << "\n";
 			return i;
 		}
 	}
-	//std::cout << "Chromosome " << chromosomeName << " not read yet.\n";
 	Chromosome* newChromosome= new Chromosome( chromosomeName, "" ); 
 	m_chromosomes.push_back( newChromosome );
 	return m_chromosomes.size() - 1;
-}
+}*/
 
 const Chromosome* Genome::loadChromosome()
 {	
@@ -640,7 +654,18 @@ void init(int argc, char *argv[], ControlState& currentState )
     if (!checkParameters( parameters )) {
         exit ( EXIT_FAILURE);
     }
+	std::string fastaFilename( userSettings->referenceFilename.c_str() );
+	if (userSettings->reportInterchromosomalEvents) {
+		g_genome.loadAll( fastaFilename );
+	}
+	else {
+		g_genome.load( fastaFilename );
+	}
 
+   bool BreakDancerDefined = parameters[findParameter("-b",parameters)]->isSet();
+   if (BreakDancerDefined) {
+      g_bdData.loadBDFile(userSettings->breakdancerFilename);
+   }
 
 
     if (userSettings->FLOAT_WINDOW_SIZE > 5000.0) {
@@ -891,20 +916,6 @@ int main(int argc, char *argv[])
 
    init(argc, argv, currentState );
 
-	std::string fastaFilename( userSettings->referenceFilename.c_str() );
-	if (userSettings->reportInterchromosomalEvents) {
-		g_genome.loadAll( fastaFilename );
-	}
-	else {
-		g_genome.load( fastaFilename );
-	}
-
-   bool BreakDancerDefined = parameters[findParameter("-b",parameters)]->isSet();
-   if (BreakDancerDefined) {
-      g_bdData.loadBDFile(userSettings->breakdancerFilename);
-   }
-   //char FirstCharOfFasta;
-   //FastaFile >> FirstCharOfFasta;
     /* Start of shortcut to genotyping */ // currentState.inf_AssemblyInput.open(par.inf_AssemblyInputFilename.c_str());
 	/*bool GenotypingInputDefined = parameters[findParameter("-g",parameters)]->isSet();
    if (GenotypingInputDefined) {
@@ -946,8 +957,6 @@ int main(int argc, char *argv[])
 		}
 
       *logStream << "Processing chromosome: " << currentChromosome->getName() << std::endl;
-        //TODO: check with Kai what's the use of this line.
-        // dangerous, there may be no other elements on the fasta header line
 
       g_maxPos = 0; // #################
       *logStream << "Chromosome Size: " << currentChromosome->getBiolSize() << std::endl;
@@ -957,70 +966,58 @@ int main(int argc, char *argv[])
          CurrentChrMask[i] = 'N';
       }
       BoxSize = currentChromosome->getCompSize()/ 30000;
-        if (BoxSize == 0) BoxSize = 1;
-        unsigned NumBoxes = (unsigned) (currentChromosome->getCompSize() * 2 / BoxSize) + 1; // box size
-        (*logStream << "NumBoxes: " << NumBoxes << "\tBoxSize: " << BoxSize << std::endl);
+      if (BoxSize == 0) BoxSize = 1;
+      unsigned NumBoxes = (unsigned) (currentChromosome->getCompSize() * 2 / BoxSize) + 1; // box size
+      (*logStream << "NumBoxes: " << NumBoxes << "\tBoxSize: " << BoxSize << std::endl);
 
-        /* 3.2 apply sliding windows to input datasets starts. This is the 2nd level while loop */
-        g_binIndex = 0; // to start with 0... 
+      g_binIndex = 0; // to start with 0... 
     
-        LoopingSearchWindow currentWindow( userSettings->getRegion(), currentChromosome, WINDOW_SIZE ); 
-			
-//std::cout << "ChromName" << currentWindow.getChromosomeName() << "seq" <<  currentWindow.getChromosome()->getSeq()[10] << "\n";
+      LoopingSearchWindow currentWindow( userSettings->getRegion(), currentChromosome, WINDOW_SIZE ); 
 
-        // loop over one chromosome
-        do {
-            /* 3.2.1 preparation starts */
-//std::cout << "Before display\n";
-				*logStream << currentWindow.display();
-//std::cout << "Before Copy\n";
+      // loop over one chromosome
+      do {
+      	/* 3.2.1 preparation starts */
+			*logStream << currentWindow.display();
 			SearchWindow currentWindow_cs = currentWindow.makePindelCoordinateCopy(); // _cs means computer science coordinates
-			//std::cout << "cs-window goes from " << currentWindow_cs.getStart() << " to " << currentWindow_cs.getEnd() << "\n";			
-			//std::cout << "window goes from " << currentWindow.getStart() << " to " << currentWindow.getEnd() << "\n";
-//std::cout << "Before loadRegion\n";
-	     g_bdData.loadRegion( currentWindow_cs );
-//std::cout << "After loadRegion\n";
-            if (Time_Load_S == 0) {
-                Time_Load_S = time(NULL);
+	     	g_bdData.loadRegion( currentWindow_cs );
+         if (Time_Load_S == 0) {
+            Time_Load_S = time(NULL);
+         }
+         get_SR_Reads(currentState, currentWindow ); 
+         Time_Mine_E = time(NULL);
+
+         if (currentState.Reads_SR.size() ) {
+            *logStream << "There are " << currentState.Reads_SR.size() << " reads for this chromosome region." << std::endl; // what region?
+
+            if (userSettings->reportCloseMappedReads() ) {
+				 	ReportCloseMappedReads( currentState.Reads_SR );       
             }
-            get_SR_Reads(currentState, currentWindow ); 
-//std::cout << "After SRReads\n";
-            Time_Mine_E = time(NULL);
-
-            if (currentState.Reads_SR.size() ) {
-                *logStream << "There are " << currentState.Reads_SR.size() << " reads for this chromosome region." << std::endl; // what region?
-
-                if (userSettings->reportCloseMappedReads() ) {
-						 ReportCloseMappedReads( currentState.Reads_SR );       
-                }
-                Time_Load_E = time(NULL);
-                if (!userSettings->reportOnlyCloseMappedReads) {
-						SearchFarEnds( currentChromosome->getSeq(), currentState.Reads_SR, *currentChromosome );
-						SearchSVs( currentState, NumBoxes, currentWindow );
-                }
-                Time_Sort_E = time(NULL);
-
-                AllLoadings += (unsigned int) difftime(Time_Load_E, Time_Load_S);
-                AllSortReport += (unsigned int) difftime(Time_Sort_E, Time_Load_E);
-                currentState.Reads_SR.clear();
-                *logStream << "There are " << currentState.FutureReads_SR. size()  << " reads saved for the next cycle.\n" << std::endl;
-                currentState.Reads_SR.swap(currentState.FutureReads_SR);
+            Time_Load_E = time(NULL);
+            if (!userSettings->reportOnlyCloseMappedReads) {
+					SearchFarEnds( currentChromosome->getSeq(), currentState.Reads_SR, *currentChromosome );
+					SearchSVs( currentState, NumBoxes, currentWindow );
             }
-            else {
-                *logStream << "There are no reads for this bin.\n";
-            }
-            Time_Load_S = 0;
-				currentWindow.next();
-            g_binIndex++;
+            Time_Sort_E = time(NULL);
 
-        } // do {
-        while (!currentWindow.finished());
+            AllLoadings += (unsigned int) difftime(Time_Load_E, Time_Load_S);
+            AllSortReport += (unsigned int) difftime(Time_Sort_E, Time_Load_E);
+            currentState.Reads_SR.clear();
+            *logStream << "There are " << currentState.FutureReads_SR. size()  << " reads saved for the next cycle.\n" << std::endl;
+            currentState.Reads_SR.swap(currentState.FutureReads_SR);
+         }
+         else {
+             *logStream << "There are no reads for this bin.\n";
+         }
+         Time_Load_S = 0;
+			currentWindow.next();
+         g_binIndex++;
+      } while (!currentWindow.finished());
 
-    } while (true);
+   } while (true);
 
-    *logStream << "Loading genome sequences and reads: " << AllLoadings << " seconds." << std::endl;
-    *logStream << "Mining, Sorting and output results: " << AllSortReport << " seconds." << std::endl;
-    exit( EXIT_SUCCESS) ;
+   *logStream << "Loading genome sequences and reads: " << AllLoadings << " seconds." << std::endl;
+   *logStream << "Mining, Sorting and output results: " << AllSortReport << " seconds." << std::endl;
+	exit( EXIT_SUCCESS) ;
 } //main
 
 std::vector<std::string> ReverseComplement(

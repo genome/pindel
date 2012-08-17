@@ -100,9 +100,6 @@ short CheckBreakDancerFileFormat(const std::string& filename) {
 }
 
 
-
-
-
 void BDData::loadBDFile(const std::string& filename)
 {
 	if (CheckBreakDancerFileFormat(filename) == 1) {
@@ -144,7 +141,7 @@ void BDData::loadBDFile(const std::string& filename)
       }
    }
 	sort( m_bdEvents.begin(), m_bdEvents.end(), sortOnFirstBDCoordinate ); 
-   //std::cout << "BreakDancer events: " << m_bdEvents.size()/2 << std::endl;
+   std::cout << "BreakDancer events: " << m_bdEvents.size()/2 << std::endl;
 }
 
 
@@ -166,7 +163,7 @@ void BDData::createRegionCluster(const BDIterator& startOfEventList, const BDIte
 			//std::cout << "Possible translocation from chromosome " << m_currentWindow.getChromosomeName() << " to chromosome " << eventIter->second.getChromosomeName() << "\n";
 		}
 		else {
-			SearchWindow currentEventWindow( &(eventIter->second.getChromosome()), eventIter->second.startOfWindow(), eventIter->second.endOfWindow() );
+			SearchWindow currentEventWindow( eventIter->second.getChromosome(), eventIter->second.startOfWindow(), eventIter->second.endOfWindow() );
 			while ( eventIter+1!=relevantSubcluster.end() && regionsOverlap( eventIter, eventIter+1 ) ) {
 				eventIter++;
 				currentEventWindow.setEnd( eventIter->second.endOfWindow() );
