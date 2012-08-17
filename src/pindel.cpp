@@ -126,18 +126,15 @@ std::vector<Parameter *> parameters;
 // #########################################################
 
 int NumRead2ReportCutOff_BP = 2;
-int MaxRangeIndex = 9; // 5 or 6 or 7 or maximum 8      //# // user
-//double MaximumAllowedMismatchRate = 0.1; //#  // user
-int Max_Length_NT = 30; // user
-const bool ReportSVReads = false;
-const bool ReportLargeInterChrSVReads = false;
-const unsigned short Indel_SV_cutoff = 50;
+const int g_MAX_RANGE_INDEX = 9; // 5 or 6 or 7 or maximum 8      //# // user
+//int Max_Length_NT = 30; // user
+//const bool ReportSVReads = false;
+//const bool ReportLargeInterChrSVReads = false;
+//const unsigned short Indel_SV_cutoff = 50;
 unsigned int WINDOW_SIZE = 10000000;
 const unsigned int AROUND_REGION_BUFFER = 10000; // how much earlier reads should be selected if only a region of the chromosome needs be specified.
 // #########################################################
 
-unsigned int Distance = 300;
-short MinFar_D = 8; //atoi(argv[3]);
 const short MaxDI = 30;
 
 const Chromosome* Genome::addChromosome( Chromosome* newChromosome ) 
@@ -659,11 +656,10 @@ void init(int argc, char *argv[], ControlState& currentState )
 
     omp_set_num_threads(userSettings->numThreads);
 
-    if (userSettings->MaxRangeIndex > 9) {
+    if (userSettings->MaxRangeIndex > g_MAX_RANGE_INDEX) {
        LOG_ERROR(*logStream
-                  << "Maximal range index (-x) exceeds the allowed value (9) - resetting to 9."
-                  << std::endl);
-        userSettings->MaxRangeIndex = 9;
+                  << "Maximal range index (-x) exceeds the allowed value (" << g_MAX_RANGE_INDEX << ") - resetting to " << g_MAX_RANGE_INDEX << ".\n" );
+        userSettings->MaxRangeIndex = g_MAX_RANGE_INDEX;
     }
 
 	TestFileForOutput( userSettings->getSIOutputFilename() );
@@ -714,7 +710,7 @@ void init(int argc, char *argv[], ControlState& currentState )
         Spacer += "N";
     }
 
-    Distance = 300;
+    //Distance = 300;
 
     DSizeArray[0] = 0;
     DSizeArray[1] = 128;

@@ -1,6 +1,7 @@
 /*** fn_parameters.cpp contains functions related to the parameters, which have been refactored out of the pindel.main */
 
 #include <iostream>
+#include <sstream>
 
 #include "logstream.h"
 #include "user_defined_settings.h"
@@ -56,17 +57,18 @@ void defineParameters(std::vector<Parameter *>& parameters)
         new IntParameter(&userSettings->numThreads, "-T", "--number_of_threads",
                          "the number of threads Pindel will use (default 1).",
                          false, 1));
-
+	std::stringstream ss;
+	ss << "the maximum size of structural variations to be detected; the higher this number, the greater "
+            "the number of SVs reported, but the computational cost and memory requirements increase, as "
+            "does the rate of false "
+            "positives. 1=128, 2=512, 3=2,048, 4=8,092, 5=32,368, 6=129,472, 7=517,888, 8=2,071,552, 9=8,286,208. "
+            "(maximum "<< g_MAX_RANGE_INDEX <<", default 5)";
     parameters.push_back(
         new IntParameter(
             &userSettings->MaxRangeIndex,
             "-x",
             "--max_range_index",
-            "the maximum size of structural variations to be detected; the higher this number, the greater "
-            "the number of SVs reported, but the computational cost and memory requirements increase, as "
-            "does the rate of false "
-            "positives. 1=128, 2=512, 3=2,048, 4=8,092, 5=32,368, 6=129,472, 7=517,888, 8=2,071,552, 9=8,286,208. "
-            "(maximum 9, default 5)", false, 5));
+            ss.str(), false, 5));
     parameters.push_back(
         new FloatParameter(
             &userSettings->FLOAT_WINDOW_SIZE,
