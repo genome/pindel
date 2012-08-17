@@ -269,67 +269,27 @@ int searchInversions(ControlState& currentState, unsigned NumBoxes, const Search
 }
 
 void LeftMostINV(ControlState& currentState, SPLIT_READ & currentRead, const SearchWindow& window) {
-    // window.getChromosome()->getSeq()
-}
-
-/*
-void GetRealStart4Deletion(const std::string & TheInput,
-                           unsigned int &RealStart, unsigned int &RealEnd)
-{
-    unsigned int PosIndex = RealStart + g_SpacerBeforeAfter;
-    unsigned int Start = PosIndex + 1;
-    unsigned int End = RealEnd + g_SpacerBeforeAfter - 1;
-    while (TheInput[PosIndex] == TheInput[End]) {
-        --PosIndex;
+    const std::string & TheInput = window.getChromosome()->getSeq();
+    
+    unsigned int PosIndex = currentRead.BPLeft + g_SpacerBeforeAfter + 1;
+    unsigned int original_PosIndex = PosIndex;
+    //unsigned int Start = PosIndex + 1;
+    unsigned int End = currentRead.BPRight + g_SpacerBeforeAfter - 1;
+    while (TheInput[PosIndex] == Convert2RC4N[(short) TheInput[End]]) {
+        ++PosIndex;
         --End;
     }
-    RealStart = PosIndex - g_SpacerBeforeAfter;
-    PosIndex = RealEnd + g_SpacerBeforeAfter;
-    while (TheInput[PosIndex] == TheInput[Start]) {
-        ++PosIndex;
-        ++Start;
-    }
-    RealEnd = PosIndex - g_SpacerBeforeAfter;
+    short DIFF = PosIndex - original_PosIndex;
+    if (DIFF > 0) {
+        if (currentRead.MatchedD == Plus) { // BP++
+            if (DIFF >= currentRead.BP) DIFF = currentRead.BP - 1;
+        }
+        else { //BP--
+            if (DIFF + currentRead.BP >= currentRead.getReadLength()) DIFF = currentRead.getReadLength() - currentRead.BP - 1;
+            currentRead.BPLeft += DIFF;
+            currentRead.BPRight -= DIFF;
+            currentRead.BP += DIFF;
+        }
+    } // Convert2RC4N[(short) CurrentBase];
 }
 
-void GetRealStart4Insertion(const std::string & TheInput,
-                            std::string & InsertedStr, unsigned int &RealStart,
-                            unsigned int &RealEnd)
-{
-    unsigned int IndelSize = InsertedStr.size();
-    unsigned int PosIndex = RealStart + g_SpacerBeforeAfter;
-    unsigned int original_RealStart = RealStart;
-    
-    for (int i = IndelSize - 1; i >= 0; i--) {
-        if (TheInput[PosIndex] == InsertedStr[i]) {
-            PosIndex--;
-        }
-        else {
-            break;
-        }
-    }
-    if (PosIndex == RealStart + g_SpacerBeforeAfter - IndelSize) {
-        while (TheInput[PosIndex] == TheInput[PosIndex + IndelSize]) {
-            PosIndex--;
-        }
-    }
-    RealStart = PosIndex - g_SpacerBeforeAfter;
-    PosIndex = RealEnd + g_SpacerBeforeAfter;
-    for (unsigned int i = 0; i < IndelSize; i++) {
-        if (TheInput[PosIndex] == InsertedStr[i]) {
-            PosIndex++;
-        }
-        else {
-            break;
-        }
-    }
-    if (PosIndex == RealEnd + g_SpacerBeforeAfter + IndelSize) {
-        while (TheInput[PosIndex] == TheInput[PosIndex - IndelSize]) {
-            PosIndex++;
-        }
-    }
-    RealEnd = PosIndex - g_SpacerBeforeAfter;
-    unsigned DIFF = RealStart - original_RealStart;
-    InsertedStr = InsertedStr.substr(0, IndelSize - DIFF) + InsertedStr.substr(IndelSize, DIFF);
-}
-*/
