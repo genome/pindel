@@ -66,7 +66,7 @@ void defineParameters(std::vector<Parameter *>& parameters)
             "the number of SVs reported, but the computational cost and memory requirements increase, as "
             "does the rate of false "
             "positives. 1=128, 2=512, 3=2,048, 4=8,092, 5=32,368, 6=129,472, 7=517,888, 8=2,071,552, 9=8,286,208. "
-            "(maximum 9, default 4)", false, 4));
+            "(maximum 9, default 5)", false, 5));
     parameters.push_back(
         new FloatParameter(
             &userSettings->FLOAT_WINDOW_SIZE,
@@ -78,16 +78,16 @@ void defineParameters(std::vector<Parameter *>& parameters)
     parameters.push_back(
         new FloatParameter(&userSettings->Seq_Error_Rate, "-e",
                            "--sequencing_error_rate",
-                           "the expected fraction of sequencing errors "
-                           "(default 0.02)", false, 0.02));
+                           "the expected fraction of sequencing errors " // re-explain this or split this
+                           "(default 0.03)", false, 0.03));
 
     parameters.push_back(
         new FloatParameter(
             &userSettings->MaximumAllowedMismatchRate,
             "-u",
             "--maximum_allowed_mismatch_rate",
-            "Only reads with no less than this fraction of mismatches than the reference genome will be considered. "
-            "(default 0.01)", false, 0.01));
+            "Only reads with more than this fraction of mismatches than the reference genome will be considered as harboring potential SVs. "
+            "(default 0.02)", false, 0.02));
 
     parameters.push_back(
         new BoolParameter(&userSettings->Analyze_INV, "-r", "--report_inversions",

@@ -127,7 +127,7 @@ std::vector<Parameter *> parameters;
 
 int NumRead2ReportCutOff_BP = 2;
 int MaxRangeIndex = 9; // 5 or 6 or 7 or maximum 8      //# // user
-double MaximumAllowedMismatchRate = 0.1; //#  // user
+//double MaximumAllowedMismatchRate = 0.1; //#  // user
 int Max_Length_NT = 30; // user
 const bool ReportSVReads = false;
 const bool ReportLargeInterChrSVReads = false;
