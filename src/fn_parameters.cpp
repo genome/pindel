@@ -123,6 +123,12 @@ void defineParameters(std::vector<Parameter *>& parameters)
             "--report_only_close_mapped_reads",
             "do not search for SVs, only report reads of which only one end (the one closest to the mapped read of the paired-end read) "
             "could be mapped (the output file can then be used as an input file for another run of pindel, which may save size if you need to transfer files). " "(default false)", false, false));
+    parameters.push_back(
+        new BoolParameter(
+            &userSettings->reportInterchromosomalEvents,
+            "-I",
+            "--report_interchromosomal_events",
+            "search for interchromosomal events. Note: will require the computer to have at least 4 GB of memory (default false)", false, false));
 
     parameters.push_back(
         new StringParameter(

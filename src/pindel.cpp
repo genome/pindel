@@ -79,29 +79,13 @@ std::ofstream g_logFile;
 int g_binIndex = -1; // global variable for the bin index, as I cannot easily pass an extra parameter to the diverse functions
 unsigned int g_maxPos = 0; // to calculate which is the last position in the chromosome, and hence to calculate the number of bins
 short g_MinClose = 8;
-
 std::set<std::string> g_sampleNames;
-
 short Before, After;
-
 BDData g_bdData;
-
-unsigned int CountIndels = 0;
 const int alphs = 4;
 const char alphabet[alphs] = { 'A', 'C', 'G', 'T' };
-
-unsigned long long int TheMax = 0;
-const short MAX_MISMATCHES = 4;
-float ExtraDistanceRate = 0.1;
-
-double Const_S = 0.0;
-double LOG14 = log10(0.25);
 unsigned int BoxSize = 10000; // 10k is fine
 const double Min_Filter_Ratio = 0.5;
-unsigned int SPACERSIZE = 1;
-unsigned int OriginalNumRead = 0;
-const std::string NonACGT = "$";
-short MIN_Len_Match = 4;
 unsigned int NumberOfSIsInstances = 0;
 unsigned int NumberOfDeletionsInstances = 0;
 unsigned int NumberOfDIInstances = 0;
@@ -114,12 +98,8 @@ char Convert2RC[256];
 char Convert2RC4N[256];
 char Cap2LowArray[256];
 bool FirstChr = true;
-const double InsertSizeExtra = 2;
-//unsigned int CONS_Chr_Size;
 unsigned int DSizeArray[15];
 int g_maxInsertSize=0;
-
-std::string BreakDancerMask;
 std::string CurrentChrMask;
 std::vector<Parameter *> parameters;
 
@@ -127,10 +107,6 @@ std::vector<Parameter *> parameters;
 
 int NumRead2ReportCutOff_BP = 2;
 const int g_MAX_RANGE_INDEX = 9; // 5 or 6 or 7 or maximum 8      //# // user
-//int Max_Length_NT = 30; // user
-//const bool ReportSVReads = false;
-//const bool ReportLargeInterChrSVReads = false;
-//const unsigned short Indel_SV_cutoff = 50;
 unsigned int WINDOW_SIZE = 10000000;
 const unsigned int AROUND_REGION_BUFFER = 10000; // how much earlier reads should be selected if only a region of the chromosome needs be specified.
 // #########################################################
@@ -150,6 +126,57 @@ const Chromosome* Genome::addChromosome( Chromosome* newChromosome )
 	return newChromosome;
 }
 
+void Genome::clear()
+{
+	for (unsigned int i=0; i<m_chromosomes.size(); i++ ) {
+		delete m_chromosomes[ i ];
+	}
+	m_fullMode = false; 
+	m_currentChromosomeIndex = -1;
+	m_referenceFile.close();
+}
+
+void Genome::load( const std::string& referenceFileName )
+{
+	clear();
+	m_referenceFile.open( referenceFileName.c_str() );
+}
+
+void Genome::loadAll(const std::string& referenceFileName)
+{
+	load( referenceFileName );
+	while (!m_referenceFile.eof() ) {
+		loadChromosome();
+	}
+	m_fullMode = true;
+}
+
+const Chromosome* Genome::getNextChromosome()
+{
+	if (m_fullMode) {
+		// all chromosomes loaded 
+		if ( (unsigned int)(m_currentChromosomeIndex+1)<m_chromosomes.size() ) {
+			m_currentChromosomeIndex++;
+			return m_chromosomes[ m_currentChromosomeIndex ];
+		}
+		else {
+			return NULL;
+		}
+	}
+	else {
+		// need to load next chromosome
+		if (m_currentChromosomeIndex>=0) {
+			// there is a previous chromosome
+			const std::string oldName = m_chromosomes[ m_currentChromosomeIndex ]->getName();
+			delete m_chromosomes[ m_currentChromosomeIndex ];
+			m_chromosomes[ m_currentChromosomeIndex ] = new Chromosome( oldName, "");
+		}
+		m_currentChromosomeIndex++;
+		return loadChromosome();
+	}
+}
+
+
 unsigned int Genome::chrNameToChrIndex( const std::string chromosomeName )
 {
 	for (unsigned int i=0; i<m_chromosomes.size(); i++ ) {
@@ -164,29 +191,29 @@ unsigned int Genome::chrNameToChrIndex( const std::string chromosomeName )
 	return m_chromosomes.size() - 1;
 }
 
-const Chromosome* Genome::loadChromosome( std::ifstream& fastaFile )
+const Chromosome* Genome::loadChromosome()
 {	
 	std::string chromosomeName = "";
 	std::string chromosomeSeq = "";
-	if (fastaFile.eof()) {
-		return &g_dummyChromosome;
+	if (m_referenceFile.eof()) {
+		return NULL;
 	}
 	char chrIndicatorChar; // '>' preceeds all chromosome names in a FASTA file
-	fastaFile >> chrIndicatorChar;
+	m_referenceFile >> chrIndicatorChar;
 	if (chrIndicatorChar != '>' ) {
 		std::cout << "Error: fasta line starts with " << chrIndicatorChar << " instead of '>'. Aborting.\n";
 		exit( EXIT_FAILURE );
-		return &g_dummyChromosome;
+		return NULL;
 	}
-	fastaFile >> chromosomeName;
+	m_referenceFile >> chromosomeName;
 	std::string restOfChromosomeHeadline;
-	getline( fastaFile, restOfChromosomeHeadline );
+	getline( m_referenceFile, restOfChromosomeHeadline );
 	char ch;
 	do {
-		fastaFile >> ch;
+		m_referenceFile >> ch;
 		if (ch=='>') {
 			// next chromosome
-			fastaFile.putback( ch );
+			m_referenceFile.putback( ch );
 			break;
 		} 
 		else {
@@ -196,7 +223,7 @@ const Chromosome* Genome::loadChromosome( std::ifstream& fastaFile )
 			}
 			chromosomeSeq += ch;
 		}		
-	} while (!fastaFile.eof() );
+	} while (!m_referenceFile.eof() );
 
    std::string Spacer = "";
    for (unsigned i = 0; i < g_SpacerBeforeAfter; i++) {
@@ -205,7 +232,6 @@ const Chromosome* Genome::loadChromosome( std::ifstream& fastaFile )
    chromosomeSeq = Spacer + chromosomeSeq + Spacer;
 	Chromosome* newChromosome= new Chromosome( chromosomeName, chromosomeSeq );
 	return addChromosome( newChromosome );
-
 }
 
 UniquePoint::UniquePoint( const short lengthStr, const unsigned int absLoc, const char direction, const char strand, const short mismatches ) :
@@ -614,6 +640,9 @@ void init(int argc, char *argv[], ControlState& currentState )
     if (!checkParameters( parameters )) {
         exit ( EXIT_FAILURE);
     }
+
+
+
     if (userSettings->FLOAT_WINDOW_SIZE > 5000.0) {
         LOG_ERROR(*logStream << "Window size of " << userSettings->FLOAT_WINDOW_SIZE << " million bases is too large" << std::endl);
         exit ( EXIT_FAILURE);
@@ -639,10 +668,7 @@ void init(int argc, char *argv[], ControlState& currentState )
         readBamConfigFile( userSettings->bamConfigFilename, currentState );
     }
 
-    bool BreakDancerDefined = parameters[findParameter("-b",parameters)]->isSet();
-    if (BreakDancerDefined) {
-        g_bdData.loadBDFile(userSettings->breakdancerFilename);
-    }
+
 
     bool AssemblyInputDefined = parameters[findParameter("-z",parameters)]->isSet();
     if (AssemblyInputDefined) {
@@ -865,7 +891,18 @@ int main(int argc, char *argv[])
 
    init(argc, argv, currentState );
 
-	std::ifstream FastaFile( userSettings->referenceFilename.c_str() );
+	std::string fastaFilename( userSettings->referenceFilename.c_str() );
+	if (userSettings->reportInterchromosomalEvents) {
+		g_genome.loadAll( fastaFilename );
+	}
+	else {
+		g_genome.load( fastaFilename );
+	}
+
+   bool BreakDancerDefined = parameters[findParameter("-b",parameters)]->isSet();
+   if (BreakDancerDefined) {
+      g_bdData.loadBDFile(userSettings->breakdancerFilename);
+   }
    //char FirstCharOfFasta;
    //FastaFile >> FirstCharOfFasta;
     /* Start of shortcut to genotyping */ // currentState.inf_AssemblyInput.open(par.inf_AssemblyInputFilename.c_str());
@@ -893,8 +930,11 @@ int main(int argc, char *argv[])
 
    bool SpecifiedChrVisited = false;
 
-   while (!FastaFile.eof() && SpecifiedChrVisited == false ) {
-		const Chromosome* currentChromosome = g_genome.loadChromosome( FastaFile );
+   do {
+		const Chromosome* currentChromosome = g_genome.getNextChromosome();
+		if ( (currentChromosome == NULL ) || ( SpecifiedChrVisited==true )) {
+			break;
+		}
 		if (!userSettings->loopOverAllChromosomes()) {
 			if (currentChromosome->getName() == userSettings->getRegion()->getTargetChromosomeName() ) {
 				SpecifiedChrVisited = true;
@@ -976,7 +1016,7 @@ int main(int argc, char *argv[])
         } // do {
         while (!currentWindow.finished());
 
-    } // while ( loopOverAllChromosomes && chromosomeIndex < chromosomes.size() );
+    } while (true);
 
     *logStream << "Loading genome sequences and reads: " << AllLoadings << " seconds." << std::endl;
     *logStream << "Mining, Sorting and output results: " << AllSortReport << " seconds." << std::endl;

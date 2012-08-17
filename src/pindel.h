@@ -21,6 +21,7 @@
 #ifndef PINDEL_H
 #define	PINDEL_H
 
+#include <fstream>
 #include <iostream>
 
 // System header files
@@ -426,12 +427,20 @@ extern const Chromosome g_dummyChromosome;
 
 class Genome {
 public:
-	const Chromosome* addChromosome( Chromosome* newChromosome );
 	unsigned int chrNameToChrIndex( const std::string chromosomeName );
 	const Chromosome& getChr( unsigned int index ) const { if (index<m_chromosomes.size()) return *m_chromosomes[ index ]; else return g_dummyChromosome; }
-	const Chromosome* loadChromosome( std::ifstream& fastaFile );
+	void load( const std::string& referenceFileName );
+	void loadAll(const std::string& referenceFileName);
+	const Chromosome* getNextChromosome();
 
 private:
+	const Chromosome* loadChromosome();
+	const Chromosome* addChromosome( Chromosome* newChromosome );
+	void clear();
+
+	std::ifstream m_referenceFile;
+	bool m_fullMode; 
+	int m_currentChromosomeIndex;
 	std::vector< Chromosome* > m_chromosomes;
 };
 

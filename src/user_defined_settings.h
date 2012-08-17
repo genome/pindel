@@ -62,6 +62,7 @@ public:
 	std::string referenceFilename;
 	bool ReportCloseMappedRead;
 	bool reportOnlyCloseMappedReads;
+	bool reportInterchromosomalEvents;
 	std::string userDefinedRegion;
 	double Seq_Error_Rate;
 	bool showHelp;
