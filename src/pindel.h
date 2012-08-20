@@ -166,7 +166,7 @@ struct SPLIT_READ {
 		BPLeft = 0;
 		BPRight = 0; 
 		IndelSize = 0;
-		Investigated = false; // whether far end has been searched for
+		//Investigated = false; // whether far end has been searched for
         UniqueRead = false;
 		NT_str = "";
 		NT_size = 0;
@@ -219,7 +219,7 @@ struct SPLIT_READ {
 	std::string NT_str;
 	unsigned short NT_size;
 	bool Used;
-	bool Investigated;
+	//bool Investigated;
 	short CloseEndLength;
 	int LeftMostPos;
     std::map <std::string, int> ReadCountPerSample;

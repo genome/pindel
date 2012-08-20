@@ -781,16 +781,16 @@ void SearchFarEnd( const std::string& chromosome, SPLIT_READ& read, const Chromo
 
    // when using bins, some reads may already have been assigned far ends already if they were members of the previous bins; they
    // can be skipped here
-   if (read.Investigated) {
+   /*if (read.Investigated) {
        return;
-   }
+   }*/
 
 //std::cout << "CurrentChromosome name /seq =" << currentChromosome.getName() << " = " << currentChromosome.getSeq() << "\n";
 	const std::vector< SearchWindow>& searchCluster =  g_bdData.getCorrespondingSearchWindowCluster( read );
 	if (searchCluster.size()!=0) {
       SearchFarEndAtPos( chromosome, read, searchCluster);
 		if (read.goodFarEndFound()) {
-			read.Investigated = true;
+			//read.Investigated = true;
 	      return;
 		}
    }
@@ -810,11 +810,11 @@ void SearchFarEnd( const std::string& chromosome, SPLIT_READ& read, const Chromo
       SearchFarEndAtPos( chromosome, read, aroundCESearchCluster );
       searchSpan *= 4;
       if (read.goodFarEndFound()) {
-			read.Investigated = true;
+			//read.Investigated = true;
          return;
       }
    }
-	read.Investigated = true;
+	//read.Investigated = true;
 }
 
 void ReportCloseMappedReads( const std::vector<SPLIT_READ>& reads )
@@ -995,6 +995,8 @@ int main(int argc, char *argv[])
             Time_Load_E = time(NULL);
             if (!userSettings->reportOnlyCloseMappedReads) {
 					SearchFarEnds( currentChromosome->getSeq(), currentState.Reads_SR, *currentChromosome );
+					currentState.Reads_SR.insert( currentState.Reads_SR.end(), currentState.FutureReads_SR.begin(), currentState.FutureReads_SR.end() );
+					currentState.FutureReads_SR.clear();
 					SearchSVs( currentState, NumBoxes, currentWindow );
             }
             Time_Sort_E = time(NULL);
@@ -1003,7 +1005,7 @@ int main(int argc, char *argv[])
             AllSortReport += (unsigned int) difftime(Time_Sort_E, Time_Load_E);
             currentState.Reads_SR.clear();
             *logStream << "There are " << currentState.FutureReads_SR. size()  << " reads saved for the next cycle.\n" << std::endl;
-            currentState.Reads_SR.swap(currentState.FutureReads_SR);
+            //currentState.Reads_SR.swap(currentState.FutureReads_SR);
          }
          else {
              *logStream << "There are no reads for this bin.\n";
