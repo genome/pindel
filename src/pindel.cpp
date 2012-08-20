@@ -1250,6 +1250,115 @@ void GetCloseEnd(const std::string & CurrentChrSeq, SPLIT_READ & Temp_One_Read)
     }
 }
 
+bool Matches( const char readBase, const char referenceBase )
+{
+	if (readBase!='N') { return referenceBase == readBase; }
+	else { return Match2N[(short) referenceBase] == 'N'; } 
+}
+
+
+/** "CategorizePositions" categorizes the positions in PD_Plus as being extended perfectly or with an (extra) mismatch */  
+/*void CategorizePositions(const char readBase, const std::string & chromosomeSeq, const std::vector<unsigned int> PD_Plus[], std::vector<unsigned int> PD_Plus_Output[], const int numMisMatches, 	
+	const int searchDirection,	const int maxNumMismatches )
+{
+	int SizeOfCurrent = PD_Plus[ numMisMatches ].size();
+ 	for (int j = 0; j < SizeOfCurrent; j++) {
+      unsigned int pos = PD_Plus[ numMisMatches ][j] + searchDirection;
+      if ( Matches( readBase, chromosomeSeq[ pos ] ) ) {
+         PD_Plus_Output[ numMisMatches ].push_back(pos);
+      }
+      else {
+         if ( numMisMatches<maxNumMismatches) { PD_Plus_Output[ numMisMatches + 1].push_back(pos); }
+      } 
+   }
+}
+
+
+void ExtendMatch( const SPLIT_READ & read, const std::string & chromosomeSeq,
+               const std::string & readSeq,
+               const std::vector<unsigned int> PD_Plus[],
+               const std::vector<unsigned int> PD_Minus[], const short minimumLengthToReportMatch,
+               const short BP_End, const short CurrentLength,
+               SortedUniquePoints &UP )
+{
+// the below lines give me an odd deja-vu-feeling
+	std::vector<unsigned int> PD_Plus_Output[read.getTOTAL_SNP_ERROR_CHECKED()];
+   std::vector<unsigned int> PD_Minus_Output[read.getTOTAL_SNP_ERROR_CHECKED()];
+		
+   for (int CheckedIndex = 0; CheckedIndex < read.getTOTAL_SNP_ERROR_CHECKED(); CheckedIndex++) {
+      PD_Plus_Output[CheckedIndex].reserve( PD_Plus[CheckedIndex].size()); // this assumes perfect matches and no 'attrition' from higher levels. We may want to test this...
+      PD_Minus_Output[CheckedIndex].reserve( PD_Minus[CheckedIndex].size());
+   }
+   const char CurrentChar = readSeq[CurrentLength];
+   const char CurrentCharRC = Convert2RC4N[(short) CurrentChar];
+   //unsigned int pos=0;
+   //int SizeOfCurrent=0;
+	for (int i = 0; i <= read.getTOTAL_SNP_ERROR_CHECKED_Minus(); i++) {
+		CategorizePositions( CurrentChar, chromosomeSeq, PD_Plus, PD_Plus_Output, i, 1, read.getTOTAL_SNP_ERROR_CHECKED_Minus() );
+		CategorizePositions( CurrentCharRC, chromosomeSeq, PD_Minus, PD_Minus_Output, i, -1, read.getTOTAL_SNP_ERROR_CHECKED_Minus() );
+   }
+
+	// this loop looks familiar; candidate for factoring out mini-function?
+   unsigned int Sum = 0;
+   for (int i = 0; i <= read.getMAX_SNP_ERROR(); i++) {
+      Sum += PD_Plus_Output[i].size() + PD_Minus_Output[i].size();
+   }
+   if (Sum) {
+      const short CurrentLengthOutput = CurrentLength + 1;
+      CheckBoth(read, chromosomeSeq, readSeq, PD_Plus_Output, PD_Minus_Output, minimumLengthToReportMatch, BP_End, CurrentLengthOutput, UP);
+   }
+   else {
+     return;
+ 	} // else-if Sum
+}
+
+void CheckBoth(const SPLIT_READ & OneRead, const std::string & TheInput,
+               const std::string & CurrentReadSeq,
+               const std::vector<unsigned int> PD_Plus[],
+               const std::vector<unsigned int> PD_Minus[], const short minimumLengthToReportMatch,
+               const short BP_End, const short CurrentLength,
+               SortedUniquePoints &UP)
+{   
+	UserDefinedSettings *userSettings = UserDefinedSettings::Instance();
+
+   if (CurrentLength >= minimumLengthToReportMatch && CurrentLength <= BP_End) {
+      for (short numberOfMismatches = 0; numberOfMismatches <= OneRead.getMAX_SNP_ERROR(); numberOfMismatches++) {
+         if (PD_Plus[numberOfMismatches].size() + PD_Minus[numberOfMismatches].size() == 1 && CurrentLength >= minimumLengthToReportMatch + numberOfMismatches) {
+            Sum = 0;
+            if (userSettings->ADDITIONAL_MISMATCH > 0) { // what if this is ADDITIONAL_MISMATCH is 0? Do you save anything then?
+					// what if j +ADD_MISMATCH exceeds the max allowed number of mismatches (the PD_element does not exist?)
+				
+					// feeling the need to comment here - so factor out?
+					// only report reads if there are no reads with fewer mismatches or only one or two more mismatches
+               for (short mismatchCount = 0; mismatchCount <= numberOfMismatches + userSettings->ADDITIONAL_MISMATCH; mismatchCount++) {
+                  Sum += PD_Plus[mismatchCount].size() + PD_Minus[mismatchCount].size();
+               }
+               if (Sum == 1 && numberOfMismatches <= (short) (userSettings->Seq_Error_Rate * CurrentLength + 1)) {
+							// why I love constructors
+						UniquePoint MatchPosition;
+                  if (PD_Plus[numberOfMismatches].size() == 1) {
+							UniquePoint PlusMatch( CurrentLength, PD_Plus[numberOfMismatches][0], FORWARD, SENSE, numberOfMismatches );
+							MatchPosition = PlusMatch; 
+                  }
+                  else {
+							UniquePoint MinMatch( CurrentLength, PD_Minus[numberOfMismatches][0], BACKWARD, ANTISENSE, numberOfMismatches );
+							MatchPosition = MinMatch; 
+					   }
+                  if (CheckMismatches(TheInput, OneRead.getUnmatchedSeq(), MatchPosition)) {
+                     UP.push_back (MatchPosition);
+                     break;
+                  } // if CheckMismatches
+               } // if Sum==1
+            } // if AdditionalMismatches
+        	} // if sumsize ==1
+      } // for-loop
+	} // if length of match is sufficient to be reportable
+
+   if (CurrentLength < BP_End) {
+		ExtendMatch( read, chromosomeSeq, readSeq, PD_Plus_Output, PD_Minus_Output, minimumLengthToReportMatch, BP_End, CurrentLengthOutput, UP );
+	}
+}*/
+
 void CheckBoth(const SPLIT_READ & OneRead, const std::string & TheInput,
                const std::string & CurrentReadSeq,
                const std::vector<unsigned int> PD_Plus[],
