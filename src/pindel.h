@@ -477,7 +477,7 @@ private:
 	const unsigned int m_BIN_SIZE;
 };
 
-std::istream& safeGetline(std::istream& is, std::string& t);
+void safeGetline(std::istream& is, std::string& t);
 
 
 

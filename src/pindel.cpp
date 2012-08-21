@@ -115,7 +115,7 @@ const unsigned int AROUND_REGION_BUFFER = 10000; // how much earlier reads shoul
 const short MaxDI = 30;
 
 // from http://stackoverflow.com/questions/6089231/getting-std-ifstream-to-handle-lf-cr-and-crlf
-std::istream& safeGetline(std::istream& is, std::string& t)
+void safeGetline(std::istream& is, std::string& t)
 {
     t.clear();
 
@@ -145,10 +145,11 @@ std::istream& safeGetline(std::istream& is, std::string& t)
     }*/
 	getline( is, t );
 	unsigned int lastIndex = t.size()-1;
-	if ( lastIndex>=0 && t[ lastIndex ] == '\r' ) {
+	while (lastIndex>=0 && t[ lastIndex ]=='\r' ) {
 		t.resize( lastIndex );
-	}
-	return is;
+		lastIndex--;
+	} 
+	//return is;
 }
 
 
