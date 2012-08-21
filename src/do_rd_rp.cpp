@@ -138,7 +138,7 @@ short getWholeGenomeSize(ControlState & CurrentState, std::vector <ChrNameAndSiz
     ChrNameAndSize TempOneChr;
     std::string TempStr;
     while (CurrentState.inf_Seq_Fai >> TempOneChr.ChrName >> TempOneChr.ChrSize) {
-       getline(CurrentState.inf_Seq_Fai, TempStr); 
+       safeGetline(CurrentState.inf_Seq_Fai, TempStr); 
        std::cout << "ChrName: " << TempOneChr.ChrName << "\tChrSize: " << TempOneChr.ChrSize << std::endl;
        ChrNameSizes.push_back(TempOneChr); 
     }

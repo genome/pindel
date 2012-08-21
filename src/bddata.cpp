@@ -73,15 +73,15 @@ short CheckBreakDancerFileFormat(const std::string& filename) {
     while (!CheckbdFileFirst.eof()) {
         CheckbdFileFirst >> firstChar;
         if (firstChar == '#') {
-            std::getline(CheckbdFileFirst, tempLine);
-            std::getline(CheckbdFileSecond, tempLine);
+            safeGetline(CheckbdFileFirst, tempLine);
+            safeGetline(CheckbdFileSecond, tempLine);
         }
         else {
-            std::getline(CheckbdFileFirst, errorLine);
+            safeGetline(CheckbdFileFirst, errorLine);
             if (AtLeast6Fields(errorLine)) {
                 CheckbdFileSecond >> tempLine >> Pos1 >> tempLine
                 >> tempLine >> Pos2 >> tempLine;
-                std::getline(CheckbdFileSecond, tempLine);  // get rest of line
+                safeGetline(CheckbdFileSecond, tempLine);  // get rest of line
                 if (isNumber(Pos1) && isNumber(Pos2)) {
                     
                 }
@@ -118,7 +118,7 @@ void BDData::loadBDFile(const std::string& filename)
    while (!bdFile.eof()) {
       firstChar= bdFile.peek();
       if (firstChar == '#') {
-         std::getline(bdFile, tempLine);
+         safeGetline(bdFile, tempLine);
       }
       else {
 			std::string firstChrName, secondChrName;
@@ -127,7 +127,7 @@ void BDData::loadBDFile(const std::string& filename)
 
          bdFile >> firstChrName >> firstPos >> tempStringItem
                 >> secondChrName >> secondPos >> tempStringItem;
-         std::getline(bdFile, tempLine);  // get rest of line
+         safeGetline(bdFile, tempLine);  // get rest of line
 
          firstPos += g_SpacerBeforeAfter; // ??? ask Kai
          secondPos += g_SpacerBeforeAfter;

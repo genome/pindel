@@ -103,7 +103,7 @@ short getWholeGenome(std::ifstream& FastaFile, std::vector <AChromosome> & AllCh
     FastaFile.seekg(0);
     FastaFile >> TempChar;
     while (FastaFile >> OneChr.ChrName) {
-        getline(FastaFile, TempLine);
+        safeGetline(FastaFile, TempLine);
         while (FastaFile >> TempChar) {
             if (TempChar != '\n' && TempChar != '\r') {
                 if (TempChar == '>') {

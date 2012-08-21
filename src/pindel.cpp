@@ -114,24 +114,62 @@ const unsigned int AROUND_REGION_BUFFER = 10000; // how much earlier reads shoul
 
 const short MaxDI = 30;
 
+// from http://stackoverflow.com/questions/6089231/getting-std-ifstream-to-handle-lf-cr-and-crlf
+std::istream& safeGetline(std::istream& is, std::string& t)
+{
+    t.clear();
+
+    // The characters in the stream are read one-by-one using a std::streambuf.
+    // That is faster than reading them one-by-one using the std::istream.
+    // Code that uses streambuf this way must be guarded by a sentry object.
+    // The sentry object performs various tasks,
+    // such as thread synchronization and updating the stream state.
+
+    /*std::istream::sentry se(is, true);
+    std::streambuf* sb = is.rdbuf();
+
+    for(;;) {
+        int c = sb->sbumpc();
+        switch (c) {
+        case '\r':
+            c = sb->sgetc();
+            if(c == '\n')
+                sb->sbumpc();
+            return is;
+        case '\n':
+        case EOF:
+            return is;
+        default:
+            t += (char)c;
+        }
+    }*/
+	getline( is, t );
+	unsigned int lastIndex = t.size()-1;
+	if ( lastIndex>=0 && t[ lastIndex ] == '\r' ) {
+		t.resize( lastIndex );
+	}
+	return is;
+}
+
+
 void SPLIT_READ::setUnmatchedSeq( const std::string unmatchedSeq ) 
 { 
 	const double EPSILON = 0.00001; // to compensate for downrounding off errors (0.04 = 0.03999999 on some computers)
 	
 	UnmatchedSeq = unmatchedSeq; 
-	if (UnmatchedSeq.size()>0) {
+	/*if (UnmatchedSeq.size()>0) {*/
 		/*for (unsigned int x=0; x<UnmatchedSeq.size();x++ ) {
 			std::cout << "seq[" << x << "]="<< int(UnmatchedSeq[ x ]) << "('" << UnmatchedSeq[ x ] << "')\n";
 		}*/
-		unsigned int lastCharIndex = UnmatchedSeq.size()-1;
+		/*unsigned int lastCharIndex = UnmatchedSeq.size()-1;
 		while (!isalnum( UnmatchedSeq[ lastCharIndex ] )) {
 			UnmatchedSeq.resize( lastCharIndex );
 			lastCharIndex--;
-		} 
+		} */
 		/*for (unsigned int x=0; x<UnmatchedSeq.size();x++ ) {
 			std::cout << "resseq[" << x << "]="<< int(UnmatchedSeq[ x ]) << "('" << UnmatchedSeq[ x ] << "')\n";
 		}*/
-	}
+	/*}*/
 
 	ReadLength = UnmatchedSeq.size();
 	ReadLengthMinus = ReadLength - 1;
@@ -240,7 +278,7 @@ const Chromosome* Genome::loadChromosome()
 	}
 	m_referenceFile >> chromosomeName;
 	std::string restOfChromosomeHeadline;
-	getline( m_referenceFile, restOfChromosomeHeadline );
+	safeGetline( m_referenceFile, restOfChromosomeHeadline );
 	char ch;
 	do {
 		m_referenceFile >> ch;
@@ -550,7 +588,7 @@ void readBamConfigFile(std::string& bamConfigFilename, ControlState& currentStat
 
             //copy kai and throw crap into useless variable
 				std::string restOfLine;
-            std::getline(BamConfigFile, restOfLine);
+            safeGetline(BamConfigFile, restOfLine);
             currentState.bams_to_parse.push_back(tempBamInfo);
             sampleCounter++;
         } // while
@@ -583,7 +621,7 @@ void readPindelConfigFile(std::string& pindelConfigFilename, std::vector<std::st
 			}
 
 			std::string restOfLine;
-			std::getline( pindelConfigFile, restOfLine);
+			safeGetline( pindelConfigFile, restOfLine);
 			pindelfilesToParse.push_back( pindelFilename );
 			sampleCounter++;
 		} // while

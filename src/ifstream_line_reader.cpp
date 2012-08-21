@@ -1,8 +1,9 @@
 
 #include "ifstream_line_reader.h"
+#include "pindel.h" // for safeGetline
 
 using std::ifstream;
-using std::getline;
+//using std::getline;
 using std::string;
 
 
@@ -46,5 +47,5 @@ string IfstreamLineReader::NextLine()
 
 void IfstreamLineReader::Advance()
 {
-	getline(*in, buffer);
+	safeGetline(*in, buffer);
 }
