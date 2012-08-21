@@ -175,7 +175,7 @@ struct SPLIT_READ {
 		LeftMostPos = 0;
 	}
 	std::string FragName;
-    std::string FarFragName;
+   std::string FarFragName;
 	std::string Name;
 
 	void setUnmatchedSeq( const std::string unmatchedSeq ) { 
@@ -191,7 +191,7 @@ struct SPLIT_READ {
 		TOTAL_SNP_ERROR_CHECKED_Minus = MAX_SNP_ERROR + userSettings->ADDITIONAL_MISMATCH;
 		TOTAL_SNP_ERROR_CHECKED = TOTAL_SNP_ERROR_CHECKED_Minus + 1;
 	}
-	std::string getUnmatchedSeq() const { return UnmatchedSeq; }	
+	const std::string& getUnmatchedSeq() const { return UnmatchedSeq; }	
 
 
 	char MatchedD; // rename AnchorStrand?

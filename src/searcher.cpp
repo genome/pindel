@@ -23,39 +23,92 @@
 #include "searcher.h"
 #include <cmath>
 
+unsigned int numberOfCompetingPositions( const std::vector < unsigned int > positions[], unsigned int maxIndex )
+{
+	unsigned int sum=0;	
+	for (unsigned int j = 0; j <= maxIndex; j++) {
+   	sum += positions[j].size();
+   }	
+	return sum;
+}
+
+bool Matches( const char readBase, const char referenceBase )
+{
+	if (readBase!='N') { return referenceBase == readBase; }
+	else { return Match2N[(short) referenceBase] == 'N'; } 
+}
 
 
-void CheckLeft_Close (const SPLIT_READ & OneRead,
-                 const std::string & TheInput,
-                 const std::string & CurrentReadSeq,
+/** "CategorizePositions" categorizes the positions in PD_Plus as being extended perfectly or with an (extra) mismatch */  
+void CategorizePositions(const char readBase, const std::string & chromosomeSeq, const std::vector<unsigned int> PD_Plus[], std::vector<unsigned int> PD_Plus_Output[], const int numMisMatches, 	
+	const int searchDirection,	const int maxNumMismatches )
+{
+	int SizeOfCurrent = PD_Plus[ numMisMatches ].size();
+ 	for (int j = 0; j < SizeOfCurrent; j++) {
+      unsigned int pos = PD_Plus[ numMisMatches ][j] + searchDirection;
+      if ( Matches( readBase, chromosomeSeq[ pos ] ) ) {
+         PD_Plus_Output[ numMisMatches ].push_back(pos);
+      }
+      else {
+         if ( numMisMatches<maxNumMismatches) { PD_Plus_Output[ numMisMatches + 1].push_back(pos); }
+      } 
+   }
+}
+
+void ExtendMatchClose( const SPLIT_READ & read, const std::string & chromosomeSeq,
+               const std::string & readSeq,
+               const std::vector<unsigned int> InputPositions[], const short minimumLengthToReportMatch,
+               const short BP_End, const short CurrentLength,
+               SortedUniquePoints &UP, int direction )
+{
+	std::vector<unsigned int> OutputPositions[read.getTOTAL_SNP_ERROR_CHECKED()];
+		
+   for (int CheckedIndex = 0; CheckedIndex < read.getTOTAL_SNP_ERROR_CHECKED(); CheckedIndex++) {
+      OutputPositions[CheckedIndex].reserve( InputPositions[CheckedIndex].size()); // this assumes perfect matches and no 'attrition' from higher levels. We may want to test this...
+   }
+   const char CurrentChar = ((direction==1) ? readSeq[CurrentLength] : readSeq[read.getReadLengthMinus() - CurrentLength] );
+
+	for (int i = 0; i <= read.getTOTAL_SNP_ERROR_CHECKED_Minus(); i++) { // far end has <=!!!
+		CategorizePositions( CurrentChar, chromosomeSeq, InputPositions, OutputPositions, i, direction, read.getTOTAL_SNP_ERROR_CHECKED_Minus() );
+   }
+
+	// this loop looks familiar; candidate for factoring out mini-function?
+   unsigned int Sum = numberOfCompetingPositions( OutputPositions, read.getMAX_SNP_ERROR() );
+
+   if (Sum) {
+      const short CurrentLengthOutput = CurrentLength + 1;
+		if ( direction==1 ) {
+	      CheckLeft_Close(read, chromosomeSeq, readSeq, OutputPositions, minimumLengthToReportMatch, BP_End, CurrentLengthOutput, UP);
+		}
+		else {
+			CheckRight_Close(read, chromosomeSeq, readSeq, OutputPositions, minimumLengthToReportMatch, BP_End, CurrentLengthOutput, UP);	
+		}
+   }
+   else {
+     return;
+ 	} // else-if Sum
+}
+
+
+void CheckLeft_Close (const SPLIT_READ & read,
+                 const std::string & chromosomeSeq,
+                 const std::string & readSeq,
                  const std::vector < unsigned int >Left_PD[],
                  const short &BP_Left_Start,
                  const short &BP_Left_End,
                  const short &CurrentLength, SortedUniquePoints &LeftUP)
 {
-   int Sum;
-
 	UserDefinedSettings *userSettings = UserDefinedSettings::Instance();
 
    if (CurrentLength >= BP_Left_Start && CurrentLength <= BP_Left_End) {
       // put it to LeftUP if unique
-      for (short i = 0; i <= OneRead.getMAX_SNP_ERROR(); i++) {
+      for (short i = 0; i <= read.getMAX_SNP_ERROR(); i++) {
          if (Left_PD[i].size () == 1 && CurrentLength >= BP_Left_Start + i) {
-            Sum = 0;
-            if (userSettings->ADDITIONAL_MISMATCH)
-               for (short j = 0; j <= i + userSettings->ADDITIONAL_MISMATCH; j++) {
-                  Sum += Left_PD[j].size ();
-               }
-
+            unsigned int Sum = numberOfCompetingPositions( Left_PD, i + userSettings->ADDITIONAL_MISMATCH );
+ 
             if (Sum == 1 && i <= (short) (CurrentLength * userSettings->Seq_Error_Rate + 1)) {
-               UniquePoint TempOne;
-               TempOne.LengthStr = CurrentLength;
-               TempOne.AbsLoc = Left_PD[i][0];
-               TempOne.Direction = FORWARD;
-               TempOne.Strand = ANTISENSE;
-               TempOne.Mismatches = i;
-                  
-               if (CheckMismatches(TheInput, OneRead.getUnmatchedSeq(), TempOne)) {
+               UniquePoint TempOne( CurrentLength, Left_PD[i][0], FORWARD, ANTISENSE, i );              
+               if (CheckMismatches(chromosomeSeq, read.getUnmatchedSeq(), TempOne)) {
                   LeftUP.push_back (TempOne);
                   break;
                }
@@ -64,11 +117,11 @@ void CheckLeft_Close (const SPLIT_READ & OneRead,
       }
    }
    if (CurrentLength < BP_Left_End) {
-      std::vector < unsigned int >Left_PD_Output[OneRead.getTOTAL_SNP_ERROR_CHECKED()];
-      for (int CheckedIndex = 0;
-            CheckedIndex < OneRead.getTOTAL_SNP_ERROR_CHECKED(); CheckedIndex++) {
-         Left_PD_Output[CheckedIndex].reserve (Left_PD[CheckedIndex].
-                                               size ());
+		ExtendMatchClose( read, chromosomeSeq, readSeq, Left_PD, BP_Left_Start, BP_Left_End, CurrentLength, LeftUP, 1 );
+	}
+   /*   std::vector < unsigned int >Left_PD_Output[OneRead.getTOTAL_SNP_ERROR_CHECKED()];
+      for (int CheckedIndex = 0; CheckedIndex < OneRead.getTOTAL_SNP_ERROR_CHECKED(); CheckedIndex++) {
+         Left_PD_Output[CheckedIndex].reserve(Left_PD[CheckedIndex].size ());
       }
       const char CurrentChar = CurrentReadSeq[CurrentLength];
       unsigned int pos;
@@ -130,15 +183,11 @@ void CheckLeft_Close (const SPLIT_READ & OneRead,
             }
          }
       }
-      Sum = 0;
-      for (int i = 0; i <= OneRead.getMAX_SNP_ERROR(); i++) {
-         Sum += Left_PD_Output[i].size ();
-      }
+      unsigned int Sum = numberOfCompetingPositions( Left_PD_Output, OneRead.getMAX_SNP_ERROR());
+
       if (Sum) {
          const short CurrentLengthOutput = CurrentLength + 1;
-         CheckLeft_Close (OneRead, TheInput, CurrentReadSeq, Left_PD_Output,
-                          BP_Left_Start, BP_Left_End,
-                          CurrentLengthOutput, LeftUP);
+         CheckLeft_Close (OneRead, TheInput, CurrentReadSeq, Left_PD_Output, BP_Left_Start, BP_Left_End, CurrentLengthOutput, LeftUP);
       }
       else {
          return;
@@ -146,41 +195,30 @@ void CheckLeft_Close (const SPLIT_READ & OneRead,
    }
    else {
       return;
-   }
+   }*/
 }
 
-void CheckRight_Close (const SPLIT_READ & OneRead,
-                  const std::string & TheInput,
-                  const std::string & CurrentReadSeq,
+
+void CheckRight_Close (const SPLIT_READ & read,
+                  const std::string & chromosomeSeq,
+                  const std::string & readSeq,
                   const std::vector < unsigned int >Right_PD[],
                   const short &BP_Right_Start,
                   const short &BP_Right_End,
                   const short &CurrentLength, SortedUniquePoints &RightUP)
 {
    //cout << CurrentLength << "\t" << RightUP.size() << "\t" << Right_PD[0].size() << "\t" << Right_PD[1].size() << endl;
-   short ReadLengthMinus = CurrentReadSeq.size () - 1;
+   //short ReadLengthMinus = readSeq.size () - 1;
 
 	UserDefinedSettings *userSettings = UserDefinedSettings::Instance();
 
-   int Sum;
    if (CurrentLength >= BP_Right_Start && CurrentLength <= BP_Right_End) {
-      for (short i = 0; i <= OneRead.getMAX_SNP_ERROR(); i++) {
+      for (short i = 0; i <= read.getMAX_SNP_ERROR(); i++) {
          if (Right_PD[i].size () == 1 && CurrentLength >= BP_Right_Start + i) {
-            Sum = 0;
-            if (userSettings->ADDITIONAL_MISMATCH)
-               for (short j = 0; j <= i+ userSettings->ADDITIONAL_MISMATCH; j++) {
-                  Sum += Right_PD[j].size ();
-               }
-
-            if (Sum == 1
-                  && i <= (short) (CurrentLength * userSettings->Seq_Error_Rate + 1)) {
-               UniquePoint TempOne;
-               TempOne.LengthStr = CurrentLength;
-               TempOne.AbsLoc = Right_PD[i][0];
-               TempOne.Direction = BACKWARD;
-               TempOne.Strand = SENSE;
-               TempOne.Mismatches = i;
-               if (CheckMismatches(TheInput, OneRead.getUnmatchedSeq(), TempOne)) {
+            unsigned int Sum = numberOfCompetingPositions( Right_PD, i+userSettings->ADDITIONAL_MISMATCH );
+            if (Sum == 1 && i <= (short) (CurrentLength * userSettings->Seq_Error_Rate + 1)) {
+               UniquePoint TempOne( CurrentLength, Right_PD[i][0], BACKWARD, SENSE, i);
+               if (CheckMismatches(chromosomeSeq, read.getUnmatchedSeq(), TempOne)) {
                   RightUP.push_back (TempOne);
                   break;
                } // ###################################
@@ -190,14 +228,15 @@ void CheckRight_Close (const SPLIT_READ & OneRead,
    }
 
    if (CurrentLength < BP_Right_End) {
-      std::vector < unsigned int >Right_PD_Output[OneRead.getTOTAL_SNP_ERROR_CHECKED()];
+		ExtendMatchClose( read, chromosomeSeq, readSeq, Right_PD, BP_Right_Start, BP_Right_End, CurrentLength, RightUP, -1 );
+	}
+}
+/*      std::vector < unsigned int >Right_PD_Output[OneRead.getTOTAL_SNP_ERROR_CHECKED()];
       for (int CheckedIndex = 0;
-            CheckedIndex < OneRead.getTOTAL_SNP_ERROR_CHECKED(); CheckedIndex++) {
-         Right_PD_Output[CheckedIndex].reserve (Right_PD[CheckedIndex].
-                                                size ());
+         CheckedIndex < OneRead.getTOTAL_SNP_ERROR_CHECKED(); CheckedIndex++) {
+         Right_PD_Output[CheckedIndex].reserve (Right_PD[CheckedIndex].size());
       }
-      const char CurrentChar =
-         CurrentReadSeq[ReadLengthMinus - CurrentLength];
+      const char CurrentChar = CurrentReadSeq[ReadLengthMinus - CurrentLength];
       unsigned int pos;
 
       for (int i = 0; i < OneRead.getTOTAL_SNP_ERROR_CHECKED_Minus(); i++) {
@@ -250,10 +289,8 @@ void CheckRight_Close (const SPLIT_READ & OneRead,
          }
       }
 
-      Sum = 0;
-      for (int i = 0; i <= OneRead.getMAX_SNP_ERROR(); i++) {
-         Sum += Right_PD_Output[i].size ();
-      }
+      unsigned int Sum = numberOfCompetingPositions( Right_PD_Output, OneRead.getMAX_SNP_ERROR());
+
       if (Sum) {
          short CurrentLength_output = CurrentLength + 1;
          CheckRight_Close (OneRead, TheInput, CurrentReadSeq,
@@ -267,7 +304,7 @@ void CheckRight_Close (const SPLIT_READ & OneRead,
    else {
       return;
    }
-}
+}*/
 
 bool CheckMismatches (const std::string & TheInput, const std::string & InputReadSeq, const UniquePoint & UP)
 {
@@ -300,8 +337,7 @@ bool CheckMismatches (const std::string & TheInput, const std::string & InputRea
       if (CurrentReadLength < UP.LengthStr) {
          return false;
       }
-      BP_On_Read =
-         CurrentReadSeq.substr (CurrentReadLength - UP.LengthStr,
+      BP_On_Read = CurrentReadSeq.substr (CurrentReadLength - UP.LengthStr,
                                 Min_Perfect_Match_Around_BP);
       BP_On_Ref = TheInput.substr (UP.AbsLoc, Min_Perfect_Match_Around_BP);
       if (BP_On_Read != BP_On_Ref) {

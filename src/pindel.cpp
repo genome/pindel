@@ -46,6 +46,7 @@
 #include "search_tandem_duplications_nt.h"
 #include "read_buffer.h"
 #include "farend_searcher.h"
+#include "searcher.h"
 #include "search_variant.h"
 #include "searchshortinsertions.h"
 #include "searchdeletions.h"
@@ -193,17 +194,6 @@ const Chromosome* Genome::getNextChromosome()
 }
 
 
-/*unsigned int Genome::chrNameToChrIndex( const std::string chromosomeName )
-{
-	for (unsigned int i=0; i<m_chromosomes.size(); i++ ) {
-		if ( m_chromosomes[ i ]->getName() == chromosomeName ) {
-			return i;
-		}
-	}
-	Chromosome* newChromosome= new Chromosome( chromosomeName, "" ); 
-	m_chromosomes.push_back( newChromosome );
-	return m_chromosomes.size() - 1;
-}*/
 
 const Chromosome* Genome::loadChromosome()
 {	
@@ -712,6 +702,11 @@ void init(int argc, char *argv[], ControlState& currentState )
                   << "Maximal range index (-x) exceeds the allowed value (" << g_MAX_RANGE_INDEX << ") - resetting to " << g_MAX_RANGE_INDEX << ".\n" );
         userSettings->MaxRangeIndex = g_MAX_RANGE_INDEX;
     }
+
+	if (userSettings->ADDITIONAL_MISMATCH<1) {
+       LOG_ERROR(*logStream << "Number of additional mismatches (-a) is less than the allowed value (1) - resetting to 1.\n" );
+        userSettings->ADDITIONAL_MISMATCH = 1;
+	}
 
 	TestFileForOutput( userSettings->getSIOutputFilename() );
 	TestFileForOutput( userSettings->getDOutputFilename() );
@@ -1250,28 +1245,7 @@ void GetCloseEnd(const std::string & CurrentChrSeq, SPLIT_READ & Temp_One_Read)
     }
 }
 
-bool Matches( const char readBase, const char referenceBase )
-{
-	if (readBase!='N') { return referenceBase == readBase; }
-	else { return Match2N[(short) referenceBase] == 'N'; } 
-}
 
-
-/** "CategorizePositions" categorizes the positions in PD_Plus as being extended perfectly or with an (extra) mismatch */  
-/*void CategorizePositions(const char readBase, const std::string & chromosomeSeq, const std::vector<unsigned int> PD_Plus[], std::vector<unsigned int> PD_Plus_Output[], const int numMisMatches, 	
-	const int searchDirection,	const int maxNumMismatches )
-{
-	int SizeOfCurrent = PD_Plus[ numMisMatches ].size();
- 	for (int j = 0; j < SizeOfCurrent; j++) {
-      unsigned int pos = PD_Plus[ numMisMatches ][j] + searchDirection;
-      if ( Matches( readBase, chromosomeSeq[ pos ] ) ) {
-         PD_Plus_Output[ numMisMatches ].push_back(pos);
-      }
-      else {
-         if ( numMisMatches<maxNumMismatches) { PD_Plus_Output[ numMisMatches + 1].push_back(pos); }
-      } 
-   }
-}
 
 
 void ExtendMatch( const SPLIT_READ & read, const std::string & chromosomeSeq,
@@ -1281,7 +1255,6 @@ void ExtendMatch( const SPLIT_READ & read, const std::string & chromosomeSeq,
                const short BP_End, const short CurrentLength,
                SortedUniquePoints &UP )
 {
-// the below lines give me an odd deja-vu-feeling
 	std::vector<unsigned int> PD_Plus_Output[read.getTOTAL_SNP_ERROR_CHECKED()];
    std::vector<unsigned int> PD_Minus_Output[read.getTOTAL_SNP_ERROR_CHECKED()];
 		
@@ -1291,8 +1264,7 @@ void ExtendMatch( const SPLIT_READ & read, const std::string & chromosomeSeq,
    }
    const char CurrentChar = readSeq[CurrentLength];
    const char CurrentCharRC = Convert2RC4N[(short) CurrentChar];
-   //unsigned int pos=0;
-   //int SizeOfCurrent=0;
+
 	for (int i = 0; i <= read.getTOTAL_SNP_ERROR_CHECKED_Minus(); i++) {
 		CategorizePositions( CurrentChar, chromosomeSeq, PD_Plus, PD_Plus_Output, i, 1, read.getTOTAL_SNP_ERROR_CHECKED_Minus() );
 		CategorizePositions( CurrentCharRC, chromosomeSeq, PD_Minus, PD_Minus_Output, i, -1, read.getTOTAL_SNP_ERROR_CHECKED_Minus() );
@@ -1312,8 +1284,8 @@ void ExtendMatch( const SPLIT_READ & read, const std::string & chromosomeSeq,
  	} // else-if Sum
 }
 
-void CheckBoth(const SPLIT_READ & OneRead, const std::string & TheInput,
-               const std::string & CurrentReadSeq,
+void CheckBoth(const SPLIT_READ & read, const std::string & chromosomeSeq,
+               const std::string & readSeq,
                const std::vector<unsigned int> PD_Plus[],
                const std::vector<unsigned int> PD_Minus[], const short minimumLengthToReportMatch,
                const short BP_End, const short CurrentLength,
@@ -1322,9 +1294,9 @@ void CheckBoth(const SPLIT_READ & OneRead, const std::string & TheInput,
 	UserDefinedSettings *userSettings = UserDefinedSettings::Instance();
 
    if (CurrentLength >= minimumLengthToReportMatch && CurrentLength <= BP_End) {
-      for (short numberOfMismatches = 0; numberOfMismatches <= OneRead.getMAX_SNP_ERROR(); numberOfMismatches++) {
+      for (short numberOfMismatches = 0; numberOfMismatches <= read.getMAX_SNP_ERROR(); numberOfMismatches++) {
          if (PD_Plus[numberOfMismatches].size() + PD_Minus[numberOfMismatches].size() == 1 && CurrentLength >= minimumLengthToReportMatch + numberOfMismatches) {
-            Sum = 0;
+            int Sum = 0;
             if (userSettings->ADDITIONAL_MISMATCH > 0) { // what if this is ADDITIONAL_MISMATCH is 0? Do you save anything then?
 					// what if j +ADD_MISMATCH exceeds the max allowed number of mismatches (the PD_element does not exist?)
 				
@@ -1344,7 +1316,7 @@ void CheckBoth(const SPLIT_READ & OneRead, const std::string & TheInput,
 							UniquePoint MinMatch( CurrentLength, PD_Minus[numberOfMismatches][0], BACKWARD, ANTISENSE, numberOfMismatches );
 							MatchPosition = MinMatch; 
 					   }
-                  if (CheckMismatches(TheInput, OneRead.getUnmatchedSeq(), MatchPosition)) {
+                  if (CheckMismatches(chromosomeSeq,readSeq, MatchPosition)) {
                      UP.push_back (MatchPosition);
                      break;
                   } // if CheckMismatches
@@ -1355,11 +1327,11 @@ void CheckBoth(const SPLIT_READ & OneRead, const std::string & TheInput,
 	} // if length of match is sufficient to be reportable
 
    if (CurrentLength < BP_End) {
-		ExtendMatch( read, chromosomeSeq, readSeq, PD_Plus_Output, PD_Minus_Output, minimumLengthToReportMatch, BP_End, CurrentLengthOutput, UP );
+		ExtendMatch( read, chromosomeSeq, readSeq, PD_Plus, PD_Minus, minimumLengthToReportMatch, BP_End, CurrentLength, UP );
 	}
-}*/
+}
 
-void CheckBoth(const SPLIT_READ & OneRead, const std::string & TheInput,
+/*void CheckBoth(const SPLIT_READ & OneRead, const std::string & TheInput,
                const std::string & CurrentReadSeq,
                const std::vector<unsigned int> PD_Plus[],
                const std::vector<unsigned int> PD_Minus[], const short minimumLengthToReportMatch,
@@ -1520,7 +1492,7 @@ void CheckBoth(const SPLIT_READ & OneRead, const std::string & TheInput,
  	else {
 	   return;
    } // if length>=BP_End
-}
+}*/
 
 void CleanUniquePoints(SortedUniquePoints &Input_UP)
 {

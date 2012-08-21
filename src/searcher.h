@@ -21,27 +21,27 @@
 #ifndef SEARCHER_H
 #define	SEARCHER_H
 
-bool CheckMismatches (const std::string & TheInput,
-											const std::string & CurrentReadSeq,
-											const UniquePoint & UP);
+bool CheckMismatches (const std::string & TheInput, const std::string & CurrentReadSeq, const UniquePoint & UP);
+void CategorizePositions(const char readBase, const std::string & chromosomeSeq, const std::vector<unsigned int> PD_Plus[], std::vector<unsigned int> PD_Plus_Output[], const int numMisMatches, 	
+	const int searchDirection,	const int maxNumMismatches );
 
-void CheckLeft_Far (SPLIT_READ & OneRead,
+/*void CheckLeft_Far (SPLIT_READ & OneRead,
 										const std::string & TheInput,
 										const std::string & CurrentReadSeq,
 										const std::vector < unsigned int >Left_PD[],
 										const short &BP_Left_Start,
 										const short &BP_Left_End,
 										const short &CurrentLength,
-										SortedUniquePoints &LeftUP);
+										SortedUniquePoints &LeftUP);*/
 
-void CheckRight_Far (SPLIT_READ & OneRead,
+/*void CheckRight_Far (SPLIT_READ & OneRead,
 										 const std::string & TheInput,
 										 const std::string & CurrentReadSeq,
 										 const std::vector < unsigned int >Right_PD[],
 										 const short &BP_Right_Start,
 										 const short &BP_Right_End,
 										 const short &CurrentPos,
-										 SortedUniquePoints &RightUP);
+										 SortedUniquePoints &RightUP);*/
 
 void CheckLeft_Close (const SPLIT_READ & OneRead,
 											const std::string & TheInput,
