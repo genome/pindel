@@ -144,11 +144,11 @@ void safeGetline(std::istream& is, std::string& t)
         }
     }*/
 	getline( is, t );
-	unsigned int lastIndex = t.size()-1;
+	/*unsigned int lastIndex = t.size()-1;
 	while (lastIndex>=0 && t[ lastIndex ]=='\r' ) {
 		t.resize( lastIndex );
 		lastIndex--;
-	} 
+	} */
 	//return is;
 }
 
@@ -158,19 +158,19 @@ void SPLIT_READ::setUnmatchedSeq( const std::string unmatchedSeq )
 	const double EPSILON = 0.00001; // to compensate for downrounding off errors (0.04 = 0.03999999 on some computers)
 	
 	UnmatchedSeq = unmatchedSeq; 
-	/*if (UnmatchedSeq.size()>0) {*/
+	if (UnmatchedSeq.size()>0) {
 		/*for (unsigned int x=0; x<UnmatchedSeq.size();x++ ) {
 			std::cout << "seq[" << x << "]="<< int(UnmatchedSeq[ x ]) << "('" << UnmatchedSeq[ x ] << "')\n";
 		}*/
-		/*unsigned int lastCharIndex = UnmatchedSeq.size()-1;
+		unsigned int lastCharIndex = UnmatchedSeq.size()-1;
 		while (!isalnum( UnmatchedSeq[ lastCharIndex ] )) {
 			UnmatchedSeq.resize( lastCharIndex );
 			lastCharIndex--;
-		} */
+		} 
 		/*for (unsigned int x=0; x<UnmatchedSeq.size();x++ ) {
 			std::cout << "resseq[" << x << "]="<< int(UnmatchedSeq[ x ]) << "('" << UnmatchedSeq[ x ] << "')\n";
 		}*/
-	/*}*/
+	}
 
 	ReadLength = UnmatchedSeq.size();
 	ReadLengthMinus = ReadLength - 1;
