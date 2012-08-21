@@ -114,6 +114,35 @@ const unsigned int AROUND_REGION_BUFFER = 10000; // how much earlier reads shoul
 
 const short MaxDI = 30;
 
+void SPLIT_READ::setUnmatchedSeq( const std::string unmatchedSeq ) 
+{ 
+	const double EPSILON = 0.00001; // to compensate for downrounding off errors (0.04 = 0.03999999 on some computers)
+	
+	UnmatchedSeq = unmatchedSeq; 
+	if (UnmatchedSeq.size()>0) {
+		/*for (unsigned int x=0; x<UnmatchedSeq.size();x++ ) {
+			std::cout << "seq[" << x << "]="<< int(UnmatchedSeq[ x ]) << "('" << UnmatchedSeq[ x ] << "')\n";
+		}*/
+		unsigned int lastCharIndex = UnmatchedSeq.size()-1;
+		while (!isalnum( UnmatchedSeq[ lastCharIndex ] )) {
+			UnmatchedSeq.resize( lastCharIndex );
+			lastCharIndex--;
+		} 
+		/*for (unsigned int x=0; x<UnmatchedSeq.size();x++ ) {
+			std::cout << "resseq[" << x << "]="<< int(UnmatchedSeq[ x ]) << "('" << UnmatchedSeq[ x ] << "')\n";
+		}*/
+	}
+
+	ReadLength = UnmatchedSeq.size();
+	ReadLengthMinus = ReadLength - 1;
+
+	UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
+
+	MAX_SNP_ERROR = (short)(((double)ReadLength * userSettings->Seq_Error_Rate) + EPSILON);
+	TOTAL_SNP_ERROR_CHECKED_Minus = MAX_SNP_ERROR + userSettings->ADDITIONAL_MISMATCH;
+	TOTAL_SNP_ERROR_CHECKED = TOTAL_SNP_ERROR_CHECKED_Minus + 1;
+}
+
 const Chromosome* Genome::addChromosome( Chromosome* newChromosome ) 
 { 
 	for (unsigned int i=0; i<m_chromosomes.size(); i++ ) {

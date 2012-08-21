@@ -178,19 +178,7 @@ struct SPLIT_READ {
    std::string FarFragName;
 	std::string Name;
 
-	void setUnmatchedSeq( const std::string unmatchedSeq ) { 
-		const double EPSILON = 0.00001; // to compensate for downrounding off errors (0.04 = 0.03999999 on some computers)
-	
-		UnmatchedSeq = unmatchedSeq; 
-		ReadLength = UnmatchedSeq.size();
-		ReadLengthMinus = ReadLength - 1;
-
-		UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
-	
-		MAX_SNP_ERROR = (short)(((double)ReadLength * userSettings->Seq_Error_Rate) + EPSILON);
-		TOTAL_SNP_ERROR_CHECKED_Minus = MAX_SNP_ERROR + userSettings->ADDITIONAL_MISMATCH;
-		TOTAL_SNP_ERROR_CHECKED = TOTAL_SNP_ERROR_CHECKED_Minus + 1;
-	}
+	void setUnmatchedSeq( const std::string unmatchedSeq );
 	const std::string& getUnmatchedSeq() const { return UnmatchedSeq; }	
 
 
