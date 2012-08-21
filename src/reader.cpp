@@ -214,7 +214,7 @@ short ReadInRead (PindelReadReader & inf_ReadSeq, const std::string & FragName,
                #pragma omp for
 					// openMP 2.5 requires signed loop index
                for (int BufferReadsIndex = 0;  BufferReadsIndex < (int)NumberOfReadsPerBuffer; BufferReadsIndex++) {
-                  GetCloseEnd (CurrentChr, BufferReads[BufferReadsIndex]);
+                  GetCloseEnd( CurrentChr, BufferReads[BufferReadsIndex] );
                }
             }
 				// EW: would it be useful to fuse this loop with the previous one?
