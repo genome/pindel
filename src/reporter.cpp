@@ -678,8 +678,14 @@ bool smaller( const SPLIT_READ& firstRead, const SPLIT_READ& secondRead )
 	if (firstRead.BPLeft != secondRead.BPLeft ) {
 		return (firstRead.BPLeft < secondRead.BPLeft);
 	}
-	if (firstRead.IndelSize != secondRead.IndelSize ) {
+	if (firstRead.BPRight != secondRead.BPRight ) {
+		return (firstRead.BPRight < secondRead.BPRight);
+	}
+    if (firstRead.IndelSize != secondRead.IndelSize ) {
 		return (firstRead.IndelSize < secondRead.IndelSize);
+	}
+    if (firstRead.NT_size != secondRead.NT_size ) {
+		return (firstRead.NT_size < secondRead.NT_size);
 	}
 	if (firstRead.BP != secondRead.BP ) {
 		return (firstRead.BP < secondRead.BP);
@@ -688,13 +694,13 @@ bool smaller( const SPLIT_READ& firstRead, const SPLIT_READ& secondRead )
 }
 
 
-void bubblesortReads(const std::vector < SPLIT_READ >& Reads, std::vector < unsigned >& insertionIndices)
+void bubblesortReads(const std::vector < SPLIT_READ >& Reads, std::vector < unsigned >& VariantIndices)
 {
-	unsigned int SIsNum = insertionIndices.size();
+	unsigned int SIsNum = VariantIndices.size();
 	for (unsigned int First = 0; First < SIsNum - 1; First++) {
 		for (unsigned int Second = First + 1; Second < SIsNum; Second++) {
-			if (!smaller(Reads[insertionIndices[First]], Reads[insertionIndices[Second]])) {
-				std::swap( insertionIndices[First],insertionIndices[Second]); 
+			if (!smaller(Reads[VariantIndices[First]], Reads[VariantIndices[Second]])) {
+				std::swap( VariantIndices[First],VariantIndices[Second]); 
 			}
 		}
 	}
@@ -702,16 +708,16 @@ void bubblesortReads(const std::vector < SPLIT_READ >& Reads, std::vector < unsi
 
 // NOTES:						// since both lengths are the same, the second argument of OR is equal to the first)
 					// firstRead.LeftMostPos + firstRead.getReadLength() == secondRead.LeftMostPos + secondRead.getReadLength()) {
-void markDuplicates(std::vector < SPLIT_READ >& Reads, const std::vector < unsigned >& insertionIndices)
+void markDuplicates(std::vector < SPLIT_READ >& Reads, const std::vector < unsigned >& VariantIndices)
 {
 	// mark reads that are not unique 
-	unsigned int SIsNum = insertionIndices.size();
+	unsigned int Num = VariantIndices.size();
 
-   for (unsigned int First = 0; First < SIsNum - 1; First++) {
-		SPLIT_READ& firstRead = Reads[insertionIndices[First]];
+   for (unsigned int First = 0; First < Num - 1; First++) {
+		SPLIT_READ& firstRead = Reads[VariantIndices[First]];
 		if ( firstRead.UniqueRead == false ) { continue; }
-      for (unsigned int Second = First + 1; Second < SIsNum; Second++) {
-			SPLIT_READ& secondRead = Reads[insertionIndices[Second]];		
+      for (unsigned int Second = First + 1; Second < Num; Second++) {
+			SPLIT_READ& secondRead = Reads[VariantIndices[Second]];		
 
          if ( firstRead.LeftMostPos == secondRead.LeftMostPos 
 					&& firstRead.Tag == secondRead.Tag
@@ -841,8 +847,8 @@ void SortAndOutputTandemDuplications (const unsigned &NumBoxes, const std::strin
       LOG_INFO(*logStream << "Sorting and outputing tandem duplications ..." << std::endl);
    }
    unsigned int TDNum;
-   short CompareResult;
-   unsigned Temp4Exchange;
+   //short CompareResult;
+   //unsigned Temp4Exchange;
    int countTandemDuplications = 0;
    unsigned int GoodNum;
    std::vector < SPLIT_READ > GoodIndels;
@@ -853,61 +859,8 @@ void SortAndOutputTandemDuplications (const unsigned &NumBoxes, const std::strin
       if (TDs[Box_index].size () >= userSettings->NumRead2ReportCutOff) {
          TDNum = TDs[Box_index].size ();
 
-         for (unsigned int First = 0; First < TDNum - 1; First++) {
-            {
-               for (unsigned int Second = First + 1; Second < TDNum;  Second++) {
-                  {  
-                      CompareResult = 0;
-                     if (AllReads[TDs[Box_index][First]].BPLeft < AllReads[TDs[Box_index][Second]].BPLeft) {
-                        continue;
-                     }
-                     else if (AllReads[TDs[Box_index][First]].BPLeft > AllReads[TDs[Box_index][Second]].BPLeft) {
-                        CompareResult = 1;
-                     }
-                     else if (AllReads[TDs[Box_index][First]].BPLeft == AllReads[TDs[Box_index][Second]].BPLeft) {
-                        if (AllReads[TDs[Box_index][First]].BPRight < AllReads[TDs[Box_index][Second]].BPRight) {
-                           continue;
-                        }
-                        else if (AllReads[TDs[Box_index][First]].BPRight > AllReads[TDs[Box_index][Second]].BPRight) {
-                           CompareResult = 1;
-                        }
-                        else if (nonTemplate) {
-                           if (AllReads[TDs[Box_index][First]].NT_size <
-                                 AllReads[TDs[Box_index][Second]].NT_size) {
-                              continue;
-                           }
-                           else if (AllReads[TDs[Box_index][First]].
-                                    NT_size >
-                                    AllReads[TDs[Box_index][Second]].
-                                    NT_size) {
-                              CompareResult = 1;
-                           }
-                           else if (AllReads[TDs[Box_index][First]].BP > AllReads[TDs[Box_index][Second]].BP) CompareResult = 1; 
-                        }
-                        else if (AllReads[TDs[Box_index][First]].BP > AllReads[TDs[Box_index][Second]].BP) CompareResult = 1; 
-                     }
-                     if (CompareResult == 1) {
-                        Temp4Exchange = TDs[Box_index][First];
-                        TDs[Box_index][First] = TDs[Box_index][Second];
-                        TDs[Box_index][Second] = Temp4Exchange;
-                     }
-                  }
-               }
-            }
-         }
-          
-          for (unsigned int First = 0; First < TDNum - 1; First++) {
-              for (unsigned int Second = First + 1; Second < TDNum; Second++) {
-                  if (AllReads[TDs[Box_index][First]].getReadLength() == AllReads[TDs[Box_index][Second]].getReadLength()) {
-                      if (AllReads[TDs[Box_index][First]].LeftMostPos ==
-                          AllReads[TDs[Box_index][Second]].LeftMostPos || AllReads[TDs[Box_index][First]].LeftMostPos + AllReads[TDs[Box_index][First]].getReadLength() ==
-                          AllReads[TDs[Box_index][Second]].LeftMostPos + AllReads[TDs[Box_index][Second]].getReadLength()) {
-                          if (AllReads[TDs[Box_index][First]].MatchedD == AllReads[TDs[Box_index][Second]].MatchedD) 
-                          AllReads[TDs[Box_index][Second]].UniqueRead = false;
-                      }
-                  }
-              }
-          }
+          bubblesortReads( AllReads, TDs[ Box_index ] );
+          markDuplicates( AllReads, TDs[ Box_index ] );
           
          GoodIndels.clear ();
          IndelEvents.clear ();
@@ -1020,8 +973,8 @@ void SortOutputD (const unsigned &NumBoxes, const std::string & CurrentChr,
 {
    LOG_INFO(*logStream << "Sorting and outputing deletions ..." << std::endl);
    unsigned int DeletionsNum;
-   short CompareResult;
-   unsigned Temp4Exchange;
+   //short CompareResult;
+   //unsigned Temp4Exchange;
 
    unsigned int GoodNum;
    std::vector < SPLIT_READ > GoodIndels;
@@ -1033,48 +986,9 @@ void SortOutputD (const unsigned &NumBoxes, const std::string & CurrentChr,
       if (Deletions[Box_index].size () >= userSettings->NumRead2ReportCutOff) {
          DeletionsNum = Deletions[Box_index].size ();
 
-         for (unsigned int First = 0; First < DeletionsNum - 1; First++) {
-            {
-               for (unsigned int Second = First + 1; Second < DeletionsNum; Second++) {
-                  { 
-                      CompareResult = 0;
-                     if (Reads[Deletions[Box_index][First]].BPLeft < Reads[Deletions[Box_index][Second]].BPLeft) {
-                        continue;
-                     }
-                     else if (Reads[Deletions[Box_index][First]].BPLeft > Reads[Deletions[Box_index][Second]].BPLeft) {
-                        CompareResult = 1;
-                     }
-                     else if (Reads[Deletions[Box_index][First]].BPLeft == Reads[Deletions[Box_index][Second]].BPLeft) {
-                        if (Reads[Deletions[Box_index][First]].BPRight < Reads[Deletions[Box_index][Second]].BPRight) {
-                           continue;
-                        }
-                        else if (Reads[Deletions[Box_index][First]].BPRight >Reads[Deletions[Box_index][Second]].BPRight) {
-                           CompareResult = 1;
-                        }
-                        else if (Reads[Deletions[Box_index][First]].BP > Reads[Deletions[Box_index][Second]].BP) CompareResult = 1;
-                     }
-                     if (CompareResult == 1) {
-                        Temp4Exchange = Deletions[Box_index][First];
-                        Deletions[Box_index][First] =
-                           Deletions[Box_index][Second];
-                        Deletions[Box_index][Second] = Temp4Exchange;
-                     }
-                  }
-               }
-            }
-         }
-          for (unsigned int First = 0; First < DeletionsNum - 1; First++) {
-              for (unsigned int Second = First + 1; Second < DeletionsNum; Second++) {
-                  if (Reads[Deletions[Box_index][First]].getReadLength() == Reads[Deletions[Box_index][Second]].getReadLength()) {
-                      if (Reads[Deletions[Box_index][First]].LeftMostPos ==
-                          Reads[Deletions[Box_index][Second]].LeftMostPos || Reads[Deletions[Box_index][First]].LeftMostPos + Reads[Deletions[Box_index][First]].getReadLength() ==
-                          Reads[Deletions[Box_index][Second]].LeftMostPos + Reads[Deletions[Box_index][Second]].getReadLength()) {
-                          if (Reads[Deletions[Box_index][First]].MatchedD == Reads[Deletions[Box_index][Second]].MatchedD)
-                          Reads[Deletions[Box_index][Second]].UniqueRead = false;
-                      }
-                  }
-              }
-          }
+          bubblesortReads( Reads, Deletions[ Box_index ] );
+          markDuplicates( Reads, Deletions[ Box_index ] );
+          
          GoodIndels.clear ();
          IndelEvents.clear ();
          for (unsigned int First = 0; First < DeletionsNum; First++) {
