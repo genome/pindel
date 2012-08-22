@@ -251,6 +251,24 @@ struct Indel4output {
 		IndelStr = "";
 		Support = 0;
 	}
+	void initialize(unsigned int start, const SPLIT_READ& read) {
+		Start = start;
+      End = start;
+		Support = End - Start + 1;
+      IndelSize = read.IndelSize;
+      IndelStr = read.NT_str;
+      BPLeft = read.BPLeft;
+      BPRight = read.BPRight;
+      WhetherReport = true;
+		RealStart = 0;
+		RealEnd = 0;
+		NT_size = 0;
+	}
+	void complete() {
+   	RealStart = BPLeft;
+      RealEnd = BPRight;
+      Support =  End - Start + 1; // may become accessor function?
+	}
 	unsigned int BPLeft;
 	unsigned int BPRight;
 	unsigned int IndelSize;

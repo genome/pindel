@@ -1183,7 +1183,90 @@ void GetRealStart4Deletion(const std::string & TheInput,
     RealEnd = PosIndex - g_SpacerBeforeAfter;
 }
 
-void GetRealStart4Insertion(const std::string & TheInput,
+// rotates a string back: KAI -> IKA 
+void rotateBack( std::string& str )
+{
+	char lastChar = str[str.size()-1];
+	str = lastChar + str.substr(0,str.size()-1);
+}
+
+void rotateForward( std::string& str )
+{
+	char firstChar = str[0];
+	str = str.substr(1) + firstChar;
+}
+
+// the true principle here would be that you can move the insertion backwards, 
+void GetRealStart4Insertion(const std::string & chromosomeSeq,
+                            std::string & InsertedStr, unsigned int &RealStart,
+                            unsigned int &RealEnd)
+{
+
+	unsigned int lastPosAfterInsertion_comp = RealEnd + g_SpacerBeforeAfter;
+	//std::cout << "AInsertedStr: " << InsertedStr << ", start= " << RealStart  << chromosomeSeq[ g_SpacerBeforeAfter + RealStart] << ", end= " << RealEnd << chromosomeSeq[ g_SpacerBeforeAfter + RealEnd] << std::endl;
+	//for (int x=-5; x<5; x++ ) { std::cout << chromosomeSeq[ g_SpacerBeforeAfter + RealStart + x] ; }
+	//std::cout << "\n";
+	while ( chromosomeSeq[ lastPosAfterInsertion_comp ] == InsertedStr[ 0 ] ) {
+		rotateForward( InsertedStr );
+		lastPosAfterInsertion_comp++;
+	}
+	RealEnd = lastPosAfterInsertion_comp - g_SpacerBeforeAfter;
+	//std::cout << "BInsertedStr: " << InsertedStr << ", start= " << RealStart << ", end= " << RealEnd << std::endl;
+	//for (int x=-5; x<5; x++ ) { std::cout << chromosomeSeq[ g_SpacerBeforeAfter + RealStart + x] ; }
+	//std::cout << "\n";
+	unsigned int lastPosBeforeInsertion_comp = lastPosAfterInsertion_comp-1;
+	while ( chromosomeSeq[ lastPosBeforeInsertion_comp ] == InsertedStr[ InsertedStr.size()-1 ] ) {
+		rotateBack( InsertedStr );
+		lastPosBeforeInsertion_comp--;
+	}
+	RealStart = lastPosBeforeInsertion_comp - g_SpacerBeforeAfter;
+	//std::cout << "CInsertedStr: " << InsertedStr << ", start= " << RealStart << ", end= " << RealEnd << std::endl;
+	//for (int x=-5; x<5; x++ ) { std::cout << chromosomeSeq[ g_SpacerBeforeAfter + RealStart + x] ; }
+	//std::cout << "\n";
+
+}
+	//std::cout << "RS: " << RealStart << " RE: " << RealEnd << " IS: " <<  InsertedStr << "\n";
+	//std::cout << "----\n";
+
+   /*unsigned int IndelSize = InsertedStr.size();
+   unsigned int PosIndex = RealStart + g_SpacerBeforeAfter;
+   unsigned int original_RealStart = RealStart;
+
+   for (int i = IndelSize - 1; i >= 0; i--) {
+        if (TheInput[PosIndex] == InsertedStr[i]) {
+            PosIndex--;
+        }
+        else {
+            break;
+        }
+    }
+    if (PosIndex == RealStart + g_SpacerBeforeAfter - IndelSize) {
+        while (TheInput[PosIndex] == TheInput[PosIndex + IndelSize]) {
+            PosIndex--;
+        }
+    }
+    RealStart = PosIndex - g_SpacerBeforeAfter;
+    PosIndex = RealEnd + g_SpacerBeforeAfter;
+    for (unsigned int i = 0; i < IndelSize; i++) {
+        if (TheInput[PosIndex] == InsertedStr[i]) {
+            PosIndex++;
+        }
+        else {
+            break;
+        }
+    }
+    if (PosIndex == RealEnd + g_SpacerBeforeAfter + IndelSize) {
+        while (TheInput[PosIndex] == TheInput[PosIndex - IndelSize]) {
+            PosIndex++;
+        }
+    }
+    RealEnd = PosIndex - g_SpacerBeforeAfter;
+    unsigned DIFF = RealStart - original_RealStart;
+    InsertedStr = InsertedStr.substr(0, IndelSize - DIFF) + InsertedStr.substr(IndelSize, DIFF);*/
+//}
+
+
+/*void GetRealStart4Insertion(const std::string & TheInput,
                             std::string & InsertedStr, unsigned int &RealStart,
                             unsigned int &RealEnd)
 {
@@ -1222,7 +1305,7 @@ void GetRealStart4Insertion(const std::string & TheInput,
     RealEnd = PosIndex - g_SpacerBeforeAfter;
     unsigned DIFF = RealStart - original_RealStart;
     InsertedStr = InsertedStr.substr(0, IndelSize - DIFF) + InsertedStr.substr(IndelSize, DIFF);
-}
+}*/
 
 std::vector<Region> Merge(const std::vector<Region> &AllRegions)
 {
@@ -1274,11 +1357,13 @@ void GetCloseEndInner(const std::string & CurrentChrSeq, SPLIT_READ & Temp_One_R
         }
     }
     else if (Temp_One_Read.MatchedD == Minus) {
+
         CurrentReadSeq = Temp_One_Read.getUnmatchedSeq();
         End = Temp_One_Read.MatchedRelPos + g_SpacerBeforeAfter;
         Start = End - 3 * Temp_One_Read.InsertSize;
         char RightChar;
         RightChar = CurrentReadSeq[Temp_One_Read.getReadLengthMinus()];
+		//std::cout << "Starting to fit the close end with character" << RightChar << "\n";
         if (RightChar != 'N') {
             for (int pos = Start; pos < End; pos++) {
                 if (CurrentChrSeq[pos] == RightChar) {
@@ -1286,10 +1371,9 @@ void GetCloseEndInner(const std::string & CurrentChrSeq, SPLIT_READ & Temp_One_R
                 }
             }
         }
-
+        //std::cout << "1\t" << PD[0].size() << "\t" << PD[1].size() << std::endl;
         LOG_DEBUG(*logStream << "1\t" << PD[0].size() << "\t" << PD[1].size() << std::endl);
-        CheckRight_Close(Temp_One_Read, CurrentChrSeq, CurrentReadSeq, PD,
-                         BP_Start, BP_End, 1, UP);
+        CheckRight_Close(Temp_One_Read, CurrentChrSeq, CurrentReadSeq, PD, BP_Start, BP_End, 1, UP);
         LOG_DEBUG(*logStream << UP.size() << std::endl);
         if (UP.empty()) {}
         else {

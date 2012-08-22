@@ -53,6 +53,7 @@ void CategorizePositions(const char readBase, const std::string & chromosomeSeq,
          if ( numMisMatches<maxNumMismatches) { PD_Plus_Output[ numMisMatches + 1].push_back(pos); }
       } 
    }
+	//std::cout << "From " << PD_Plus[ numMisMatches ].size() << "Good: " << PD_Plus_Output[ numMisMatches ].size() << "Bad: " << PD_Plus_Output[ numMisMatches + 1].size() << std::endl;
 }
 
 void ExtendMatchClose( const SPLIT_READ & read, const std::string & chromosomeSeq,
@@ -67,8 +68,9 @@ void ExtendMatchClose( const SPLIT_READ & read, const std::string & chromosomeSe
       OutputPositions[CheckedIndex].reserve( InputPositions[CheckedIndex].size()); // this assumes perfect matches and no 'attrition' from higher levels. We may want to test this...
    }
    const char CurrentChar = ((direction==1) ? readSeq[CurrentLength] : readSeq[read.getReadLengthMinus() - CurrentLength] );
+		//std::cout << "Matching " << CurrentChar << "\n";
+	for (int i = 0; i <= read.getTOTAL_SNP_ERROR_CHECKED_Minus(); i++) { 
 
-	for (int i = 0; i <= read.getTOTAL_SNP_ERROR_CHECKED_Minus(); i++) { // far end has <=!!!
 		CategorizePositions( CurrentChar, chromosomeSeq, InputPositions, OutputPositions, i, direction, read.getTOTAL_SNP_ERROR_CHECKED_Minus() );
    }
 

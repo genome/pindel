@@ -184,8 +184,7 @@ void OutputTDs (const std::vector < SPLIT_READ > &TDs,
    }
 }
 
-void
-OutputDeletions (const std::vector < SPLIT_READ > &Deletions,
+void OutputDeletions (const std::vector < SPLIT_READ > &Deletions,
                  const std::string & TheInput,
                  const unsigned int &C_S,
                  const unsigned int &C_E,
@@ -578,10 +577,10 @@ void OutputSIs (const std::vector < SPLIT_READ > &SIs,
               << "\t" << SIs[GoodIndex].MS
               << "\t" << SIs[GoodIndex].Tag << "\t" << SIs[GoodIndex].Name << std::endl;
    }
+   NumberOfSIsInstances++;
 }
 
-void
-OutputDI (const std::vector < SPLIT_READ > &DI,
+void OutputDI (const std::vector < SPLIT_READ > &DI,
           const std::string & TheInput,
           const unsigned int &C_S,
           const unsigned int &C_E,
@@ -674,157 +673,144 @@ OutputDI (const std::vector < SPLIT_READ > &DI,
    }
 }
 
-void
-SortOutputSI (const unsigned &NumBoxes, const std::string & CurrentChr,
+bool smaller( const SPLIT_READ& firstRead, const SPLIT_READ& secondRead )
+{
+	if (firstRead.BPLeft != secondRead.BPLeft ) {
+		return (firstRead.BPLeft < secondRead.BPLeft);
+	}
+	if (firstRead.IndelSize != secondRead.IndelSize ) {
+		return (firstRead.IndelSize < secondRead.IndelSize);
+	}
+	if (firstRead.BP != secondRead.BP ) {
+		return (firstRead.BP < secondRead.BP);
+	}
+	return false; // are equal, though we may want to do more stringent sorting
+}
+
+
+void bubblesortReads(const std::vector < SPLIT_READ >& Reads, std::vector < unsigned >& insertionIndices)
+{
+	unsigned int SIsNum = insertionIndices.size();
+	for (unsigned int First = 0; First < SIsNum - 1; First++) {
+		for (unsigned int Second = First + 1; Second < SIsNum; Second++) {
+			if (!smaller(Reads[insertionIndices[First]], Reads[insertionIndices[Second]])) {
+				std::swap( insertionIndices[First],insertionIndices[Second]); 
+			}
+		}
+	}
+}
+
+// NOTES:						// since both lengths are the same, the second argument of OR is equal to the first)
+					// firstRead.LeftMostPos + firstRead.getReadLength() == secondRead.LeftMostPos + secondRead.getReadLength()) {
+void markDuplicates(std::vector < SPLIT_READ >& Reads, const std::vector < unsigned >& insertionIndices)
+{
+	// mark reads that are not unique 
+	unsigned int SIsNum = insertionIndices.size();
+
+   for (unsigned int First = 0; First < SIsNum - 1; First++) {
+		SPLIT_READ& firstRead = Reads[insertionIndices[First]];
+		if ( firstRead.UniqueRead == false ) { continue; }
+      for (unsigned int Second = First + 1; Second < SIsNum; Second++) {
+			SPLIT_READ& secondRead = Reads[insertionIndices[Second]];		
+
+         if ( firstRead.LeftMostPos == secondRead.LeftMostPos 
+					&& firstRead.Tag == secondRead.Tag
+					&& firstRead.MatchedD == secondRead.MatchedD
+					&& firstRead.getReadLength() == secondRead.getReadLength() 
+				 ) { // added EW210812
+
+             secondRead.UniqueRead = false;
+         }
+      }
+   }
+}
+
+
+void SortOutputSI (const unsigned &NumBoxes, const std::string & CurrentChr,
               std::vector < SPLIT_READ > &Reads, std::vector < unsigned >SIs[],
               std::ofstream & SIsOutf)
 {
    LOG_INFO(*logStream << "Sorting and outputing short insertions ..." << std::endl);
    unsigned int SIsNum;
-   short CompareResult;
-   unsigned Temp4Exchange;
    std::vector < SPLIT_READ > GoodIndels;
    unsigned int GoodNum;
    std::vector < Indel4output > IndelEvents;
 	UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
 
+	// loop over all boxes
    for (unsigned Box_index = 0; Box_index < NumBoxes; Box_index++) {
-      if (SIs[Box_index].size () >= userSettings->NumRead2ReportCutOff) {
-         SIsNum = SIs[Box_index].size ();
-         LOG_DEBUG(*logStream << "SIsNum " << SIsNum << std::endl);
-         for (unsigned int First = 0; First < SIsNum - 1; First++) {
-            {
-               for (unsigned int Second = First + 1; Second < SIsNum; Second++) {
-                  {  
-                      CompareResult = 0;
-                     if (Reads[SIs[Box_index][First]].BPLeft < Reads[SIs[Box_index][Second]].BPLeft) {
-                        continue;
-                     }
-                     else if (Reads[SIs[Box_index][First]].BPLeft > Reads[SIs[Box_index][Second]].BPLeft) {
-                        CompareResult = 1;
-                     }
-                     else {
-                        if (Reads[SIs[Box_index][First]].IndelSize < Reads[SIs[Box_index][Second]].IndelSize) {
-                           continue;
-                        }
-                        else if (Reads[SIs[Box_index][First]].IndelSize > Reads[SIs[Box_index][Second]].IndelSize) {
-                           CompareResult = 1;
-                        }
-                        else if (Reads[SIs[Box_index][First]].BP > Reads[SIs[Box_index][Second]].BP) {
-                            CompareResult = 1; 
-                        }
-                     }
-                     if (CompareResult == 1) {
-                        Temp4Exchange = SIs[Box_index][First];
-                        SIs[Box_index][First] = SIs[Box_index][Second];
-                        SIs[Box_index][Second] = Temp4Exchange;
-                     }
-                  }
-               }
-            }
-         }
-          
-         for (unsigned int First = 0; First < SIsNum - 1; First++) {
-             for (unsigned int Second = First + 1; Second < SIsNum; Second++) {
-                 if (Reads[SIs[Box_index][First]].getReadLength() == Reads[SIs[Box_index][Second]].getReadLength()) {
-                     if (Reads[SIs[Box_index][First]].LeftMostPos ==
-                         Reads[SIs[Box_index][Second]].LeftMostPos || Reads[SIs[Box_index][First]].LeftMostPos + Reads[SIs[Box_index][First]].getReadLength() ==
-                         Reads[SIs[Box_index][Second]].LeftMostPos + Reads[SIs[Box_index][Second]].getReadLength()) {
-                         if (Reads[SIs[Box_index][First]].MatchedD == Reads[SIs[Box_index][Second]].MatchedD) 
-                         Reads[SIs[Box_index][Second]].UniqueRead = false;
-                     }
-                 }
-             }
-         }
 
-          
+		// does this box contain at least enough reads to warrant an event?
+      if (SIs[Box_index].size () >= userSettings->NumRead2ReportCutOff) {
+
+         SIsNum = SIs[Box_index].size();
+         LOG_DEBUG(*logStream << "SIsNum " << SIsNum << std::endl);
+			std::cout << "Number of reads in current box: " << SIsNum << "\n";
+
+         bubblesortReads( Reads, SIs[ Box_index ] );
+         markDuplicates( Reads, SIs[ Box_index ] );
+
          GoodIndels.clear ();
          IndelEvents.clear ();
          LOG_DEBUG(*logStream << GoodIndels.size() << std::endl);
 
+			// push all the reads of this box in the GoodIndels vector. [by the way should we really call this loop index 'First'?]
          for (unsigned int First = 0; First < SIsNum; First++) {
             GoodIndels.push_back (Reads[SIs[Box_index][First]]);
          }
 
-         GoodNum = GoodIndels.size ();
+         GoodNum = GoodIndels.size();
          LOG_DEBUG(*logStream << Box_index << " " << GoodNum << std::endl);
          if (GoodNum == 0) {
             continue;
          }
          Indel4output OneIndelEvent;
-         OneIndelEvent.Start = 0;
-         OneIndelEvent.End = 0;
-         OneIndelEvent.Support = OneIndelEvent.End - OneIndelEvent.Start + 1;
-         OneIndelEvent.IndelSize = GoodIndels[0].IndelSize;
-         OneIndelEvent.IndelStr = GoodIndels[0].NT_str;
-         OneIndelEvent.BPLeft = GoodIndels[0].BPLeft;
-         OneIndelEvent.BPRight = GoodIndels[0].BPRight;
-         OneIndelEvent.WhetherReport = true;
+			OneIndelEvent.initialize( 0, GoodIndels[0] );
+			//std::cout << "Number of Good indels " << GoodNum << "\n";
+			//for (unsigned x=0; x<GoodNum; x++ ) { std::cout << GoodIndels[x].getUnmatchedSeq() << ":" << GoodIndels[x].BPLeft << "-" << GoodIndels[x].IndelSize << std::endl; }
+
+			// here we're fusing different reads into events. Typical A while() [B A ] B loop; there was a trick for that...
          for (unsigned int GoodIndex = 1; GoodIndex < GoodNum; GoodIndex++) {
             if (GoodIndels[GoodIndex].BPLeft == OneIndelEvent.BPLeft
-                  && GoodIndels[GoodIndex].IndelSize ==
-                  OneIndelEvent.IndelSize)
+                && GoodIndels[GoodIndex].IndelSize == OneIndelEvent.IndelSize) {
 
-            {
                OneIndelEvent.End = GoodIndex;
             }
             else {
-               OneIndelEvent.RealStart = OneIndelEvent.BPLeft;
-               OneIndelEvent.RealEnd = OneIndelEvent.BPRight;
-
-               OneIndelEvent.Support =
-                  OneIndelEvent.End - OneIndelEvent.Start + 1;
-               GetRealStart4Insertion (CurrentChr, OneIndelEvent.IndelStr,
-                                       OneIndelEvent.RealStart,
-                                       OneIndelEvent.RealEnd);
+               OneIndelEvent.complete();
+               GetRealStart4Insertion (CurrentChr, OneIndelEvent.IndelStr, OneIndelEvent.RealStart, OneIndelEvent.RealEnd);
                IndelEvents.push_back (OneIndelEvent);
-               OneIndelEvent.Start = GoodIndex;
-               OneIndelEvent.End = GoodIndex;
-               OneIndelEvent.BPLeft = GoodIndels[GoodIndex].BPLeft;
-               OneIndelEvent.BPRight = GoodIndels[GoodIndex].BPRight;
-               OneIndelEvent.IndelSize = GoodIndels[GoodIndex].IndelSize;
-               OneIndelEvent.IndelStr = GoodIndels[GoodIndex].NT_str;
+               OneIndelEvent.initialize( GoodIndex, GoodIndels[GoodIndex]);        
             }
          }
-         OneIndelEvent.RealStart = OneIndelEvent.BPLeft;
-         OneIndelEvent.RealEnd = OneIndelEvent.BPRight;
-
-         OneIndelEvent.Support = OneIndelEvent.End - OneIndelEvent.Start + 1;
-         GetRealStart4Insertion (CurrentChr, OneIndelEvent.IndelStr,
-                                 OneIndelEvent.RealStart,
-                                 OneIndelEvent.RealEnd);
+         OneIndelEvent.complete();
+         GetRealStart4Insertion (CurrentChr, OneIndelEvent.IndelStr, OneIndelEvent.RealStart, OneIndelEvent.RealEnd);
          IndelEvents.push_back (OneIndelEvent);
 
+			//std::cout << "Number of indel events' " << IndelEvents.size() << "\n";
+			//for (unsigned x=0; x<IndelEvents.size(); x++ ) { std::cout << IndelEvents[x].Start << "-" << IndelEvents[x].End << std::endl; }
+
          if (IndelEvents.size ()) {
-            for (unsigned EventIndex = 0; EventIndex < IndelEvents.size ();
-                  EventIndex++) {
+
+				// loop over all events; if two events are 'identical' (same Start, end, indelsize) the support is the biggest support available. [which is weird, why not sum?]
+            for (unsigned EventIndex = 0; EventIndex < IndelEvents.size (); EventIndex++) {
                if (IndelEvents[EventIndex].WhetherReport) {
-                  unsigned int RealStart = IndelEvents[EventIndex].RealStart;
-                  unsigned int RealEnd = IndelEvents[EventIndex].RealEnd;
-                  unsigned int IndelSize = IndelEvents[EventIndex].IndelSize;
+						const Indel4output& firstEvent = IndelEvents[EventIndex];
                   unsigned int Max_Support = IndelEvents[EventIndex].Support;
                   unsigned int Max_Support_Index = EventIndex;
 
-                  for (unsigned EventIndex_left = 0;
-                        EventIndex_left < IndelEvents.size ();
-                        EventIndex_left++) {
-                     if (IndelEvents[EventIndex_left].WhetherReport ==
-                           false) {
-                        continue;
-                     }
-                     else if (IndelEvents[EventIndex_left].RealStart !=
-                              RealStart) {
-                        continue;
-                     }
-                     else if (IndelEvents[EventIndex_left].RealEnd != RealEnd) {
-                        continue;
-                     }
-                     else if (IndelEvents[EventIndex_left].IndelSize != IndelSize) {
-                        continue;
-                     }
-                     else {
-                        IndelEvents[EventIndex_left].WhetherReport = false;
+                  for (unsigned EventIndex_left = 0; EventIndex_left < IndelEvents.size (); EventIndex_left++) {
+							Indel4output& secondEvent = IndelEvents[EventIndex_left];
+                     if ( ( secondEvent.WhetherReport == true ) 
+								&& ( secondEvent.RealStart == firstEvent.RealStart )
+								&& ( secondEvent.RealEnd == firstEvent.RealEnd )
+								&& ( secondEvent.IndelSize == firstEvent.IndelSize )
+								&& ( secondEvent.IndelStr == firstEvent.IndelStr ) ) {
+ 
+                        secondEvent.WhetherReport = false;
+								// EW: if the events are the same, should you not be adding their support together? And if the support is higher, why not report this one and make reporting the previous event false?
                         if (IndelEvents[EventIndex_left].Support > Max_Support) {
+									std::cout << "THIS SHOULD NOT HAPPEN@@@!\n";
                            Max_Support = IndelEvents[EventIndex_left].Support;
                            Max_Support_Index = EventIndex_left;
                         }
@@ -833,8 +819,8 @@ SortOutputSI (const unsigned &NumBoxes, const std::string & CurrentChr,
                   // report max one
                   LOG_DEBUG(*logStream << Max_Support << std::endl);
                   if (Max_Support >= userSettings->NumRead2ReportCutOff) {
-                     OutputSIs (GoodIndels, CurrentChr, IndelEvents[Max_Support_Index].Start, IndelEvents[Max_Support_Index].End, RealStart, RealEnd, SIsOutf);
-                     NumberOfSIsInstances++;
+                     OutputSIs (GoodIndels, CurrentChr, IndelEvents[Max_Support_Index].Start, IndelEvents[Max_Support_Index].End, firstEvent.RealStart, firstEvent.RealEnd, SIsOutf);
+
                   }
                }
             }
