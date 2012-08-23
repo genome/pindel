@@ -40,7 +40,6 @@ void SearchFarEndAtPos( const std::string& chromosome, SPLIT_READ& Temp_One_Read
     
    // step 1 find out which chromosomes in Regions: set? linear pass of regions
    // step 2 for each identified chromsome, for each regions on the chromosme, do the business.
-	std::cout << "Readname: " << Temp_One_Read.Name << "\n";
    char CurrentBase = Temp_One_Read.getUnmatchedSeq()[0];
    char CurrentBaseRC = Convert2RC4N[(short) CurrentBase];
     
@@ -67,8 +66,6 @@ void SearchFarEndAtPos( const std::string& chromosome, SPLIT_READ& Temp_One_Read
        NumberOfHits += CurrentRegion.PD_Plus[0].size() + CurrentRegion.PD_Minus[0].size();
        WholeGenomeSearchResult.push_back(CurrentRegion);
    }
-
-std::cout << "SearchFarEndAtPos, number of regions: " << WholeGenomeSearchResult.size() << ", number of hits: " << NumberOfHits << std::endl;
 
 	if (NumberOfHits>0) {
       short BP_Start = 10; // perhaps use global constant like "g_MinimumLengthToReportMatch"
