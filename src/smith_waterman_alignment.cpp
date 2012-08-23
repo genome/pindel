@@ -18,13 +18,6 @@ const float delta = 1.33;
 int ind;
 
 
-void checkfile(int open, char filename[]){
-    
-    if (open){std::cout << "Error: Can't open the file "<<filename<<std::endl;exit(1);}
-    else std::cout<<"Opened file "<<filename<<std::endl;
-}
-
-
 static double similarity_score(char a,char b){
     
     double result;
