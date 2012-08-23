@@ -1503,7 +1503,7 @@ void CheckBoth(const SPLIT_READ & read,
 									}
                        }
                    }
-             if (Sum == 1 && numberOfMismatches <= (short) (userSettings->Seq_Error_Rate * CurrentLength + 1)) {
+             if (Sum == 1 /*&& numberOfMismatches <= (short) (userSettings->Seq_Error_Rate * CurrentLength + 1)*/) {
                         // why I love constructors
 								UniquePoint MatchPosition;
 								const FarEndSearchPerRegion& hitRegion = WholeGenomeSearchResult_input[ regionWithMatch ];
