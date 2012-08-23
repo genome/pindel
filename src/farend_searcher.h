@@ -21,6 +21,20 @@
 #ifndef FARENDSEARCHER_H_
 #define FARENDSEARCHER_H_
 
+typedef std::vector <unsigned> PosVector;
+
+class FarEndSearchPerRegion {
+    
+public:
+    const Chromosome * CurrentChromosome;
+    std::vector< PosVector > PD_Plus;
+    std::vector< PosVector > PD_Minus;
+    FarEndSearchPerRegion( const Chromosome* Chromosome, unsigned short NumberOfErrors, unsigned size);
+};
+
+
+
+
 void SearchFarEndAtPos( const std::string& chromosome, SPLIT_READ& Temp_One_Read, const std::vector <SearchWindow> & Regions );
 
 #endif /* FARENDSEARCHER_H_ */

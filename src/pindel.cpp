@@ -306,8 +306,8 @@ const Chromosome* Genome::loadChromosome()
 	return addChromosome( newChromosome );
 }
 
-UniquePoint::UniquePoint( const short lengthStr, const unsigned int absLoc, const char direction, const char strand, const short mismatches ) :
-	LengthStr( lengthStr ), AbsLoc( absLoc ), Direction( direction ), Strand( strand ), Mismatches( mismatches )
+UniquePoint::UniquePoint( const Chromosome* chromosome_ptr, const short lengthStr, const unsigned int absLoc, const char direction, const char strand, const short mismatches ) :
+	chromosome_p( chromosome_ptr), LengthStr( lengthStr ), AbsLoc( absLoc ), Direction( direction ), Strand( strand ), Mismatches( mismatches )
 {
 }
 
@@ -1315,7 +1315,10 @@ std::vector<Region> Merge(const std::vector<Region> &AllRegions)
 void GetCloseEndInner(const std::string & CurrentChrSeq, SPLIT_READ & Temp_One_Read)
 {
     std::string CurrentReadSeq;
-    std::vector<unsigned int> PD[Temp_One_Read.getTOTAL_SNP_ERROR_CHECKED()];
+    //std::vector<unsigned int> PD[Temp_One_Read.getTOTAL_SNP_ERROR_CHECKED()];
+	std::vector<PosVector> PD;
+	PosVector emptyPosVector;
+   PD.assign( Temp_One_Read.getTOTAL_SNP_ERROR_CHECKED(), emptyPosVector);
     if (Temp_One_Read.InsertSize > g_maxInsertSize) {
         g_maxInsertSize = Temp_One_Read.InsertSize;
     }
@@ -1399,9 +1402,130 @@ void GetCloseEnd(const std::string & CurrentChrSeq, SPLIT_READ & Temp_One_Read)
 }
 
 
+unsigned CountElements(const FarEndSearchPerRegion & OneRegionSearchResult_input, int levels) {
+    unsigned Sum = 0;
+    
+    for (int LevelIndex = 0; LevelIndex < levels; LevelIndex++) {
+        Sum += OneRegionSearchResult_input.PD_Plus[LevelIndex].size() + OneRegionSearchResult_input.PD_Minus[LevelIndex].size();
+    }
+    return Sum;
+}
 
+void ExtendMatch( const SPLIT_READ & read,
+                 const std::string & readSeq,
+                 const std::vector <FarEndSearchPerRegion> & WholeGenomeSearchResult_input,
+                 const short minimumLengthToReportMatch,
+                 const short BP_End, const short CurrentLength,
+                 SortedUniquePoints &UP )
+{
+	const char CurrentChar = readSeq[CurrentLength];
+   const char CurrentCharRC = Convert2RC4N[(short) CurrentChar];
+   bool AllEmpty = true;
+   std::vector <FarEndSearchPerRegion> WholeGenomeSearchResult_output;
+   for (unsigned IndexOfRegion = 0; IndexOfRegion < WholeGenomeSearchResult_input.size(); IndexOfRegion++) {
+      const FarEndSearchPerRegion & CurrentRegion_input = WholeGenomeSearchResult_input[IndexOfRegion];
+      unsigned int Max_size = 0;
+      for (int CheckedIndex = 0; CheckedIndex < read.getTOTAL_SNP_ERROR_CHECKED(); CheckedIndex++) {
+         if (Max_size < CurrentRegion_input.PD_Plus[CheckedIndex].size()) Max_size = CurrentRegion_input.PD_Plus[CheckedIndex].size();
+         if (Max_size < CurrentRegion_input.PD_Minus[CheckedIndex].size()) Max_size = CurrentRegion_input.PD_Minus[CheckedIndex].size();
+      }
+      const std::string & chromosomeSeq = CurrentRegion_input.CurrentChromosome->getSeq();
+      FarEndSearchPerRegion CurrentRegion_output(CurrentRegion_input.CurrentChromosome, read.getTOTAL_SNP_ERROR_CHECKED(), Max_size);
+      for (int i = 0; i <= read.getTOTAL_SNP_ERROR_CHECKED_Minus(); i++) {
+         CategorizePositions( CurrentChar, chromosomeSeq, CurrentRegion_input.PD_Plus, CurrentRegion_output.PD_Plus, i, 1, read.getTOTAL_SNP_ERROR_CHECKED_Minus() );
+         CategorizePositions( CurrentCharRC, chromosomeSeq, CurrentRegion_input.PD_Minus, CurrentRegion_output.PD_Minus, i, -1, read.getTOTAL_SNP_ERROR_CHECKED_Minus() );
+      }
+      if (CountElements(CurrentRegion_output, read.getTOTAL_SNP_ERROR_CHECKED())) {
+         AllEmpty = false;
+         WholeGenomeSearchResult_output.push_back(CurrentRegion_output);
+      }
+   }
+	/*std::cout << "Matching " << CurrentLength << " length and char " << CurrentChar << ", " << CurrentCharRC << std::endl;
+	for (unsigned IndexOfRegion = 0; IndexOfRegion < WholeGenomeSearchResult_input.size(); IndexOfRegion++) {
+		std::cout << "Region index: " << IndexOfRegion << "\n";
+		for (int CheckedIndex = 0; CheckedIndex < read.getTOTAL_SNP_ERROR_CHECKED(); CheckedIndex++) {
+			std::cout << "R["<< CheckedIndex << "]=" << WholeGenomeSearchResult_input[IndexOfRegion].PD_Plus[CheckedIndex].size() << "/" << WholeGenomeSearchResult_input[IndexOfRegion].PD_Minus[CheckedIndex].size() << std::endl;
+		}
+	}
+	std::cout << "UP-size:" << UP.size() << "\n";*/
+	// this loop looks familiar; candidate for factoring out mini-function?
+   if (AllEmpty == false ) {
+      const short CurrentLengthOutput = CurrentLength + 1;
+      CheckBoth(read, readSeq, WholeGenomeSearchResult_output, minimumLengthToReportMatch, BP_End, CurrentLengthOutput, UP);
+   }
+   else {
+      return;
+ 	} // else-if Sum
+}
 
-void ExtendMatch( const SPLIT_READ & read, const std::string & chromosomeSeq,
+void CheckBoth(const SPLIT_READ & read,
+               const std::string & readSeq,
+               const std::vector <FarEndSearchPerRegion> & WholeGenomeSearchResult_input,
+               const short minimumLengthToReportMatch,
+               const short BP_End,
+               const short CurrentLength,
+               SortedUniquePoints &UP)
+{
+	UserDefinedSettings *userSettings = UserDefinedSettings::Instance();
+   unsigned NumberOfMatchPositionsWithLessMismatches = 0;
+   int Sum = 0;
+	
+   if (CurrentLength >= minimumLengthToReportMatch && CurrentLength <= BP_End) {
+      for (short numberOfMismatches = 0; numberOfMismatches <= read.getMAX_SNP_ERROR(); numberOfMismatches++) {
+         if (NumberOfMatchPositionsWithLessMismatches) break;
+			
+         Sum = 0;
+            for (unsigned RegionIndex = 0; RegionIndex < WholeGenomeSearchResult_input.size(); RegionIndex++) {
+                Sum += WholeGenomeSearchResult_input[RegionIndex].PD_Plus[numberOfMismatches].size() + WholeGenomeSearchResult_input[RegionIndex].PD_Minus[numberOfMismatches].size();
+            }
+            NumberOfMatchPositionsWithLessMismatches = Sum;
+            if (Sum == 1 && CurrentLength >= minimumLengthToReportMatch + numberOfMismatches) {
+                Sum = 0;
+                if (userSettings->ADDITIONAL_MISMATCH > 0) { // what if this is ADDITIONAL_MISMATCH is 0? Do you save anything then?
+					
+					// what if j +ADD_MISMATCH exceeds the max allowed number of mismatches (the PD_element does not exist?)
+                    
+					// feeling the need to comment here - so factor out?
+					// only report reads if there are no reads with fewer mismatches or only one or two more mismatches
+                    unsigned int regionWithMatch = 0;
+                    for (short mismatchCount = 0; mismatchCount <= numberOfMismatches + userSettings->ADDITIONAL_MISMATCH; mismatchCount++) {
+                       for (unsigned RegionIndex = 0; RegionIndex < WholeGenomeSearchResult_input.size(); RegionIndex++) {
+                           unsigned int hitsInRegion= WholeGenomeSearchResult_input[RegionIndex].PD_Plus[mismatchCount].size() + WholeGenomeSearchResult_input[RegionIndex].PD_Minus[mismatchCount].size();
+									Sum += hitsInRegion;
+									if (hitsInRegion>0) {
+										regionWithMatch = RegionIndex;
+									}
+                       }
+                   }
+             if (Sum == 1 && numberOfMismatches <= (short) (userSettings->Seq_Error_Rate * CurrentLength + 1)) {
+                        // why I love constructors
+								UniquePoint MatchPosition;
+								const FarEndSearchPerRegion& hitRegion = WholeGenomeSearchResult_input[ regionWithMatch ];
+                        if (WholeGenomeSearchResult_input[ regionWithMatch ].PD_Plus[numberOfMismatches].size() == 1) {
+									UniquePoint PlusMatch( hitRegion.CurrentChromosome, CurrentLength, hitRegion.PD_Plus[numberOfMismatches][0], FORWARD, SENSE, numberOfMismatches );
+									MatchPosition = PlusMatch;
+                        }
+                        else {
+									UniquePoint MinMatch(  hitRegion.CurrentChromosome, CurrentLength, hitRegion.PD_Minus[numberOfMismatches][0], BACKWARD, ANTISENSE, numberOfMismatches );
+									MatchPosition = MinMatch;
+                        }
+
+                        if (CheckMismatches(WholeGenomeSearchResult_input[regionWithMatch].CurrentChromosome->getSeq(), readSeq, MatchPosition)) {
+                            UP.push_back (MatchPosition);
+                            break;
+                        } // if CheckMismatches
+                    } // if Sum==1
+                } // if AdditionalMismatches
+        		} // if sumsize ==1
+        } // for-loop
+	} // if length of match is sufficient to be reportable
+    
+   if (CurrentLength < BP_End) {
+		ExtendMatch( read, readSeq, WholeGenomeSearchResult_input, minimumLengthToReportMatch, BP_End, CurrentLength, UP );
+	}
+}
+
+/*void ExtendMatch( const SPLIT_READ & read, const std::string & chromosomeSeq,
                const std::string & readSeq,
                const std::vector<unsigned int> PD_Plus[],
                const std::vector<unsigned int> PD_Minus[], const short minimumLengthToReportMatch,
@@ -1482,7 +1606,7 @@ void CheckBoth(const SPLIT_READ & read, const std::string & chromosomeSeq,
    if (CurrentLength < BP_End) {
 		ExtendMatch( read, chromosomeSeq, readSeq, PD_Plus, PD_Minus, minimumLengthToReportMatch, BP_End, CurrentLength, UP );
 	}
-}
+}*/
 
 
 void CleanUniquePoints(SortedUniquePoints &Input_UP)

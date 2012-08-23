@@ -101,16 +101,22 @@ const unsigned int NumberOfReadsPerBuffer = 1000; // estimate later
 /*
  * Data structures
  */
+class Chromosome;
+
+typedef std::vector <unsigned> PosVector;
+
 struct UniquePoint {
+	const Chromosome * chromosome_p;
 	short LengthStr;
 	unsigned int AbsLoc;
 	char Direction; // forward reverse
 	char Strand; // sense antisense
 	short Mismatches;
 
-	UniquePoint( const short lengthStr, const unsigned int absLoc, const char direction, const char strand, const short mismatches );
-	UniquePoint() { UniquePoint(0,0,'N','N',0); };
+	UniquePoint( const Chromosome* chromosome_ptr, const short lengthStr, const unsigned int absLoc, const char direction, const char strand, const short mismatches );
+
 	friend std::ostream& operator<<(std::ostream& os, const UniquePoint& up );
+		UniquePoint() { UniquePoint(NULL,0,0,'N','N',0); };
 };
 
 class SortedUniquePoints { 
@@ -192,9 +198,13 @@ struct SPLIT_READ {
 	SortedUniquePoints UP_Far;
    short getReadLength() const { return ReadLength; }
 	short getReadLengthMinus() const { return ReadLengthMinus; }
-	short getMAX_SNP_ERROR() const { return MAX_SNP_ERROR; }
-	short getTOTAL_SNP_ERROR_CHECKED() const { return TOTAL_SNP_ERROR_CHECKED; }
-	short getTOTAL_SNP_ERROR_CHECKED_Minus() const { return TOTAL_SNP_ERROR_CHECKED_Minus; }
+	short getMAX_SNP_ERROR() const { return MAX_SNP_ERROR; } // the maximum amount of errors allowed when mapping the read
+	
+	// since you want to be sure that even if you find the maximum allowed number of errors (say 5) the read is sufficiently 
+	// unique (so no mappings with 6 or 7 errors possible), the CloseEnd and Far end search arrays should allow for additional rows housing the positions with 6 and 7-mismatches 
+	short getTOTAL_SNP_ERROR_CHECKED() const { return TOTAL_SNP_ERROR_CHECKED; } 
+
+	short getTOTAL_SNP_ERROR_CHECKED_Minus() const { return TOTAL_SNP_ERROR_CHECKED_Minus; } 
 
 	short BP;
 	int Left;
@@ -386,12 +396,20 @@ short CompareTwoReads(const SPLIT_READ & First, const SPLIT_READ & Second);
 std::string Reverse(const std::string & InputPattern);
 std::string Cap2Low(const std::string & input);
 
-void CheckBoth(const SPLIT_READ & OneRead, const std::string & TheInput,
+/*void CheckBoth(const SPLIT_READ & OneRead, const std::string & TheInput,
 		const std::string & CurrentReadSeq,
 		const std::vector<unsigned int> PD_Plus[],
 		const std::vector<unsigned int> PD_Minus[], const short BP_Start,
 		const short BP_End, const short CurrentLength,
-		SortedUniquePoints &UP);
+		SortedUniquePoints &UP);*/
+class FarEndSearchPerRegion;
+void CheckBoth(const SPLIT_READ & read,
+               const std::string & readSeq,
+               const std::vector <FarEndSearchPerRegion> & WholeGenomeSearchResult_input,
+               const short minimumLengthToReportMatch,
+               const short BP_End,
+               const short CurrentLength,
+               SortedUniquePoints &UP);
 void GetIndelTypeAndRealStart(const std::string & TheInput,
 		const unsigned int &BPLeft, const unsigned int &IndelSize,
 		const std::string & IndelStr, std::string & IndelType,
