@@ -801,10 +801,10 @@ void SortOutputSI (const unsigned &NumBoxes, const std::string & CurrentChr,
 				// loop over all events; if two events are 'identical' (same Start, end, indelsize) the support is the biggest support available. [which is weird, why not sum?]
             for (unsigned EventIndex = 0; EventIndex < IndelEvents.size (); EventIndex++) {
                if (IndelEvents[EventIndex].WhetherReport) {
-						const Indel4output& firstEvent = IndelEvents[EventIndex];
-                  unsigned int Max_Support = IndelEvents[EventIndex].Support;
-                  unsigned int Max_Support_Index = EventIndex;
-
+					//	const Indel4output& firstEvent = IndelEvents[EventIndex];
+                  //unsigned int Max_Support = IndelEvents[EventIndex].Support;
+                  //unsigned int Max_Support_Index = EventIndex;
+                  /*
                   for (unsigned EventIndex_left = 0; EventIndex_left < IndelEvents.size (); EventIndex_left++) {
 							Indel4output& secondEvent = IndelEvents[EventIndex_left];
                      if ( ( secondEvent.WhetherReport == true ) 
@@ -815,17 +815,20 @@ void SortOutputSI (const unsigned &NumBoxes, const std::string & CurrentChr,
  
                         secondEvent.WhetherReport = false;
 								// EW: if the events are the same, should you not be adding their support together? And if the support is higher, why not report this one and make reporting the previous event false?
+                         
                         if (IndelEvents[EventIndex_left].Support > Max_Support) {
 									std::cout << "THIS SHOULD NOT HAPPEN@@@!\n";
                            Max_Support = IndelEvents[EventIndex_left].Support;
                            Max_Support_Index = EventIndex_left;
                         }
+                         
                      }
                   }
+                   */
                   // report max one
-                  LOG_DEBUG(*logStream << Max_Support << std::endl);
-                  if (Max_Support >= userSettings->NumRead2ReportCutOff) {
-                     OutputSIs (GoodIndels, CurrentChr, IndelEvents[Max_Support_Index].Start, IndelEvents[Max_Support_Index].End, firstEvent.RealStart, firstEvent.RealEnd, SIsOutf);
+                  LOG_DEBUG(*logStream << IndelEvents[EventIndex].Support << std::endl);
+                  if (IndelEvents[EventIndex].Support >= userSettings->NumRead2ReportCutOff) {
+                     OutputSIs (GoodIndels, CurrentChr, IndelEvents[EventIndex].Start, IndelEvents[EventIndex].End, IndelEvents[EventIndex].RealStart, IndelEvents[EventIndex].RealEnd, SIsOutf);
 
                   }
                }
@@ -913,8 +916,9 @@ void SortAndOutputTandemDuplications (const unsigned &NumBoxes, const std::strin
                if (IndelEvents[EventIndex].WhetherReport) {
                   unsigned int RealStart = IndelEvents[EventIndex].RealStart;
                   unsigned int RealEnd = IndelEvents[EventIndex].RealEnd;
-                  unsigned int Max_Support = IndelEvents[EventIndex].Support;
-                  unsigned int Max_Support_Index = EventIndex;
+                  //unsigned int Max_Support = IndelEvents[EventIndex].Support;
+                  //unsigned int Max_Support_Index = EventIndex;
+                   /*
                   for (unsigned EventIndex_left = 0;
                         EventIndex_left < IndelEvents.size ();
                         EventIndex_left++) {
@@ -937,15 +941,16 @@ void SortAndOutputTandemDuplications (const unsigned &NumBoxes, const std::strin
                         }
                      }
                   }
+                   */
                   // report max one
-                  if (IndelEvents[Max_Support_Index].Support >= userSettings->NumRead2ReportCutOff) {
-                     if (GoodIndels[ IndelEvents[Max_Support_Index].Start].IndelSize < userSettings->BalanceCutoff) {
-                        OutputTDs (GoodIndels, CurrentChr, IndelEvents[Max_Support_Index].Start, IndelEvents[Max_Support_Index].End, RealStart, RealEnd, TDOutf);
+                  if (IndelEvents[EventIndex].Support >= userSettings->NumRead2ReportCutOff) {
+                     if (GoodIndels[ IndelEvents[EventIndex].Start].IndelSize < userSettings->BalanceCutoff) {
+                        OutputTDs (GoodIndels, CurrentChr, IndelEvents[EventIndex].Start, IndelEvents[EventIndex].End, RealStart, RealEnd, TDOutf);
                         NumberOfTDInstances++;
                         countTandemDuplications++;
                      }
-                     else if (ReportEvent(GoodIndels, IndelEvents[Max_Support_Index].Start, IndelEvents[Max_Support_Index].End)) {
-                        OutputTDs (GoodIndels, CurrentChr, IndelEvents[Max_Support_Index].Start, IndelEvents[Max_Support_Index].End, RealStart, RealEnd, TDOutf);
+                     else if (ReportEvent(GoodIndels, IndelEvents[EventIndex].Start, IndelEvents[EventIndex].End)) {
+                        OutputTDs (GoodIndels, CurrentChr, IndelEvents[EventIndex].Start, IndelEvents[EventIndex].End, RealStart, RealEnd, TDOutf);
                         NumberOfTDInstances++;
                         countTandemDuplications++;
                      }
@@ -975,6 +980,7 @@ void SortOutputD (const unsigned &NumBoxes, const std::string & CurrentChr,
    unsigned int DeletionsNum;
    //short CompareResult;
    //unsigned Temp4Exchange;
+    
 
    unsigned int GoodNum;
    std::vector < SPLIT_READ > GoodIndels;
@@ -985,7 +991,13 @@ void SortOutputD (const unsigned &NumBoxes, const std::string & CurrentChr,
       LOG_DEBUG(*logStream << Box_index << "\t" << NumBoxes << "\t" << Deletions[Box_index].size() << std::endl);
       if (Deletions[Box_index].size () >= userSettings->NumRead2ReportCutOff) {
          DeletionsNum = Deletions[Box_index].size ();
-
+          /*
+          for (unsigned index = 0; index < DeletionsNum; index++) {
+              std::cout << "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$" << std::endl;
+              std::cout << Reads[Deletions[ Box_index ][index]];
+              std::cout << "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$" << std::endl;
+          }
+          */
           bubblesortReads( Reads, Deletions[ Box_index ] );
           markDuplicates( Reads, Deletions[ Box_index ] );
           
@@ -1021,6 +1033,12 @@ void SortOutputD (const unsigned &NumBoxes, const std::string & CurrentChr,
                GetRealStart4Deletion (CurrentChr, OneIndelEvent.RealStart,
                                       OneIndelEvent.RealEnd);
                IndelEvents.push_back (OneIndelEvent);
+                std::cout << OneIndelEvent.RealStart << " "
+                          << OneIndelEvent.Start << " "
+                          << OneIndelEvent.End << " "
+                          << OneIndelEvent.RealEnd << " "
+                          << OneIndelEvent.BPLeft << " "
+                          << OneIndelEvent.BPRight << " " << OneIndelEvent.Support << std::endl;
                OneIndelEvent.Start = GoodIndex;
                OneIndelEvent.End = GoodIndex;
                OneIndelEvent.BPLeft = GoodIndels[GoodIndex].BPLeft;
@@ -1037,14 +1055,16 @@ void SortOutputD (const unsigned &NumBoxes, const std::string & CurrentChr,
          LOG_DEBUG(*logStream << "IndelEvent: " << IndelEvents.size() << std::endl);
 
          if (IndelEvents.size ()) {
+            // std::cout << "IndelEvents.size ()" << IndelEvents.size () << std::endl;
             for (unsigned EventIndex = 0; EventIndex < IndelEvents.size ();
                   EventIndex++) {
                LOG_DEBUG(*logStream << EventIndex << " EventIndex" << std::endl);
                if (IndelEvents[EventIndex].WhetherReport) {
                   unsigned int RealStart = IndelEvents[EventIndex].RealStart;
                   unsigned int RealEnd = IndelEvents[EventIndex].RealEnd;
-                  unsigned int Max_Support = IndelEvents[EventIndex].Support;
-                  unsigned int Max_Support_Index = EventIndex;
+                  //unsigned int Max_Support = IndelEvents[EventIndex].Support;
+                  //unsigned int Max_Support_Index = EventIndex;
+                  /*
                   for (unsigned EventIndex_left = 0;
                         EventIndex_left < IndelEvents.size ();
                         EventIndex_left++) {
@@ -1066,20 +1086,22 @@ void SortOutputD (const unsigned &NumBoxes, const std::string & CurrentChr,
                         }
                      }
                   }
+                  */ 
                   // report max one
                   LOG_DEBUG(*logStream << "max" << std::endl);
-                  if (IndelEvents[Max_Support_Index].Support >= userSettings->NumRead2ReportCutOff) {
+                  //if (IndelEvents[Max_Support_Index].Support >= userSettings->NumRead2ReportCutOff)
+                  {
                      LOG_DEBUG(*logStream << "aa" << std::endl);
-                     if (GoodIndels[IndelEvents[Max_Support_Index].Start].IndelSize < userSettings->BalanceCutoff) {
+                     if (GoodIndels[IndelEvents[EventIndex].Start].IndelSize < userSettings->BalanceCutoff) {
                         LOG_DEBUG(*logStream << "ba" << std::endl);
-                        OutputDeletions (GoodIndels, CurrentChr, IndelEvents[Max_Support_Index].Start, IndelEvents[Max_Support_Index].End, RealStart,
+                        OutputDeletions (GoodIndels, CurrentChr, IndelEvents[EventIndex].Start, IndelEvents[EventIndex].End, RealStart,
 									RealEnd, DeletionOutf);
                         deletionFileData.increaseTemplateSvCounter();
                         LOG_DEBUG(*logStream << "bb" << std::endl);
                      }
-                     else if (ReportEvent( GoodIndels, IndelEvents[Max_Support_Index].Start, IndelEvents[Max_Support_Index].End)) {
+                     else if (ReportEvent( GoodIndels, IndelEvents[EventIndex].Start, IndelEvents[EventIndex].End)) {
                         LOG_DEBUG(*logStream << "ca" << std::endl);
-                        OutputDeletions (GoodIndels, CurrentChr, IndelEvents[Max_Support_Index].Start, IndelEvents[Max_Support_Index].End, RealStart, RealEnd,
+                        OutputDeletions (GoodIndels, CurrentChr, IndelEvents[EventIndex].Start, IndelEvents[EventIndex].End, RealStart, RealEnd,
                                          DeletionOutf);
                         deletionFileData.increaseTemplateSvCounter();
                         LOG_DEBUG(*logStream << "cb" << std::endl);
