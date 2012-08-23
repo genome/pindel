@@ -11,7 +11,8 @@ SOURCES=pindel.cpp reader.cpp reporter.cpp searcher.cpp parameter.cpp \
     bddata.cpp shifted_vector.cpp read_buffer.cpp \
     line_reader.cpp ifstream_line_reader.cpp gz_line_reader.cpp\
     pindel_read_reader.cpp user_defined_settings.cpp \
-    fn_parameters.cpp logstream.cpp 
+    fn_parameters.cpp logstream.cpp search_MEI_util.cpp \
+    smith_waterman_alignment.cpp search_MEI.cpp
 
 #search_MEI.cpp
 

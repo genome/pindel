@@ -457,6 +457,10 @@ public:
 	void load( const std::string& referenceFileName );
 	void loadAll(const std::string& referenceFileName);
 	const Chromosome* getNextChromosome();
+    
+    // Reset genome reading to the initial position.  (i.e. subsequent call to
+    // getNextChromosome() will return the first chromosome loaded.
+    void reset();
 
 private:
 	const Chromosome* loadChromosome();

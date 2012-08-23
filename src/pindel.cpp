@@ -221,6 +221,12 @@ void Genome::clear()
 	m_referenceFile.close();
 }
 
+void Genome::reset() {
+    m_referenceFile.clear();
+    m_referenceFile.seekg(0, std::ios::beg);
+    m_currentChromosomeIndex = -1;
+}
+
 void Genome::load( const std::string& referenceFileName )
 {
 	clear();
@@ -993,9 +999,9 @@ int main(int argc, char *argv[])
    }*/
 
     // If -q parameter given, search for mobile element insertions and quit.
-   /* if (parameters[findParameter("-q", parameters)]->isSet()) {
-        exit(searchMEImain(currentState, FastaFile, userSettings));
-    }*/
+    if (parameters[findParameter("-q", parameters)]->isSet()) {
+        exit(searchMEImain(currentState, g_genome, userSettings));
+    }
 
    /* Normal pindel functioning: search SVs*/
 

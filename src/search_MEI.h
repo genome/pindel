@@ -20,19 +20,20 @@ class flags_hit;
 // Class storing a read with a link to its mate.
 class simple_read {
 public:
-    simple_read(std::string name, int32_t tid, int32_t pos, bool strand, std::string sequence) : 
-            name(name), tid(tid), pos(pos), strand(strand), sequence(sequence) {};
-    simple_read(std::string name, int32_t tid, int32_t pos, bool strand, std::string sequence, 
+    simple_read(std::string name, int32_t tid, int32_t pos, char strand, std::string sequence) : 
+            name(name), tid(tid), pos(pos), strand(strand), sequence(sequence), is_split(false) {};
+    simple_read(std::string name, int32_t tid, int32_t pos, char strand, std::string sequence, 
                 std::string mapped_sequence, std::string unmapped_sequence) : name(name), tid(tid), pos(pos), 
-            strand(strand), sequence(sequence), mapped_sequence(mapped_sequence), 
+            strand(strand), sequence(sequence), is_split(true), mapped_sequence(mapped_sequence), 
             unmapped_sequence(unmapped_sequence) {};
     std::string name;
     int32_t tid;
     int32_t pos;
-    bool strand;
+    char strand;
     std::string sequence;
     
     // Extra fields for split reads (should be subclassed in an ideal world).
+    bool is_split;
     std::string mapped_sequence;
     std::string unmapped_sequence;
 };
@@ -42,11 +43,12 @@ public:
 class MEI_breakpoint {
 public:
     MEI_breakpoint(int breakpoint_pos) : breakpoint_pos(breakpoint_pos) {};
-    MEI_breakpoint(int breakpoint_tid, int breakpoint_pos, bool cluster_strand) : 
+    MEI_breakpoint(int breakpoint_tid, int breakpoint_pos, char cluster_strand) : 
     breakpoint_tid(breakpoint_tid), breakpoint_pos(breakpoint_pos), cluster_strand(cluster_strand) {};
     int breakpoint_tid;
     int breakpoint_pos;
-    bool cluster_strand;
+    char cluster_strand;
+    std::string chromosome_name;
     std::vector<simple_read> associated_reads;          // reads from cluster
     std::vector<simple_read> associated_split_reads;    // split reads around breakpoint
 };
@@ -80,6 +82,6 @@ void searchMEIBreakpoints(MEI_data& currentState, std::vector<bam_info>& bam_sou
 void searchMEI(MEI_data& finalState);
 
 // Main entry point for MEI detection.
-int searchMEImain(ControlState& current_state, std::ifstream&, UserDefinedSettings* user_settings);
+int searchMEImain(ControlState& current_state, Genome& genome, UserDefinedSettings* user_settings);
 
 #endif
