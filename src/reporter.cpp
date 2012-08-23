@@ -1089,7 +1089,7 @@ void SortOutputD (const unsigned &NumBoxes, const std::string & CurrentChr,
                   */ 
                   // report max one
                   LOG_DEBUG(*logStream << "max" << std::endl);
-                  //if (IndelEvents[Max_Support_Index].Support >= userSettings->NumRead2ReportCutOff)
+                  if (IndelEvents[EventIndex].Support >= userSettings->NumRead2ReportCutOff)
                   {
                      LOG_DEBUG(*logStream << "aa" << std::endl);
                      if (GoodIndels[IndelEvents[EventIndex].Start].IndelSize < userSettings->BalanceCutoff) {
