@@ -1033,12 +1033,12 @@ void SortOutputD (const unsigned &NumBoxes, const std::string & CurrentChr,
                GetRealStart4Deletion (CurrentChr, OneIndelEvent.RealStart,
                                       OneIndelEvent.RealEnd);
                IndelEvents.push_back (OneIndelEvent);
-                std::cout << OneIndelEvent.RealStart << " "
+            /*    std::cout << OneIndelEvent.RealStart << " "
                           << OneIndelEvent.Start << " "
                           << OneIndelEvent.End << " "
                           << OneIndelEvent.RealEnd << " "
                           << OneIndelEvent.BPLeft << " "
-                          << OneIndelEvent.BPRight << " " << OneIndelEvent.Support << std::endl;
+                          << OneIndelEvent.BPRight << " " << OneIndelEvent.Support << std::endl;*/
                OneIndelEvent.Start = GoodIndex;
                OneIndelEvent.End = GoodIndex;
                OneIndelEvent.BPLeft = GoodIndels[GoodIndex].BPLeft;
