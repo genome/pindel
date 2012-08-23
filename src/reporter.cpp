@@ -751,7 +751,7 @@ void SortOutputSI (const unsigned &NumBoxes, const std::string & CurrentChr,
 
          SIsNum = SIs[Box_index].size();
          LOG_DEBUG(*logStream << "SIsNum " << SIsNum << std::endl);
-			std::cout << "Number of reads in current box: " << SIsNum << "\n";
+			//std::cout << "Number of reads in current box: " << SIsNum << "\n";
 
          bubblesortReads( Reads, SIs[ Box_index ] );
          markDuplicates( Reads, SIs[ Box_index ] );
