@@ -41,7 +41,7 @@ int searchTandemDuplicationsNT(ControlState& currentState, unsigned NumBoxes, co
    LOG_INFO(*logStream << "Searching tandem duplication events with non-template sequence ... " << std::endl);
    for (unsigned ReadIndex = 0; ReadIndex < currentState.Reads_SR.size(); ReadIndex++) {
 		SPLIT_READ& currentRead = currentState.Reads_SR[ReadIndex];
-      if (currentRead.Used || currentRead.UP_Far.empty()) {
+      if (currentRead.Used || currentRead.UP_Far.empty() || currentRead.FragName != currentRead.FarFragName) {
          continue;
       }
       CloseIndex = currentRead.UP_Close.size() - 1;

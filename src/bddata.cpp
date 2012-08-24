@@ -64,6 +64,7 @@ bool AtLeast6Fields(const std::string & input) {
 
 
 short CheckBreakDancerFileFormat(const std::string& filename) {
+
     std::ifstream CheckbdFileFirst( filename.c_str() );
     std::ifstream CheckbdFileSecond( filename.c_str() );
     char firstChar = 'k';
@@ -71,27 +72,34 @@ short CheckBreakDancerFileFormat(const std::string& filename) {
     std::string Pos1, Pos2;
     
     while (!CheckbdFileFirst.eof()) {
-        CheckbdFileFirst >> firstChar;
+        firstChar = CheckbdFileFirst.peek();// >> firstChar;
         if (firstChar == '#') {
             safeGetline(CheckbdFileFirst, tempLine);
+            
             safeGetline(CheckbdFileSecond, tempLine);
         }
         else {
             safeGetline(CheckbdFileFirst, errorLine);
+            //safeGetline(CheckbdFileSecond, errorLine);
+            //std::cout << "errorLine/" << errorLine << "/" << std::endl;
+            
+            
             if (AtLeast6Fields(errorLine)) {
+                //std::cout << "at least 6 fields" << std::endl;
                 CheckbdFileSecond >> tempLine >> Pos1 >> tempLine
                 >> tempLine >> Pos2 >> tempLine;
                 safeGetline(CheckbdFileSecond, tempLine);  // get rest of line
+                //std::cout << errorLine << " " << Pos1 << " " << Pos2 << std::endl;
                 if (isNumber(Pos1) && isNumber(Pos2)) {
                     
                 }
                 else {
-                    //std::cout << "something is wrong with this line \"" << firstChar << errorLine << "\"" << std::endl;
+                    std::cout << "1 something is wrong with this line \"" << firstChar << errorLine << "\"" << std::endl;
                     return 1;
                 }
             }
-            else {
-                //std::cout << "something is wrong with this line \"" << firstChar << errorLine << "\"" << std::endl;
+            else if (errorLine != "") {
+                std::cout << "2 something is wrong with this line \"" << firstChar << errorLine << "\"" << std::endl;
                 return 1;
             }
         }
@@ -102,6 +110,7 @@ short CheckBreakDancerFileFormat(const std::string& filename) {
 
 void BDData::loadBDFile(const std::string& filename)
 {
+    //std::cout << " BDData::loadBDFile " << std::endl;
 	if (CheckBreakDancerFileFormat(filename) == 1) {
         //std::cout << "\nIgnore breakdancer file due to an error in the BreakDancer file format.\n" << std::endl;
         return; // if lines not start with #, there must be at least 6 fields and NO. 2 and No. 5 must be int.
@@ -127,6 +136,7 @@ void BDData::loadBDFile(const std::string& filename)
 
          bdFile >> firstChrName >> firstPos >> tempStringItem
                 >> secondChrName >> secondPos >> tempStringItem;
+          //std::cout << firstChrName << " " << firstPos << " " << tempStringItem << " " << secondChrName << " " << secondPos << std::endl;
          safeGetline(bdFile, tempLine);  // get rest of line
 
          firstPos += g_SpacerBeforeAfter; // ??? ask Kai
@@ -159,17 +169,17 @@ void BDData::createRegionCluster(const BDIterator& startOfEventList, const BDIte
 	newCluster.clear();
 	for (BDIterator eventIter=relevantSubcluster.begin(); eventIter!=relevantSubcluster.end(); eventIter++ ) {
 		// NOTE: below code will be removed once we start working on interchromosomal translocations
-		if (eventIter->second.getChromosomeName() != m_currentWindow.getChromosomeName() ) {
-			//std::cout << "Possible translocation from chromosome " << m_currentWindow.getChromosomeName() << " to chromosome " << eventIter->second.getChromosomeName() << "\n";
+		/*if (eventIter->second.getChromosomeName() != m_currentWindow.getChromosomeName() ) {
+			std::cout << "Possible translocation from chromosome " << m_currentWindow.getChromosomeName() << " to chromosome " << eventIter->second.getChromosomeName() << "\n";
 		}
-		else {
+		else {*/
 			SearchWindow currentEventWindow( eventIter->second.getChromosome(), eventIter->second.startOfWindow(), eventIter->second.endOfWindow() );
 			while ( eventIter+1!=relevantSubcluster.end() && regionsOverlap( eventIter, eventIter+1 ) ) {
 				eventIter++;
 				currentEventWindow.setEnd( eventIter->second.endOfWindow() );
 			}
 			newCluster.push_back( currentEventWindow );
-		}
+		//}
 	}
 }
 
@@ -243,6 +253,7 @@ void BDData::loadRegion( const SearchWindow& searchWindow  )
 				break;
 			}
 			else if ( position == eventIter->first.startOfWindow() ) {
+                //std::cout << "I should be making an event now!\n";
 				endOfEventList++;
 				changed = true;
 			}
@@ -254,9 +265,11 @@ void BDData::loadRegion( const SearchWindow& searchWindow  )
 		else {
 			if (changed) {
 				index++;
-				SearchWindowCluster newCluster;			
+				SearchWindowCluster newCluster;
+                                //std::cout << "I should be making a cluster now!\n";
 				createRegionCluster( startOfEventList, endOfEventList, newCluster);
 				m_regionsToScanCollection.push_back( newCluster );
+                                //std::cout << "With " << newCluster.size() << "events\n";
 			}
 			m_breakDancerMask[ position-m_currentWindow.getStart() ] = index;
 			//if (index%50==0) { //std::cout << "Mask making: position " << position << " has index " << index << "\n"; }

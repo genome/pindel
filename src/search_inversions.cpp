@@ -43,7 +43,7 @@ int searchInversions(ControlState& currentState, unsigned NumBoxes, const Search
    LOG_INFO(*logStream << "Searching inversions ... " << std::endl);
    for (unsigned ReadIndex = 0; ReadIndex < currentState.Reads_SR.size(); ReadIndex++) {
 		SPLIT_READ& currentRead = currentState.Reads_SR[ReadIndex];
-      if (currentRead.Used || currentRead.UP_Far.empty()) {
+      if (currentRead.Used || currentRead.UP_Far.empty() || currentRead.FragName != currentRead.FarFragName) {
          continue;
       }
       if (currentRead.UP_Close[0].Strand != currentRead.UP_Far[0].Strand

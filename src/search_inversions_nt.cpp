@@ -42,7 +42,7 @@ int searchInversionsNT(ControlState& currentState, unsigned NumBoxes, const Sear
    for (unsigned ReadIndex = 0; ReadIndex < currentState.Reads_SR.size(); ReadIndex++) {
 		SPLIT_READ& currentRead = currentState.Reads_SR[ReadIndex];
       if (currentRead.Used
-            || currentRead.UP_Far.empty()) {
+            || currentRead.UP_Far.empty() || currentRead.FragName != currentRead.FarFragName) {
          continue;
       }
       CloseIndex = currentRead.UP_Close.size() - 1;

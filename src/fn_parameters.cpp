@@ -128,7 +128,7 @@ void defineParameters(std::vector<Parameter *>& parameters)
             &userSettings->reportInterchromosomalEvents,
             "-I",
             "--report_interchromosomal_events",
-            "search for interchromosomal events. Note: will require the computer to have at least 4 GB of memory (default false)", false, false));
+            "search for interchromosomal events. Note: will require the computer to have at least 4 GB of memory (default true)", false, true));
 
     parameters.push_back(
         new StringParameter(

@@ -72,6 +72,10 @@ int SearchVariant::Search(ControlState& currentState, const unsigned numBoxes, c
    LOG_INFO(*logStream << "Searching " << typeOfVariant << " ... " << std::endl);
    for (unsigned ReadIndex = 0; ReadIndex < currentState.Reads_SR.size(); ReadIndex++) {
 		SPLIT_READ& currentRead = currentState.Reads_SR[ReadIndex];
+       if (currentRead.FragName != currentRead.FarFragName) {
+           //std::cout << "inter-chromosome split-read" << std::endl;
+           continue;
+       }
 
       if (currentRead.Used || currentRead.UP_Far.empty()) {
          continue;

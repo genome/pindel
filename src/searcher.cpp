@@ -111,7 +111,7 @@ void CheckLeft_Close (const SPLIT_READ & read,
          if (Left_PD[i].size() == 1 && CurrentLength >= BP_Left_Start + i) {
             unsigned int Sum = numberOfCompetingPositions( Left_PD, i + userSettings->ADDITIONAL_MISMATCH );
  
-            if (Sum == 1 /*&& i <= (short) (CurrentLength * userSettings->Seq_Error_Rate + 1)*/) {
+            if (Sum == 1 && i <= g_maxMismatch[CurrentLength]) {
                UniquePoint TempOne(g_genome.getChr(read.FragName), CurrentLength, Left_PD[i][0], FORWARD, ANTISENSE, i );              
                if (CheckMismatches(chromosomeSeq, read.getUnmatchedSeq(), TempOne)) {
                   LeftUP.push_back (TempOne);
@@ -141,7 +141,7 @@ void CheckRight_Close (const SPLIT_READ & read,
       for (short i = 0; i <= read.getMAX_SNP_ERROR(); i++) {
          if (Right_PD[i].size () == 1 && CurrentLength >= BP_Right_Start + i) {
             unsigned int Sum = numberOfCompetingPositions( Right_PD, i+userSettings->ADDITIONAL_MISMATCH );
-            if (Sum == 1/* && i <= (short) (CurrentLength * userSettings->Seq_Error_Rate + 1)*/) {
+            if (Sum == 1 && i <= g_maxMismatch[CurrentLength]) {
                UniquePoint TempOne( g_genome.getChr(read.FragName), CurrentLength, Right_PD[i][0], BACKWARD, SENSE, i);
                if (CheckMismatches(chromosomeSeq, read.getUnmatchedSeq(), TempOne)) {
                   RightUP.push_back (TempOne);

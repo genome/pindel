@@ -37,6 +37,7 @@ FarEndSearchPerRegion::FarEndSearchPerRegion( const Chromosome* Chromosome, unsi
 void SearchFarEndAtPos( const std::string& chromosome, SPLIT_READ& Temp_One_Read, const std::vector <SearchWindow> & Regions )
 {
     
+    
    // step 1 find out which chromosomes in Regions: set? linear pass of regions
    // step 2 for each identified chromsome, for each regions on the chromosme, do the business.
    char CurrentBase = Temp_One_Read.getUnmatchedSeq()[0];
@@ -47,6 +48,7 @@ void SearchFarEndAtPos( const std::string& chromosome, SPLIT_READ& Temp_One_Read
     
    std::vector <FarEndSearchPerRegion> WholeGenomeSearchResult;
    unsigned NumberOfHits = 0;
+    //std::cout << "Number of regions: " << Regions.size() << std::endl;
    for (unsigned RegionIndex = 0; RegionIndex < Regions.size(); RegionIndex++) {
        
        FarEndSearchPerRegion CurrentRegion(Regions[RegionIndex].getChromosome(), Temp_One_Read.getTOTAL_SNP_ERROR_CHECKED(), Regions[RegionIndex].getSize());
@@ -54,6 +56,7 @@ void SearchFarEndAtPos( const std::string& chromosome, SPLIT_READ& Temp_One_Read
        int Start = Regions[RegionIndex].getStart() - CurrentReadLength;
        int End = Regions[RegionIndex].getEnd() + CurrentReadLength;
        const std::string & chromosome = Regions[RegionIndex].getChromosome()->getSeq();
+       //std::cout << Regions[RegionIndex].getChromosome()->getName() << " " << Start << " " << End << std::endl;
        for (int pos = Start; pos < End; pos++) {
            if (chromosome.at(pos) == CurrentBase) {
                CurrentRegion.PD_Plus[0].push_back(pos); // else

@@ -719,7 +719,7 @@ void createProbTable(const double seqErrorRate, const double sensitivity)
 			if (totalErrorProb > sensitivity ) {
 				g_maxMismatch[ length ] = numberOfErrors;
 				//g_maxMisMatch.push_back( numberOfErrors );
-				std::cout << length << " bases has max errors" << numberOfErrors << "\n";
+				//std::cout << length << " bases has max errors" << numberOfErrors << "\n";
 				break; // break out of this length, up to the next
 			}
 		}
@@ -899,7 +899,9 @@ void SearchFarEnd( const std::string& chromosome, SPLIT_READ& read, const Chromo
 
 //std::cout << "CurrentChromosome name /seq =" << currentChromosome.getName() << " = " << currentChromosome.getSeq() << "\n";
 	const std::vector< SearchWindow>& searchCluster =  g_bdData.getCorrespondingSearchWindowCluster( read );
+    
 	if (searchCluster.size()!=0) {
+        //std::cout << "Breakdancer input is not empty " << searchCluster.size() << std::endl;
       SearchFarEndAtPos( chromosome, read, searchCluster);
 		if (read.goodFarEndFound()) {
 			//read.Investigated = true;
@@ -1635,7 +1637,7 @@ void CheckBoth(const SPLIT_READ & read,
 									}
                        }
                    }
-             if (Sum == 1 /*&& numberOfMismatches <= (short) (userSettings->Seq_Error_Rate * CurrentLength + 1)*/) {
+             if (Sum == 1 && (unsigned)numberOfMismatches <= g_maxMismatch[CurrentLength]) {
                         // why I love constructors
 								UniquePoint MatchPosition;
 								const FarEndSearchPerRegion& hitRegion = WholeGenomeSearchResult_input[ regionWithMatch ];
@@ -1753,11 +1755,14 @@ void CleanUniquePoints(SortedUniquePoints &Input_UP)
     UniquePoint LastUP = Input_UP[Input_UP.size() - 1];
     char LastDirection = LastUP.Direction;
     char LastStrand = LastUP.Strand;
+    const Chromosome * LastChr = LastUP.chromosome_p;
+    //LastChr == .chromosome_p
     unsigned int Terminal;
 
     if (LastDirection == FORWARD) {
         Terminal = LastUP.AbsLoc - LastUP.LengthStr;
         for (unsigned i = 0; i < Input_UP.size(); i++) {
+           if (LastChr != Input_UP[i].chromosome_p) continue;
            if (Input_UP[i].Direction == LastDirection && Input_UP[i].Strand == LastStrand) {
               if (Terminal == Input_UP[i].AbsLoc - Input_UP[i].LengthStr) {
                  TempUP.push_back(Input_UP[i]);
@@ -1768,6 +1773,7 @@ void CleanUniquePoints(SortedUniquePoints &Input_UP)
     else if (LastDirection == BACKWARD) {
        Terminal = LastUP.AbsLoc + LastUP.LengthStr;
        for (unsigned i = 0; i < Input_UP.size(); i++) {
+          if (LastChr != Input_UP[i].chromosome_p) continue; 
           if (Input_UP[i].Direction == LastDirection && Input_UP[i].Strand == LastStrand) {
              if (Terminal == Input_UP[i].AbsLoc + Input_UP[i].LengthStr) {
                 TempUP.push_back(Input_UP[i]);
