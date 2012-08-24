@@ -1982,9 +1982,9 @@ void SortAndReportInterChromosomalEvents(ControlState& current_state, Genome& ge
                             }
                         }
                     }
-                    tempResult = "Anchor" + SameStrand(currentRead.MatchedD) + "_" +
-                                 currentRead.FragName + "_" + IntToString(currentRead.BPLeft) + "_" + OtherStrand(currentRead.MatchedD) + "_" +
-                                 currentRead.FarFragName + "_" + IntToString(currentRead.BPRight)  + "_" + SameStrand(currentRead.MatchedFarD);
+                    tempResult = "Anchor " + SameStrand(currentRead.MatchedD) + " " +
+                                 currentRead.FragName + " " + IntToString(currentRead.BPLeft) + " " + OtherStrand(currentRead.MatchedD) + " " +
+                                 currentRead.FarFragName + " " + IntToString(currentRead.BPRight)  + " " + SameStrand(currentRead.MatchedFarD);
                     //std::cout << tempResult << " " << currentRead.FragName << " " << currentRead.BPLeft << " " << currentRead.MatchedD << " " << currentRead.FarFragName << " " << currentRead.BPRight << " " << currentRead.MatchedFarD << " " << currentRead.Left << " " << currentRead.Right << std::endl;
                     UpdateInterChromosomeCallAndSupport(CallAndSupport, tempResult);
 
@@ -2023,9 +2023,9 @@ void SortAndReportInterChromosomalEvents(ControlState& current_state, Genome& ge
                             }
                         }
                     }
-                    tempResult = "Anchor" + SameStrand(currentRead.MatchedD) + "_" +
-                                 currentRead.FarFragName + "_" + IntToString(currentRead.BPRight) + "_" + SameStrand(currentRead.MatchedFarD) + "_" +
-                                 currentRead.FragName + "_" + IntToString(currentRead.BPLeft)  + "_" + OtherStrand(currentRead.MatchedD);
+                    tempResult = "Anchor " + SameStrand(currentRead.MatchedD) + " " +
+                                 currentRead.FarFragName + " " + IntToString(currentRead.BPRight) + " " + SameStrand(currentRead.MatchedFarD) + " " +
+                                 currentRead.FragName + " " + IntToString(currentRead.BPLeft)  + " " + OtherStrand(currentRead.MatchedD);
                     //std::cout << tempResult << " " << currentRead.FarFragName << " " << currentRead.BPRight << " " << currentRead.MatchedFarD << " " << currentRead.FragName << " " << currentRead.MatchedD << " " << currentRead.BPLeft << " " << currentRead.Right << " " << currentRead.Left << std::endl;
                     UpdateInterChromosomeCallAndSupport(CallAndSupport, tempResult);
                 }
@@ -2034,6 +2034,6 @@ void SortAndReportInterChromosomalEvents(ControlState& current_state, Genome& ge
     }
     
     for ( std::map<std::string,int> ::iterator it = CallAndSupport.begin() ; it != CallAndSupport.end(); it++ )
-        std::cout << (*it).first << " => " << (*it).second << std::endl;
+        std::cout << (*it).first << "\tsupport: " << (*it).second << std::endl;
     
 }
