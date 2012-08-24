@@ -26,6 +26,7 @@
 #include <vector>
 #include "pindel.h"
 #include "shifted_vector.h"
+#include "control_state.h"
 
 void SortOutputD (const unsigned &NumBoxes, const std::string & CurrentChr,
 									std::vector < SPLIT_READ > &AllReads,
@@ -51,5 +52,6 @@ void SortOutputDI (const unsigned &NumBoxes, const std::string & CurrentChr,
 void SortOutputLI (const std::string & CurrentChr, std::vector < SPLIT_READ > &Reads, const SearchWindow& currentWindow, const std::string& filename);
 void SortOutputRest (const std::string & CurrentChr,  std::vector < SPLIT_READ > &Reads,  const SearchWindow& currentWindow, const std::string& filename);
 
+void SortAndReportInterChromosomalEvents(ControlState& current_state, Genome& genome, UserDefinedSettings* user_settings);
 
 #endif /* REPORTER_H */

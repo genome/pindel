@@ -528,23 +528,14 @@ std::ostream& operator<<(std::ostream& os, const UniquePoint& up )
 
 std::ostream& operator<<(std::ostream& os, const SPLIT_READ& splitRead)
 {
+    os << "\nName: " << splitRead.Name << std::endl;
     os << "Fragname: " << splitRead.FragName << std::endl;
-    os << "Name: " << splitRead.Name << std::endl;
+    os << "FarFragname: " << splitRead.FarFragName << std::endl;
+    
     os << "UnmatchedSeq: " << splitRead.getUnmatchedSeq() << std::endl;
     os << "MatchedD: " << splitRead.MatchedD << " * MatchedRelPos: " << splitRead.MatchedRelPos << " * MS: " << splitRead.MS << " * ";
     os << "InsertSize: " << splitRead.InsertSize << std::endl;
     os << "Tag: " << splitRead.Tag << std::endl;
-    os << "UP_Close: " ;
-    for (unsigned int i=0; i<splitRead.UP_Close.size(); i++) {
-        os << "[" << i << "]=" << splitRead.UP_Close[i] << " ";
-    }
-    os << std::endl;
-    os << "UP_Far: " ;
-    for (unsigned int i=0; i<splitRead.UP_Far.size(); i++) {
-        os << "[" << i << "]=" << splitRead.UP_Far[i] << " ";
-    }
-    os << std::endl;
-    os << std::endl;
     os << "ReadLength: " << splitRead.getReadLength() << std::endl;
     os << "ReadLengthMinus: " << splitRead.getReadLengthMinus() << std::endl;
     os << "MAX_SNP_ERROR:" << splitRead.getMAX_SNP_ERROR() << std::endl;
@@ -559,6 +550,18 @@ std::ostream& operator<<(std::ostream& os, const SPLIT_READ& splitRead)
     os << "UniqueRead:" << splitRead.UniqueRead << std::endl;
     os << "NT_str:" << splitRead.NT_str  << std::endl;
     os << "NT_size:" << splitRead.NT_size << std::endl;
+    os << "UP_Close: " ;
+    for (unsigned int i=0; i<splitRead.UP_Close.size(); i++) {
+        os << "[" << i << "]=" << splitRead.UP_Close[i] << " ";
+    }
+    os << std::endl;
+    os << "UP_Far: " ;
+    for (unsigned int i=0; i<splitRead.UP_Far.size(); i++) {
+        os << "[" << i << "]=" << splitRead.UP_Far[i] << " ";
+    }
+    os << std::endl;
+    //os << std::endl;
+
     return os;
 }
 
@@ -977,6 +980,7 @@ void SearchFarEnds( const std::string chromosomeSeq, std::vector<SPLIT_READ>& re
 	   #pragma omp for
       for (int readIndex= 0; readIndex < (int)reads.size(); readIndex++ ) {
          SearchFarEnd( chromosomeSeq, reads[readIndex], currentChromosome );
+          
       }
    }
    *logStream << "Far end searching completed for this window." << std::endl;
@@ -1096,6 +1100,14 @@ void Timer::reportAll(std::ostream& os)
 	}	
 }
 
+void UpdateFarFragName(std::vector <SPLIT_READ> & input) {
+    for (unsigned index = 0; index < input.size(); index++) {
+        if (input[index].UP_Far.size()) {
+            input[index].FarFragName = input[index].UP_Far[0].chromosome_p->getName();
+        }
+    }
+}
+
 
 
 int main(int argc, char *argv[])
@@ -1196,6 +1208,20 @@ int main(int argc, char *argv[])
             if (!userSettings->reportOnlyCloseMappedReads) {
 					timer.switchTo("Searching far ends");
 					SearchFarEnds( currentChromosome->getSeq(), currentState.Reads_SR, *currentChromosome );
+                    UpdateFarFragName(currentState.Reads_SR);
+                    //std::cout << "before currentState.InterChromosome_SR size " << currentState.InterChromosome_SR.size() << std::endl;
+                    if (userSettings->reportInterchromosomalEvents) {
+                        for (unsigned index = 0; index < currentState.Reads_SR.size(); index++) {
+                            if (currentState.Reads_SR[index].UP_Far.size()) {
+                                //std::cout << currentState.Reads_SR[index].FragName << " " << currentState.Reads_SR[index].FarFragName << std::endl;
+                                if (currentState.Reads_SR[index].FragName != currentState.Reads_SR[index].FarFragName)
+                                    currentState.InterChromosome_SR.push_back(currentState.Reads_SR[index]);
+                            }
+                        }
+                        std::cout << "currentState.InterChromosome_SR.size() = " << currentState.InterChromosome_SR.size() << std::endl;
+                    }
+
+                    
 					currentState.Reads_SR.insert( currentState.Reads_SR.end(), currentState.FutureReads_SR.begin(), currentState.FutureReads_SR.end() );
 					currentState.FutureReads_SR.clear();
 					timer.switchTo("Searching and reporting variations");
@@ -1219,9 +1245,12 @@ int main(int argc, char *argv[])
 
    } while (true);
 
+    if (userSettings->reportInterchromosomalEvents)
+       SortAndReportInterChromosomalEvents(currentState, g_genome, userSettings);
+    
 	timer.reportAll( *logStream );
-   *logStream << "Loading genome sequences and reads: " << AllLoadings << " seconds." << std::endl;
-   *logStream << "Mining, Sorting and output results: " << AllSortReport << " seconds." << std::endl;
+   //*logStream << "Loading genome sequences and reads: " << AllLoadings << " seconds." << std::endl;
+   //*logStream << "Mining, Sorting and output results: " << AllSortReport << " seconds." << std::endl;
 	exit( EXIT_SUCCESS) ;
 } //main
 

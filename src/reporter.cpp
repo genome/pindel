@@ -33,6 +33,7 @@
 #include "reporter.h"
 #include "shifted_vector.h"
 
+
 OutputFileData deletionFileData;
 
 std::string GetConsensusInsertedStr(const std::vector <SPLIT_READ> & Reads, const int & StartIndex, const int & EndIndex);
@@ -1885,4 +1886,11 @@ std::string GetConsensusInsertedStr(const std::vector <SPLIT_READ> & Reads, cons
         }
     }
     return OutputStr;
+}
+
+void SortAndReportInterChromosomalEvents(ControlState& current_state, Genome& genome, UserDefinedSettings* user_settings) {
+    std::cout << "reporting interchromosome variants" << std::endl;
+    for (unsigned index = 0; index < current_state.InterChromosome_SR.size(); index++) {
+        std::cout << current_state.InterChromosome_SR[index];//.FragName << " " << current_state.InterChromosome_SR[index].FarFragName << std::endl;
+    }
 }
