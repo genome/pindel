@@ -69,6 +69,7 @@ extern short g_MinClose;
 extern unsigned int WINDOW_SIZE;
 extern int g_maxInsertSize;
 extern const int g_MAX_RANGE_INDEX; // 5 or 6 or 7 or maximum 8      //# // user
+extern std::vector<unsigned int> g_maxMismatch;
 
 extern const std::string Pindel_Version_str;
 

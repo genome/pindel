@@ -31,7 +31,6 @@ FarEndSearchPerRegion::FarEndSearchPerRegion( const Chromosome* Chromosome, unsi
     emptyPosVector.reserve(size);
     PD_Plus.assign( NumberOfErrors, emptyPosVector);
     PD_Minus.assign( NumberOfErrors, emptyPosVector);
-    //CurrentChromosome = Chromosome;
     
 }
 

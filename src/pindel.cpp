@@ -27,6 +27,7 @@
 #include <getopt.h>
 #include <omp.h>
 #include <set>
+#include <sstream>
 
 // Pindel header files
 #include "logstream.h"
@@ -103,6 +104,8 @@ unsigned int DSizeArray[15];
 int g_maxInsertSize=0;
 std::string CurrentChrMask;
 std::vector<Parameter *> parameters;
+
+
 
 // #########################################################
 
@@ -685,10 +688,49 @@ void CheckWhetherFasta( const std::string& filename )
 	FastaFile.close();
 }
 
+/** 'probOfReadWithTheseErrors' gives the probability that a read of length 'length' will have number of errors 'numberOfErrors' if the sequencing error rate is 'seqErrorRate'. */
+double probOfReadWithTheseErrors(const unsigned int length, const unsigned int numberOfErrors, const double seqErrorRate )
+{
+	double chanceOfCorrect = 1.0-seqErrorRate;
+	unsigned int numberOfCorrectBases = length - numberOfErrors;
+	double matchedPart = pow( chanceOfCorrect, numberOfCorrectBases );
+
+	double mismatchedPart = 1.0;
+	for (unsigned int i=0; i<numberOfErrors; i++ ) {
+		mismatchedPart *= (((length-i) * seqErrorRate) / (numberOfErrors-i) );
+	}
+	return matchedPart * mismatchedPart;
+}
+
+std::vector<unsigned int> g_maxMismatch;
+
+/**  'createProbTable' fills the g_probMismatch[ length ] table with the maximum amount of differences between read and reference are acceptable.
+	For example: if sequencing error rate is 1%, and SNP rate is 0.1%, total error rate is 1.1%. Throwing away all 100-base reads with 1 error would throw away over 1.1% of reads, 
+	which is acceptable if the sensitivity is set to 95% (0.95), but not if it is set to 1%. Uses binomial formula. */
+void createProbTable(const double seqErrorRate, const double sensitivity) 
+{
+	const unsigned int MAX_LENGTH = 200;
+	//g_maxMismatch.clear();
+	g_maxMismatch.assign( MAX_LENGTH, 0);
+	for (unsigned int length=0; length<MAX_LENGTH; length++) {
+		double totalErrorProb = 0.0;
+		for (unsigned int numberOfErrors=0; numberOfErrors<=length; numberOfErrors++ ) {
+			totalErrorProb += probOfReadWithTheseErrors( length, numberOfErrors, seqErrorRate );
+			if (totalErrorProb > sensitivity ) {
+				g_maxMismatch[ length ] = numberOfErrors;
+				//g_maxMisMatch.push_back( numberOfErrors );
+				std::cout << length << " bases has max errors" << numberOfErrors << "\n";
+				break; // break out of this length, up to the next
+			}
+		}
+	}
+}
+
 
 
 void init(int argc, char *argv[], ControlState& currentState )
 {
+
 	UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
 	logStream=&std::cout;
 
@@ -718,6 +760,7 @@ void init(int argc, char *argv[], ControlState& currentState )
     if (!checkParameters( parameters )) {
         exit ( EXIT_FAILURE);
     }
+	createProbTable(0.001+userSettings->Seq_Error_Rate, 0.98); 
 	std::string fastaFilename( userSettings->referenceFilename.c_str() );
 	if (userSettings->reportInterchromosomalEvents) {
 		g_genome.loadAll( fastaFilename );
@@ -971,12 +1014,96 @@ void SearchSVs( ControlState& currentState, const int NumBoxes, const SearchWind
    }
 }
 
+class TimerItem {
+
+public:
+	TimerItem( const std::string& id );
+	void stop();
+	void restart();
+	const std::string getReport() const;
+	const std::string& getId() const { return m_id; }	
+
+private:		
+	std::string m_id;
+	time_t m_countSoFar;
+	time_t m_lastStart;
+};
+
+TimerItem::TimerItem( const std::string& id ) 
+{
+	m_id = id;
+	m_countSoFar = 0;
+	m_lastStart = time( NULL );
+}
+
+void TimerItem::stop()
+{
+	m_countSoFar += (time( NULL ) - m_lastStart);
+}
+
+void TimerItem::restart()
+{
+	m_lastStart = time( NULL );	
+}
+
+const std::string TimerItem::getReport() const
+{
+	std::stringstream ss;
+	ss <<  m_id << " " << m_countSoFar << " seconds.\n";
+	return ss.str();
+}
+
+
+class Timer {
+
+public:
+	void switchTo( const std::string& itemName );
+	void reportAll(std::ostream& os);
+	Timer() : m_currentItemIndex( -1 ) {}
+
+private:
+	std::vector< TimerItem > m_timerItems;
+	int m_currentItemIndex;
+};
+
+void Timer::switchTo( const std::string& itemName )
+{
+	if (m_currentItemIndex!=-1) {
+		m_timerItems[ m_currentItemIndex ].stop();
+	}
+	for (unsigned int itemIter=0; itemIter<m_timerItems.size(); itemIter++ ) {
+		if ( m_timerItems[ itemIter].getId() == itemName ) {
+			m_timerItems[ itemIter].restart();
+			m_currentItemIndex = (int)itemIter;
+			return;
+		}
+	}
+	// no existing element found? new element needs to be constructed
+	TimerItem newItem( itemName );
+	m_timerItems.push_back( newItem );
+	m_currentItemIndex = m_timerItems.size() - 1;
+}
+
+void Timer::reportAll(std::ostream& os)
+{
+	if (m_currentItemIndex!=-1) {
+		m_timerItems[ m_currentItemIndex ].stop();
+	}
+	for (std::vector< TimerItem>::iterator itemIter=m_timerItems.begin(); itemIter!=m_timerItems.end(); itemIter++ ) {
+		os << itemIter->getReport();
+	}	
+}
+
+
 
 int main(int argc, char *argv[])
 {
 	//TODO: These are counters that are only used in individual steps. They should be moved to separate functions later.
    //Below are variables used for cpu time measurement
    time_t Time_Load_S, Time_Load_E, Time_Mine_E, Time_Sort_E;
+	Timer timer;
+	timer.switchTo("Initializing pindel");
+	
    Time_Load_S = time(NULL);
    unsigned int AllLoadings = 0;
    unsigned int AllSortReport = 0;
@@ -1011,6 +1138,7 @@ int main(int argc, char *argv[])
    bool SpecifiedChrVisited = false;
 
    do {
+		timer.switchTo("Loading chromosomes");
 		const Chromosome* currentChromosome = g_genome.getNextChromosome();
 		if ( (currentChromosome == NULL ) || ( SpecifiedChrVisited==true )) {
 			break;
@@ -1052,6 +1180,7 @@ int main(int argc, char *argv[])
          if (Time_Load_S == 0) {
             Time_Load_S = time(NULL);
          }
+			timer.switchTo("Reading in reads + matching close ends");
          get_SR_Reads(currentState, currentWindow ); 
          Time_Mine_E = time(NULL);
 
@@ -1063,9 +1192,11 @@ int main(int argc, char *argv[])
             }
             Time_Load_E = time(NULL);
             if (!userSettings->reportOnlyCloseMappedReads) {
+					timer.switchTo("Searching far ends");
 					SearchFarEnds( currentChromosome->getSeq(), currentState.Reads_SR, *currentChromosome );
 					currentState.Reads_SR.insert( currentState.Reads_SR.end(), currentState.FutureReads_SR.begin(), currentState.FutureReads_SR.end() );
 					currentState.FutureReads_SR.clear();
+					timer.switchTo("Searching and reporting variations");
 					SearchSVs( currentState, NumBoxes, currentWindow );
             }
             Time_Sort_E = time(NULL);
@@ -1086,6 +1217,7 @@ int main(int argc, char *argv[])
 
    } while (true);
 
+	timer.reportAll( *logStream );
    *logStream << "Loading genome sequences and reads: " << AllLoadings << " seconds." << std::endl;
    *logStream << "Mining, Sorting and output results: " << AllSortReport << " seconds." << std::endl;
 	exit( EXIT_SUCCESS) ;
