@@ -1104,6 +1104,7 @@ void UpdateFarFragName(std::vector <SPLIT_READ> & input) {
     for (unsigned index = 0; index < input.size(); index++) {
         if (input[index].UP_Far.size()) {
             input[index].FarFragName = input[index].UP_Far[0].chromosome_p->getName();
+            input[index].MatchedFarD = input[index].UP_Far[0].Strand;
         }
     }
 }

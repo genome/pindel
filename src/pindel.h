@@ -157,6 +157,7 @@ struct SPLIT_READ {
 		Name = "";
 		UnmatchedSeq = "";
 		MatchedD = 0;
+        MatchedFarD = 0;
 		MatchedRelPos = 0;
 		MS = 0;
 		InsertSize = 0;
@@ -190,6 +191,7 @@ struct SPLIT_READ {
 
 
 	char MatchedD; // rename AnchorStrand?
+    char MatchedFarD;
 	unsigned int MatchedRelPos;
 	short MS; // rename MappingQuality ?
 	short InsertSize;

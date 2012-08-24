@@ -23,6 +23,8 @@
 #include <fstream>
 #include <cmath>
 #include <map>
+#include <set>
+#include <sstream>
 
 // Pindel header files
 #include "logstream.h"
@@ -1888,9 +1890,150 @@ std::string GetConsensusInsertedStr(const std::vector <SPLIT_READ> & Reads, cons
     return OutputStr;
 }
 
+std::string IntToString ( int number )
+{
+    std::ostringstream oss;
+    
+    // Works just like cout
+    oss<< number;
+    
+    // Return the underlying string
+    return oss.str();
+}
+
+void UpdateInterChromosomeCallAndSupport(std::map<std::string,int> & CallAndSupport, std::string & tempResult) {
+    std::map<std::string,int> ::iterator it;
+    it = CallAndSupport.find(tempResult);
+    if (it == CallAndSupport.end()) { // no such element
+        CallAndSupport.insert ( std::pair<std::string,int>(tempResult,1) );
+    }
+    else {
+        (*it).second++;
+    }
+}
+
+std::string OtherStrand(const char input) {
+    if (input == '+') return "-";
+    else if (input == '-') return "+";
+    else return "";
+}
+
+std::string SameStrand(const char input) {
+    if (input == '+') return "+";
+    else if (input == '-') return "-";
+    else return "";
+}
+
 void SortAndReportInterChromosomalEvents(ControlState& current_state, Genome& genome, UserDefinedSettings* user_settings) {
+    
+    //std::map Result;
+    std::map<std::string,int> CallAndSupport;
+    std::string tempResult;
+    std::set<std::string> ChrNames;
+    std::set<std::string>::iterator first, second;
     std::cout << "reporting interchromosome variants" << std::endl;
     for (unsigned index = 0; index < current_state.InterChromosome_SR.size(); index++) {
-        std::cout << current_state.InterChromosome_SR[index];//.FragName << " " << current_state.InterChromosome_SR[index].FarFragName << std::endl;
+        //std::cout << current_state.InterChromosome_SR[index];//.FragName << " " << current_state.InterChromosome_SR[index].FarFragName << std::endl;
+        ChrNames.insert(current_state.InterChromosome_SR[index].FragName);
+        ChrNames.insert(current_state.InterChromosome_SR[index].FarFragName);
     }
+    //std::cout << "ChrNames.size() " << ChrNames.size() << std::endl;
+    for (first = ChrNames.begin(); first != ChrNames.end(); first++) {
+        //second = first;
+        //second++;
+        //if (second == ChrNames.end()) break;
+        for (second = first; second != ChrNames.end(); second++) {
+            if (first == second) {
+                continue;
+            }
+            for (unsigned index = 0; index < current_state.InterChromosome_SR.size(); index++) {
+                SPLIT_READ & currentRead = current_state.InterChromosome_SR[index];
+                if (currentRead.FragName == *first && currentRead.FarFragName == *second) {
+                    //std::cout << *first << " " << *second << std::endl;
+                    if (currentRead.MatchedD == '+') { // close smaller
+                        for (unsigned CloseIndex = 0; CloseIndex < currentRead.UP_Close.size(); CloseIndex++) {
+                            for (int FarIndex = currentRead.UP_Far.size() - 1; FarIndex >= 0; FarIndex--) {
+                                if (currentRead.UP_Close[CloseIndex].LengthStr + currentRead.UP_Far[FarIndex].LengthStr == currentRead.getReadLength()) {
+                                    currentRead.Used = true;
+                                    currentRead.Left = currentRead. UP_Close[CloseIndex].AbsLoc - currentRead. UP_Close[CloseIndex].LengthStr + 1;
+                                    if (currentRead.MatchedFarD == '+') 
+                                        currentRead.Right = currentRead.UP_Far[FarIndex]. AbsLoc - currentRead.UP_Far[FarIndex]. LengthStr - 1;
+                                    else currentRead.Right = currentRead.UP_Far[FarIndex]. AbsLoc + currentRead.UP_Far[FarIndex]. LengthStr - 1;
+                                    currentRead.BP = currentRead. UP_Close[CloseIndex].LengthStr - 1;
+                                    currentRead.BPLeft = currentRead. UP_Close[CloseIndex].AbsLoc - g_SpacerBeforeAfter;
+                                    currentRead.BPRight = currentRead.UP_Far[FarIndex]. AbsLoc - g_SpacerBeforeAfter;//0;//
+                                }
+                            }
+                        }
+                    }
+                    else { //close bigger
+                        for (int CloseIndex = currentRead.UP_Close.size() - 1; CloseIndex >= 0; CloseIndex--) {
+                            for (unsigned FarIndex = 0; FarIndex < currentRead.UP_Far.size(); FarIndex++) {
+                                if (currentRead.UP_Close[CloseIndex].LengthStr + currentRead.UP_Far[FarIndex].LengthStr == currentRead.getReadLength()) {
+                                    currentRead.Used = true;
+                                    currentRead.Left = currentRead. UP_Close[CloseIndex].AbsLoc + currentRead. UP_Close[CloseIndex].LengthStr - 1;
+                                    if (currentRead.MatchedFarD == '+')
+                                        currentRead.Right = currentRead.UP_Far[FarIndex]. AbsLoc - currentRead.UP_Far[FarIndex]. LengthStr - 1;
+                                    else currentRead.Right = currentRead.UP_Far[FarIndex]. AbsLoc + currentRead.UP_Far[FarIndex]. LengthStr - 1;
+                                    currentRead.BP = currentRead. UP_Close[CloseIndex].LengthStr - 1;
+                                    currentRead.BPLeft = currentRead. UP_Close[CloseIndex].AbsLoc - g_SpacerBeforeAfter;
+                                    currentRead.BPRight = currentRead.UP_Far[FarIndex]. AbsLoc - g_SpacerBeforeAfter;//0;//
+                                }
+                            }
+                        }
+                    }
+                    tempResult = "Anchor" + SameStrand(currentRead.MatchedD) + "_" +
+                                 currentRead.FragName + "_" + IntToString(currentRead.BPLeft) + "_" + OtherStrand(currentRead.MatchedD) + "_" +
+                                 currentRead.FarFragName + "_" + IntToString(currentRead.BPRight)  + "_" + SameStrand(currentRead.MatchedFarD);
+                    //std::cout << tempResult << " " << currentRead.FragName << " " << currentRead.BPLeft << " " << currentRead.MatchedD << " " << currentRead.FarFragName << " " << currentRead.BPRight << " " << currentRead.MatchedFarD << " " << currentRead.Left << " " << currentRead.Right << std::endl;
+                    UpdateInterChromosomeCallAndSupport(CallAndSupport, tempResult);
+
+                }
+                else if (currentRead.FragName == *second && currentRead.FarFragName == *first) {
+                    //std::cout << *second << " " << *first << std::endl;
+                    if (currentRead.MatchedFarD == '-') { // close smaller
+                        for (unsigned CloseIndex = 0; CloseIndex < currentRead.UP_Close.size(); CloseIndex++) {
+                            for (int FarIndex = currentRead.UP_Far.size() - 1; FarIndex >= 0; FarIndex--) {
+                                if (currentRead.UP_Close[CloseIndex].LengthStr + currentRead.UP_Far[FarIndex].LengthStr == currentRead.getReadLength()) {
+                                    currentRead.Used = true;
+                                    currentRead.Left = currentRead. UP_Far[FarIndex].AbsLoc - currentRead. UP_Close[CloseIndex].LengthStr + 1;
+                                    if (currentRead.MatchedD == '+')
+                                        currentRead.Right = currentRead.UP_Far[FarIndex]. AbsLoc - currentRead.UP_Far[FarIndex]. LengthStr - 1;
+                                    else currentRead.Right = currentRead.UP_Far[FarIndex]. AbsLoc + currentRead.UP_Far[FarIndex]. LengthStr - 1;
+                                    currentRead.BP = currentRead. UP_Close[CloseIndex].LengthStr - 1;
+                                    currentRead.BPLeft = currentRead. UP_Close[CloseIndex].AbsLoc - g_SpacerBeforeAfter;
+                                    currentRead.BPRight = currentRead.UP_Far[FarIndex]. AbsLoc - g_SpacerBeforeAfter;//0;//
+                                }
+                            }
+                        }
+                    }
+                    else { //close bigger
+                        for (int CloseIndex = currentRead.UP_Close.size() - 1; CloseIndex >= 0; CloseIndex--) {
+                            for (unsigned FarIndex = 0; FarIndex < currentRead.UP_Far.size(); FarIndex++) {
+                                if (currentRead.UP_Close[CloseIndex].LengthStr + currentRead.UP_Far[FarIndex].LengthStr == currentRead.getReadLength()) {
+                                    currentRead.Used = true;
+                                    currentRead.Left = currentRead. UP_Close[CloseIndex].AbsLoc + currentRead. UP_Close[CloseIndex].LengthStr - 1;
+                                    if (currentRead.MatchedFarD == '+')
+                                        currentRead.Right = currentRead.UP_Far[FarIndex]. AbsLoc - currentRead.UP_Far[FarIndex]. LengthStr - 1;
+                                    else currentRead.Right = currentRead.UP_Far[FarIndex]. AbsLoc + currentRead.UP_Far[FarIndex]. LengthStr - 1;
+                                    currentRead.BP = currentRead. UP_Close[CloseIndex].LengthStr - 1;
+                                    currentRead.BPLeft = currentRead. UP_Close[CloseIndex].AbsLoc - g_SpacerBeforeAfter;
+                                    currentRead.BPRight = currentRead.UP_Far[FarIndex]. AbsLoc - g_SpacerBeforeAfter;//0;//
+                                }
+                            }
+                        }
+                    }
+                    tempResult = "Anchor" + SameStrand(currentRead.MatchedD) + "_" +
+                                 currentRead.FarFragName + "_" + IntToString(currentRead.BPRight) + "_" + SameStrand(currentRead.MatchedFarD) + "_" +
+                                 currentRead.FragName + "_" + IntToString(currentRead.BPLeft)  + "_" + OtherStrand(currentRead.MatchedD);
+                    //std::cout << tempResult << " " << currentRead.FarFragName << " " << currentRead.BPRight << " " << currentRead.MatchedFarD << " " << currentRead.FragName << " " << currentRead.MatchedD << " " << currentRead.BPLeft << " " << currentRead.Right << " " << currentRead.Left << std::endl;
+                    UpdateInterChromosomeCallAndSupport(CallAndSupport, tempResult);
+                }
+            }
+        }
+    }
+    
+    for ( std::map<std::string,int> ::iterator it = CallAndSupport.begin() ; it != CallAndSupport.end(); it++ )
+        std::cout << (*it).first << " => " << (*it).second << std::endl;
+    
 }
