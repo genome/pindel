@@ -349,13 +349,13 @@ bool ReadInBamReads_RP (const char *bam_path, const std::string & FragName,
     data.LeftReads = &LeftReads;
     data.read_to_map_qual = NULL;
     data.read_to_map_qual = kh_init (read_name);
-    flags_hit b1_flags, b2_flags;
+    flags_hit b1_flags;//, b2_flags;
     data.b1_flags = &b1_flags;
-    data.b2_flags = &b2_flags;
+    //data.b2_flags = &b2_flags;
     data.InsertSize = InsertSize;
     data.Tag = Tag;
     bam_fetch (fp, idx, tid, currentWindow.getStart(), currentWindow.getEnd(), &data, fetch_func_RP);
-    
+    /*
     khint_t key;
     if (kh_size (data.read_to_map_qual) > 0) {
         for (key = kh_begin (data.read_to_map_qual);
@@ -368,7 +368,7 @@ bool ReadInBamReads_RP (const char *bam_path, const std::string & FragName,
     }
     kh_clear (read_name, data.read_to_map_qual);
     kh_destroy (read_name, data.read_to_map_qual);
-    
+    */
     bam_header_destroy (header);
     bam_index_destroy (idx);
     bam_close (fp);
@@ -585,43 +585,53 @@ void build_record_SR (const bam1_t * mapped_read, const bam1_t * unmapped_read, 
     return;
 }
 
-void build_record_RP (const bam1_t * r1, const bam1_t * r2, void *data)
+void build_record_RP (const bam1_t * r1, void *data)
 {
     
     const bam1_core_t * r1_core;
-    const bam1_core_t * r2_core;
+    //const bam1_core_t * r2_core;
     r1_core = &r1->core;
-    r2_core = &r2->core;
+    //r2_core = &r2->core;
+    
+
 
     RP_READ Temp_One_Read;
     fetch_func_data_RP *data_for_bam = (fetch_func_data_RP *) data;
     bam_header_t *header = (bam_header_t *) data_for_bam->header;
     std::string CurrentChrSeq = *(std::string *) data_for_bam->CurrentChrSeq;
     std::string Tag = (std::string) data_for_bam->Tag;
-
-    Temp_One_Read.ReadName = "";
-    Temp_One_Read.ReadName.append ((const char *) bam1_qname (r2));
-    if (r1_core->flag & BAM_FREVERSE) {
-        Temp_One_Read.DA = '+';
+    
+    if (!(r1_core->flag & BAM_FUNMAP || r1_core->flag & BAM_FMUNMAP)) { // both reads are mapped.
+        if ((r1_core->tid != r1_core->mtid) || abs(r1_core->isize) > r1_core->l_qseq + 2 * data_for_bam->InsertSize) {
+            Temp_One_Read.ReadName = "";
+            Temp_One_Read.ReadName.append ((const char *) bam1_qname (r1));
+            if (r1_core->flag & BAM_FREVERSE) {
+                Temp_One_Read.DA = '-';
+            }
+            else Temp_One_Read.DA = '+';
+            if (r1_core->flag & BAM_FMREVERSE) {
+                Temp_One_Read.DB = '-';
+            }
+            else Temp_One_Read.DB = '+';
+            
+            Temp_One_Read.PosA = r1_core->pos;
+            if (Temp_One_Read.DA == '+') Temp_One_Read.PosA = Temp_One_Read.PosA;// + r1_core->l_qseq;
+            //else Temp_One_Read.PosA = Temp_One_Read.PosA;
+            Temp_One_Read.PosB = r1_core->mpos;
+            if (Temp_One_Read.DB == '+') Temp_One_Read.PosB = Temp_One_Read.PosB;// + r1_core->l_qseq;
+            //else Temp_One_Read.PosB = Temp_One_Read.PosB;
+            std::cout << Temp_One_Read.ReadName << " " << Temp_One_Read.DA << " " << Temp_One_Read.PosA << " " << Temp_One_Read.DB << " " << Temp_One_Read.PosB << std::endl;
+            Temp_One_Read.MQA = r1_core->qual;
+            Temp_One_Read.MQB = r1_core->qual;
+            Temp_One_Read.ChrNameA = header->target_name[r1_core->tid];
+            Temp_One_Read.ChrNameB = header->target_name[r1_core->mtid];
+            Temp_One_Read.InsertSize = data_for_bam->InsertSize;
+            //FIXME pass these through from the command line with a struct
+            Temp_One_Read.Tag = Tag;
+            
+            data_for_bam->LeftReads->push_back(Temp_One_Read);
+        }
     }
-    else Temp_One_Read.DA = '-';
-    
-    if (r2_core->flag & BAM_FREVERSE) {
-        Temp_One_Read.DB = '+';
-    }
-    else Temp_One_Read.DB = '-';
-    
-    Temp_One_Read.PosA = r1_core->pos;
-    Temp_One_Read.PosB = r2_core->pos;
-
-    Temp_One_Read.MQA = r1_core->qual;
-    Temp_One_Read.MQB = r2_core->qual;
-    Temp_One_Read.ChrNameA = header->target_name[r1_core->tid];
-    Temp_One_Read.ChrNameB = header->target_name[r2_core->tid];
-    //FIXME pass these through from the command line with a struct
-    Temp_One_Read.Tag = Tag;
-    
-    data_for_bam->LeftReads->push_back(Temp_One_Read);
     return;
 }
 
@@ -679,19 +689,19 @@ static int fetch_func_RP (const bam1_t * b1, void *data)
 {
     g_NumReadScanned++;
     fetch_func_data_RP *data_for_bam = (fetch_func_data_RP *) data;
-    khash_t (read_name) * read_to_map_qual =
-    (khash_t (read_name) *) data_for_bam->read_to_map_qual;
+    //khash_t (read_name) * read_to_map_qual =
+    //(khash_t (read_name) *) data_for_bam->read_to_map_qual;
     flags_hit *b1_flags = data_for_bam->b1_flags;
-    flags_hit *b2_flags = data_for_bam->b2_flags;
+    //flags_hit *b2_flags = data_for_bam->b2_flags;
     const std::string CurrentChrSeq = *(std::string *) data_for_bam->CurrentChrSeq;
 
     RP_READ Temp_One_Read;
     const bam1_core_t *b1_core;
-    bam1_t *b2;
-    bam1_core_t *b2_core;
+    //bam1_t *b2;
+    //bam1_core_t *b2_core;
     b1_core = &b1->core;
     std::string read_name = bam1_qname (b1);
-
+    /*
     khint_t key = kh_get (read_name, read_to_map_qual, bam1_qname (b1));
     if (key == kh_end (read_to_map_qual)) {
         int ret=0;
@@ -707,13 +717,14 @@ static int fetch_func_RP (const bam1_t * b1, void *data)
         free ((char *) kh_key (read_to_map_qual, key));
         kh_del (read_name, read_to_map_qual, key);
     }
+    */ 
 
     parse_flags_and_tags (b1, b1_flags);
-    parse_flags_and_tags (b2, b2_flags);
+    //parse_flags_and_tags (b2, b2_flags);
 
-        build_record_RP (b1, b2, data);
+        build_record_RP (b1, data);
 
-    bam_destroy1 (b2);
+    //bam_destroy1 (b2);
     
     return 0;
 }
@@ -831,10 +842,10 @@ short get_RP_Reads(ControlState& currentState, const SearchWindow& currentWindow
    RPVector TempOneRPVector;
 
    if (UserDefinedSettings::Instance()->bamFilesAsInput()) {
-      ReturnFromReadingReads = 0;
-      for (unsigned int i = 0; i < currentState.bams_to_parse.size(); i++) {
-         currentState.Reads_RP.push_back(TempOneRPVector);
-         ReturnFromReadingReads = ReadInBamReads_RP(
+       ReturnFromReadingReads = 0;
+       for (unsigned int i = 0; i < currentState.bams_to_parse.size(); i++) {
+          currentState.Reads_RP.push_back(TempOneRPVector);
+          ReturnFromReadingReads = ReadInBamReads_RP(
                                                        currentState.bams_to_parse[i].BamFile.c_str(),
                                                        currentWindow.getChromosome()->getName(), 
 																		 &currentWindow.getChromosome()->getSeq(),
@@ -843,13 +854,14 @@ short get_RP_Reads(ControlState& currentState, const SearchWindow& currentWindow
                                                        currentState.bams_to_parse[i].InsertSize,
                                                        currentState.bams_to_parse[i].Tag,
                                                        currentWindow);
-         if (ReturnFromReadingReads == 0) {
-            LOG_ERROR(*logStream << "Bam read failed: " << currentState.bams_to_parse[i].BamFile << std::endl);
-            return 1;
-         }
-         else if (currentState.Reads_RP.size() == 0) {
-      	}
-    	}  
+          if (ReturnFromReadingReads == 0) {
+              LOG_ERROR(*logStream << "Bam read failed: " << currentState.bams_to_parse[i].BamFile << std::endl);
+              return 1;
+          }
+          else if (currentState.Reads_RP.size() == 0) {
+          }
+          else std::cout << currentState.bams_to_parse[i].BamFile << " RP " << currentState.Reads_RP[i].size() << std::endl;
+       }
     }
     return 0;
 }
@@ -925,6 +937,46 @@ short get_SR_Reads(ControlState& currentState, const SearchWindow& currentWindow
    return 0;
 }
 
+/*
+
+short get_RP_Reads(ControlState& currentState, const SearchWindow& currentWindow )
+{
+	g_NumReadInWindow = 0; // #################
+	g_NumReadScanned = 0;
+	g_InWinPlus = 0; // #################
+	g_InWinMinus = 0; // #################
+	g_CloseMappedPlus = 0; // #################
+	g_CloseMappedMinus = 0; // #################
+    std::cout << "getReads " << currentWindow.getChromosome()->getName() << " " << currentWindow.getChromosome()->getSeq().size() << std::endl;
+    short ReturnFromReadingReads;
+    //ReadBuffer readBuffer(BUFFER_SIZE, currentState.Reads_RP, currentWindow.getChromosome()->getSeq());
+	UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
+    if (userSettings->bamFilesAsInput()) {
+        ReturnFromReadingReads = 0;
+        for (unsigned int i = 0; i < currentState.bams_to_parse.size(); i++) {
+            *logStream << "Insertsize in bamreads: " << currentState.bams_to_parse[i].InsertSize << std::endl;
+            ReturnFromReadingReads = ReadInBamReads_RP(
+                                                       currentState.bams_to_parse[i].BamFile.c_str(),
+                                                       currentWindow.getChromosome()->getName(),
+                                                       &currentWindow.getChromosome()->getSeq(),
+                                                       //	&currentState.CurrentChrSeq,
+                                                       currentState.Reads_RP,
+                                                       currentState.bams_to_parse[i].InsertSize,
+                                                       currentState.bams_to_parse[i].Tag,
+                                                       currentWindow);
+            if (ReturnFromReadingReads == 0) { // perhaps 'false'? ReadInBamReads returns a boolean...
+                LOG_ERROR(*logStream << "Bam read failed: " << currentState.bams_to_parse[i].BamFile << std::endl);
+                return EXIT_FAILURE;
+            }
+            else if (currentState.Reads_RP.size() == 0) {
+                LOG_ERROR(*logStream << "No currentState.Reads for " << currentWindow.getChromosome()->getName() << " found in " << currentState.bams_to_parse[i].BamFile << std::endl);
+            }
+            *logStream << "BAM file index\t" << i << "\t" << currentState.Reads_RP.size() << std::endl;
+        }
+    }    
+    return 0;
+}
+*/
 
 
 /* 'updateReadAfterCloseEndMapping' (EWL, 31thAug2011) */

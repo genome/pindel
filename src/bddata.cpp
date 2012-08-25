@@ -154,6 +154,26 @@ void BDData::loadBDFile(const std::string& filename)
    std::cout << "BreakDancer events: " << m_bdEvents.size()/2 << std::endl;
 }
 
+void BDData::UpdateBD(ControlState & currentState) {
+    for (unsigned File_index = 0; File_index < currentState.Reads_RP.size(); File_index++) {
+        for (unsigned read_index = 0; read_index < currentState.Reads_RP[File_index].size(); read_index++) {
+            std::string firstChrName = currentState.Reads_RP[File_index][read_index].ChrNameA;
+            std::string secondChrName = currentState.Reads_RP[File_index][read_index].ChrNameB;
+            unsigned int firstPos = currentState.Reads_RP[File_index][read_index].PosA + g_SpacerBeforeAfter;
+            unsigned int secondPos  = currentState.Reads_RP[File_index][read_index].PosB + g_SpacerBeforeAfter;
+            if ( firstChrName!="" && secondChrName!="" ) {
+				BreakDancerCoordinate firstBDCoordinate( firstChrName, firstPos );
+				BreakDancerCoordinate secondBDCoordinate( secondChrName, secondPos );
+                
+                m_bdEvents.push_back(BreakDancerEvent( firstBDCoordinate, secondBDCoordinate ));
+                m_bdEvents.push_back(BreakDancerEvent( secondBDCoordinate, firstBDCoordinate ));
+			}
+        }
+
+    }
+    
+}
+
 
 bool regionsOverlap( const BDIterator& firstRegionIt, const BDIterator& secondRegionIt )
 {

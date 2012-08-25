@@ -1196,7 +1196,9 @@ int main(int argc, char *argv[])
             Time_Load_S = time(NULL);
          }
 			timer.switchTo("Reading in reads + matching close ends");
-         get_SR_Reads(currentState, currentWindow ); 
+         get_RP_Reads(currentState, currentWindow );
+         g_bdData.UpdateBD(currentState);
+         get_SR_Reads(currentState, currentWindow );
          Time_Mine_E = time(NULL);
 
          if (currentState.Reads_SR.size() ) {
@@ -1667,7 +1669,7 @@ void CheckBoth(const SPLIT_READ & read,
 									}
                        }
                    }
-             if (Sum == 1 && (unsigned)numberOfMismatches <= g_maxMismatch[CurrentLength]) {
+             if (Sum == 1 && (unsigned)numberOfMismatches <= g_maxMismatch[CurrentLength] + 1) {
                         // why I love constructors
 								UniquePoint MatchPosition;
 								const FarEndSearchPerRegion& hitRegion = WholeGenomeSearchResult_input[ regionWithMatch ];

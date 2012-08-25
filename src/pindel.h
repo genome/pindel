@@ -35,6 +35,8 @@
 #include "sam.h"
 
 #include "user_defined_settings.h"
+//#include "bddata.h"
+
 
 // Forward declarations
 class LineReader;
@@ -148,6 +150,8 @@ struct RP_READ {
     short MQA;
     short MQB;
     std::string Tag;
+    unsigned InsertSize;
+    
 };
 
 struct SPLIT_READ {

@@ -40,6 +40,7 @@ bool ReadInBamReads_SR (const char *bam_path, const std::string & FragName,
 									const unsigned int upperBinBorder);*/
 
 short get_SR_Reads(ControlState& currentState, const SearchWindow& currentWindow );
+short get_RP_Reads(ControlState& currentState, const SearchWindow& currentWindow );
 //short get_RP_Reads(ControlState& currentState, const SearchWindow& currentWindow );
 //void readInPindelReads(PindelReadReader &reader, const std::string& pindelFilename, ControlState& currentState, const SearchWindow& currentWindow  );
 
