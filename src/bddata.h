@@ -26,7 +26,9 @@ public:
     void UpdateBD(ControlState & currentState);
 	bool isBreakDancerEvent( const unsigned int leftPosition, const unsigned int rightPosition ) const;
 	// returns positions belonging to the the complementary breakdancer calls
-	const SearchWindowCluster& getCorrespondingSearchWindowCluster( const SPLIT_READ& read ) const; 
+	const SearchWindowCluster& getCorrespondingSearchWindowCluster( const SPLIT_READ& read ) const;
+    
+    unsigned GetBDSize();
 
 private: 
    unsigned int *m_breakDancerMask;

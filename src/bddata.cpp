@@ -154,24 +154,143 @@ void BDData::loadBDFile(const std::string& filename)
    std::cout << "BreakDancer events: " << m_bdEvents.size()/2 << std::endl;
 }
 
-void BDData::UpdateBD(ControlState & currentState) {
-    for (unsigned File_index = 0; File_index < currentState.Reads_RP.size(); File_index++) {
-        for (unsigned read_index = 0; read_index < currentState.Reads_RP[File_index].size(); read_index++) {
-            std::string firstChrName = currentState.Reads_RP[File_index][read_index].ChrNameA;
-            std::string secondChrName = currentState.Reads_RP[File_index][read_index].ChrNameB;
-            unsigned int firstPos = currentState.Reads_RP[File_index][read_index].PosA + g_SpacerBeforeAfter;
-            unsigned int secondPos  = currentState.Reads_RP[File_index][read_index].PosB + g_SpacerBeforeAfter;
-            if ( firstChrName!="" && secondChrName!="" ) {
-				BreakDancerCoordinate firstBDCoordinate( firstChrName, firstPos );
-				BreakDancerCoordinate secondBDCoordinate( secondChrName, secondPos );
-                
-                m_bdEvents.push_back(BreakDancerEvent( firstBDCoordinate, secondBDCoordinate ));
-                m_bdEvents.push_back(BreakDancerEvent( secondBDCoordinate, firstBDCoordinate ));
-			}
-        }
-
+bool Compare2Str (const std::string & first, const std::string & second) {
+    if (first == second) return false;
+    unsigned Length_first = first.size();
+    unsigned Length_second = second.size();
+    unsigned Length = std::min(Length_first, Length_second);
+    for (unsigned index = 0; index < Length; index++) {
+        if (first[index] > second[index]) return true;
+        if (first[index] < second[index]) return false;
     }
+    if (Length_first < Length_second) return true;
+    else if (Length_first >= Length_second) return false;
+    return false;
+}
+
+void SortRPByChrPos(const std::vector <RP_READ> & Reads_RP, std::vector <unsigned> & RP_index) {
+    unsigned Num_RP_Reads = Reads_RP.size();
+    for (unsigned index = 0; index < Num_RP_Reads; index++) {
+        RP_index.push_back(index);
+    }
+    unsigned TempIndex;
+    bool Exchange;
+    for (unsigned first = 0; first < Num_RP_Reads - 1; first++) {
+        for (unsigned second = 0; second < Num_RP_Reads; second++) {
+            Exchange = false;
+            if (Compare2Str(Reads_RP[RP_index[first]].ChrNameA, Reads_RP[RP_index[second]].ChrNameA)) Exchange = true;
+            else if (Reads_RP[RP_index[first]].ChrNameA == Reads_RP[RP_index[second]].ChrNameA
+                     && Reads_RP[RP_index[first]].PosA > Reads_RP[RP_index[second]].PosA) Exchange = true;
+            else if (Reads_RP[RP_index[first]].ChrNameA == Reads_RP[RP_index[second]].ChrNameA
+                     && Reads_RP[RP_index[first]].PosA == Reads_RP[RP_index[second]].PosA
+                     && Compare2Str(Reads_RP[RP_index[first]].ChrNameB, Reads_RP[RP_index[second]].ChrNameB)) Exchange = true;
+            else if (Reads_RP[RP_index[first]].ChrNameA == Reads_RP[RP_index[second]].ChrNameA
+                     && Reads_RP[RP_index[first]].PosA == Reads_RP[RP_index[second]].PosA
+                     && Reads_RP[RP_index[first]].ChrNameB == Reads_RP[RP_index[second]].ChrNameB
+                     && Reads_RP[RP_index[first]].PosB > Reads_RP[RP_index[second]].PosB) Exchange = true;
+            if (Exchange) {
+                TempIndex = RP_index[first];
+                RP_index[first] = RP_index[second];
+                RP_index[second] = TempIndex;
+            }
+        }
+    }
+}
+
+void ModifyRP(std::vector <RP_READ> & Reads_RP, std::vector <unsigned> & RP_index) {
+    unsigned Range, PosA_start, PosA_end, PosB_start, PosB_end;
+    for (unsigned first = 0; first < Reads_RP.size(); first++) {
+        RP_READ & Current_first = Reads_RP[RP_index[first]];
+        Range = (unsigned)(Current_first.InsertSize * 1.1);
+        if (Current_first.PosA > Range)
+        PosA_start = Current_first.PosA - Range;
+        else PosA_start = 1;
+        PosA_end = Current_first.PosA + Range;
+        if (Current_first.PosB > Range)
+        PosB_start = Current_first.PosB - Range;
+        else PosB_start = 1;
+        PosB_end = Current_first.PosB + Range;
+        //std::cout << "Before: " << Current_first.DA << " " << Current_first.PosA << " " << Current_first.DB << " " << Current_first.PosB << std::endl;
+        for (unsigned second = 0; second < Reads_RP.size(); second++) {
+            RP_READ & Current_second = Reads_RP[RP_index[second]];
+            if (Current_first.ChrNameA == Current_second.ChrNameA
+                && Current_first.ChrNameB == Current_second.ChrNameB
+                && Current_first.DA == Current_second.DA
+                && Current_first.DB == Current_second.DB) {
+                if (Current_second.PosA > PosA_start
+                    && Current_second.PosA < PosA_end
+                    && Current_second.PosB > PosB_start
+                    && Current_second.PosB < PosB_end) { // same cluster
+                    if ((Current_first.DA == '+' && Current_first.PosA < Current_second.PosA)
+                        || (Current_first.DA == '-' && Current_first.PosA > Current_second.PosA)) {
+                        Current_first.PosA = Current_second.PosA;
+                    }
+                    if ((Current_first.DB == '+' && Current_first.PosB < Current_second.PosB)
+                        || (Current_first.DB == '-' && Current_first.PosB > Current_second.PosB)) {
+                        Current_first.PosB = Current_second.PosB;
+                    }
+                }
+            }
+        }
+        //std::cout << "After: " << Current_first.DA << " " << Current_first.PosA << " " << Current_first.DB << " " << Current_first.PosB << std::endl;
+    }
+    for (unsigned first = 0; first < Reads_RP.size(); first++) {
+        if (Reads_RP[first].DA == '+') Reads_RP[first].PosA = Reads_RP[first].PosA + Reads_RP[first].ReadLength;
+        if (Reads_RP[first].DB == '+') Reads_RP[first].PosB = Reads_RP[first].PosB + Reads_RP[first].ReadLength;
+        //std::cout << "Final: " << Reads_RP[first].ChrNameA << " " << Reads_RP[first].DA << " " << Reads_RP[first].PosA << "\t" << Reads_RP[first].ChrNameB << " " << Reads_RP[first].DB << " " << Reads_RP[first].PosB << std::endl;
+    }
+}
+
+void Summerize(std::vector <RP_READ> & Reads_RP) {
+    unsigned Cutoff = 3;
+    for (unsigned first = 0; first < Reads_RP.size() - 1; first++) {
+        if (Reads_RP[first].Visited == true) continue;
+        for (unsigned second = first + 1; second < Reads_RP.size(); second++) {
+            if (Reads_RP[second].Visited == true) continue;
+            if (Reads_RP[first].ChrNameA == Reads_RP[second].ChrNameA
+                && Reads_RP[first].ChrNameB == Reads_RP[second].ChrNameB
+                && Reads_RP[first].PosA == Reads_RP[second].PosA
+                && Reads_RP[first].PosB == Reads_RP[second].PosB
+                && Reads_RP[first].DA == Reads_RP[second].DA
+                && Reads_RP[first].DB == Reads_RP[second].DB) {
+                Reads_RP[first].NumberOfIdentical++;
+                Reads_RP[second].Visited = true;
+            }
+        }
+        if (Reads_RP[first].NumberOfIdentical >= Cutoff) {
+            Reads_RP[first].Report = true;
+            //std::cout << Reads_RP[first].ChrNameA << " " << Reads_RP[first].PosA << " " << Reads_RP[first].ChrNameB << " " << Reads_RP[first].PosB << std::endl;
+        }
+    }
+}
+
+void BDData::UpdateBD(ControlState & currentState) {
+    //std::cout << "Discovery RP: " << currentState.Reads_RP_Discovery.size() << std::endl;
+    std::vector <unsigned> RP_index;
+    SortRPByChrPos(currentState.Reads_RP_Discovery, RP_index);
+    ModifyRP(currentState.Reads_RP_Discovery, RP_index);
+    Summerize(currentState.Reads_RP_Discovery);
+    for (unsigned read_index = 0; read_index < currentState.Reads_RP_Discovery.size(); read_index++) {
+        if (currentState.Reads_RP_Discovery[read_index].Report == false) continue;
     
+        std::string firstChrName = currentState.Reads_RP_Discovery[read_index].ChrNameA;
+        std::string secondChrName = currentState.Reads_RP_Discovery[read_index].ChrNameB;
+        unsigned int firstPos = currentState.Reads_RP_Discovery[read_index].PosA + g_SpacerBeforeAfter;
+        unsigned int secondPos  = currentState.Reads_RP_Discovery[read_index].PosB + g_SpacerBeforeAfter;
+        if ( firstChrName!="" && secondChrName!="" ) {
+            BreakDancerCoordinate firstBDCoordinate( firstChrName, firstPos );
+            BreakDancerCoordinate secondBDCoordinate( secondChrName, secondPos );
+                
+            m_bdEvents.push_back(BreakDancerEvent( firstBDCoordinate, secondBDCoordinate ));
+            m_bdEvents.push_back(BreakDancerEvent( secondBDCoordinate, firstBDCoordinate ));
+            
+            std::cout << "adding " << firstChrName << " " << firstPos - g_SpacerBeforeAfter << "\t" << secondChrName << " " << secondPos - g_SpacerBeforeAfter <<  " to breakdancer events." << std::endl;
+        }
+        
+    }
+
+    
+    currentState.Reads_RP_Discovery.clear();
 }
 
 
@@ -337,3 +456,5 @@ bool BDData::isBreakDancerEvent( const unsigned int leftPosition, const unsigned
       return false;
    }
 }
+
+unsigned BDData::GetBDSize(){return m_bdEvents.size();}

@@ -1191,13 +1191,17 @@ int main(int argc, char *argv[])
       	/* 3.2.1 preparation starts */
 			*logStream << currentWindow.display();
 			SearchWindow currentWindow_cs = currentWindow.makePindelCoordinateCopy(); // _cs means computer science coordinates
-	     	g_bdData.loadRegion( currentWindow_cs );
+	     	//g_bdData.loadRegion( currentWindow_cs );
          if (Time_Load_S == 0) {
             Time_Load_S = time(NULL);
          }
-			timer.switchTo("Reading in reads + matching close ends");
-         get_RP_Reads(currentState, currentWindow );
-         g_bdData.UpdateBD(currentState);
+			timer.switchTo("Reading in reads + matching close ends");//
+         if (userSettings->bamFilesAsInput()) {
+             get_RP_Reads_Discovery(currentState, currentWindow );
+             g_bdData.UpdateBD(currentState);
+         }
+          g_bdData.loadRegion( currentWindow_cs );
+          std::cout << "g_bdData.size() " << g_bdData.GetBDSize() << std::endl;
          get_SR_Reads(currentState, currentWindow );
          Time_Mine_E = time(NULL);
 

@@ -1,0 +1,9 @@
+echo "###################################################################"
+echo "./pindel -f reference.fa -p input -o test -b bd.txt"
+./pindel -f reference.fa -p input -o test -b bd.txt
+echo "###################################################################"
+echo "./pindel -f reference.fa -i config -o test -b bd.txt"
+./pindel -f reference.fa -i config -o test -b bd.txt
+echo "###################################################################"
+echo "./pindel -f reference.fa -i config -o test"
+./pindel -f reference.fa -i config -o test

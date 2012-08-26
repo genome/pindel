@@ -84,6 +84,7 @@ public:
 
 	std::vector<SPLIT_READ> InputReads_SR, Reads_SR, FutureReads_SR, InterChromosome_SR;
     std::vector <RPVector> Reads_RP;
+    std::vector <RP_READ> Reads_RP_Discovery;
  
 	int CountFarEnd, CountFarEndPlus, CountFarEndMinus;
 

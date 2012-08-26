@@ -48,6 +48,7 @@
 
 static int fetch_func_SR (const bam1_t * b1, void *data);
 static int fetch_func_RP (const bam1_t * b1, void *data);
+static int fetch_func_RP_Discovery (const bam1_t * b1, void *data);
 int32_t bam_cigar2mismatch( const bam1_core_t *readCore, const uint32_t *cigar);
 
 const int BUFFER_SIZE = 50000;
@@ -375,6 +376,56 @@ bool ReadInBamReads_RP (const char *bam_path, const std::string & FragName,
     return true;
 }
 
+bool ReadInBamReads_RP_Discovery (const char *bam_path, const std::string & FragName,
+                        const std::string * CurrentChrSeq, std::vector <RP_READ> &LeftReads,
+                        int InsertSize, std::string Tag, const SearchWindow& currentWindow )
+{
+    bamFile fp;
+    fp = bam_open (bam_path, "r");
+    assert (fp);
+    bam_index_t *idx;
+    idx = bam_index_load (bam_path);	// load BAM index
+    assert (idx);
+    bam_header_t *header = bam_header_read (fp);
+    bam_init_header_hash (header);
+    assert (header);
+    //need thing that converts "tid" to "chromosome name"
+    int tid;
+    tid = bam_get_tid (header, FragName.c_str ());
+    
+    //kai does the below line in readinreads. dunno why yet
+    fetch_func_data_RP data( CurrentChrSeq );
+    data.header = header;
+    //data.CurrentChrSeq = CurrentChrSeq;
+    data.LeftReads = &LeftReads;
+    data.read_to_map_qual = NULL;
+    data.read_to_map_qual = kh_init (read_name);
+    flags_hit b1_flags;//, b2_flags;
+    data.b1_flags = &b1_flags;
+    //data.b2_flags = &b2_flags;
+    data.InsertSize = InsertSize;
+    data.Tag = Tag;
+    bam_fetch (fp, idx, tid, currentWindow.getStart(), currentWindow.getEnd(), &data, fetch_func_RP_Discovery);
+    /*
+     khint_t key;
+     if (kh_size (data.read_to_map_qual) > 0) {
+     for (key = kh_begin (data.read_to_map_qual);
+     key != kh_end (data.read_to_map_qual); ++key) {
+     if (kh_exist (data.read_to_map_qual, key)) {
+     bam_destroy1 (kh_value (data.read_to_map_qual, key));
+     free ((char *) kh_key (data.read_to_map_qual, key));
+     }
+     }
+     }
+     kh_clear (read_name, data.read_to_map_qual);
+     kh_destroy (read_name, data.read_to_map_qual);
+     */
+    bam_header_destroy (header);
+    bam_index_destroy (idx);
+    bam_close (fp);
+    return true;
+}
+
 
 bool ReadInBamReads_SR (const char *bam_path, const std::string & FragName,
                 const std::string * CurrentChrSeq,
@@ -620,7 +671,7 @@ void build_record_RP (const bam1_t * r1, void *data)
             Temp_One_Read.PosB = r1_core->mpos;
             if (Temp_One_Read.DB == '+') Temp_One_Read.PosB = Temp_One_Read.PosB;// + r1_core->l_qseq;
             //else Temp_One_Read.PosB = Temp_One_Read.PosB;
-            std::cout << Temp_One_Read.ReadName << " " << Temp_One_Read.DA << " " << Temp_One_Read.PosA << " " << Temp_One_Read.DB << " " << Temp_One_Read.PosB << std::endl;
+            //std::cout << Temp_One_Read.ReadName << " " << Temp_One_Read.DA << " " << Temp_One_Read.PosA << " " << Temp_One_Read.DB << " " << Temp_One_Read.PosB << std::endl;
             Temp_One_Read.MQA = r1_core->qual;
             Temp_One_Read.MQB = r1_core->qual;
             Temp_One_Read.ChrNameA = header->target_name[r1_core->tid];
@@ -635,6 +686,55 @@ void build_record_RP (const bam1_t * r1, void *data)
     return;
 }
 
+void build_record_RP_Discovery (const bam1_t * r1, void *data)
+{
+    
+    const bam1_core_t * r1_core;
+    //const bam1_core_t * r2_core;
+    r1_core = &r1->core;
+    //r2_core = &r2->core;
+    
+    
+    
+    RP_READ Temp_One_Read;
+    fetch_func_data_RP *data_for_bam = (fetch_func_data_RP *) data;
+    bam_header_t *header = (bam_header_t *) data_for_bam->header;
+    std::string CurrentChrSeq = *(std::string *) data_for_bam->CurrentChrSeq;
+    std::string Tag = (std::string) data_for_bam->Tag;
+    
+    if (!(r1_core->flag & BAM_FUNMAP || r1_core->flag & BAM_FMUNMAP)) { // both reads are mapped.
+        if ((r1_core->tid != r1_core->mtid) || abs(r1_core->isize) > r1_core->l_qseq + 2 * data_for_bam->InsertSize) {
+            Temp_One_Read.ReadName = "";
+            Temp_One_Read.ReadName.append ((const char *) bam1_qname (r1));
+            if (r1_core->flag & BAM_FREVERSE) {
+                Temp_One_Read.DA = '-';
+            }
+            else Temp_One_Read.DA = '+';
+            if (r1_core->flag & BAM_FMREVERSE) {
+                Temp_One_Read.DB = '-';
+            }
+            else Temp_One_Read.DB = '+';
+            
+            Temp_One_Read.PosA = r1_core->pos;
+            if (Temp_One_Read.DA == '+') Temp_One_Read.PosA = Temp_One_Read.PosA;// + r1_core->l_qseq;
+            //else Temp_One_Read.PosA = Temp_One_Read.PosA;
+            Temp_One_Read.PosB = r1_core->mpos;
+            if (Temp_One_Read.DB == '+') Temp_One_Read.PosB = Temp_One_Read.PosB;// + r1_core->l_qseq;
+            //else Temp_One_Read.PosB = Temp_One_Read.PosB;
+            //std::cout << Temp_One_Read.ReadName << " " << Temp_One_Read.DA << " " << Temp_One_Read.PosA << " " << Temp_One_Read.DB << " " << Temp_One_Read.PosB << std::endl;
+            Temp_One_Read.MQA = r1_core->qual;
+            Temp_One_Read.MQB = r1_core->qual;
+            Temp_One_Read.ChrNameA = header->target_name[r1_core->tid];
+            Temp_One_Read.ChrNameB = header->target_name[r1_core->mtid];
+            Temp_One_Read.InsertSize = data_for_bam->InsertSize;
+            //FIXME pass these through from the command line with a struct
+            Temp_One_Read.Tag = Tag;
+            Temp_One_Read.ReadLength = r1_core->l_qseq;
+            data_for_bam->LeftReads->push_back(Temp_One_Read);
+        }
+    }
+    return;
+}
 
 static int fetch_func_SR (const bam1_t * b1, void *data)
 {
@@ -724,6 +824,50 @@ static int fetch_func_RP (const bam1_t * b1, void *data)
 
         build_record_RP (b1, data);
 
+    //bam_destroy1 (b2);
+    
+    return 0;
+}
+
+static int fetch_func_RP_Discovery (const bam1_t * b1, void *data)
+{
+    g_NumReadScanned++;
+    fetch_func_data_RP *data_for_bam = (fetch_func_data_RP *) data;
+    //khash_t (read_name) * read_to_map_qual =
+    //(khash_t (read_name) *) data_for_bam->read_to_map_qual;
+    flags_hit *b1_flags = data_for_bam->b1_flags;
+    //flags_hit *b2_flags = data_for_bam->b2_flags;
+    const std::string CurrentChrSeq = *(std::string *) data_for_bam->CurrentChrSeq;
+    
+    RP_READ Temp_One_Read;
+    const bam1_core_t *b1_core;
+    //bam1_t *b2;
+    //bam1_core_t *b2_core;
+    b1_core = &b1->core;
+    std::string read_name = bam1_qname (b1);
+    /*
+     khint_t key = kh_get (read_name, read_to_map_qual, bam1_qname (b1));
+     if (key == kh_end (read_to_map_qual)) {
+     int ret=0;
+     key = kh_put (read_name, read_to_map_qual, strdup (bam1_qname (b1)), &ret);
+     kh_value (read_to_map_qual, key) = bam_dup1 (b1);
+     return 0;
+     }
+     else {
+     b2 = bam_dup1 (kh_value (read_to_map_qual, key));
+     bam_destroy1 (kh_value (read_to_map_qual, key));
+     b2_core = &b2->core;
+     //this seems stupid, but in order to manage the read names, necessary
+     free ((char *) kh_key (read_to_map_qual, key));
+     kh_del (read_name, read_to_map_qual, key);
+     }
+     */
+    
+    parse_flags_and_tags (b1, b1_flags);
+    //parse_flags_and_tags (b2, b2_flags);
+    
+    build_record_RP_Discovery (b1, data);
+    
     //bam_destroy1 (b2);
     
     return 0;
@@ -862,6 +1006,36 @@ short get_RP_Reads(ControlState& currentState, const SearchWindow& currentWindow
           }
           else std::cout << currentState.bams_to_parse[i].BamFile << " RP " << currentState.Reads_RP[i].size() << std::endl;
        }
+    }
+    return 0;
+}
+
+short get_RP_Reads_Discovery(ControlState& currentState, const SearchWindow& currentWindow )
+{
+	short ReturnFromReadingReads;
+    RPVector TempOneRPVector;
+    
+    if (UserDefinedSettings::Instance()->bamFilesAsInput()) {
+        ReturnFromReadingReads = 0;
+        for (unsigned int i = 0; i < currentState.bams_to_parse.size(); i++) {
+            currentState.Reads_RP.push_back(TempOneRPVector);
+            ReturnFromReadingReads = ReadInBamReads_RP_Discovery(
+                                                       currentState.bams_to_parse[i].BamFile.c_str(),
+                                                       currentWindow.getChromosome()->getName(),
+                                                       &currentWindow.getChromosome()->getSeq(),
+                                                       //&currentState.CurrentChrSeq,
+                                                       currentState.Reads_RP_Discovery,
+                                                       currentState.bams_to_parse[i].InsertSize,
+                                                       currentState.bams_to_parse[i].Tag,
+                                                       currentWindow);
+            if (ReturnFromReadingReads == 0) {
+                LOG_ERROR(*logStream << "Bam read failed: " << currentState.bams_to_parse[i].BamFile << std::endl);
+                return 1;
+            }
+            else if (currentState.Reads_RP.size() == 0) {
+            }
+            else std::cout << currentState.bams_to_parse[i].BamFile << " RP " << currentState.Reads_RP_Discovery.size() << std::endl;
+        }
     }
     return 0;
 }

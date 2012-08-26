@@ -139,6 +139,24 @@ private:
 };
 
 struct RP_READ {
+    RP_READ () {
+        ReadName = "";
+        ChrNameA = "";
+        ChrNameB = "";
+        DA = 'k';
+        DB = 'k';
+        PosA = 0;
+        PosB = 0;
+        Distance = 0;
+        MQA = 0;
+        MQB = 0;
+        Tag = "";
+        InsertSize = 0;
+        ReadLength = 0;
+        NumberOfIdentical = 0;
+        Report = false;
+        Visited = false;
+    }
     std::string ReadName;
     std::string ChrNameA;
     std::string ChrNameB;
@@ -151,7 +169,10 @@ struct RP_READ {
     short MQB;
     std::string Tag;
     unsigned InsertSize;
-    
+    short ReadLength;
+    unsigned NumberOfIdentical;
+    bool Report;
+    bool Visited;
 };
 
 struct SPLIT_READ {
