@@ -922,7 +922,11 @@ void SearchFarEnd( const std::string& chromosome, SPLIT_READ& read, const Chromo
 		// note: searching the central range again and again may seem overkill, but since Pindel at the moment wants an unique best point, you can't skip the middle part
 		// may be stuff for future changes/refactorings though
 		std::vector< SearchWindow > aroundCESearchCluster;
-		SearchWindow regularWindow( &currentChromosome, centerOfSearch-searchSpan, centerOfSearch+searchSpan );
+        int Start;
+       if ((unsigned)centerOfSearch > (unsigned)searchSpan) Start = centerOfSearch - searchSpan;
+       else Start = 1;
+		SearchWindow regularWindow( &currentChromosome, Start, centerOfSearch+searchSpan );
+       std::cout << Start << " " << centerOfSearch+searchSpan << std::endl;
 		aroundCESearchCluster.push_back( regularWindow );
       SearchFarEndAtPos( chromosome, read, aroundCESearchCluster );
       searchSpan *= 4;
