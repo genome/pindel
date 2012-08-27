@@ -433,7 +433,7 @@ std::string Cap2Low(const std::string & input);
 class FarEndSearchPerRegion;
 void CheckBoth(const SPLIT_READ & read,
                const std::string & readSeq,
-               const std::vector <FarEndSearchPerRegion> & WholeGenomeSearchResult_input,
+               const std::vector <FarEndSearchPerRegion*> & WholeGenomeSearchResult_input,
                const short minimumLengthToReportMatch,
                const short BP_End,
                const short CurrentLength,

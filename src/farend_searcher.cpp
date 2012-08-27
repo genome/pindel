@@ -46,7 +46,7 @@ void SearchFarEndAtPos( const std::string& chromosome, SPLIT_READ& Temp_One_Read
    if (CurrentBase == 'N' || Temp_One_Read.MaxLenCloseEnd() == 0) return;
    int CurrentReadLength = Temp_One_Read.getReadLength();
     
-   std::vector <FarEndSearchPerRegion> WholeGenomeSearchResult;
+   std::vector <FarEndSearchPerRegion*> WholeGenomeSearchResult;
    unsigned NumberOfHits = 0;
 	/*if (Temp_One_Read.Name=="@read_6990/2" ) {
    	 std::cout << "6990/2Number of regions: " << Regions.size() << " " << Temp_One_Read.Name << " " << Temp_One_Read.FragName << " " << Temp_One_Read.MatchedD << " " << Temp_One_Read.MatchedRelPos << std::endl;
@@ -54,7 +54,7 @@ void SearchFarEndAtPos( const std::string& chromosome, SPLIT_READ& Temp_One_Read
 
    for (unsigned RegionIndex = 0; RegionIndex < Regions.size(); RegionIndex++) {
        
-       FarEndSearchPerRegion CurrentRegion(Regions[RegionIndex].getChromosome(), Temp_One_Read.getTOTAL_SNP_ERROR_CHECKED(), Regions[RegionIndex].getSize());
+       FarEndSearchPerRegion* CurrentRegion = new FarEndSearchPerRegion(Regions[RegionIndex].getChromosome(), Temp_One_Read.getTOTAL_SNP_ERROR_CHECKED(), Regions[RegionIndex].getSize());
 
        int Start = Regions[RegionIndex].getStart() - CurrentReadLength;
        int End = Regions[RegionIndex].getEnd() + CurrentReadLength;
@@ -63,13 +63,13 @@ void SearchFarEndAtPos( const std::string& chromosome, SPLIT_READ& Temp_One_Read
        //std::cout << Regions[RegionIndex].getChromosome()->getName() << " " << chromosome.size() - g_SpacerBeforeAfter * 2 << " " << Start - g_SpacerBeforeAfter << " " << End - g_SpacerBeforeAfter << std::endl;
        for (int pos = Start; pos < End; pos++) {
            if (chromosome.at(pos) == CurrentBase) {
-               CurrentRegion.PD_Plus[0].push_back(pos); // else
+               CurrentRegion->PD_Plus[0].push_back(pos); // else
            }
            else if (chromosome.at(pos) == CurrentBaseRC) {
-               CurrentRegion.PD_Minus[0].push_back(pos);
+               CurrentRegion->PD_Minus[0].push_back(pos);
            }
        }
-       NumberOfHits += CurrentRegion.PD_Plus[0].size() + CurrentRegion.PD_Minus[0].size();
+       NumberOfHits += CurrentRegion->PD_Plus[0].size() + CurrentRegion->PD_Minus[0].size();
        WholeGenomeSearchResult.push_back(CurrentRegion);
    }
 
@@ -84,6 +84,9 @@ void SearchFarEndAtPos( const std::string& chromosome, SPLIT_READ& Temp_One_Read
       }
       UP.clear(); // may not be necessary as this is deleted from the stack anyway
 	}
+   for (unsigned RegionIndex = 0; RegionIndex < Regions.size(); RegionIndex++) {
+    	delete WholeGenomeSearchResult[ RegionIndex ];
+   }
 }
 
 
