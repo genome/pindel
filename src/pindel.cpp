@@ -721,7 +721,7 @@ void createProbTable(const double seqErrorRate, const double sensitivity)
 			if (totalErrorProb > sensitivity ) {
 				g_maxMismatch[ length ] = numberOfErrors;
 				//g_maxMisMatch.push_back( numberOfErrors );
-				std::cout << length << " bases has max errors" << numberOfErrors << "\n";
+				//std::cout << length << " bases has max errors" << numberOfErrors << "\n";
 				break; // break out of this length, up to the next
 			}
 		}
@@ -1692,10 +1692,10 @@ void CheckBoth(const SPLIT_READ & read,
 									}
                        }
                    }
-				std::cout << "In CLC: CurrentLength = " << CurrentLength << ", mismatch count = " << numberOfMismatches << ", maxMismatch = " << g_maxMismatch[CurrentLength] << std::endl;
+				/*std::cout << "In CLC: CurrentLength = " << CurrentLength << ", mismatch count = " << numberOfMismatches << ", maxMismatch = " << g_maxMismatch[CurrentLength] << std::endl;
 				for (short k=0;k<=read.getMAX_SNP_ERROR(); k++) {
 					std::cout << k << "\t" << WholeGenomeSearchResult_input[0].PD_Plus[k].size() + WholeGenomeSearchResult_input[0].PD_Minus[k].size() << "\n";
-				}
+				}*/
              if (Sum == 1 && (unsigned)numberOfMismatches <= g_maxMismatch[CurrentLength] ) {
                         // why I love constructors
 								UniquePoint MatchPosition;
