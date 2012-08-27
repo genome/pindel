@@ -241,7 +241,7 @@ void ModifyRP(std::vector <RP_READ> & Reads_RP, std::vector <unsigned> & RP_inde
     }
 }
 
-void Summerize(std::vector <RP_READ> & Reads_RP) {
+void Summarize(std::vector <RP_READ> & Reads_RP) {
     unsigned Cutoff = 3;
     for (unsigned first = 0; first < Reads_RP.size() - 1; first++) {
         if (Reads_RP[first].Visited == true) continue;
@@ -269,7 +269,7 @@ void BDData::UpdateBD(ControlState & currentState) {
     std::vector <unsigned> RP_index;
     SortRPByChrPos(currentState.Reads_RP_Discovery, RP_index);
     ModifyRP(currentState.Reads_RP_Discovery, RP_index);
-    Summerize(currentState.Reads_RP_Discovery);
+    Summarize(currentState.Reads_RP_Discovery);
     for (unsigned read_index = 0; read_index < currentState.Reads_RP_Discovery.size(); read_index++) {
         if (currentState.Reads_RP_Discovery[read_index].Report == false) continue;
     
@@ -284,13 +284,14 @@ void BDData::UpdateBD(ControlState & currentState) {
             m_bdEvents.push_back(BreakDancerEvent( firstBDCoordinate, secondBDCoordinate ));
             m_bdEvents.push_back(BreakDancerEvent( secondBDCoordinate, firstBDCoordinate ));
             
-            std::cout << "adding " << firstChrName << " " << firstPos - g_SpacerBeforeAfter << "\t" << secondChrName << " " << secondPos - g_SpacerBeforeAfter <<  " to breakdancer events." << std::endl;
+            //std::cout << "adding " << firstChrName << " " << firstPos - g_SpacerBeforeAfter << "\t" << secondChrName << " " << secondPos - g_SpacerBeforeAfter <<  " to breakdancer events." << std::endl;
         }
         
     }
 
     
     currentState.Reads_RP_Discovery.clear();
+	sort( m_bdEvents.begin(), m_bdEvents.end(), sortOnFirstBDCoordinate ); 
 }
 
 
@@ -304,19 +305,23 @@ void BDData::createRegionCluster(const BDIterator& startOfEventList, const BDIte
 {
 	std::vector<BreakDancerEvent> relevantSubcluster( startOfEventList, endOfEventList );
 	sort( relevantSubcluster.begin(), relevantSubcluster.end(), sortOnSecondBDCoordinate );
-
+		//std::cout << "Making cluster" << "\n";
 	newCluster.clear();
 	for (BDIterator eventIter=relevantSubcluster.begin(); eventIter!=relevantSubcluster.end(); eventIter++ ) {
+		//std::cout << "FC: " << eventIter->first.getChromosomeName() << "FS: " << eventIter->first.startOfWindow() << "FE: " << eventIter->first.endOfWindow() << 
+		//	"SC: " << eventIter->second.getChromosomeName() << "SS: " << eventIter->second.startOfWindow()<< "SE: " << eventIter->second.endOfWindow() << "\n";
 		// NOTE: below code will be removed once we start working on interchromosomal translocations
 		/*if (eventIter->second.getChromosomeName() != m_currentWindow.getChromosomeName() ) {
 			std::cout << "Possible translocation from chromosome " << m_currentWindow.getChromosomeName() << " to chromosome " << eventIter->second.getChromosomeName() << "\n";
 		}
 		else {*/
+
 			SearchWindow currentEventWindow( eventIter->second.getChromosome(), eventIter->second.startOfWindow(), eventIter->second.endOfWindow() );
 			while ( eventIter+1!=relevantSubcluster.end() && regionsOverlap( eventIter, eventIter+1 ) ) {
 				eventIter++;
 				currentEventWindow.setEnd( eventIter->second.endOfWindow() );
 			}
+			//std::cout << "Pushing back\n";
 			newCluster.push_back( currentEventWindow );
 		//}
 	}
@@ -338,8 +343,9 @@ void BDData::loadRegion( const SearchWindow& searchWindow  )
 	}
 	//std::cout << "chromosomePtr=" << m_currentWindow.getChromosome() << "\n";	
 	//std::cout << "m_currentWindow start " << m_currentWindow.getChromosome()->getName() << " z " << m_currentWindow.getStart() << " end " << m_currentWindow.getEnd() << "size" << m_currentWindow.getSize()<< "\n";
-	/*for (unsigned int i=0; i<m_bdEvents.size(); i++ ) {
-		//std::cout << m_bdEvents[i].first.getChromosomeName() <<" " << m_bdEvents[i].first.position << " - " << m_bdEvents[i].second.position << "\n";
+	/*for (unsigned int ki=0; ki<m_bdEvents.size(); ki++ ) {
+		std::cout << m_bdEvents[ki].first.getChromosomeName() <<" " << m_bdEvents[ki].first.position << " - " << m_bdEvents[ki].second.position << "-";
+		std::cout << m_bdEvents[ki].second.getChromosomeName() <<" " << m_bdEvents[ki].second.position << " - " << m_bdEvents[ki].second.position << "\n";
 	}*/
 //std::cout << "X\n";
 //std::cout << "m_currentWindow startA " << m_currentWindow.getChromosome()->getName() << "\n";
@@ -359,6 +365,12 @@ void BDData::loadRegion( const SearchWindow& searchWindow  )
 	BDIterator endRegionInBDEvents = upper_bound( m_bdEvents.begin(), m_bdEvents.end(), endEvent, sortOnFirstBDCoordinate ); 
 //std::cout << "The last is at..." <<   endRegionInBDEvents-m_bdEvents.begin() << "\n";;
 //std::cout<< "Investigating: " << endRegionInBDEvents->first.position << " - " << startRegionInBDEvents->first.position << "of" << m_bdEvents.end()-m_bdEvents.begin() << "\n"; 
+	/*std::cout << "After selecting:\n";
+
+	for (BDIterator it=startRegionInBDEvents; it!=endRegionInBDEvents; it++ ) {
+		std::cout << it->first.getChromosomeName() <<" " << it->first.position << " - " << it->second.position << "\n";
+	}*/
+
 
 	delete[] m_breakDancerMask; // removing NULL is also safe
    m_breakDancerMask = new unsigned int[ m_currentWindow.getSize() ];

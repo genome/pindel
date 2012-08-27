@@ -901,9 +901,9 @@ void SearchFarEnd( const std::string& chromosome, SPLIT_READ& read, const Chromo
 
 //std::cout << "CurrentChromosome name /seq =" << currentChromosome.getName() << " = " << currentChromosome.getSeq() << "\n";
 	const std::vector< SearchWindow>& searchCluster =  g_bdData.getCorrespondingSearchWindowCluster( read );
-    
+  	 //std::cout << read.Name << " - " << read.getLastAbsLocCloseEnd() << "\n"; 
 	if (searchCluster.size()!=0) {
-        //std::cout << "Breakdancer input is not empty " << searchCluster.size() << std::endl;
+      //  std::cout << "Breakdancer input is not empty " << searchCluster.size() << std::endl;
       SearchFarEndAtPos( chromosome, read, searchCluster);
 		if (read.goodFarEndFound()) {
 			//read.Investigated = true;
@@ -915,17 +915,24 @@ void SearchFarEnd( const std::string& chromosome, SPLIT_READ& read, const Chromo
 
    // if breakdancer does not find the event, or not find an event we trust, we turn to regular pattern matching
    unsigned int searchSpan=START_SEARCH_SPAN;
-   int centerOfSearch = read.getLastAbsLocCloseEnd();
+   unsigned int centerOfSearch = read.getLastAbsLocCloseEnd();
 	
    for (int rangeIndex=1; rangeIndex<=userSettings->MaxRangeIndex; rangeIndex++ ) {
 		// note: searching the central range again and again may seem overkill, but since Pindel at the moment wants an unique best point, you can't skip the middle part
 		// may be stuff for future changes/refactorings though
 		std::vector< SearchWindow > aroundCESearchCluster;
-        int Start;
-       if ((unsigned)centerOfSearch > (unsigned)searchSpan) Start = centerOfSearch - searchSpan;
-       else Start = 1;
+      unsigned int Start;
+      if (centerOfSearch > searchSpan+g_SpacerBeforeAfter) {
+			Start = centerOfSearch - searchSpan;
+		}
+      else {
+			Start = g_SpacerBeforeAfter;
+		}
+		//std::cout << "Start is (abs) " << Start << " (rel): " << Start - g_SpacerBeforeAfter << "\n";
+		//std::cout << "End is (abs) " << centerOfSearch+searchSpan << " (rel): " << centerOfSearch+searchSpan-10000000 << "Size chrom=" << chromosome.size() << "\n";		
+      //std::cout << Start << "FirstStart " << centerOfSearch+searchSpan-10000000 << "<COS" << centerOfSearch-10000000 << " span " << searchSpan<< std::endl;
 		SearchWindow regularWindow( &currentChromosome, Start, centerOfSearch+searchSpan );
-       std::cout << Start << " " << centerOfSearch+searchSpan << std::endl;
+      //std::cout << Start << " " << centerOfSearch+searchSpan-10000000 << std::endl;
 		aroundCESearchCluster.push_back( regularWindow );
       SearchFarEndAtPos( chromosome, read, aroundCESearchCluster );
       searchSpan *= 4;
@@ -1202,9 +1209,10 @@ int main(int argc, char *argv[])
          if (userSettings->bamFilesAsInput()) {
              get_RP_Reads_Discovery(currentState, currentWindow );
              g_bdData.UpdateBD(currentState);
+				
          }
           g_bdData.loadRegion( currentWindow_cs );
-          std::cout << "g_bdData.size() " << g_bdData.GetBDSize() << std::endl;
+          //std::cout << "g_bdData.size() " << g_bdData.GetBDSize() << std::endl;
          get_SR_Reads(currentState, currentWindow );
          Time_Mine_E = time(NULL);
 
@@ -1228,7 +1236,7 @@ int main(int argc, char *argv[])
                                     currentState.InterChromosome_SR.push_back(currentState.Reads_SR[index]);
                             }
                         }
-                        std::cout << "currentState.InterChromosome_SR.size() = " << currentState.InterChromosome_SR.size() << std::endl;
+                        //std::cout << "currentState.InterChromosome_SR.size() = " << currentState.InterChromosome_SR.size() << std::endl;
                     }
 
                     
@@ -1692,10 +1700,15 @@ void CheckBoth(const SPLIT_READ & read,
 									}
                        }
                    }
-				/*std::cout << "In CLC: CurrentLength = " << CurrentLength << ", mismatch count = " << numberOfMismatches << ", maxMismatch = " << g_maxMismatch[CurrentLength] << std::endl;
+				/*if (read.Name=="@read_6990/2" ) {
+				std::cout << "In CFE: CurrentLength = " << CurrentLength << ", mismatch count = " << numberOfMismatches << ", maxMismatch = " << g_maxMismatch[CurrentLength] << std::endl;
+				for (unsigned RegionIndex = 0; RegionIndex < WholeGenomeSearchResult_input.size(); RegionIndex++) { 
+					std::cout << "Region " << RegionIndex << " is " <<  WholeGenomeSearchResult_input[ RegionIndex ].CurrentChromosome->getName() << ":" << WholeGenomeSearchResult_input[ RegionIndex ].PD_Plus[0].size() << "-" <<
+								WholeGenomeSearchResult_input[ RegionIndex ].PD_Minus[0].size()<< "\n";
+				}
 				for (short k=0;k<=read.getMAX_SNP_ERROR(); k++) {
 					std::cout << k << "\t" << WholeGenomeSearchResult_input[0].PD_Plus[k].size() + WholeGenomeSearchResult_input[0].PD_Minus[k].size() << "\n";
-				}*/
+				}}*/
              if (Sum == 1 && (unsigned)numberOfMismatches <= g_maxMismatch[CurrentLength] ) {
                         // why I love constructors
 								UniquePoint MatchPosition;

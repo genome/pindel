@@ -122,14 +122,15 @@ void CheckLeft_Close (const SPLIT_READ & read,
       for (short i = 0; i <= read.getMAX_SNP_ERROR(); i++) {
          if (Left_PD[i].size() == 1 && CurrentLength >= BP_Left_Start + i) {
             unsigned int Sum = numberOfCompetingPositions( Left_PD, i + userSettings->ADDITIONAL_MISMATCH );
-				/*std::cout << "In CLC: CurrentLength = " << CurrentLength << ", mismatch count = " << i << ", maxMismatch = " << g_maxMismatch[CurrentLength] << std::endl;
+				/*if (read.Name=="@read_6990/2" ) {
+				std::cout << "In CLC: CurrentLength = " << CurrentLength << ", mismatch count = " << i << ", maxMismatch = " << g_maxMismatch[CurrentLength] << std::endl;
 				for (short k=0;k<=read.getMAX_SNP_ERROR(); k++) {
 					std::cout << k << "\t" << Left_PD[k].size() << "\n";
-				}*/
+				}}*/
  
             if (Sum == 1 && (unsigned)i <= g_maxMismatch[CurrentLength] ) {
                UniquePoint TempOne(g_genome.getChr(read.FragName), CurrentLength, Left_PD[i][0], FORWARD, ANTISENSE, i );  
-					std::cout << "Saving point\n";            
+					//if (read.Name=="@read_6990/2" ) { std::cout << "Saving point\n";             }
                if (CheckMismatches(chromosomeSeq, read.getUnmatchedSeq(), TempOne)) {
                   LeftUP.push_back (TempOne);
                   break;
@@ -161,9 +162,11 @@ void CheckRight_Close (const SPLIT_READ & read,
       for (short i = 0; i <= read.getMAX_SNP_ERROR(); i++) {
          if (Right_PD[i].size () == 1 && CurrentLength >= BP_Right_Start + i) {
             unsigned int Sum = numberOfCompetingPositions( Right_PD, i+userSettings->ADDITIONAL_MISMATCH );
-				/*std::cout << "In CRC: CurrentLength = " << CurrentLength << ", mismatch count = " << i << ", maxMismatch = " << g_maxMismatch[CurrentLength] << std::endl;
+				/*if (read.Name=="@read_6990/2" ) {
+				std::cout << "In CRC: CurrentLength = " << CurrentLength << ", mismatch count = " << i << ", maxMismatch = " << g_maxMismatch[CurrentLength] << std::endl;
 				for (short k=0;k<=read.getMAX_SNP_ERROR(); k++) {
 					std::cout << k << "\t" << Right_PD[k].size() << "\n";
+				}
 				}*/
             if (Sum == 1 && (unsigned)i <= g_maxMismatch[CurrentLength] ) {
                UniquePoint TempOne( g_genome.getChr(read.FragName), CurrentLength, Right_PD[i][0], BACKWARD, SENSE, i);
