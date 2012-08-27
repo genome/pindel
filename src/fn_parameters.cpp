@@ -11,6 +11,8 @@
 
 /* 'defineParameters' defines the parameters to be used by Pindel. Takes the variables from the calling function as argument for those variables which
  do not need to be stored in the par structure. */
+// _________j___n____________
+// __CD_FGH_JK__NO__R__UVWXYZ
 void defineParameters(std::vector<Parameter *>& parameters)
 {
 	UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
@@ -39,8 +41,7 @@ void defineParameters(std::vector<Parameter *>& parameters)
             "the pindel config file, containing the names of all Pindel files that need to be sampled; either this, a bam config file or a pindel input file is required. Per line: path and file name of pindel input. Example: /data/tumour.txt",
             false, ""));
     parameters.push_back(
-        new StringParameter(&userSettings->outputFilename, "-o", "--output-prefix",
-                            "Output prefix;", true, ""));
+        new StringParameter(&userSettings->outputFilename, "-o", "--output-prefix", "Output prefix;", true, ""));
     parameters.push_back(
         new StringParameter(
             &userSettings->userDefinedRegion,
@@ -81,7 +82,18 @@ void defineParameters(std::vector<Parameter *>& parameters)
         new FloatParameter(&userSettings->Seq_Error_Rate, "-e",
                            "--sequencing_error_rate",
                            "the expected fraction of sequencing errors " // re-explain this or split this
-                           "(default 0.03)", false, 0.03));
+                           "(default 0.01)", false, 0.01));
+
+    parameters.push_back(
+        new FloatParameter(&userSettings->sensitivity, "-E",
+                           "--sensitivity",
+                           "Pindel only reports reads if they can be fit around an event within a certain number of mismatches. If the fraction of sequencing errors is 0.01, (so we'd expect a total "
+									"error rate of 0.011 since on average 1 in 1000 bases is a SNP) and "
+									"pindel calls a deletion, but there are 4 mismatched bases in the new fit of the pindel read (100 bases) to the reference genome, Pindel would calculate that with an error rate of "
+									"0.01 (=0.011 including SNPs) the chance that there are 0, 1 or 2 mismatched bases in the reference genome is 90%. Setting -E to .90 (=90%) will therefore"
+									"throw away all reads with 3 or more mismatches, even though that means that you throw away 1 in 10 valid reads. Increasing this parameter to say 0.99 will increase "
+ 									"the sensitivity of pindel though you may get more false positives, decreasing the parameter ensures you only get very good matches but pindel may not find as many events. "  
+                           "(default 0.95)", false, 0.95));
 
     parameters.push_back(
         new FloatParameter(

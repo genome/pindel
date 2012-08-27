@@ -94,6 +94,15 @@ void ExtendMatchClose( const SPLIT_READ & read, const std::string & chromosomeSe
  	} // else-if Sum
 }
 
+unsigned int minimumNumberOfMismatches( const std::vector< PosVector>& mismatches, const unsigned int maxNumberMismatches )
+{
+	unsigned int numberOfMismatches=0; 
+	for (;numberOfMismatches<=maxNumberMismatches; numberOfMismatches++ ) {
+		if ( mismatches[ numberOfMismatches ].size() != 0 ) { break; }
+	}
+	return numberOfMismatches;
+}
+
 
 void CheckLeft_Close (const SPLIT_READ & read,
                  const std::string & chromosomeSeq,
@@ -106,13 +115,21 @@ void CheckLeft_Close (const SPLIT_READ & read,
 	UserDefinedSettings *userSettings = UserDefinedSettings::Instance();
 
    if (CurrentLength >= BP_Left_Start && CurrentLength <= BP_Left_End) {
+		if (minimumNumberOfMismatches( Left_PD,read.getMAX_SNP_ERROR() ) > g_maxMismatch[CurrentLength] ) {
+			return; 
+		}
       // put it to LeftUP if unique
       for (short i = 0; i <= read.getMAX_SNP_ERROR(); i++) {
          if (Left_PD[i].size() == 1 && CurrentLength >= BP_Left_Start + i) {
             unsigned int Sum = numberOfCompetingPositions( Left_PD, i + userSettings->ADDITIONAL_MISMATCH );
+				std::cout << "In CLC: CurrentLength = " << CurrentLength << ", mismatch count = " << i << ", maxMismatch = " << g_maxMismatch[CurrentLength] << std::endl;
+				for (short k=0;k<=read.getMAX_SNP_ERROR(); k++) {
+					std::cout << k << "\t" << Left_PD[k].size() << "\n";
+				}
  
-            if (Sum == 1 && (unsigned)i <= g_maxMismatch[CurrentLength] + 1) {
-               UniquePoint TempOne(g_genome.getChr(read.FragName), CurrentLength, Left_PD[i][0], FORWARD, ANTISENSE, i );              
+            if (Sum == 1 && (unsigned)i <= g_maxMismatch[CurrentLength] ) {
+               UniquePoint TempOne(g_genome.getChr(read.FragName), CurrentLength, Left_PD[i][0], FORWARD, ANTISENSE, i );  
+					std::cout << "Saving point\n";            
                if (CheckMismatches(chromosomeSeq, read.getUnmatchedSeq(), TempOne)) {
                   LeftUP.push_back (TempOne);
                   break;
@@ -138,10 +155,17 @@ void CheckRight_Close (const SPLIT_READ & read,
 	UserDefinedSettings *userSettings = UserDefinedSettings::Instance();
 
    if (CurrentLength >= BP_Right_Start && CurrentLength <= BP_Right_End) {
+		if (minimumNumberOfMismatches( Right_PD,read.getMAX_SNP_ERROR() ) > g_maxMismatch[CurrentLength] ) {
+			return; 
+		}
       for (short i = 0; i <= read.getMAX_SNP_ERROR(); i++) {
          if (Right_PD[i].size () == 1 && CurrentLength >= BP_Right_Start + i) {
             unsigned int Sum = numberOfCompetingPositions( Right_PD, i+userSettings->ADDITIONAL_MISMATCH );
-            if (Sum == 1 && (unsigned)i <= g_maxMismatch[CurrentLength] + 1) {
+				std::cout << "In CRC: CurrentLength = " << CurrentLength << ", mismatch count = " << i << ", maxMismatch = " << g_maxMismatch[CurrentLength] << std::endl;
+				for (short k=0;k<=read.getMAX_SNP_ERROR(); k++) {
+					std::cout << k << "\t" << Right_PD[k].size() << "\n";
+				}
+            if (Sum == 1 && (unsigned)i <= g_maxMismatch[CurrentLength] ) {
                UniquePoint TempOne( g_genome.getChr(read.FragName), CurrentLength, Right_PD[i][0], BACKWARD, SENSE, i);
                if (CheckMismatches(chromosomeSeq, read.getUnmatchedSeq(), TempOne)) {
                   RightUP.push_back (TempOne);

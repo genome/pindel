@@ -48,6 +48,7 @@ public:
 	std::string inf_GenotypingInputFilename;
 	std::string logFilename;	
 	double MaximumAllowedMismatchRate;
+	double sensitivity; // -E
 
 	int MaxRangeIndex;
 	unsigned int minimalAnchorQuality;

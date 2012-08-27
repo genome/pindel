@@ -158,7 +158,7 @@ void safeGetline(std::istream& is, std::string& t)
 
 void SPLIT_READ::setUnmatchedSeq( const std::string unmatchedSeq ) 
 { 
-	const double EPSILON = 0.00001; // to compensate for downrounding off errors (0.04 = 0.03999999 on some computers)
+	//const double EPSILON = 0.00001; // to compensate for downrounding off errors (0.04 = 0.03999999 on some computers)
 	
 	UnmatchedSeq = unmatchedSeq; 
 	if (UnmatchedSeq.size()>0) {
@@ -180,7 +180,7 @@ void SPLIT_READ::setUnmatchedSeq( const std::string unmatchedSeq )
 
 	UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
 
-	MAX_SNP_ERROR = (short)(((double)ReadLength * userSettings->Seq_Error_Rate) + EPSILON);
+	MAX_SNP_ERROR = g_maxMismatch[ ReadLength ];
 	TOTAL_SNP_ERROR_CHECKED_Minus = MAX_SNP_ERROR + userSettings->ADDITIONAL_MISMATCH;
 	TOTAL_SNP_ERROR_CHECKED = TOTAL_SNP_ERROR_CHECKED_Minus + 1;
 }
@@ -712,8 +712,7 @@ std::vector<unsigned int> g_maxMismatch;
 	which is acceptable if the sensitivity is set to 95% (0.95), but not if it is set to 1%. Uses binomial formula. */
 void createProbTable(const double seqErrorRate, const double sensitivity) 
 {
-	const unsigned int MAX_LENGTH = 200;
-	//g_maxMismatch.clear();
+	const unsigned int MAX_LENGTH = 500;
 	g_maxMismatch.assign( MAX_LENGTH, 0);
 	for (unsigned int length=0; length<MAX_LENGTH; length++) {
 		double totalErrorProb = 0.0;
@@ -722,7 +721,7 @@ void createProbTable(const double seqErrorRate, const double sensitivity)
 			if (totalErrorProb > sensitivity ) {
 				g_maxMismatch[ length ] = numberOfErrors;
 				//g_maxMisMatch.push_back( numberOfErrors );
-				//std::cout << length << " bases has max errors" << numberOfErrors << "\n";
+				std::cout << length << " bases has max errors" << numberOfErrors << "\n";
 				break; // break out of this length, up to the next
 			}
 		}
@@ -763,7 +762,7 @@ void init(int argc, char *argv[], ControlState& currentState )
     if (!checkParameters( parameters )) {
         exit ( EXIT_FAILURE);
     }
-	createProbTable(0.001+userSettings->Seq_Error_Rate, 0.98); 
+	createProbTable(0.001+userSettings->Seq_Error_Rate, userSettings->sensitivity); 
 	std::string fastaFilename( userSettings->referenceFilename.c_str() );
 	if (userSettings->reportInterchromosomalEvents) {
 		g_genome.loadAll( fastaFilename );
@@ -1638,6 +1637,19 @@ void ExtendMatch( const SPLIT_READ & read,
  	} // else-if Sum
 }
 
+unsigned int minimumNumberOfMismatches( const std::vector <FarEndSearchPerRegion> & WholeGenomeSearchResult_input, const unsigned int maxNumberMismatches )
+{
+	unsigned int Sum=0; 
+	unsigned int numberOfMismatches=0;
+	for (;numberOfMismatches<=maxNumberMismatches; numberOfMismatches++ ) {
+		for (unsigned RegionIndex = 0; RegionIndex < WholeGenomeSearchResult_input.size(); RegionIndex++) {
+         Sum += WholeGenomeSearchResult_input[RegionIndex].PD_Plus[numberOfMismatches].size() + WholeGenomeSearchResult_input[RegionIndex].PD_Minus[numberOfMismatches].size();
+      }
+		if ( Sum != 0 ) { break; }
+	}
+	return numberOfMismatches;
+}
+
 void CheckBoth(const SPLIT_READ & read,
                const std::string & readSeq,
                const std::vector <FarEndSearchPerRegion> & WholeGenomeSearchResult_input,
@@ -1651,6 +1663,9 @@ void CheckBoth(const SPLIT_READ & read,
    int Sum = 0;
 	
    if (CurrentLength >= minimumLengthToReportMatch && CurrentLength <= BP_End) {
+		if (minimumNumberOfMismatches( WholeGenomeSearchResult_input, read.getMAX_SNP_ERROR() ) > g_maxMismatch[CurrentLength] ) {
+			return; 
+		}
       for (short numberOfMismatches = 0; numberOfMismatches <= read.getMAX_SNP_ERROR(); numberOfMismatches++) {
          if (NumberOfMatchPositionsWithLessMismatches) break;
 			
@@ -1677,7 +1692,11 @@ void CheckBoth(const SPLIT_READ & read,
 									}
                        }
                    }
-             if (Sum == 1 && (unsigned)numberOfMismatches <= g_maxMismatch[CurrentLength] + 1) {
+				std::cout << "In CLC: CurrentLength = " << CurrentLength << ", mismatch count = " << numberOfMismatches << ", maxMismatch = " << g_maxMismatch[CurrentLength] << std::endl;
+				for (short k=0;k<=read.getMAX_SNP_ERROR(); k++) {
+					std::cout << k << "\t" << WholeGenomeSearchResult_input[0].PD_Plus[k].size() + WholeGenomeSearchResult_input[0].PD_Minus[k].size() << "\n";
+				}
+             if (Sum == 1 && (unsigned)numberOfMismatches <= g_maxMismatch[CurrentLength] ) {
                         // why I love constructors
 								UniquePoint MatchPosition;
 								const FarEndSearchPerRegion& hitRegion = WholeGenomeSearchResult_input[ regionWithMatch ];
