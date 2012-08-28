@@ -703,7 +703,7 @@ void build_record_RP_Discovery (const bam1_t * r1, void *data)
     std::string Tag = (std::string) data_for_bam->Tag;
     
     if (!(r1_core->flag & BAM_FUNMAP || r1_core->flag & BAM_FMUNMAP)) { // both reads are mapped.
-        if ((r1_core->tid != r1_core->mtid) || abs(r1_core->isize) > r1_core->l_qseq + 2 * data_for_bam->InsertSize) {
+        if ((r1_core->tid != r1_core->mtid) || abs(r1_core->isize) > r1_core->l_qseq * 2 + 2 * data_for_bam->InsertSize) {
             Temp_One_Read.ReadName = "";
             Temp_One_Read.ReadName.append ((const char *) bam1_qname (r1));
             if (r1_core->flag & BAM_FREVERSE) {

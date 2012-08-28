@@ -921,17 +921,23 @@ void SearchFarEnd( const std::string& chromosome, SPLIT_READ& read, const Chromo
 		// note: searching the central range again and again may seem overkill, but since Pindel at the moment wants an unique best point, you can't skip the middle part
 		// may be stuff for future changes/refactorings though
 		std::vector< SearchWindow > aroundCESearchCluster;
-      unsigned int Start;
+      unsigned int Start, End;
       if (centerOfSearch > searchSpan+g_SpacerBeforeAfter) {
 			Start = centerOfSearch - searchSpan;
 		}
       else {
 			Start = g_SpacerBeforeAfter;
 		}
+       if (centerOfSearch + searchSpan + g_SpacerBeforeAfter < chromosome.size()) {
+           End = centerOfSearch + searchSpan;
+       }
+       else {
+           End = chromosome.size() - g_SpacerBeforeAfter;
+       }
 		//std::cout << "Start is (abs) " << Start << " (rel): " << Start - g_SpacerBeforeAfter << "\n";
-		//std::cout << "End is (abs) " << centerOfSearch+searchSpan << " (rel): " << centerOfSearch+searchSpan-10000000 << "Size chrom=" << chromosome.size() << "\n";		
+		//std::cout << "End is (abs) " << End << " (rel): " << End - g_SpacerBeforeAfter << " Size chrom= " << chromosome.size() << "\n";
       //std::cout << Start << "FirstStart " << centerOfSearch+searchSpan-10000000 << "<COS" << centerOfSearch-10000000 << " span " << searchSpan<< std::endl;
-		SearchWindow regularWindow( &currentChromosome, Start, centerOfSearch+searchSpan );
+		SearchWindow regularWindow( &currentChromosome, Start, End );
       //std::cout << Start << " " << centerOfSearch+searchSpan-10000000 << std::endl;
 		aroundCESearchCluster.push_back( regularWindow );
       SearchFarEndAtPos( chromosome, read, aroundCESearchCluster );
@@ -1209,6 +1215,7 @@ int main(int argc, char *argv[])
          if (userSettings->bamFilesAsInput()) {
              get_RP_Reads_Discovery(currentState, currentWindow );
              g_bdData.UpdateBD(currentState);
+             std::cout << "Added BreakDancer-like events: " << g_bdData.GetBDSize() << std::endl;
 				
          }
           g_bdData.loadRegion( currentWindow_cs );
