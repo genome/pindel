@@ -703,7 +703,12 @@ void build_record_RP_Discovery (const bam1_t * r1, void *data)
     std::string Tag = (std::string) data_for_bam->Tag;
     
     if (!(r1_core->flag & BAM_FUNMAP || r1_core->flag & BAM_FMUNMAP)) { // both reads are mapped.
-        if ((r1_core->tid != r1_core->mtid) || abs(r1_core->isize) > r1_core->l_qseq * 2 + 2 * data_for_bam->InsertSize) {
+			/*std::cout << "Read Insertsize=" << abs(r1_core->isize) << ", qseq=" << r1_core->l_qseq << " BAM ISize=" << data_for_bam->InsertSize 
+				<< "Total is " << r1_core->l_qseq *2 + 2 * data_for_bam->InsertSize << "\n";*/
+        if ((r1_core->tid != r1_core->mtid) || abs(r1_core->isize) > r1_core->l_qseq * 2 
+					+ 2 * data_for_bam->InsertSize) {
+				std::cout << "passed the test\n";
+
             Temp_One_Read.ReadName = "";
             Temp_One_Read.ReadName.append ((const char *) bam1_qname (r1));
             if (r1_core->flag & BAM_FREVERSE) {
@@ -731,7 +736,9 @@ void build_record_RP_Discovery (const bam1_t * r1, void *data)
             Temp_One_Read.Tag = Tag;
             Temp_One_Read.ReadLength = r1_core->l_qseq;
             data_for_bam->LeftReads->push_back(Temp_One_Read);
+				std::cout << "finished the procedure\n";
         }
+
     }
     return;
 }
@@ -1018,7 +1025,7 @@ short get_RP_Reads_Discovery(ControlState& currentState, const SearchWindow& cur
     if (UserDefinedSettings::Instance()->bamFilesAsInput()) {
         ReturnFromReadingReads = 0;
         for (unsigned int i = 0; i < currentState.bams_to_parse.size(); i++) {
-            currentState.Reads_RP.push_back(TempOneRPVector);
+            //currentState.Reads_RP.push_back(TempOneRPVector);
             ReturnFromReadingReads = ReadInBamReads_RP_Discovery(
                                                        currentState.bams_to_parse[i].BamFile.c_str(),
                                                        currentWindow.getChromosome()->getName(),
@@ -1029,12 +1036,15 @@ short get_RP_Reads_Discovery(ControlState& currentState, const SearchWindow& cur
                                                        currentState.bams_to_parse[i].Tag,
                                                        currentWindow);
             if (ReturnFromReadingReads == 0) {
-                LOG_ERROR(*logStream << "Bam read failed: " << currentState.bams_to_parse[i].BamFile << std::endl);
+                *logStream << "Bamfile " << currentState.bams_to_parse[i].BamFile << " has some kind of error. Aborting Pindel\n";
                 return 1;
             }
-            else if (currentState.Reads_RP.size() == 0) {
+            if (currentState.Reads_RP_Discovery.size() == 0) {
+					*logStream << "No reads in Bamfile " << currentState.bams_to_parse[i].BamFile.c_str() << std::endl;
             }
-            else std::cout << currentState.bams_to_parse[i].BamFile << " RP " << currentState.Reads_RP_Discovery.size() << std::endl;
+            else {
+					std::cout << currentState.bams_to_parse[i].BamFile << " RP " << currentState.Reads_RP_Discovery.size() << std::endl;
+				}
         }
     }
     return 0;

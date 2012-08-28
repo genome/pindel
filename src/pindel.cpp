@@ -1222,7 +1222,6 @@ int main(int argc, char *argv[])
           //std::cout << "g_bdData.size() " << g_bdData.GetBDSize() << std::endl;
          get_SR_Reads(currentState, currentWindow );
          Time_Mine_E = time(NULL);
-
          if (currentState.Reads_SR.size() ) {
             *logStream << "There are " << currentState.Reads_SR.size() << " reads for this chromosome region." << std::endl; // what region?
 

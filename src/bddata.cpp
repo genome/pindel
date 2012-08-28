@@ -243,7 +243,8 @@ void ModifyRP(std::vector <RP_READ> & Reads_RP, std::vector <unsigned> & RP_inde
 
 void Summarize(std::vector <RP_READ> & Reads_RP) {
     unsigned Cutoff = 3;
-    for (unsigned first = 0; first < Reads_RP.size() - 1; first++) {
+	if (Reads_RP.size()==0) return;
+    for (unsigned int first = 0; first < Reads_RP.size() - 1; first++) {
         if (Reads_RP[first].Visited == true) continue;
         for (unsigned second = first + 1; second < Reads_RP.size(); second++) {
             if (Reads_RP[second].Visited == true) continue;
@@ -265,7 +266,7 @@ void Summarize(std::vector <RP_READ> & Reads_RP) {
 }
 
 void BDData::UpdateBD(ControlState & currentState) {
-    //std::cout << "Discovery RP: " << currentState.Reads_RP_Discovery.size() << std::endl;
+    std::cout << "Discovery RP: " << currentState.Reads_RP_Discovery.size() << std::endl;
     std::vector <unsigned> RP_index;
     SortRPByChrPos(currentState.Reads_RP_Discovery, RP_index);
     ModifyRP(currentState.Reads_RP_Discovery, RP_index);
@@ -289,9 +290,8 @@ void BDData::UpdateBD(ControlState & currentState) {
         
     }
 
-    
     currentState.Reads_RP_Discovery.clear();
-	sort( m_bdEvents.begin(), m_bdEvents.end(), sortOnFirstBDCoordinate ); 
+	sort( m_bdEvents.begin(), m_bdEvents.end(), sortOnFirstBDCoordinate );
 }
 
 
