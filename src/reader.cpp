@@ -707,7 +707,7 @@ void build_record_RP_Discovery (const bam1_t * r1, void *data)
 				<< "Total is " << r1_core->l_qseq *2 + 2 * data_for_bam->InsertSize << "\n";*/
         if ((r1_core->tid != r1_core->mtid) || abs(r1_core->isize) > r1_core->l_qseq * 2 
 					+ 2 * data_for_bam->InsertSize) {
-				std::cout << "passed the test\n";
+				//std::cout << "passed the test\n";
 
             Temp_One_Read.ReadName = "";
             Temp_One_Read.ReadName.append ((const char *) bam1_qname (r1));
@@ -736,7 +736,7 @@ void build_record_RP_Discovery (const bam1_t * r1, void *data)
             Temp_One_Read.Tag = Tag;
             Temp_One_Read.ReadLength = r1_core->l_qseq;
             data_for_bam->LeftReads->push_back(Temp_One_Read);
-				std::cout << "finished the procedure\n";
+			//	std::cout << "finished the procedure\n";
         }
 
     }
