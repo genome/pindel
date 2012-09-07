@@ -280,7 +280,7 @@ bool IsGoodINV(std::vector < SPLIT_READ > & GoodIndels, Indel4output & OneIndelE
         //std::cout << "RealEnd < RealStart false" << std::endl;
         return false;
     }
-    if (RealEnd - RealStart < (unsigned)GoodIndels[0].getReadLength()) {
+    if (RealEnd - RealStart < (unsigned)GoodIndels[0].getReadLength() * 2) {
         //std::cout << "< readlength, good" << std::endl;
         return true;
     }
