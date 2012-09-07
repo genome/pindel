@@ -62,9 +62,9 @@ std::string SearchDeletions::getInsertedStr2(const SPLIT_READ& read )
    return "";
 }
 
-void SearchDeletions::outputResults(ControlState& currentState, std::vector<unsigned> Vars[], const unsigned NumBoxes, const SearchWindow& currentWindow)
+void SearchDeletions::outputResults(BDData & g_bdData, ControlState& currentState, std::vector<unsigned> Vars[], const unsigned NumBoxes, const SearchWindow& currentWindow)
 {
    std::ofstream DeletionOutf(UserDefinedSettings::Instance()->getDOutputFilename().c_str(), std::ios::app);
-   SortOutputD(NumBoxes, currentWindow.getChromosome()->getSeq(), currentState.Reads_SR, Vars, DeletionOutf);
+   SortOutputD(g_bdData, currentState, NumBoxes, currentWindow.getChromosome()->getSeq(), currentState.Reads_SR, Vars, DeletionOutf);
    DeletionOutf.close();
 }

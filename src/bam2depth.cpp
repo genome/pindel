@@ -138,7 +138,8 @@ void getRelativeCoverageInternal(const std::string & chromosomeName, const int c
     }
 }
 
-void getRelativeCoverage(const std::string & CurrentChrSeq, const int chromosomeID, const ControlState& allGlobalData, Genotyping & OneSV, const Chromosome& currentChromosome)
+void getRelativeCoverage(const std::string & CurrentChrSeq,
+                         const int chromosomeID, const ControlState& allGlobalData, Genotyping & OneSV, const Chromosome& currentChromosome)
                          //const int startPos, const int endPos, std::vector<double> & standardizedDepthPerBam ) RD_signals
 							// fuse currentChromosome with CurrentChrSeq, as well as add Chromosome* to OneSV
 {
@@ -162,7 +163,34 @@ void getRelativeCoverage(const std::string & CurrentChrSeq, const int chromosome
         std::cout << " " << std::fixed << OneSV.RD_signals[RD_index];
     }
     std::cout << std::endl;
-} 
+}
+
+void getRelativeCoverageForDeletion(const int chromosomeID, const ControlState& allGlobalData, Genotyping & OneDEL, const Chromosome * currentChromosome, const std::vector <unsigned> & SampleIDs)
+//const int startPos, const int endPos, std::vector<double> & standardizedDepthPerBam ) RD_signals
+// fuse currentChromosome with CurrentChrSeq, as well as add Chromosome* to OneSV
+{
+    std::cout.precision(2);
+    const int startPos = OneDEL.PosA;
+    const int endPos   = OneDEL.PosB;
+    
+    std::string chromosomeName = currentChromosome->getName();
+	int chromosomeSize = currentChromosome->getBiolSize();
+	const int MIN_BASE_QUALITY_READDEPTH = 0;
+	const int MIN_MAPPING_QUALITY_READDEPTH = 20;
+	std::vector<std::string> listOfFiles;
+	const std::vector<bam_info>& bamFileData = allGlobalData.bams_to_parse;
+	for (unsigned int fileIndex=0; fileIndex<SampleIDs.size(); fileIndex++ ) {
+		listOfFiles.push_back( bamFileData[ SampleIDs[fileIndex] ].BamFile );
+	}
+	getRelativeCoverageInternal( chromosomeName, chromosomeSize, chromosomeID, startPos, endPos, MIN_BASE_QUALITY_READDEPTH, MIN_MAPPING_QUALITY_READDEPTH, listOfFiles,
+                                OneDEL.RD_signals);
+    //std::cout << "Genotype_Based_On_RD:";
+    //for (unsigned RD_index = 0; RD_index < OneDEL.RD_signals.size(); RD_index++) {
+    //    std::cout << " " << std::fixed << OneDEL.RD_signals[RD_index];
+    //}
+    //std::cout << std::endl;
+}
+
 
 std::string Spaces(double input) {
    std::string output; 

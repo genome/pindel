@@ -23,4 +23,6 @@
 
 void getRelativeCoverage(const std::string & CurrentChrSeq, const int chromosomeID, const ControlState& allGlobalData, Genotyping & OneSV, const Chromosome& chromosome);
 
+void getRelativeCoverageForDeletion(const int chromosomeID, const ControlState& allGlobalData, Genotyping & OneDEL, const Chromosome * chromosome, const std::vector <unsigned> & SampleIDs);
+
 #endif /* BAM2DEPTH_H_ */

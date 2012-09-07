@@ -44,7 +44,7 @@ SearchVariant::~SearchVariant()
 
 }
 
-int SearchVariant::Search(ControlState& currentState, const unsigned numBoxes, const SearchWindow& window)
+int SearchVariant::Search(BDData & g_bdData, ControlState& currentState, const unsigned numBoxes, const SearchWindow& window)
 {
    std::vector<unsigned> Vars[numBoxes];
     
@@ -216,7 +216,7 @@ int SearchVariant::Search(ControlState& currentState, const unsigned numBoxes, c
    LOG_INFO(*logStream << "Total: " << Count_Var << "\t+" << Count_Var_Plus << "\t-" << Count_Var_Minus << std::endl);
 
 
-   outputResults(currentState, Vars, numBoxes, window);
+   outputResults(g_bdData, currentState, Vars, numBoxes, window);
 
    for (unsigned int i = 0; i < numBoxes; i++) {
       Vars[i].clear();

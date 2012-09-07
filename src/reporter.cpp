@@ -34,6 +34,9 @@
 #include "output_sorter.h"
 #include "reporter.h"
 #include "shifted_vector.h"
+#include "genotyping.h"
+#include "bam2depth.h"
+
 
 
 OutputFileData deletionFileData;
@@ -676,8 +679,37 @@ void OutputDI (const std::vector < SPLIT_READ > &DI,
    }
 }
 
+bool CompareFragName(const std::string & a, const std::string & b) {
+    if (a.size() > b.size()) {
+        for (unsigned pos = 0; pos < b.size(); pos++) {
+            if ((short)a[pos] > (short)b[pos]) return true;
+            else if ((short)a[pos] < (short)b[pos]) return false;
+        }
+    }
+    else if (a.size() < b.size()) {
+        for (unsigned pos = 0; pos < a.size(); pos++) {
+            for (unsigned pos = 0; pos < b.size(); pos++) {
+                if ((short)a[pos] > (short)b[pos]) return true;
+                else if ((short)a[pos] < (short)b[pos]) return false;
+            }
+        }
+    }
+    else {
+        for (unsigned pos = 0; pos < b.size(); pos++) {
+            for (unsigned pos = 0; pos < b.size(); pos++) {
+                if ((short)a[pos] > (short)b[pos]) return true;
+                else if ((short)a[pos] < (short)b[pos]) return false;
+            }
+        }
+    }
+    return false;
+}
+
 bool smaller( const SPLIT_READ& firstRead, const SPLIT_READ& secondRead )
 {
+	if (firstRead.FragName != secondRead.FragName ) {
+		return (CompareFragName(firstRead.FragName, secondRead.FragName));
+	}
 	if (firstRead.BPLeft != secondRead.BPLeft ) {
 		return (firstRead.BPLeft < secondRead.BPLeft);
 	}
@@ -974,8 +1006,102 @@ void SortAndOutputTandemDuplications (const unsigned &NumBoxes, const std::strin
    }
 }
 
+bool RP_support_D(ControlState& currentState, Indel4output & OneIndelEvent, unsigned start, unsigned end) {
+    // RP_READ
+    // Reads_RP_Discovery
+    unsigned CountSupportingReadPairRead = 0;
+    unsigned Cutoff = OneIndelEvent.Support * 2;
+    if (Cutoff > 10) Cutoff = 10;
+    for (unsigned index = 0; index < currentState.Reads_RP_Discovery.size(); index++) {// DA ～＝ DB ChrNameA == ChrNameB == CurrentChrName PosA < start PosB > end
+        RP_READ & currentRead = currentState.Reads_RP_Discovery[index];
+        if ((currentRead.PosA < currentRead.PosB && currentRead.PosA < start && currentRead.PosB > end) || (currentRead.PosA > currentRead.PosB && currentRead.PosB < start && currentRead.PosA > end)) {
+            if (currentRead.DA != currentRead.DB) {
+                if (currentRead.ChrNameA == OneIndelEvent.ChrName && currentRead.ChrNameB == OneIndelEvent.ChrName) {
+                    CountSupportingReadPairRead++;
+                }
+            }
+        }
+        //std::cout << "CountSupportingReadPairRead " << CountSupportingReadPairRead << std::endl;
+        if (CountSupportingReadPairRead >= Cutoff) return true;
+    }
+    return false;
+}
 
-void SortOutputD (const unsigned &NumBoxes, const std::string & CurrentChr,
+void UpdateSampleID(ControlState& currentState, std::vector < SPLIT_READ > & GoodIndels, Indel4output & OneIndelEvent, std::vector <unsigned> & SampleIDs) {
+    std::set<std::string> SampleNames;
+    for (unsigned index = OneIndelEvent.Start; index <= OneIndelEvent.End; index++) {
+        if (SampleNames.find(GoodIndels[index].Tag) == SampleNames.end()) { // not in the set
+            SampleNames.insert(GoodIndels[index].Tag);
+            //std::cout << GoodIndels[index].Tag << std::endl;
+        }
+    }
+    //bams_to_parse Tag
+    for (unsigned index = 0; index < currentState.bams_to_parse.size(); index++) {
+        if (SampleNames.find(currentState.bams_to_parse[index].Tag) != SampleNames.end()) {
+            SampleIDs.push_back(index);
+        }
+    }
+}
+
+bool IsGoodDeletion(BDData & g_bdData, std::vector < SPLIT_READ > & GoodIndels, Indel4output & OneIndelEvent, unsigned RealStart, unsigned RealEnd, ControlState& currentState) {
+    //std::cout << "Real Start and End: " << RealStart << " " << RealEnd
+    //<< " " << RP_support_D(currentState, OneIndelEvent, RealStart, RealEnd)
+    //<< std::endl;
+    if (RealEnd < RealStart) return false;
+    if (RealEnd - RealStart < 1000) {
+        //std::cout << "<1000 good" << std::endl;
+        return true;
+    }
+    else if (RealEnd - RealStart < 2000) {
+        
+        if (RP_support_D(currentState, OneIndelEvent, RealStart, RealEnd)) {
+            //std::cout << "<2000, true " << OneIndelEvent.End - OneIndelEvent.Start << std::endl;
+            return true;   
+        }
+        else {
+            //std::cout << "<2000, false " << OneIndelEvent.End - OneIndelEvent.Start << std::endl;
+            return false;
+        }
+    }
+    else if (RP_support_D(currentState, OneIndelEvent, RealStart, RealEnd)) {
+        //std::cout << "entering > 2000" << std::endl;
+        int chromosomeID = g_genome.getChrID(OneIndelEvent.ChrName);
+        //std::cout << "chromosomeID " << chromosomeID << std::endl;
+        if (chromosomeID == -1) {
+            std::cout << "ID -1 " << OneIndelEvent.ChrName << " " << chromosomeID << std::endl;
+            return false;
+        }
+                
+        Genotyping OneDEL;
+        OneDEL.Type = "DEL";
+        OneDEL.ChrA = OneIndelEvent.ChrName;
+        OneDEL.ChrB = OneIndelEvent.ChrName;
+        OneDEL.CI_A = 50;
+        OneDEL.CI_B = 50;
+        OneDEL.PosA = RealStart;
+        OneDEL.PosB = RealEnd;
+        std::vector <unsigned> SampleIDs;
+        //std::cout << "Before SampleIDs.size() " << SampleIDs.size() << std::endl;
+        UpdateSampleID(currentState, GoodIndels, OneIndelEvent, SampleIDs);
+        //std::cout << "After SampleIDs.size() " << SampleIDs.size() << std::endl;
+        //g_genome.getChr(chromosomeID);
+        getRelativeCoverageForDeletion(chromosomeID, currentState, OneDEL, g_genome.getChr(chromosomeID), SampleIDs);
+        //std::cout << ">2000, true " << OneIndelEvent.End - OneIndelEvent.Start  << std::endl;
+        //std::cout << "After getRelativeCoverageForDeletion " << SampleIDs.size() << " " << OneDEL.RD_signals.size() << std::endl;
+        unsigned CountGoodSamples = 0;
+        for (unsigned RD_index = 0; RD_index < OneDEL.RD_signals.size(); RD_index++) {
+            if (OneDEL.RD_signals[RD_index] <= 1.3) CountGoodSamples++;
+            //std::cout << " " << std::fixed << OneDEL.RD_signals[RD_index];
+        }
+        if ((OneDEL.RD_signals.size() == 1 && CountGoodSamples == 1) || (OneDEL.RD_signals.size() > 1 && OneDEL.RD_signals.size() <= 4 && OneDEL.RD_signals.size() - CountGoodSamples <= 1) || (OneDEL.RD_signals.size() > 4 && (((float)CountGoodSamples / OneDEL.RD_signals.size()) > 0.66) ))
+            return true;
+        else return false;
+    }
+    
+    return false;
+}
+
+void SortOutputD (BDData & g_bdData, ControlState& currentState, const unsigned &NumBoxes, const std::string & CurrentChr,
              std::vector < SPLIT_READ > &Reads, std::vector < unsigned >Deletions[],
              std::ofstream & DeletionOutf)
 {
@@ -1017,6 +1143,7 @@ void SortOutputD (const unsigned &NumBoxes, const std::string & CurrentChr,
          }
          Indel4output OneIndelEvent;
          OneIndelEvent.Start = 0;
+         OneIndelEvent.ChrName = GoodIndels[0].FragName;
          OneIndelEvent.End = 0;
          OneIndelEvent.Support = OneIndelEvent.End - OneIndelEvent.Start + 1;
          OneIndelEvent.BPLeft = GoodIndels[0].BPLeft;
@@ -1025,7 +1152,9 @@ void SortOutputD (const unsigned &NumBoxes, const std::string & CurrentChr,
          LOG_DEBUG(*logStream << "here" << std::endl);
          for (unsigned int GoodIndex = 1; GoodIndex < GoodNum; GoodIndex++) {
             if (GoodIndels[GoodIndex].BPLeft == OneIndelEvent.BPLeft
-                  && GoodIndels[GoodIndex].BPRight == OneIndelEvent.BPRight) {
+                  && GoodIndels[GoodIndex].BPRight == OneIndelEvent.BPRight
+                  && GoodIndels[GoodIndex].FragName == OneIndelEvent.ChrName
+                  && GoodIndels[GoodIndex].FarFragName == OneIndelEvent.ChrName) {
                OneIndelEvent.End = GoodIndex;
             }
             else {
@@ -1046,6 +1175,7 @@ void SortOutputD (const unsigned &NumBoxes, const std::string & CurrentChr,
                OneIndelEvent.End = GoodIndex;
                OneIndelEvent.BPLeft = GoodIndels[GoodIndex].BPLeft;
                OneIndelEvent.BPRight = GoodIndels[GoodIndex].BPRight;
+               OneIndelEvent.ChrName = GoodIndels[GoodIndex].FragName;
             }
          }
 
@@ -1092,8 +1222,10 @@ void SortOutputD (const unsigned &NumBoxes, const std::string & CurrentChr,
                   */ 
                   // report max one
                   LOG_DEBUG(*logStream << "max" << std::endl);
-                  if (IndelEvents[EventIndex].Support >= userSettings->NumRead2ReportCutOff)
+                   //std::cout << "current D " << RealStart << " " << RealEnd << " " << RealEnd - RealStart << " " << IndelEvents[EventIndex].Support << " " << IsGoodDeletion(g_bdData, GoodIndels, IndelEvents[EventIndex], RealStart, RealEnd, currentState) << std::endl;
+                  if (IndelEvents[EventIndex].Support >= userSettings->NumRead2ReportCutOff && IsGoodDeletion(g_bdData, GoodIndels, IndelEvents[EventIndex], RealStart, RealEnd, currentState))
                   {
+                      //std::cout << "passed IsGoodDeletion" << std::endl;
                      LOG_DEBUG(*logStream << "aa" << std::endl);
                      if (GoodIndels[IndelEvents[EventIndex].Start].IndelSize < userSettings->BalanceCutoff) {
                         LOG_DEBUG(*logStream << "ba" << std::endl);

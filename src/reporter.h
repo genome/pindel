@@ -27,8 +27,10 @@
 #include "pindel.h"
 #include "shifted_vector.h"
 #include "control_state.h"
+#include "bddata.h"
 
-void SortOutputD (const unsigned &NumBoxes, const std::string & CurrentChr,
+
+void SortOutputD (BDData & g_bdData, ControlState& currentState, const unsigned &NumBoxes, const std::string & CurrentChr,
 									std::vector < SPLIT_READ > &AllReads,
 									std::vector < unsigned >Deletions[],
 									std::ofstream & DeletionOutf);

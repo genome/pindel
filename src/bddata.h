@@ -39,4 +39,6 @@ private:
 	SearchWindow m_currentWindow;
 };
 
+bool Compare2Str (const std::string & first, const std::string & second);
+
 #endif /* BDDATA_H_ */

@@ -28,7 +28,7 @@
 // Pindel header files
 #include "pindel.h"
 #include "pindel_read_reader.h"
-
+//#include "bddata.h"
 
 
 struct BreakDancerCoordinate {

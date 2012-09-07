@@ -23,7 +23,7 @@ protected:
 
 	std::string getInsertedStr2(const SPLIT_READ& read );
 
-	void outputResults(ControlState& currentState, std::vector<unsigned> Vars[], const unsigned NumBoxes, const SearchWindow& currentWindow);
+	void outputResults(BDData & g_bdData, ControlState& currentState, std::vector<unsigned> Vars[], const unsigned NumBoxes, const SearchWindow& currentWindow);
 
 private:
 	SearchDeletions(const SearchDeletions&);

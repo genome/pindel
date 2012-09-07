@@ -84,6 +84,8 @@ short g_MinClose = 8;
 std::set<std::string> g_sampleNames;
 short Before, After;
 BDData g_bdData;
+//extern BDData g_bdData;
+
 const int alphs = 4;
 const char alphabet[alphs] = { 'A', 'C', 'G', 'T' };
 unsigned int BoxSize = 10000; // 10k is fine
@@ -204,14 +206,24 @@ const Chromosome* Genome::getChr( unsigned int index ) const
 	else return NULL; 
 }
 
-const Chromosome* Genome::getChr( const std::string& chromosomeName ) const 
-{ 
-	for (unsigned int i=0; i<m_chromosomes.size(); i++ ) {
+const Chromosome* Genome::getChr( const std::string& chromosomeName ) const
+{
+    for (unsigned int i=0; i<m_chromosomes.size(); i++ ) {
 		if ( m_chromosomes[ i ]->getName() == chromosomeName ) {
 			return m_chromosomes[ i ];
 		}
 	}
-	return NULL;
+    return NULL;
+}
+
+short Genome::getChrID( const std::string& chromosomeName )
+{ 
+	for (unsigned int i=0; i<m_chromosomes.size(); i++ ) {
+		if ( m_chromosomes[ i ]->getName() == chromosomeName ) {
+			return i;
+		}
+	}
+	return -1;
 }
 
 void Genome::clear()
@@ -1003,12 +1015,12 @@ void SearchFarEnds( const std::string chromosomeSeq, std::vector<SPLIT_READ>& re
 }
 
 
-void SearchSVs( ControlState& currentState, const int NumBoxes, const SearchWindow& currentWindow )
+void SearchSVs(ControlState& currentState, const int NumBoxes, const SearchWindow& currentWindow )
 {					
 	UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
 
    SearchDeletions searchD;
-   searchD.Search(currentState, NumBoxes, currentWindow);
+   searchD.Search(g_bdData, currentState, NumBoxes, currentWindow);
 
    searchIndels(currentState, NumBoxes, currentWindow);
 
@@ -1023,7 +1035,7 @@ void SearchSVs( ControlState& currentState, const int NumBoxes, const SearchWind
    }
 
    SearchShortInsertions searchSI;
-   searchSI.Search(currentState, NumBoxes, currentWindow);
+   searchSI.Search(g_bdData, currentState, NumBoxes, currentWindow);
 
 	ReportCloseAndFarEndCounts( currentState.Reads_SR );                 
 
@@ -1249,7 +1261,7 @@ int main(int argc, char *argv[])
 					currentState.Reads_SR.insert( currentState.Reads_SR.end(), currentState.FutureReads_SR.begin(), currentState.FutureReads_SR.end() );
 					currentState.FutureReads_SR.clear();
 					timer.switchTo("Searching and reporting variations");
-					SearchSVs( currentState, NumBoxes, currentWindow );
+					SearchSVs(currentState, NumBoxes, currentWindow );
             }
             Time_Sort_E = time(NULL);
 
@@ -1262,6 +1274,10 @@ int main(int argc, char *argv[])
          else {
              *logStream << "There are no reads for this bin.\n";
          }
+         //std::cout << "before " << currentState.Reads_RP_Discovery.size() << std::endl;
+         if (currentState.Reads_RP_Discovery.size())
+             currentState.Reads_RP_Discovery.clear();
+         //std::cout << "after " << currentState.Reads_RP_Discovery.size() << std::endl;
          Time_Load_S = 0;
 			currentWindow.next();
          g_binIndex++;

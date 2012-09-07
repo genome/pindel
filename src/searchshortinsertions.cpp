@@ -62,7 +62,7 @@ std::string SearchShortInsertions::getInsertedStr2(const SPLIT_READ& read)
    return read.getUnmatchedSeq().substr( read.BP + 1, read.IndelSize);
 }
 
-void SearchShortInsertions::outputResults(ControlState& currentState,
+void SearchShortInsertions::outputResults(BDData & g_bdData, ControlState& currentState,
       std::vector<unsigned> Vars[], const unsigned NumBoxes, const SearchWindow& currentWindow)
 {
    std::ofstream SIoutputfile(UserDefinedSettings::Instance()->getSIOutputFilename().c_str(), std::ios::app);

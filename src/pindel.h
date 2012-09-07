@@ -287,6 +287,7 @@ struct Indel4output {
 		NT_size = 0;
 		WhetherReport = false;
 		IndelStr = "";
+        ChrName = "";
 		Support = 0;
 	}
 	void initialize(unsigned int start, const SPLIT_READ& read) {
@@ -298,6 +299,7 @@ struct Indel4output {
       BPLeft = read.BPLeft;
       BPRight = read.BPRight;
       WhetherReport = true;
+        ChrName = read.FragName;
 		RealStart = 0;
 		RealEnd = 0;
 		NT_size = 0;
@@ -317,6 +319,7 @@ struct Indel4output {
 	short NT_size;
 	bool WhetherReport;
 	std::string IndelStr;
+    std::string ChrName;
 	unsigned short Support;
 };
 
@@ -481,7 +484,8 @@ class Genome {
 public:
 	//unsigned int chrNameToChrIndex( const std::string chromosomeName );
 	const Chromosome* getChr( unsigned int index ) const;
-	const Chromosome* getChr( const std::string& chromosomeName ) const; 
+	const Chromosome* getChr( const std::string& chromosomeName ) const;
+    short getChrID( const std::string& chromosomeName );
 	void load( const std::string& referenceFileName );
 	void loadAll(const std::string& referenceFileName);
 	const Chromosome* getNextChromosome();

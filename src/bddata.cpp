@@ -285,12 +285,12 @@ void BDData::UpdateBD(ControlState & currentState) {
             m_bdEvents.push_back(BreakDancerEvent( firstBDCoordinate, secondBDCoordinate ));
             m_bdEvents.push_back(BreakDancerEvent( secondBDCoordinate, firstBDCoordinate ));
             
-            //std::cout << "adding " << firstChrName << " " << firstPos - g_SpacerBeforeAfter << "\t" << secondChrName << " " << secondPos - g_SpacerBeforeAfter <<  " to breakdancer events." << std::endl;
+            //std::cout << "adding " << firstChrName << " " << firstPos - g_SpacerBeforeAfter << "\t" << secondChrName << " " << secondPos - g_SpacerBeforeAfter <<  " to breakdancer events. " << abs((int)secondPos - (int)firstPos) << std::endl;
         }
         
     }
 
-    currentState.Reads_RP_Discovery.clear();
+    //currentState.Reads_RP_Discovery.clear();
 	sort( m_bdEvents.begin(), m_bdEvents.end(), sortOnFirstBDCoordinate );
 }
 
