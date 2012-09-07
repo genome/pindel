@@ -66,6 +66,6 @@ void SearchShortInsertions::outputResults(BDData & g_bdData, ControlState& curre
       std::vector<unsigned> Vars[], const unsigned NumBoxes, const SearchWindow& currentWindow)
 {
    std::ofstream SIoutputfile(UserDefinedSettings::Instance()->getSIOutputFilename().c_str(), std::ios::app);
-   SortOutputSI(NumBoxes, currentWindow.getChromosome()->getSeq(), currentState.Reads_SR, Vars, SIoutputfile);
+   SortOutputSI(currentState, NumBoxes, currentWindow.getChromosome()->getSeq(), currentState.Reads_SR, Vars, SIoutputfile);
    SIoutputfile.close();
 }

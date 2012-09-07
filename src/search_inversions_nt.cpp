@@ -181,7 +181,7 @@ int searchInversionsNT(ControlState& currentState, unsigned NumBoxes, const Sear
    }
    LOG_INFO(*logStream << "Total: " << Count_Inv_NT << "\t+" << Count_Inv_NT_Plus << "\t-" << Count_Inv_NT_Minus << std::endl);
    std::ofstream InversionOutf(userSettings->getINVOutputFilename().c_str(), std::ios::app);
-   SortOutputInv_NT(NumBoxes, window.getChromosome()->getSeq(), currentState.Reads_SR, Inv_NT, InversionOutf);
+   SortOutputInv_NT(currentState, NumBoxes, window.getChromosome()->getSeq(), currentState.Reads_SR, Inv_NT, InversionOutf);
    for (unsigned int i = 0; i < NumBoxes; i++) {
       Inv_NT[i].clear();
    }

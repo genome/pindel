@@ -165,7 +165,7 @@ void getRelativeCoverage(const std::string & CurrentChrSeq,
     std::cout << std::endl;
 }
 
-void getRelativeCoverageForDeletion(const int chromosomeID, const ControlState& allGlobalData, Genotyping & OneDEL, const Chromosome * currentChromosome, const std::vector <unsigned> & SampleIDs)
+void getRelativeCoverageForFiltering(const int chromosomeID, const ControlState& allGlobalData, Genotyping & OneDEL, const Chromosome * currentChromosome, const std::vector <unsigned> & SampleIDs)
 //const int startPos, const int endPos, std::vector<double> & standardizedDepthPerBam ) RD_signals
 // fuse currentChromosome with CurrentChrSeq, as well as add Chromosome* to OneSV
 {

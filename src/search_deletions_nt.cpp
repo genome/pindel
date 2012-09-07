@@ -125,7 +125,7 @@ int searchIndels(ControlState& currentState, unsigned NumBoxes, const SearchWind
             << Count_DI_Minus << std::endl);
    std::ofstream DeletionOutf( userSettings->getDOutputFilename().c_str(), std::ios::app);
    std::ofstream inversionsOutf( userSettings->getINVOutputFilename().c_str(), std::ios::app);
-   SortOutputDI(NumBoxes, window.getChromosome()->getSeq(), currentState.Reads_SR, DI, DeletionOutf, inversionsOutf);
+   SortOutputDI(currentState, NumBoxes, window.getChromosome()->getSeq(), currentState.Reads_SR, DI, DeletionOutf, inversionsOutf);
    DeletionOutf.close();
    for (unsigned int i = 0; i < NumBoxes; i++) {
       DI[i].clear();

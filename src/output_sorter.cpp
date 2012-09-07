@@ -41,25 +41,25 @@ OutputSorter::~OutputSorter ()
    delete CurrentChr;
 }
 
-void OutputSorter::SortAndOutputInversions (std::vector < SPLIT_READ > &Reads, std::vector<unsigned> Inv[])
+void OutputSorter::SortAndOutputInversions (ControlState& currentState, std::vector < SPLIT_READ > &Reads, std::vector<unsigned> Inv[])
 {
    LOG_INFO (*logStream << "Sorting and outputing Inversions ..." << std::endl);
-   DoSortAndOutputInversions(Reads, Inv, false);
+   DoSortAndOutputInversions(currentState, Reads, Inv, false);
    LOG_INFO (*logStream << "Inversions (INV): " << g_numberOfInvInstances << std::endl << std::endl);
 }
 
 void
-OutputSorter::SortAndOutputNonTemplateInversions (std::vector<SPLIT_READ>& Reads, std::vector<unsigned> Inv[])
+OutputSorter::SortAndOutputNonTemplateInversions (ControlState& currentState, std::vector<SPLIT_READ>& Reads, std::vector<unsigned> Inv[])
 {
    LOG_INFO (*logStream << "Sorting and outputing Inversions with non-template sequence ..." <<
              std::endl);
-   int Count_INV_NT_output = DoSortAndOutputInversions(Reads, Inv, true);
+   int Count_INV_NT_output = DoSortAndOutputInversions(currentState, Reads, Inv, true);
 
    LOG_INFO (*logStream << "Inversions with non-template sequence (INV_NT): " <<
              Count_INV_NT_output << std::endl << std::endl);
 }
 
-int OutputSorter::DoSortAndOutputInversions (std::vector<SPLIT_READ> &Reads, std::vector<unsigned> Inv[], bool isNonTemplateInversion)
+int OutputSorter::DoSortAndOutputInversions (ControlState& currentState, std::vector<SPLIT_READ> &Reads, std::vector<unsigned> Inv[], bool isNonTemplateInversion)
 {
    unsigned int InversionsNum;
    short CompareResult;
@@ -253,7 +253,7 @@ int OutputSorter::DoSortAndOutputInversions (std::vector<SPLIT_READ> &Reads, std
          LOG_DEBUG (*logStream << "IndelEvent: " << IndelEvents.size () << std::endl);
 
          if (IndelEvents.size ()) {
-            ReportedEventCount += ReportIndelEvents (IndelEvents, GoodIndels);
+            ReportedEventCount += ReportIndelEvents (currentState, IndelEvents, GoodIndels);
          }
           //*logStream << "in9" << std::endl;
       }
@@ -262,7 +262,96 @@ int OutputSorter::DoSortAndOutputInversions (std::vector<SPLIT_READ> &Reads, std
    return ReportedEventCount;
 }
 
-int OutputSorter::ReportIndelEvents (std::vector<Indel4output> &IndelEvents,
+bool IsGoodINV(std::vector < SPLIT_READ > & GoodIndels, Indel4output & OneIndelEvent, unsigned RealStart, unsigned RealEnd, ControlState& currentState) {
+    //return true;
+
+    //std::cout << "IsGoodINV " << std::endl;
+    unsigned Cutoff = (OneIndelEvent.End - OneIndelEvent.Start + 1) * 2;
+    if (Cutoff > 20) Cutoff = 20;
+    //std::cout << "Real Start and End: INV " << RealStart << " " << RealEnd << " " << (OneIndelEvent.End - OneIndelEvent.Start + 1)
+    //<< " " << RP_support_D(currentState, OneIndelEvent, RealStart, RealEnd)
+    //<< " " << Cutoff << std::endl;
+    bool LeftGood = false;
+    bool RightGood = false;
+    unsigned CountLeft = 0;
+    unsigned CountRight = 0;
+    //bool WhetherIsGood;
+    if (RealEnd < RealStart) {
+        //std::cout << "RealEnd < RealStart false" << std::endl;
+        return false;
+    }
+    if (RealEnd - RealStart < (unsigned)GoodIndels[0].getReadLength()) {
+        //std::cout << "< readlength, good" << std::endl;
+        return true;
+    }
+    else {
+        //std::cout << "to the business " << currentState.Reads_RP_Discovery.size() << std::endl;
+        for (unsigned index = 0; index < currentState.Reads_RP_Discovery.size(); index++) {
+            //std::cout << CountLeft << " " << CountRight << " " << (OneIndelEvent.End - OneIndelEvent.Start + 1) << std::endl;
+            if (CountLeft >= Cutoff) LeftGood = true;
+            if (CountRight >= Cutoff) RightGood = true;
+            if (LeftGood && RightGood) {
+                //std::cout << "Reporting true for INV" << std::endl;
+                return true;
+            }
+            RP_READ & currentread = currentState.Reads_RP_Discovery[index];
+
+
+            if (currentread.DA != currentread.DB) continue;
+            if (currentread.ChrNameA != currentread.ChrNameB) continue;
+
+            //std::cout << currentread.ChrNameA << " " << currentread.PosA << " " << currentread.DA << " "
+            //<< currentread.ChrNameB << " " << currentread.PosB << " " << currentread.DB << " "
+            //<< currentread.Experimental_InsertSize << std::endl;
+            
+            if (currentread.DA == '+') {
+                if (currentread.PosA < currentread.PosB) {
+                    if (currentread.PosA < RealStart + currentread.ReadLength && currentread.PosB + currentread.ReadLength > RealStart && currentread.PosB < RealEnd + currentread.ReadLength) {
+                        if (currentread.PosA + currentread.Experimental_InsertSize + currentread.ReadLength > RealStart) {
+                            if (currentread.PosB + currentread.Experimental_InsertSize + currentread.ReadLength > RealEnd) {
+                                CountLeft++;
+                            }
+                        }
+                    }
+                }
+                else {
+                    if (currentread.PosB < RealStart +currentread.ReadLength && currentread.PosA + currentread.ReadLength > RealStart && currentread.PosA < RealEnd + currentread.ReadLength) {
+                        if (currentread.PosB + currentread.Experimental_InsertSize + currentread.ReadLength > RealStart) {
+                            if (currentread.PosA + currentread.Experimental_InsertSize + currentread.ReadLength > RealEnd) {
+                                CountLeft++;
+                            }
+                        }
+                    }
+                }
+            }
+            else { // --
+                if (currentread.PosA < currentread.PosB) {
+                    if (currentread.PosA + currentread.ReadLength > RealStart && currentread.PosA < RealEnd + currentread.ReadLength && currentread.PosB + currentread.ReadLength > RealEnd) {
+                        if (currentread.PosA < RealStart + currentread.Experimental_InsertSize + currentread.ReadLength) {
+                            if (currentread.PosB < RealEnd + currentread.Experimental_InsertSize + currentread.ReadLength) {
+                                CountRight++;
+                            }
+                        }
+                    }
+                }
+                else {
+                    if (currentread.PosB + currentread.ReadLength > RealStart && currentread.PosB < RealEnd + currentread.ReadLength && currentread.PosA + currentread.ReadLength > RealEnd) {
+                        if (currentread.PosB < RealStart + currentread.Experimental_InsertSize + currentread.ReadLength) {
+                            if (currentread.PosA < RealEnd + currentread.Experimental_InsertSize + currentread.ReadLength) {
+                                CountRight++;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    
+    return false;
+}
+
+int OutputSorter::ReportIndelEvents (ControlState& currentState, std::vector<Indel4output> &IndelEvents,
                                  std::vector<SPLIT_READ> &GoodIndels)
 {  
    int ReportedEventCount = 0;
@@ -275,6 +364,7 @@ int OutputSorter::ReportIndelEvents (std::vector<Indel4output> &IndelEvents,
       if (IndelEvents[EventIndex].Support < userSettings->NumRead2ReportCutOff) {
          continue;
       }
+      if (IsGoodINV(GoodIndels, IndelEvents[EventIndex], RealStart, RealEnd, currentState) == false) continue;
       if (GoodIndels[IndelEvents[EventIndex].Start].IndelSize < UserDefinedSettings::Instance()->BalanceCutoff) {
          OutputInversions (GoodIndels, *CurrentChr, IndelEvents[EventIndex].Start, IndelEvents[EventIndex].End, RealStart, RealEnd, *InvOutf);
          ReportedEventCount++;

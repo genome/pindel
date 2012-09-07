@@ -1040,11 +1040,11 @@ void SearchSVs(ControlState& currentState, const int NumBoxes, const SearchWindo
 	ReportCloseAndFarEndCounts( currentState.Reads_SR );                 
 
    if (userSettings->Analyze_LI) {
-   	SortOutputLI(currentWindow.getChromosome()->getSeq(), currentState.Reads_SR, currentWindow, userSettings->getLIOutputFilename());
+   	SortOutputLI(currentState, currentWindow.getChromosome()->getSeq(), currentState.Reads_SR, currentWindow, userSettings->getLIOutputFilename());
    }
 
    if (userSettings->Analyze_BP) {
-   	SortOutputRest(currentWindow.getChromosome()->getSeq(), currentState.Reads_SR, currentWindow, userSettings->getBPOutputFilename());
+   	SortOutputRest(currentState, currentWindow.getChromosome()->getSeq(), currentState.Reads_SR, currentWindow, userSettings->getBPOutputFilename());
    }
 }
 

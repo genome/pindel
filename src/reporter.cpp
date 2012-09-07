@@ -98,6 +98,22 @@ void calculateSupportPerStrand( const std::vector< SPLIT_READ >& reads, const un
    }
 }
 
+void UpdateSampleID(ControlState& currentState, std::vector < SPLIT_READ > & GoodIndels, Indel4output & OneIndelEvent, std::vector <unsigned> & SampleIDs) {
+    std::set<std::string> SampleNames;
+    for (unsigned index = OneIndelEvent.Start; index <= OneIndelEvent.End; index++) {
+        if (SampleNames.find(GoodIndels[index].Tag) == SampleNames.end()) { // not in the set
+            SampleNames.insert(GoodIndels[index].Tag);
+            //std::cout << GoodIndels[index].Tag << std::endl;
+        }
+    }
+    //bams_to_parse Tag
+    for (unsigned index = 0; index < currentState.bams_to_parse.size(); index++) {
+        if (SampleNames.find(currentState.bams_to_parse[index].Tag) != SampleNames.end()) {
+            SampleIDs.push_back(index);
+        }
+    }
+}
+
 void OutputTDs (const std::vector < SPLIT_READ > &TDs,
            const std::string & TheInput,
            const unsigned int &C_S,
@@ -767,7 +783,7 @@ void markDuplicates(std::vector < SPLIT_READ >& Reads, const std::vector < unsig
 }
 
 
-void SortOutputSI (const unsigned &NumBoxes, const std::string & CurrentChr,
+void SortOutputSI (ControlState& currentState, const unsigned &NumBoxes, const std::string & CurrentChr,
               std::vector < SPLIT_READ > &Reads, std::vector < unsigned >SIs[],
               std::ofstream & SIsOutf)
 {
@@ -874,7 +890,54 @@ void SortOutputSI (const unsigned &NumBoxes, const std::string & CurrentChr,
    LOG_INFO(*logStream << "Short insertions: " << NumberOfSIsInstances << std::endl << std::endl);
 }
 
-void SortAndOutputTandemDuplications (const unsigned &NumBoxes, const std::string & CurrentChr, std::vector < SPLIT_READ > &AllReads, std::vector < unsigned >TDs[],
+bool IsGoodTD(std::vector < SPLIT_READ > & GoodIndels, Indel4output & OneIndelEvent, unsigned RealStart, unsigned RealEnd, ControlState& currentState) {
+    //std::cout << "Real Start and End: " << RealStart << " " << RealEnd
+    //<< " " << RP_support_D(currentState, OneIndelEvent, RealStart, RealEnd)
+    //<< std::endl;
+    if (RealEnd < RealStart) return false;
+    if (RealEnd - RealStart < (unsigned)(GoodIndels[0].getReadLength() * 2)) {
+        //std::cout << "<1000 good" << std::endl;
+        return true;
+    }
+    else {
+        //std::cout << "entering > 2000" << std::endl;
+        int chromosomeID = g_genome.getChrID(OneIndelEvent.ChrName);
+        //std::cout << "chromosomeID " << chromosomeID << std::endl;
+        if (chromosomeID == -1) {
+            std::cout << "ID -1 " << OneIndelEvent.ChrName << " " << chromosomeID << std::endl;
+            return false;
+        }
+        
+        Genotyping OneDEL;
+        OneDEL.Type = "TD";
+        OneDEL.ChrA = OneIndelEvent.ChrName;
+        OneDEL.ChrB = OneIndelEvent.ChrName;
+        OneDEL.CI_A = 50;
+        OneDEL.CI_B = 50;
+        OneDEL.PosA = RealStart;
+        OneDEL.PosB = RealEnd;
+        std::vector <unsigned> SampleIDs;
+        //std::cout << "Before SampleIDs.size() " << SampleIDs.size() << std::endl;
+        UpdateSampleID(currentState, GoodIndels, OneIndelEvent, SampleIDs);
+        //std::cout << "After SampleIDs.size() " << SampleIDs.size() << std::endl;
+        //g_genome.getChr(chromosomeID);
+        getRelativeCoverageForFiltering(chromosomeID, currentState, OneDEL, g_genome.getChr(chromosomeID), SampleIDs);
+        //std::cout << ">2000, true " << OneIndelEvent.End - OneIndelEvent.Start  << std::endl;
+        //std::cout << "After getRelativeCoverageForFiltering " << SampleIDs.size() << " " << OneDEL.RD_signals.size() << std::endl;
+        unsigned CountGoodSamples = 0;
+        for (unsigned RD_index = 0; RD_index < OneDEL.RD_signals.size(); RD_index++) {
+            if (OneDEL.RD_signals[RD_index] >= 2.7) CountGoodSamples++;
+            //std::cout << " " << std::fixed << OneDEL.RD_signals[RD_index] << " ";
+        }
+        if ((OneDEL.RD_signals.size() == 1 && CountGoodSamples == 1) || (OneDEL.RD_signals.size() > 1 && OneDEL.RD_signals.size() <= 4 && OneDEL.RD_signals.size() - CountGoodSamples <= 1) || (OneDEL.RD_signals.size() > 4 && (((float)CountGoodSamples / OneDEL.RD_signals.size()) > 0.66) ))
+            return true;
+        else return false;
+    }
+    
+    return false;
+}
+
+void SortAndOutputTandemDuplications (ControlState& currentState, const unsigned &NumBoxes, const std::string & CurrentChr, std::vector < SPLIT_READ > &AllReads, std::vector < unsigned >TDs[],
                                  std::ofstream & TDOutf, const bool nonTemplate)
 {
 
@@ -912,6 +975,7 @@ void SortAndOutputTandemDuplications (const unsigned &NumBoxes, const std::strin
             continue;
          }
          Indel4output OneIndelEvent;
+         OneIndelEvent.ChrName = GoodIndels[0].FragName;
          OneIndelEvent.Start = 0;
          OneIndelEvent.End = 0;
          OneIndelEvent.Support = OneIndelEvent.End - OneIndelEvent.Start + 1;
@@ -935,6 +999,7 @@ void SortAndOutputTandemDuplications (const unsigned &NumBoxes, const std::strin
                OneIndelEvent.End = GoodIndex;
                OneIndelEvent.BPLeft = GoodIndels[GoodIndex].BPLeft;
                OneIndelEvent.BPRight = GoodIndels[GoodIndex].BPRight;
+               OneIndelEvent.ChrName = GoodIndels[GoodIndex].FragName; 
             }
          }
 
@@ -978,7 +1043,7 @@ void SortAndOutputTandemDuplications (const unsigned &NumBoxes, const std::strin
                   }
                    */
                   // report max one
-                  if (IndelEvents[EventIndex].Support >= userSettings->NumRead2ReportCutOff) {
+                  if (IndelEvents[EventIndex].Support >= userSettings->NumRead2ReportCutOff && IsGoodTD(GoodIndels, IndelEvents[EventIndex], RealStart, RealEnd, currentState)) {
                      if (GoodIndels[ IndelEvents[EventIndex].Start].IndelSize < userSettings->BalanceCutoff) {
                         OutputTDs (GoodIndels, CurrentChr, IndelEvents[EventIndex].Start, IndelEvents[EventIndex].End, RealStart, RealEnd, TDOutf);
                         NumberOfTDInstances++;
@@ -1027,23 +1092,9 @@ bool RP_support_D(ControlState& currentState, Indel4output & OneIndelEvent, unsi
     return false;
 }
 
-void UpdateSampleID(ControlState& currentState, std::vector < SPLIT_READ > & GoodIndels, Indel4output & OneIndelEvent, std::vector <unsigned> & SampleIDs) {
-    std::set<std::string> SampleNames;
-    for (unsigned index = OneIndelEvent.Start; index <= OneIndelEvent.End; index++) {
-        if (SampleNames.find(GoodIndels[index].Tag) == SampleNames.end()) { // not in the set
-            SampleNames.insert(GoodIndels[index].Tag);
-            //std::cout << GoodIndels[index].Tag << std::endl;
-        }
-    }
-    //bams_to_parse Tag
-    for (unsigned index = 0; index < currentState.bams_to_parse.size(); index++) {
-        if (SampleNames.find(currentState.bams_to_parse[index].Tag) != SampleNames.end()) {
-            SampleIDs.push_back(index);
-        }
-    }
-}
 
-bool IsGoodDeletion(BDData & g_bdData, std::vector < SPLIT_READ > & GoodIndels, Indel4output & OneIndelEvent, unsigned RealStart, unsigned RealEnd, ControlState& currentState) {
+
+bool IsGoodDeletion(std::vector < SPLIT_READ > & GoodIndels, Indel4output & OneIndelEvent, unsigned RealStart, unsigned RealEnd, ControlState& currentState) {
     //std::cout << "Real Start and End: " << RealStart << " " << RealEnd
     //<< " " << RP_support_D(currentState, OneIndelEvent, RealStart, RealEnd)
     //<< std::endl;
@@ -1085,9 +1136,9 @@ bool IsGoodDeletion(BDData & g_bdData, std::vector < SPLIT_READ > & GoodIndels, 
         UpdateSampleID(currentState, GoodIndels, OneIndelEvent, SampleIDs);
         //std::cout << "After SampleIDs.size() " << SampleIDs.size() << std::endl;
         //g_genome.getChr(chromosomeID);
-        getRelativeCoverageForDeletion(chromosomeID, currentState, OneDEL, g_genome.getChr(chromosomeID), SampleIDs);
+        getRelativeCoverageForFiltering(chromosomeID, currentState, OneDEL, g_genome.getChr(chromosomeID), SampleIDs);
         //std::cout << ">2000, true " << OneIndelEvent.End - OneIndelEvent.Start  << std::endl;
-        //std::cout << "After getRelativeCoverageForDeletion " << SampleIDs.size() << " " << OneDEL.RD_signals.size() << std::endl;
+        //std::cout << "After getRelativeCoverageForFiltering " << SampleIDs.size() << " " << OneDEL.RD_signals.size() << std::endl;
         unsigned CountGoodSamples = 0;
         for (unsigned RD_index = 0; RD_index < OneDEL.RD_signals.size(); RD_index++) {
             if (OneDEL.RD_signals[RD_index] <= 1.3) CountGoodSamples++;
@@ -1101,7 +1152,7 @@ bool IsGoodDeletion(BDData & g_bdData, std::vector < SPLIT_READ > & GoodIndels, 
     return false;
 }
 
-void SortOutputD (BDData & g_bdData, ControlState& currentState, const unsigned &NumBoxes, const std::string & CurrentChr,
+void SortOutputD (ControlState& currentState, const unsigned &NumBoxes, const std::string & CurrentChr,
              std::vector < SPLIT_READ > &Reads, std::vector < unsigned >Deletions[],
              std::ofstream & DeletionOutf)
 {
@@ -1223,7 +1274,7 @@ void SortOutputD (BDData & g_bdData, ControlState& currentState, const unsigned 
                   // report max one
                   LOG_DEBUG(*logStream << "max" << std::endl);
                    //std::cout << "current D " << RealStart << " " << RealEnd << " " << RealEnd - RealStart << " " << IndelEvents[EventIndex].Support << " " << IsGoodDeletion(g_bdData, GoodIndels, IndelEvents[EventIndex], RealStart, RealEnd, currentState) << std::endl;
-                  if (IndelEvents[EventIndex].Support >= userSettings->NumRead2ReportCutOff && IsGoodDeletion(g_bdData, GoodIndels, IndelEvents[EventIndex], RealStart, RealEnd, currentState))
+                  if (IndelEvents[EventIndex].Support >= userSettings->NumRead2ReportCutOff && IsGoodDeletion(GoodIndels, IndelEvents[EventIndex], RealStart, RealEnd, currentState))
                   {
                       //std::cout << "passed IsGoodDeletion" << std::endl;
                      LOG_DEBUG(*logStream << "aa" << std::endl);
@@ -1250,20 +1301,20 @@ void SortOutputD (BDData & g_bdData, ControlState& currentState, const unsigned 
    LOG_INFO(*logStream << "Deletions: " << deletionFileData.getTemplateSvCounter() << std::endl << std::endl);
 }
 
-void SortOutputInv (const unsigned &NumBoxes, const std::string & CurrentChr,
+void SortOutputInv (ControlState& currentState, const unsigned &NumBoxes, const std::string & CurrentChr,
                std::vector < SPLIT_READ > &Reads, std::vector < unsigned >Inv[],
                std::ofstream & InvOutf)
 {
    OutputSorter os(NumBoxes, CurrentChr, InvOutf);
-   os.SortAndOutputInversions(Reads, Inv);
+   os.SortAndOutputInversions(currentState, Reads, Inv);
 }
 
-void SortOutputInv_NT (const unsigned &NumBoxes, const std::string & CurrentChr,
+void SortOutputInv_NT (ControlState& currentState, const unsigned &NumBoxes, const std::string & CurrentChr,
                   std::vector < SPLIT_READ > &Reads, std::vector < unsigned >Inv[],
                   std::ofstream & InvOutf)
 {
    OutputSorter os(NumBoxes, CurrentChr, InvOutf);
-   os.SortAndOutputNonTemplateInversions(Reads, Inv);
+   os.SortAndOutputNonTemplateInversions(currentState, Reads, Inv);
 }
 
 void OutputShortInversion (const std::vector < SPLIT_READ > &supportingReads,
@@ -1363,12 +1414,13 @@ bool IsInversion( const SPLIT_READ& read, const std::string& chromosome )
    return false;
 }
 
-void SortOutputDI (const unsigned &NumBoxes, const std::string & CurrentChr,
+void SortOutputDI (ControlState& currentState, const unsigned &NumBoxes, const std::string & CurrentChr,
                    std::vector < SPLIT_READ > &Reads, std::vector < unsigned >DI[],
                    std::ofstream & DIOutf, std::ofstream & InvOutf)
 {
    LOG_INFO(*logStream << "Sorting and outputing deletions with non-template sequences ..." <<
             std::endl);
+    std::cout << "Added: Sorting and outputing deletions with non-template sequences ..." << std::endl;
    unsigned int DINum;
    short CompareResult;
    unsigned Temp4Exchange;
@@ -1380,6 +1432,8 @@ void SortOutputDI (const unsigned &NumBoxes, const std::string & CurrentChr,
 
    for (unsigned Box_index = 0; Box_index < NumBoxes; Box_index++) {
       LOG_DEBUG(*logStream << "Box_index: "   << Box_index << std::endl);
+      //if (DI[Box_index].size ())
+       //std::cout << Box_index << " " << DI[Box_index].size () << std::endl;
       if (DI[Box_index].size () >= userSettings->NumRead2ReportCutOff) {
          DINum = DI[Box_index].size ();
          for (unsigned int First = 0; First < DINum - 1; First++) {
@@ -1446,6 +1500,7 @@ void SortOutputDI (const unsigned &NumBoxes, const std::string & CurrentChr,
          }
          LOG_DEBUG(*logStream << "GoodNum: " << GoodNum << std::endl);
          Indel4output OneIndelEvent;
+         OneIndelEvent.ChrName = GoodIndels[0].FragName;
          OneIndelEvent.Start = 0;
          OneIndelEvent.End = 0;
          OneIndelEvent.IndelSize = GoodIndels[0].IndelSize;
@@ -1467,12 +1522,14 @@ void SortOutputDI (const unsigned &NumBoxes, const std::string & CurrentChr,
                OneIndelEvent.BPLeft = GoodIndels[GoodIndex].BPLeft;
                OneIndelEvent.IndelSize = GoodIndels[GoodIndex].IndelSize;
                OneIndelEvent.NT_size = GoodIndels[GoodIndex].NT_size;
+               OneIndelEvent.ChrName = GoodIndels[GoodIndex].FragName;
             }
          }
 
          IndelEvents.push_back (OneIndelEvent);
          unsigned int RealStart;
          unsigned int RealEnd;
+         // std::cout << "DI IndelEvents " << IndelEvents.size() << std::endl;
          for (unsigned EventIndex = 0; EventIndex < IndelEvents.size (); EventIndex++) {
             if (IndelEvents[EventIndex].End - IndelEvents[EventIndex].Start + 1 >= userSettings->NumRead2ReportCutOff) {
                RealStart =	GoodIndels[IndelEvents[EventIndex].Start].BPLeft;
@@ -1483,13 +1540,15 @@ void SortOutputDI (const unsigned &NumBoxes, const std::string & CurrentChr,
                   if (IsInversion(GoodIndels[IndelEvents[EventIndex].Start], CurrentChr )) {
                      OutputShortInversion(GoodIndels, CurrentChr,IndelEvents[EventIndex].Start,
                                           IndelEvents[EventIndex].End,RealStart, RealEnd, InvOutf);
+                      //std::cout << "Small inv " << IndelEvents[EventIndex].End - IndelEvents[EventIndex].Start + 1 << std::endl;
                      // increase the number of inversion instances in the OutputShortInversion itself; it'd add
                      // needless complexity here.
                   }
-                  else {
+                  else if (IsGoodDeletion(GoodIndels, IndelEvents[EventIndex], RealStart, RealEnd, currentState)) {
                      OutputDI (GoodIndels, CurrentChr,IndelEvents[EventIndex].Start, IndelEvents[EventIndex].End,
                                RealStart, RealEnd, DIOutf);
                      deletionFileData.increaseNonTemplateSvCounter();
+                     //std::cout << "Large del " << IndelEvents[EventIndex].End - IndelEvents[EventIndex].Start + 1 << std::endl;
                   }
                }
             }
@@ -1502,7 +1561,7 @@ void SortOutputDI (const unsigned &NumBoxes, const std::string & CurrentChr,
 
 
 
-void SortOutputLI (const std::string & CurrentChr, std::vector < SPLIT_READ > &Reads, const SearchWindow& window, const std::string& filename)
+void SortOutputLI (ControlState& currentState, const std::string & CurrentChr, std::vector < SPLIT_READ > &Reads, const SearchWindow& window, const std::string& filename)
 {
    unsigned UP_Close_index;
    unsigned temp_AbsLoc;
@@ -1786,7 +1845,7 @@ void SortOutputLI (const std::string & CurrentChr, std::vector < SPLIT_READ > &R
 }
 
 /** writes (appends) breakpoints to the file with the name "filename" */
-void SortOutputRest (const std::string & CurrentChr, 
+void SortOutputRest (ControlState& currentState, const std::string & CurrentChr, 
                 std::vector < SPLIT_READ > &Reads,
                // std::vector < SPLIT_READ > &BP_Reads, 
 					const SearchWindow& window,

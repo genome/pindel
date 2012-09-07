@@ -30,29 +30,29 @@
 #include "bddata.h"
 
 
-void SortOutputD (BDData & g_bdData, ControlState& currentState, const unsigned &NumBoxes, const std::string & CurrentChr,
+void SortOutputD (ControlState& currentState, const unsigned &NumBoxes, const std::string & CurrentChr,
 									std::vector < SPLIT_READ > &AllReads,
 									std::vector < unsigned >Deletions[],
 									std::ofstream & DeletionOutf);
-void SortOutputSI (const unsigned &NumBoxes, const std::string & CurrentChr,
+void SortOutputSI (ControlState& currentState, const unsigned &NumBoxes, const std::string & CurrentChr,
 									 std::vector < SPLIT_READ > &AllReads,
 									 std::vector < unsigned >SIs[], std::ofstream & SIsOutf);
-void SortAndOutputTandemDuplications (const unsigned &NumBoxes, const std::string & CurrentChr,
+void SortAndOutputTandemDuplications (ControlState& currentState, const unsigned &NumBoxes, const std::string & CurrentChr,
 									  std::vector < SPLIT_READ > &AllReads, std::vector < unsigned >TDs[],
 									  std::ofstream & TDOutf, const bool nonTemplate);
-void SortOutputInv (const unsigned &NumBoxes, const std::string & CurrentChr,
+void SortOutputInv (ControlState& currentState, const unsigned &NumBoxes, const std::string & CurrentChr,
 										std::vector < SPLIT_READ > &AllReads,
 										std::vector < unsigned >Inv[], std::ofstream & InvOutf);
-void SortOutputInv_NT (const unsigned &NumBoxes,
+void SortOutputInv_NT (ControlState& currentState, const unsigned &NumBoxes,
 											 const std::string & CurrentChr,
 											 std::vector < SPLIT_READ > &AllReads,
 											 std::vector < unsigned >Inv[],
 											 std::ofstream & InvOutf);
-void SortOutputDI (const unsigned &NumBoxes, const std::string & CurrentChr,
+void SortOutputDI (ControlState& currentState, const unsigned &NumBoxes, const std::string & CurrentChr,
 							std::vector < SPLIT_READ > &Reads, std::vector < unsigned >DI[],
 							std::ofstream & DIOutf, std::ofstream & InvOutf);
-void SortOutputLI (const std::string & CurrentChr, std::vector < SPLIT_READ > &Reads, const SearchWindow& currentWindow, const std::string& filename);
-void SortOutputRest (const std::string & CurrentChr,  std::vector < SPLIT_READ > &Reads,  const SearchWindow& currentWindow, const std::string& filename);
+void SortOutputLI (ControlState& currentState, const std::string & CurrentChr, std::vector < SPLIT_READ > &Reads, const SearchWindow& currentWindow, const std::string& filename);
+void SortOutputRest (ControlState& currentState, const std::string & CurrentChr,  std::vector < SPLIT_READ > &Reads,  const SearchWindow& currentWindow, const std::string& filename);
 
 void SortAndReportInterChromosomalEvents(ControlState& current_state, Genome& genome, UserDefinedSettings* user_settings);
 

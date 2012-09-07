@@ -156,6 +156,7 @@ struct RP_READ {
         NumberOfIdentical = 0;
         Report = false;
         Visited = false;
+        Experimental_InsertSize = 0;
     }
     std::string ReadName;
     std::string ChrNameA;
@@ -169,6 +170,7 @@ struct RP_READ {
     short MQB;
     std::string Tag;
     unsigned InsertSize;
+    unsigned Experimental_InsertSize; // ex
     short ReadLength;
     unsigned NumberOfIdentical;
     bool Report;
