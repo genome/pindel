@@ -9,8 +9,8 @@
 #include "pindel.h"
 
 /* 'ReadBuffer' constructor: sets the capacity of the buffer */
-ReadBuffer::ReadBuffer( int capacity, std::vector<SPLIT_READ> &referenceToFilteredReads, const std::string& chromosome)
-   : m_filteredReads(referenceToFilteredReads), m_CAPACITY( capacity), m_CHROMOSOME( chromosome )
+ReadBuffer::ReadBuffer( int capacity, std::vector<SPLIT_READ> &referenceToFilteredReads, std::vector<SPLIT_READ> &referenceToOneEndMappedReads, const std::string& chromosome)
+   : m_filteredReads(referenceToFilteredReads), m_OneEndMappedReads(referenceToOneEndMappedReads), m_CAPACITY( capacity), m_CHROMOSOME( chromosome )
 {
    m_currentsize = 0;
    m_rawreads.reserve( m_CAPACITY );
@@ -43,6 +43,7 @@ void ReadBuffer::flush()
          #pragma omp critical
          m_filteredReads.push_back(m_rawreads[i]);
       }
+      else m_OneEndMappedReads.push_back(m_rawreads[i]);
    }
    m_rawreads.clear();
    m_currentsize = 0;

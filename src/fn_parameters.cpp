@@ -69,7 +69,7 @@ void defineParameters(std::vector<Parameter *>& parameters)
             &userSettings->MaxRangeIndex,
             "-x",
             "--max_range_index",
-            ss.str(), false, 5));
+            ss.str(), false, 4));
     parameters.push_back(
         new FloatParameter(
             &userSettings->FLOAT_WINDOW_SIZE,

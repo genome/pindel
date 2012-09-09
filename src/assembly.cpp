@@ -157,6 +157,7 @@ short AssembleOneSV(const std::vector <AChromosome> & AllChromosomes, std::map<s
               << "\t" << OneSV.ChrB << " " << OneSV.PosB << " " << OneSV.CI_B << std::endl;
     // get first BP
     CurrentState.Reads_SR.clear();
+    currentState.OneEndMappedReads.clear();
     //std::cout << "AssembleOneSV 2" << std::endl;
     if (CurrentState.CurrentChrName != OneSV.ChrA) {
         CurrentState.CurrentChrName = OneSV.ChrA;

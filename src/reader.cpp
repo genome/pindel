@@ -67,6 +67,7 @@ KSORT_INIT_GENERIC (uint32_t) KHASH_MAP_INIT_STR (read_name, bam1_t *)
 struct fetch_func_data_SR {
    fetch_func_data_SR () : CurrentChrSeq( NULL ){
       LeftReads = NULL;
+       OneEndMappedReads = NULL;
       read_to_map_qual = NULL;
       header = NULL;
       b1_flags = NULL;
@@ -76,6 +77,7 @@ struct fetch_func_data_SR {
    }
    fetch_func_data_SR (const std::string* chromosomeSeq) : CurrentChrSeq( chromosomeSeq ){
       LeftReads = NULL;
+       OneEndMappedReads = NULL;
       read_to_map_qual = NULL;
       header = NULL;
       b1_flags = NULL;
@@ -85,6 +87,7 @@ struct fetch_func_data_SR {
    }
    ReadBuffer *readBuffer;
    std::vector < SPLIT_READ > *LeftReads;
+   std::vector < SPLIT_READ > *OneEndMappedReads;
    khash_t (read_name) * read_to_map_qual;
    bam_header_t *header;
    flags_hit *b1_flags;
@@ -143,12 +146,13 @@ double safeDivide( int dividend, int divisor )
    }
 }
 
-void showReadStats(const std::vector<SPLIT_READ>& Reads)
+void showReadStats(const std::vector<SPLIT_READ>& Reads, const std::vector<SPLIT_READ>& OneEndMappedReads)
 {
    LOG_INFO(*logStream << "Number of reads in current window:                  \t" << g_NumReadInWindow <<
             ", + " << g_InWinPlus << " - " << g_InWinMinus << std::endl);
    LOG_INFO(*logStream << "Number of reads where the close end could be mapped:\t" << Reads.size () <<
             ", + " << g_CloseMappedPlus << " - " << g_CloseMappedMinus << std::endl);
+   LOG_INFO(*logStream << "Number of handing reads (no close end mapped):\t" << OneEndMappedReads.size () << ", + " << g_InWinPlus - g_CloseMappedPlus << " - " << g_InWinMinus - g_CloseMappedMinus << std::endl);
    LOG_INFO(*logStream << "Percentage of reads which could be mapped: + " << std::setprecision(2) << std::fixed << safeDivide( (int)(g_CloseMappedPlus * 100.0) , g_InWinPlus ) <<
             "% - " << safeDivide( (int)(g_CloseMappedMinus * 100.0) , g_InWinMinus ) << "%\n");
    *logStream << std::endl;
@@ -254,6 +258,7 @@ short ReadInRead (PindelReadReader & inf_ReadSeq, const std::string & FragName,
                   }
                   g_sampleNames.insert(currentRead.Tag);
                }
+               //else OneEndMappedReads.push_back(currentRead); // OneEndMappedReads
             }
             BufferReads.clear ();
          }										// if buffer-reads threatens to overflow
@@ -299,6 +304,7 @@ short ReadInRead (PindelReadReader & inf_ReadSeq, const std::string & FragName,
          }
          g_sampleNames.insert(currentRead.Tag);
       }
+      //else OneEndMappedReads.push_back(currentRead); // OneEndMappedReads
    }
    BufferReads.clear ();
 
@@ -315,7 +321,8 @@ short ReadInRead (PindelReadReader & inf_ReadSeq, const std::string & FragName,
                << Temp_One_Read.InsertSize << "\t" << Temp_One_Read.Tag << std::endl << std::endl);
       FirstChr = false;
    }
-   showReadStats(Reads);
+    std::vector < SPLIT_READ > HangingReads;
+   showReadStats(Reads, HangingReads);
 
 	// 0 means "success?" basically just let caller find out that there are no reads.
    if (Reads.size() == 0) {
@@ -430,6 +437,7 @@ bool ReadInBamReads_RP_Discovery (const char *bam_path, const std::string & Frag
 bool ReadInBamReads_SR (const char *bam_path, const std::string & FragName,
                 const std::string * CurrentChrSeq,
                 std::vector < SPLIT_READ > &LeftReads,
+                std::vector < SPLIT_READ > &OneEndMappedReads,
                 int InsertSize,
                 std::string Tag,
                 const SearchWindow& window,
@@ -453,6 +461,7 @@ bool ReadInBamReads_SR (const char *bam_path, const std::string & FragName,
    data.header = header;
    //data.CurrentChrSeq = CurrentChrSeq;
    data.LeftReads = &LeftReads;
+    data.OneEndMappedReads = &OneEndMappedReads;
    data.read_to_map_qual = NULL;
    data.read_to_map_qual = kh_init (read_name);
    flags_hit b1_flags, b2_flags;
@@ -463,7 +472,7 @@ bool ReadInBamReads_SR (const char *bam_path, const std::string & FragName,
    data.readBuffer=&readBuffer;
    bam_fetch (fp, idx, tid, window.getStart(), window.getEnd(), &data, fetch_func_SR);
    readBuffer.flush(); 
-   showReadStats(LeftReads);
+   showReadStats(LeftReads, OneEndMappedReads);
 
    khint_t key;
    if (kh_size (data.read_to_map_qual) > 0) {
@@ -1077,7 +1086,7 @@ short get_SR_Reads(ControlState& currentState, const SearchWindow& currentWindow
 	g_CloseMappedMinus = 0; // #################
    std::cout << "getReads " << currentWindow.getChromosome()->getName() << " " << currentWindow.getChromosome()->getSeq().size() << std::endl;
    short ReturnFromReadingReads;
-   ReadBuffer readBuffer(BUFFER_SIZE, currentState.Reads_SR, currentWindow.getChromosome()->getSeq());
+   ReadBuffer readBuffer(BUFFER_SIZE, currentState.Reads_SR, currentState.OneEndMappedReads, currentWindow.getChromosome()->getSeq());
 	UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
    if (userSettings->bamFilesAsInput()) {
       ReturnFromReadingReads = 0;
@@ -1089,6 +1098,7 @@ short get_SR_Reads(ControlState& currentState, const SearchWindow& currentWindow
                                                     &currentWindow.getChromosome()->getSeq(),
 																	//	&currentState.CurrentChrSeq, 
                                                     currentState.Reads_SR,
+                                                    currentState.OneEndMappedReads,
                                                     currentState.bams_to_parse[i].InsertSize,
                                                     currentState.bams_to_parse[i].Tag,
                                                     currentWindow, readBuffer );

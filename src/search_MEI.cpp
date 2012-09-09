@@ -122,12 +122,14 @@ static int get_split_reads_for_cluster(std::vector<bam_info>& bam_sources, bool 
             upper_bound = outer_pos + source.InsertSize;
         }
         SearchWindow search_window(chromosome, lower_bound, upper_bound);
+        
+        std::vector<SPLIT_READ> HangingReads; // Kai: those are reads without closed end mapped, or hanging reads.
 
         // Read split reads in defined window.
-        ReadBuffer read_buffer(SPLIT_READ_BUFFER_SIZE, split_reads, chromosome->getSeq());
+        ReadBuffer read_buffer(SPLIT_READ_BUFFER_SIZE, split_reads, HangingReads, chromosome->getSeq());
 
         int read_result = ReadInBamReads_SR(source.BamFile.c_str(), chromosome->getName(), &chromosome->getSeq(), 
-                                            split_reads, source.InsertSize, source.Tag, search_window, read_buffer);
+                                            split_reads, HangingReads, source.InsertSize, source.Tag, search_window, read_buffer);
         if (read_result > 0) {
             return read_result;
         }

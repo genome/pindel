@@ -1268,6 +1268,7 @@ int main(int argc, char *argv[])
             AllLoadings += (unsigned int) difftime(Time_Load_E, Time_Load_S);
             AllSortReport += (unsigned int) difftime(Time_Sort_E, Time_Load_E);
             currentState.Reads_SR.clear();
+             currentState.OneEndMappedReads.clear();
             *logStream << "There are " << currentState.FutureReads_SR. size()  << " reads saved for the next cycle.\n" << std::endl;
             //currentState.Reads_SR.swap(currentState.FutureReads_SR);
          }
@@ -1278,6 +1279,7 @@ int main(int argc, char *argv[])
          if (currentState.Reads_RP_Discovery.size())
              currentState.Reads_RP_Discovery.clear();
          //std::cout << "after " << currentState.Reads_RP_Discovery.size() << std::endl;
+          //std::cout << "data " << currentState.Reads_SR.size() << " " << currentState.Reads_RP_Discovery.size() << " " << currentState.OneEndMappedReads.size() << std::endl;
          Time_Load_S = 0;
 			currentWindow.next();
          g_binIndex++;
