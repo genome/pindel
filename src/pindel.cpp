@@ -1230,9 +1230,12 @@ int main(int argc, char *argv[])
              std::cout << "Added BreakDancer-like events: " << g_bdData.GetBDSize() << std::endl;
 				
          }
+          std::cout << " 1 " << std::endl;
           g_bdData.loadRegion( currentWindow_cs );
+          std::cout << " 2 " << std::endl;
           //std::cout << "g_bdData.size() " << g_bdData.GetBDSize() << std::endl;
          get_SR_Reads(currentState, currentWindow );
+          std::cout << " 3 " << std::endl;
          Time_Mine_E = time(NULL);
          if (currentState.Reads_SR.size() ) {
             *logStream << "There are " << currentState.Reads_SR.size() << " reads for this chromosome region." << std::endl; // what region?
@@ -1275,6 +1278,7 @@ int main(int argc, char *argv[])
          else {
              *logStream << "There are no reads for this bin.\n";
          }
+          std::cout << " 4 " << std::endl;
          //std::cout << "before " << currentState.Reads_RP_Discovery.size() << std::endl;
          if (currentState.Reads_RP_Discovery.size())
              currentState.Reads_RP_Discovery.clear();
