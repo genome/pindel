@@ -442,7 +442,8 @@ bool ReadInBamReads_SR (const char *bam_path, const std::string & FragName,
                 std::string Tag,
                 const SearchWindow& window,
                 ReadBuffer& readBuffer)
-{  
+{
+    //std:: cout << " in ReadInBamReads_SR " << std::endl;
    bamFile fp;
    fp = bam_open (bam_path, "r");
    assert (fp);
@@ -470,8 +471,11 @@ bool ReadInBamReads_SR (const char *bam_path, const std::string & FragName,
    data.InsertSize = InsertSize;
    data.Tag = Tag;
    data.readBuffer=&readBuffer;
+   // std:: cout << " before bam_fetch " << std::endl;
    bam_fetch (fp, idx, tid, window.getStart(), window.getEnd(), &data, fetch_func_SR);
-   readBuffer.flush(); 
+   // std:: cout << " after bam_fetch " << std::endl;
+   readBuffer.flush();
+   // std:: cout << " after flush " << std::endl;
    showReadStats(LeftReads, OneEndMappedReads);
 
    khint_t key;
@@ -490,6 +494,7 @@ bool ReadInBamReads_SR (const char *bam_path, const std::string & FragName,
    bam_header_destroy (header);
    bam_index_destroy (idx);
    bam_close (fp);
+   // std:: cout << " existing ReadInBamReads_SR " << std::endl;
    return true;
 }
 
@@ -1078,13 +1083,15 @@ void readInPindelReads(PindelReadReader &reader, const std::string& pindelFilena
 
 short get_SR_Reads(ControlState& currentState, const SearchWindow& currentWindow )
 {
+   // std::cout << "in get_SR_Reads " << std::endl;
+    
 	g_NumReadInWindow = 0; // #################
 	g_NumReadScanned = 0;
 	g_InWinPlus = 0; // #################
 	g_InWinMinus = 0; // #################
 	g_CloseMappedPlus = 0; // #################
 	g_CloseMappedMinus = 0; // #################
-   std::cout << "getReads " << currentWindow.getChromosome()->getName() << " " << currentWindow.getChromosome()->getSeq().size() << std::endl;
+  // std::cout << "getReads " << currentWindow.getChromosome()->getName() << " " << currentWindow.getChromosome()->getSeq().size() << std::endl;
    short ReturnFromReadingReads;
    ReadBuffer readBuffer(BUFFER_SIZE, currentState.Reads_SR, currentState.OneEndMappedReads, currentWindow.getChromosome()->getSeq());
 	UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
@@ -1092,6 +1099,7 @@ short get_SR_Reads(ControlState& currentState, const SearchWindow& currentWindow
       ReturnFromReadingReads = 0;
       for (unsigned int i = 0; i < currentState.bams_to_parse.size(); i++) {
          *logStream << "Insertsize in bamreads: " << currentState.bams_to_parse[i].InsertSize << std::endl;
+        // std::cout << "before ReadInBamReads_SR " << std::endl;
          ReturnFromReadingReads = ReadInBamReads_SR(
                                                     currentState.bams_to_parse[i].BamFile.c_str(),
                                                     currentWindow.getChromosome()->getName(), 
@@ -1102,6 +1110,7 @@ short get_SR_Reads(ControlState& currentState, const SearchWindow& currentWindow
                                                     currentState.bams_to_parse[i].InsertSize,
                                                     currentState.bams_to_parse[i].Tag,
                                                     currentWindow, readBuffer );
+       //  std::cout << "after ReadInBamReads_SR " << std::endl;
          if (ReturnFromReadingReads == 0) { // perhaps 'false'? ReadInBamReads returns a boolean...
             LOG_ERROR(*logStream << "Bam read failed: " << currentState.bams_to_parse[i].BamFile << std::endl);
             return EXIT_FAILURE;
@@ -1128,6 +1137,7 @@ short get_SR_Reads(ControlState& currentState, const SearchWindow& currentWindow
 	if (userSettings->singlePindelFileAsInput()) {
 		readInPindelReads(*currentState.inf_Pindel_Reads, userSettings->pindelFilename, currentState, currentWindow );
 	}
+ //  std::cout << "existing get_SR_Reads " << std::endl;
    return 0;
 }
 

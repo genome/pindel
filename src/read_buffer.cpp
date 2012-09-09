@@ -35,18 +35,26 @@ ReadBuffer::~ReadBuffer()
    the next reads. */
 void ReadBuffer::flush()
 {
+   // std::cout << "in flush " << std::endl;
    #pragma omp parallel for
    for (int i=0; i<m_currentsize ; i++ ) {
+      // std::cout << "before GetCloseEnd " << std::endl;
       GetCloseEnd(m_CHROMOSOME, m_rawreads[i]);
+      // std::cout << "after GetCloseEnd " << std::endl;
       if (m_rawreads[i].hasCloseEnd()) {
          updateReadAfterCloseEndMapping(m_rawreads[i]);
          #pragma omp critical
          m_filteredReads.push_back(m_rawreads[i]);
       }
-      else m_OneEndMappedReads.push_back(m_rawreads[i]);
+      else {
+         #pragma omp critical 
+         m_OneEndMappedReads.push_back(m_rawreads[i]);   
+      }
    }
+    //std::cout << "end of flush " << std::endl;
    m_rawreads.clear();
    m_currentsize = 0;
+    //std::cout << "existing flush " << std::endl;
 }
 
 /* 'ReadBuffer::addRawRead' adds the read "newRead" to the buffer, and invokes
