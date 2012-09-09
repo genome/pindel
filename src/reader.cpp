@@ -152,7 +152,7 @@ void showReadStats(const std::vector<SPLIT_READ>& Reads, const std::vector<SPLIT
             ", + " << g_InWinPlus << " - " << g_InWinMinus << std::endl);
    LOG_INFO(*logStream << "Number of reads where the close end could be mapped:\t" << Reads.size () <<
             ", + " << g_CloseMappedPlus << " - " << g_CloseMappedMinus << std::endl);
-   LOG_INFO(*logStream << "Number of handing reads (no close end mapped):\t" << OneEndMappedReads.size () << ", + " << g_InWinPlus - g_CloseMappedPlus << " - " << g_InWinMinus - g_CloseMappedMinus << std::endl);
+   LOG_INFO(*logStream << "Number of hanging reads (no close end mapped):\t" << OneEndMappedReads.size () << ", + " << g_InWinPlus - g_CloseMappedPlus << " - " << g_InWinMinus - g_CloseMappedMinus << std::endl);
    LOG_INFO(*logStream << "Percentage of reads which could be mapped: + " << std::setprecision(2) << std::fixed << safeDivide( (int)(g_CloseMappedPlus * 100.0) , g_InWinPlus ) <<
             "% - " << safeDivide( (int)(g_CloseMappedMinus * 100.0) , g_InWinMinus ) << "%\n");
    *logStream << std::endl;

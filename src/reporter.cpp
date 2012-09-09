@@ -893,6 +893,12 @@ void SortOutputSI (ControlState& currentState, const unsigned &NumBoxes, const s
 bool IsGoodTD(std::vector < SPLIT_READ > & GoodIndels, Indel4output & OneIndelEvent, unsigned RealStart, unsigned RealEnd, ControlState& currentState) {
     //std::cout << "Real Start and End: " << RealStart << " " << RealEnd
     //<< " " << RP_support_D(currentState, OneIndelEvent, RealStart, RealEnd)
+    
+    UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
+    
+    if (userSettings->pindelConfigFileAsInput() ||userSettings->singlePindelFileAsInput()) return true;
+    //return true;
+    
     //<< std::endl;
     if (RealEnd < RealStart) return false;
     if (RealEnd - RealStart < (unsigned)(GoodIndels[0].getReadLength() * 2)) {
@@ -1098,6 +1104,12 @@ bool IsGoodDeletion(std::vector < SPLIT_READ > & GoodIndels, Indel4output & OneI
     //std::cout << "Real Start and End: " << RealStart << " " << RealEnd
     //<< " " << RP_support_D(currentState, OneIndelEvent, RealStart, RealEnd)
     //<< std::endl;
+    
+    UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
+    
+    if (userSettings->pindelConfigFileAsInput() ||userSettings->singlePindelFileAsInput()) return true;
+    //return true;
+    
     if (RealEnd < RealStart) return false;
     if (RealEnd - RealStart < 1000) {
         //std::cout << "<1000 good" << std::endl;

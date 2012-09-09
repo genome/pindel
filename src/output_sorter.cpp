@@ -263,8 +263,12 @@ int OutputSorter::DoSortAndOutputInversions (ControlState& currentState, std::ve
 }
 
 bool IsGoodINV(std::vector < SPLIT_READ > & GoodIndels, Indel4output & OneIndelEvent, unsigned RealStart, unsigned RealEnd, ControlState& currentState) {
+    
+    UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
+    
+    if (userSettings->pindelConfigFileAsInput() ||userSettings->singlePindelFileAsInput()) return true;
     //return true;
-
+    
     //std::cout << "IsGoodINV " << std::endl;
     unsigned Cutoff = (OneIndelEvent.End - OneIndelEvent.Start + 1) * 2;
     if (Cutoff > 20) Cutoff = 20;
