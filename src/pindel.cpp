@@ -1224,12 +1224,13 @@ int main(int argc, char *argv[])
             Time_Load_S = time(NULL);
          }
 			timer.switchTo("Reading in reads + matching close ends");//
-         if (userSettings->bamFilesAsInput()) {
+         if (userSettings->bamFilesAsInput() && userSettings->SearchDiscordantReadPair) {
              get_RP_Reads_Discovery(currentState, currentWindow );
              g_bdData.UpdateBD(currentState);
              std::cout << "Added BreakDancer-like events: " << g_bdData.GetBDSize() << std::endl;
 				
          }
+         
          // std::cout << " 1 " << std::endl;
           g_bdData.loadRegion( currentWindow_cs );
          // std::cout << " 2 " << std::endl;

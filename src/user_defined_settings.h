@@ -61,6 +61,7 @@ public:
 	std::string pindelConfigFilename;
 	std::string pindelFilename;
 	std::string referenceFilename;
+    bool SearchDiscordantReadPair;
 	bool ReportCloseMappedRead;
 	bool reportOnlyCloseMappedReads;
 	bool reportInterchromosomalEvents;

@@ -12,7 +12,7 @@
 /* 'defineParameters' defines the parameters to be used by Pindel. Takes the variables from the calling function as argument for those variables which
  do not need to be stored in the par structure. */
 // _________j___n____________
-// __CD_FGH_JK__NO__R__UVWXYZ
+// __CD_FGH_JK__NO_____UVWXYZ
 void defineParameters(std::vector<Parameter *>& parameters)
 {
 	UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
@@ -53,7 +53,10 @@ void defineParameters(std::vector<Parameter *>& parameters)
     parameters.push_back(
         new BoolParameter(&userSettings->showHelp, "-h", "--help",
                           "show the command line options of Pindel", false, false));
-
+    parameters.push_back(
+                         new BoolParameter(&userSettings->SearchDiscordantReadPair, "-R", "--RP",
+                                           "search for discordant read-pair", false, true));
+    
     parameters.push_back(
         new IntParameter(&userSettings->numThreads, "-T", "--number_of_threads",
                          "the number of threads Pindel will use (default 1).",
