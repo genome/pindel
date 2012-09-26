@@ -1,0 +1,3 @@
+COLO-829_20-p_ok-1.txt.gz
+COLO-829_20-p_ok-2.txt
+COLO-829_20-p_ok-3.txt.gz
