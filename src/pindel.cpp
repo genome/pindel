@@ -1627,7 +1627,7 @@ unsigned CountElements(const FarEndSearchPerRegion * OneRegionSearchResult_input
     return Sum;
 }
 
-void ExtendMatch( const SPLIT_READ & read,
+void ExtendMatch(SPLIT_READ & read,
                  const std::string & readSeq,
                  const std::vector <FarEndSearchPerRegion*> & WholeGenomeSearchResult_input,
                  const short minimumLengthToReportMatch,
@@ -1689,7 +1689,7 @@ unsigned int minimumNumberOfMismatches( const std::vector <FarEndSearchPerRegion
 	return numberOfMismatches;
 }
 
-void CheckBoth(const SPLIT_READ & read,
+void CheckBoth(SPLIT_READ & read,
                const std::string & readSeq,
                const std::vector <FarEndSearchPerRegion*> & WholeGenomeSearchResult_input,
                const short minimumLengthToReportMatch,
@@ -1753,7 +1753,7 @@ void CheckBoth(const SPLIT_READ & read,
 									MatchPosition = MinMatch;
                         }
 
-                        if (CheckMismatches(WholeGenomeSearchResult_input[regionWithMatch]->CurrentChromosome->getSeq(), readSeq, MatchPosition)) {
+                        if (CheckMismatches(WholeGenomeSearchResult_input[regionWithMatch]->CurrentChromosome->getSeq(), readSeq, MatchPosition, read.FarEndMismatch)) {
                             UP.push_back (MatchPosition);
                             break;
                         } // if CheckMismatches
@@ -1767,90 +1767,6 @@ void CheckBoth(const SPLIT_READ & read,
 		ExtendMatch( read, readSeq, WholeGenomeSearchResult_input, minimumLengthToReportMatch, BP_End, CurrentLength, UP );
 	}
 }
-
-/*void ExtendMatch( const SPLIT_READ & read, const std::string & chromosomeSeq,
-               const std::string & readSeq,
-               const std::vector<unsigned int> PD_Plus[],
-               const std::vector<unsigned int> PD_Minus[], const short minimumLengthToReportMatch,
-               const short BP_End, const short CurrentLength,
-               SortedUniquePoints &UP )
-{
-	std::vector<unsigned int> PD_Plus_Output[read.getTOTAL_SNP_ERROR_CHECKED()];
-   std::vector<unsigned int> PD_Minus_Output[read.getTOTAL_SNP_ERROR_CHECKED()];
-		
-   for (int CheckedIndex = 0; CheckedIndex < read.getTOTAL_SNP_ERROR_CHECKED(); CheckedIndex++) {
-      PD_Plus_Output[CheckedIndex].reserve( PD_Plus[CheckedIndex].size()); // this assumes perfect matches and no 'attrition' from higher levels. We may want to test this...
-      PD_Minus_Output[CheckedIndex].reserve( PD_Minus[CheckedIndex].size());
-   }
-   const char CurrentChar = readSeq[CurrentLength];
-   const char CurrentCharRC = Convert2RC4N[(short) CurrentChar];
-
-	for (int i = 0; i <= read.getTOTAL_SNP_ERROR_CHECKED_Minus(); i++) {
-		CategorizePositions( CurrentChar, chromosomeSeq, PD_Plus, PD_Plus_Output, i, 1, read.getTOTAL_SNP_ERROR_CHECKED_Minus() );
-		CategorizePositions( CurrentCharRC, chromosomeSeq, PD_Minus, PD_Minus_Output, i, -1, read.getTOTAL_SNP_ERROR_CHECKED_Minus() );
-   }
-
-	// this loop looks familiar; candidate for factoring out mini-function?
-   unsigned int Sum = 0;
-   for (int i = 0; i <= read.getMAX_SNP_ERROR(); i++) {
-      Sum += PD_Plus_Output[i].size() + PD_Minus_Output[i].size();
-   }
-   if (Sum) {
-      const short CurrentLengthOutput = CurrentLength + 1;
-      CheckBoth(read, chromosomeSeq, readSeq, PD_Plus_Output, PD_Minus_Output, minimumLengthToReportMatch, BP_End, CurrentLengthOutput, UP);
-   }
-   else {
-     return;
- 	} // else-if Sum
-}
-
-void CheckBoth(const SPLIT_READ & read, const std::string & chromosomeSeq,
-               const std::string & readSeq,
-               const std::vector<unsigned int> PD_Plus[],
-               const std::vector<unsigned int> PD_Minus[], const short minimumLengthToReportMatch,
-               const short BP_End, const short CurrentLength,
-               SortedUniquePoints &UP)
-{   
-	UserDefinedSettings *userSettings = UserDefinedSettings::Instance();
-
-   if (CurrentLength >= minimumLengthToReportMatch && CurrentLength <= BP_End) {
-      for (short numberOfMismatches = 0; numberOfMismatches <= read.getMAX_SNP_ERROR(); numberOfMismatches++) {
-         if (PD_Plus[numberOfMismatches].size() + PD_Minus[numberOfMismatches].size() == 1 && CurrentLength >= minimumLengthToReportMatch + numberOfMismatches) {
-            int Sum = 0;
-            if (userSettings->ADDITIONAL_MISMATCH > 0) { // what if this is ADDITIONAL_MISMATCH is 0? Do you save anything then?
-					// what if j +ADD_MISMATCH exceeds the max allowed number of mismatches (the PD_element does not exist?)
-				
-					// feeling the need to comment here - so factor out?
-					// only report reads if there are no reads with fewer mismatches or only one or two more mismatches
-               for (short mismatchCount = 0; mismatchCount <= numberOfMismatches + userSettings->ADDITIONAL_MISMATCH; mismatchCount++) {
-                  Sum += PD_Plus[mismatchCount].size() + PD_Minus[mismatchCount].size();
-               }
-               if (Sum == 1 && numberOfMismatches <= (short) (userSettings->Seq_Error_Rate * CurrentLength + 1)) {
-							// why I love constructors
-						UniquePoint MatchPosition;
-                  if (PD_Plus[numberOfMismatches].size() == 1) {
-							UniquePoint PlusMatch( CurrentLength, PD_Plus[numberOfMismatches][0], FORWARD, SENSE, numberOfMismatches );
-							MatchPosition = PlusMatch; 
-                  }
-                  else {
-							UniquePoint MinMatch( CurrentLength, PD_Minus[numberOfMismatches][0], BACKWARD, ANTISENSE, numberOfMismatches );
-							MatchPosition = MinMatch; 
-					   }
-                  if (CheckMismatches(chromosomeSeq,readSeq, MatchPosition)) {
-                     UP.push_back (MatchPosition);
-                     break;
-                  } // if CheckMismatches
-               } // if Sum==1
-            } // if AdditionalMismatches
-        	} // if sumsize ==1
-      } // for-loop
-	} // if length of match is sufficient to be reportable
-
-   if (CurrentLength < BP_End) {
-		ExtendMatch( read, chromosomeSeq, readSeq, PD_Plus, PD_Minus, minimumLengthToReportMatch, BP_End, CurrentLength, UP );
-	}
-}*/
-
 
 void CleanUniquePoints(SortedUniquePoints &Input_UP)
 {

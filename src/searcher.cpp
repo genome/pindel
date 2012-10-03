@@ -58,7 +58,7 @@ void CategorizePositions(const char readBase, const std::string & chromosomeSeq,
 	//std::cout << "From " << PD_Plus[ numMisMatches ].size() << "Good: " << PD_Plus_Output[ numMisMatches ].size() << "Bad: " << PD_Plus_Output[ numMisMatches + 1].size() << std::endl;
 }
 
-void ExtendMatchClose( const SPLIT_READ & read, const std::string & chromosomeSeq,
+void ExtendMatchClose( SPLIT_READ & read, const std::string & chromosomeSeq,
                const std::string & readSeq,
                const std::vector<PosVector> InputPositions, const short minimumLengthToReportMatch,
                const short BP_End, const short CurrentLength,
@@ -104,7 +104,7 @@ unsigned int minimumNumberOfMismatches( const std::vector< PosVector>& mismatche
 }
 
 
-void CheckLeft_Close (const SPLIT_READ & read,
+void CheckLeft_Close (SPLIT_READ & read,
                  const std::string & chromosomeSeq,
                  const std::string & readSeq,
                  const std::vector< PosVector >& Left_PD,
@@ -131,7 +131,7 @@ void CheckLeft_Close (const SPLIT_READ & read,
             if (Sum == 1 && (unsigned)i <= g_maxMismatch[CurrentLength] ) {
                UniquePoint TempOne(g_genome.getChr(read.FragName), CurrentLength, Left_PD[i][0], FORWARD, ANTISENSE, i );  
 					//if (read.Name=="@read_6990/2" ) { std::cout << "Saving point\n";             }
-               if (CheckMismatches(chromosomeSeq, read.getUnmatchedSeq(), TempOne)) {
+               if (CheckMismatches(chromosomeSeq, read.getUnmatchedSeq(), TempOne, read.CloseEndMismatch)) {
                   LeftUP.push_back (TempOne);
                   break;
                }
@@ -145,7 +145,7 @@ void CheckLeft_Close (const SPLIT_READ & read,
 }
 
 
-void CheckRight_Close (const SPLIT_READ & read,
+void CheckRight_Close (SPLIT_READ & read,
                   const std::string & chromosomeSeq,
                   const std::string & readSeq,
                   const std::vector < PosVector >& Right_PD,
@@ -170,7 +170,7 @@ void CheckRight_Close (const SPLIT_READ & read,
 				}*/
             if (Sum == 1 && (unsigned)i <= g_maxMismatch[CurrentLength] ) {
                UniquePoint TempOne( g_genome.getChr(read.FragName), CurrentLength, Right_PD[i][0], BACKWARD, SENSE, i);
-               if (CheckMismatches(chromosomeSeq, read.getUnmatchedSeq(), TempOne)) {
+               if (CheckMismatches(chromosomeSeq, read.getUnmatchedSeq(), TempOne, read.CloseEndMismatch)) {
                   RightUP.push_back (TempOne);
                   break;
                } // ###################################
@@ -185,7 +185,7 @@ void CheckRight_Close (const SPLIT_READ & read,
 }
 
 
-bool CheckMismatches (const std::string & TheInput, const std::string & InputReadSeq, const UniquePoint & UP)
+bool CheckMismatches (const std::string & TheInput, const std::string & InputReadSeq, const UniquePoint & UP, short & numberOfMismatch)
 {
 	int Min_Perfect_Match_Around_BP = UserDefinedSettings::Instance()->Min_Perfect_Match_Around_BP;
    std::string CurrentReadSeq;
@@ -238,6 +238,7 @@ bool CheckMismatches (const std::string & TheInput, const std::string & InputRea
          }
       }
    }
+   numberOfMismatch = NumMismatches;
    if ((float)NumMismatches > MAX_ALLOWED_MISMATCHES) {
       return true;
    }

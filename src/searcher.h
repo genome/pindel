@@ -21,7 +21,7 @@
 #ifndef SEARCHER_H
 #define	SEARCHER_H
 
-bool CheckMismatches (const std::string & TheInput, const std::string & CurrentReadSeq, const UniquePoint & UP);
+bool CheckMismatches (const std::string & TheInput, const std::string & CurrentReadSeq, const UniquePoint & UP, short & numberOfMismatch);
 void CategorizePositions(const char readBase, const std::string & chromosomeSeq, const std::vector<PosVector>& PD_Plus, std::vector<PosVector>& PD_Plus_Output, const int numMisMatches, 	
 	const int searchDirection,	const int maxNumMismatches );
 
@@ -43,7 +43,7 @@ void CategorizePositions(const char readBase, const std::string & chromosomeSeq,
 										 const short &CurrentPos,
 										 SortedUniquePoints &RightUP);*/
 
-void CheckLeft_Close (const SPLIT_READ & OneRead,
+void CheckLeft_Close (SPLIT_READ & OneRead,
 											const std::string & TheInput,
 											const std::string & CurrentReadSeq,
 											const std::vector < PosVector >& Left_PD,
@@ -52,7 +52,7 @@ void CheckLeft_Close (const SPLIT_READ & OneRead,
 											const short &CurrentLength,
 											SortedUniquePoints &LeftUP);
 
-void CheckRight_Close (const SPLIT_READ & OneRead,
+void CheckRight_Close (SPLIT_READ & OneRead,
 											 const std::string & TheInput,
 											 const std::string & CurrentReadSeq,
 											 const std::vector < PosVector >& Right_PD,

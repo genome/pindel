@@ -208,6 +208,8 @@ struct SPLIT_READ {
 		Used = false;
 		CloseEndLength = 0;
 		LeftMostPos = 0;
+        CloseEndMismatch = 0;
+        FarEndMismatch = 0;
 	}
 	std::string FragName;
    std::string FarFragName;
@@ -249,6 +251,8 @@ struct SPLIT_READ {
 	bool Used;
 	//bool Investigated;
 	short CloseEndLength;
+    short CloseEndMismatch;
+    short FarEndMismatch;
 	int LeftMostPos;
     std::map <std::string, int> ReadCountPerSample;
 
@@ -436,7 +440,7 @@ std::string Cap2Low(const std::string & input);
 		const short BP_End, const short CurrentLength,
 		SortedUniquePoints &UP);*/
 class FarEndSearchPerRegion;
-void CheckBoth(const SPLIT_READ & read,
+void CheckBoth(SPLIT_READ & read,
                const std::string & readSeq,
                const std::vector <FarEndSearchPerRegion*> & WholeGenomeSearchResult_input,
                const short minimumLengthToReportMatch,
