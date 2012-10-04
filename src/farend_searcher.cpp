@@ -35,33 +35,21 @@ FarEndSearchPerRegion::FarEndSearchPerRegion( const Chromosome* Chromosome, unsi
 }
 
 bool NewUPFarIsBetter(const SortedUniquePoints & UP, const SPLIT_READ& Read) {
-    //return true;
-    /*
-    if (Read.Name == "@DD7DT8Q1:4:1104:16910:100440#GTACCT/1") {
-        std::cout << std::endl;
-        std::cout << "UP.MaxLen()  Read.MaxLenFarEnd() " << UP.MaxLen() << " " << Read.MaxLenFarEnd() << std::endl;
-        std::cout << "UP.NumMismatch()  Read.UP_Far.NumMismatch() " << UP.NumMismatch() << " " << Read.UP_Far.NumMismatch() << std::endl;
-        std::cout << Read;
-        std::cout << std::endl;
-    }*/
+
     if (UP.MaxLen() < Read.MaxLenFarEnd()) {
-       // std::cout << " UP.MaxLen() < Read.MaxLenFarEnd() false" << std::endl;
        return false;
     }
     if (UP.NumMismatch() < Read.UP_Far.NumMismatch()){
-        //std::cout << " UP.NumMismatch() < Read.UP_Far.NumMismatch() true" << std::endl;
         return true;
     }
     else {
-       //std::cout << " UP.NumMismatch() < Read.UP_Far.NumMismatch() false" << std::endl;
         return false;
     }
 }
 
 void SearchFarEndAtPos( const std::string& chromosome, SPLIT_READ& Temp_One_Read, const std::vector <SearchWindow> & Regions )
 {
-    
-    
+
    // step 1 find out which chromosomes in Regions: set? linear pass of regions
    // step 2 for each identified chromsome, for each regions on the chromosme, do the business.
    char CurrentBase = Temp_One_Read.getUnmatchedSeq()[0];
@@ -72,9 +60,7 @@ void SearchFarEndAtPos( const std::string& chromosome, SPLIT_READ& Temp_One_Read
     
    std::vector <FarEndSearchPerRegion*> WholeGenomeSearchResult;
    unsigned NumberOfHits = 0;
-	/*if (Temp_One_Read.Name=="@read_6990/2" ) {
-   	 std::cout << "6990/2Number of regions: " << Regions.size() << " " << Temp_One_Read.Name << " " << Temp_One_Read.FragName << " " << Temp_One_Read.MatchedD << " " << Temp_One_Read.MatchedRelPos << std::endl;
-	}*/
+
 
    for (unsigned RegionIndex = 0; RegionIndex < Regions.size(); RegionIndex++) {
        
@@ -115,8 +101,6 @@ void SearchFarEndAtPos( const std::string& chromosome, SPLIT_READ& Temp_One_Read
 
 void SearchFarEndAtPosPerfect( const std::string& chromosome, SPLIT_READ& Temp_One_Read, const std::vector <SearchWindow> & Regions )
 {
-    
-    
     // step 1 find out which chromosomes in Regions: set? linear pass of regions
     // step 2 for each identified chromsome, for each regions on the chromosme, do the business.
     char CurrentBase = Temp_One_Read.getUnmatchedSeq()[0];
@@ -127,9 +111,7 @@ void SearchFarEndAtPosPerfect( const std::string& chromosome, SPLIT_READ& Temp_O
     
     std::vector <FarEndSearchPerRegion*> WholeGenomeSearchResult;
     unsigned NumberOfHits = 0;
-	/*if (Temp_One_Read.Name=="@read_6990/2" ) {
-   	 std::cout << "6990/2Number of regions: " << Regions.size() << " " << Temp_One_Read.Name << " " << Temp_One_Read.FragName << " " << Temp_One_Read.MatchedD << " " << Temp_One_Read.MatchedRelPos << std::endl;
-     }*/
+
     
     for (unsigned RegionIndex = 0; RegionIndex < Regions.size(); RegionIndex++) {
         

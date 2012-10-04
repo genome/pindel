@@ -612,20 +612,7 @@ void build_record_SR (const bam1_t * mapped_read, const bam1_t * unmapped_read, 
 		exit( EXIT_FAILURE );
 	}
     Temp_One_Read.Tag = Tag;
-    /*
-    std::cout << "abs (mapped_core->isize) Temp_One_Read.InsertSize " << abs (mapped_core->isize) << " " << Temp_One_Read.InsertSize << std::endl;
-    if (((mapped_core->tid == unmapped_core->tid) &&
-         (mapped_core->pos != unmapped_core->pos)) &&
-        (abs (mapped_core->isize) < Temp_One_Read.InsertSize)) {
-        std::cout << "It happenned!" << std::endl;
-        if (Temp_One_Read.MatchedD == '+') {
-            Temp_One_Read.MatchedRelPos -= Temp_One_Read.InsertSize;
-        }
-        else {
-            Temp_One_Read.MatchedRelPos += Temp_One_Read.InsertSize;
-        }
-    }
-    */
+
     Temp_One_Read.FragName = header->target_name[mapped_core->tid];
     //Temp_One_Read.FragName = FragName;
     LOG_DEBUG(cout << Temp_One_Read.Name << std::endl
