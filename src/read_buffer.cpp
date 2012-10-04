@@ -42,12 +42,18 @@ void ReadBuffer::flush()
       GetCloseEnd(m_CHROMOSOME, m_rawreads[i]);
       // std::cout << "after GetCloseEnd " << std::endl;
       if (m_rawreads[i].hasCloseEnd()) {
+          //if (m_rawreads[i].Name == "@DD7DT8Q1:4:1106:17724:13906#GTACCT/1") {
+          //    std::cout << "m_rawreads[i].hasCloseEnd()" << std::endl;
+          //}
          updateReadAfterCloseEndMapping(m_rawreads[i]);
          #pragma omp critical
          m_filteredReads.push_back(m_rawreads[i]);
       }
       else {
-         #pragma omp critical 
+          //if (m_rawreads[i].Name == "@DD7DT8Q1:4:1106:17724:13906#GTACCT/1") {
+          //    std::cout << "m_rawreads[i] no close end" << std::endl;
+          //}
+         #pragma omp critical
          m_OneEndMappedReads.push_back(m_rawreads[i]);   
       }
    }

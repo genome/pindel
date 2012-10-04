@@ -119,7 +119,7 @@ struct UniquePoint {
 	UniquePoint( const Chromosome* chromosome_ptr, const short lengthStr, const unsigned int absLoc, const char direction, const char strand, const short mismatches );
 
 	friend std::ostream& operator<<(std::ostream& os, const UniquePoint& up );
-		UniquePoint() { UniquePoint(NULL,0,0,'N','N',0); };
+		UniquePoint() { UniquePoint(NULL,0,0,'N','N', 0); };
 };
 
 class SortedUniquePoints { 
@@ -128,6 +128,7 @@ public:
 	void push_back( const UniquePoint& up ) { m_positions.push_back( up ); }// make inline?
 	unsigned int size() const { return m_positions.size(); }
 	unsigned int MaxLen() const;
+    unsigned int NumMismatch() const;
 	bool empty() const { return m_positions.empty(); } 
 	const UniquePoint& operator[](const unsigned int pos) const { return m_positions[pos]; } 
 	UniquePoint& operator[](const unsigned int pos) { return m_positions[pos]; }
@@ -441,6 +442,13 @@ std::string Cap2Low(const std::string & input);
 		SortedUniquePoints &UP);*/
 class FarEndSearchPerRegion;
 void CheckBoth(SPLIT_READ & read,
+               const std::string & readSeq,
+               const std::vector <FarEndSearchPerRegion*> & WholeGenomeSearchResult_input,
+               const short minimumLengthToReportMatch,
+               const short BP_End,
+               const short CurrentLength,
+               SortedUniquePoints &UP);
+void CheckBothPerfect(SPLIT_READ & read,
                const std::string & readSeq,
                const std::vector <FarEndSearchPerRegion*> & WholeGenomeSearchResult_input,
                const short minimumLengthToReportMatch,

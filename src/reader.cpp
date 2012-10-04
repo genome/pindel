@@ -551,6 +551,9 @@ void build_record_SR (const bam1_t * mapped_read, const bam1_t * unmapped_read, 
     else if (unmapped_core->flag & BAM_FREAD2) {
         Temp_One_Read.Name.append ("/2");
     }
+    //if (Temp_One_Read.Name == "@DD7DT8Q1:4:1106:17724:13906#GTACCT/1") {
+    //    std::cout << "I am here." << std::endl;
+    //}
     std::string c_sequence;
     int i;
     uint8_t *s = bam1_seq (unmapped_read);
@@ -609,9 +612,12 @@ void build_record_SR (const bam1_t * mapped_read, const bam1_t * unmapped_read, 
 		exit( EXIT_FAILURE );
 	}
     Temp_One_Read.Tag = Tag;
+    /*
+    std::cout << "abs (mapped_core->isize) Temp_One_Read.InsertSize " << abs (mapped_core->isize) << " " << Temp_One_Read.InsertSize << std::endl;
     if (((mapped_core->tid == unmapped_core->tid) &&
          (mapped_core->pos != unmapped_core->pos)) &&
         (abs (mapped_core->isize) < Temp_One_Read.InsertSize)) {
+        std::cout << "It happenned!" << std::endl;
         if (Temp_One_Read.MatchedD == '+') {
             Temp_One_Read.MatchedRelPos -= Temp_One_Read.InsertSize;
         }
@@ -619,7 +625,7 @@ void build_record_SR (const bam1_t * mapped_read, const bam1_t * unmapped_read, 
             Temp_One_Read.MatchedRelPos += Temp_One_Read.InsertSize;
         }
     }
-    
+    */
     Temp_One_Read.FragName = header->target_name[mapped_core->tid];
     //Temp_One_Read.FragName = FragName;
     LOG_DEBUG(cout << Temp_One_Read.Name << std::endl
@@ -646,6 +652,9 @@ void build_record_SR (const bam1_t * mapped_read, const bam1_t * unmapped_read, 
     if (Temp_One_Read.MatchedRelPos < 1) {
         Temp_One_Read.MatchedRelPos = 0;
     }
+    //if (Temp_One_Read.Name == "@DD7DT8Q1:4:1106:17724:13906#GTACCT/1") {
+    //    std::cout << "I am there." << std::endl;
+    //}
     data_for_bam->readBuffer->addRead(Temp_One_Read);
     return;
 }
@@ -773,7 +782,7 @@ static int fetch_func_SR (const bam1_t * b1, void *data)
    bam1_core_t *b2_core;
    b1_core = &b1->core;
    std::string read_name = bam1_qname (b1);
-
+   // if (read_name == "DD7DT8Q1:4:1106:17724:13906#GTACCT") std::cout << " +++++++ here ++++++++ " << std::endl;
    khint_t key = kh_get (read_name, read_to_map_qual, bam1_qname (b1));
 
    if (key == kh_end (read_to_map_qual)) {
@@ -796,9 +805,13 @@ static int fetch_func_SR (const bam1_t * b1, void *data)
    parse_flags_and_tags (b2, b2_flags);
 
    if (isGoodAnchor( b1_flags, b1_core ) && isWeirdRead( b2_flags, b2 ) ) {
+       //if (read_name == "DD7DT8Q1:4:1106:17724:13906#GTACCT")
+       //std::cout << "first" << std::endl;
       build_record_SR (b1, b2, data);
    }
    if (isGoodAnchor( b2_flags, b2_core ) && isWeirdRead( b1_flags, b1 ) ) {
+       //if (read_name == "DD7DT8Q1:4:1106:17724:13906#GTACCT")
+       //std::cout << "second" << std::endl;
       build_record_SR (b2, b1, data);
    }
    bam_destroy1 (b2);

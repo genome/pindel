@@ -60,5 +60,21 @@ void CheckRight_Close (SPLIT_READ & OneRead,
 											 const short &BP_Right_End,
 											 const short &CurrentPos,
 											 SortedUniquePoints &RightUP);
+void CheckLeft_Close_Perfect (SPLIT_READ & OneRead,
+                      const std::string & TheInput,
+                      const std::string & CurrentReadSeq,
+                      const std::vector < PosVector >& Left_PD,
+                      const short &BP_Left_Start,
+                      const short &BP_Left_End,
+                      const short &CurrentLength,
+                      SortedUniquePoints &LeftUP);
 
+void CheckRight_Close_Perfect (SPLIT_READ & OneRead,
+                       const std::string & TheInput,
+                       const std::string & CurrentReadSeq,
+                       const std::vector < PosVector >& Right_PD,
+                       const short &BP_Right_Start,
+                       const short &BP_Right_End,
+                       const short &CurrentPos,
+                       SortedUniquePoints &RightUP);
 #endif /* SEARCHER_H */
