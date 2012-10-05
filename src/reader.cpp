@@ -387,6 +387,7 @@ bool ReadInBamReads_RP_Discovery (const char *bam_path, const std::string & Frag
                         const std::string * CurrentChrSeq, std::vector <RP_READ> &LeftReads,
                         int InsertSize, std::string Tag, const SearchWindow& currentWindow )
 {
+    //std::cout << "Entering ReadInBamReads_RP_Discovery" << std::endl;
     bamFile fp;
     fp = bam_open (bam_path, "r");
     assert (fp);
@@ -412,7 +413,9 @@ bool ReadInBamReads_RP_Discovery (const char *bam_path, const std::string & Frag
     //data.b2_flags = &b2_flags;
     data.InsertSize = InsertSize;
     data.Tag = Tag;
+    //std::cout << "Before bam_fetch" << std::endl;
     bam_fetch (fp, idx, tid, currentWindow.getStart(), currentWindow.getEnd(), &data, fetch_func_RP_Discovery);
+    //std::cout << "After bam_fetch" << std::endl;
     /*
      khint_t key;
      if (kh_size (data.read_to_map_qual) > 0) {
@@ -430,6 +433,7 @@ bool ReadInBamReads_RP_Discovery (const char *bam_path, const std::string & Frag
     bam_header_destroy (header);
     bam_index_destroy (idx);
     bam_close (fp);
+    //std::cout << "Leaving ReadInBamReads_RP_Discovery" << std::endl;
     return true;
 }
 
@@ -698,7 +702,7 @@ void build_record_RP (const bam1_t * r1, void *data)
 
 void build_record_RP_Discovery (const bam1_t * r1, void *data)
 {
-    
+    //std::cout << "entering build_record_RP_Discovery" << std::endl;
     const bam1_core_t * r1_core;
     //const bam1_core_t * r2_core;
     r1_core = &r1->core;
@@ -711,6 +715,8 @@ void build_record_RP_Discovery (const bam1_t * r1, void *data)
     bam_header_t *header = (bam_header_t *) data_for_bam->header;
     std::string CurrentChrSeq = *(std::string *) data_for_bam->CurrentChrSeq;
     std::string Tag = (std::string) data_for_bam->Tag;
+    
+    if (!(r1_core->flag & BAM_FPAIRED)) return;
     
     if (!(r1_core->flag & BAM_FUNMAP || r1_core->flag & BAM_FMUNMAP)) { // both reads are mapped.
 			/*std::cout << "Read Insertsize=" << abs(r1_core->isize) << ", qseq=" << r1_core->l_qseq << " BAM ISize=" << data_for_bam->InsertSize 
@@ -749,6 +755,7 @@ void build_record_RP_Discovery (const bam1_t * r1, void *data)
         }
 
     }
+    //std::cout << "leaving build_record_RP_Discovery" << std::endl;
     return;
 }
 
@@ -850,7 +857,7 @@ static int fetch_func_RP (const bam1_t * b1, void *data)
 }
 
 static int fetch_func_RP_Discovery (const bam1_t * b1, void *data)
-{
+{   //std::cout << "entering fetch_func_RP_Discovery" << std::endl;
     g_NumReadScanned++;
     fetch_func_data_RP *data_for_bam = (fetch_func_data_RP *) data;
     //khash_t (read_name) * read_to_map_qual =
@@ -885,11 +892,13 @@ static int fetch_func_RP_Discovery (const bam1_t * b1, void *data)
     
     parse_flags_and_tags (b1, b1_flags);
     //parse_flags_and_tags (b2, b2_flags);
+    //std::cout << "before build_record_RP_Discovery" << std::endl;
     
     build_record_RP_Discovery (b1, data);
+    //std::cout << "after build_record_RP_Discovery" << std::endl;
     
     //bam_destroy1 (b2);
-    
+    //std::cout << "leaving fetch_func_RP_Discovery" << std::endl;
     return 0;
 }
 
@@ -1039,6 +1048,7 @@ short get_RP_Reads_Discovery(ControlState& currentState, const SearchWindow& cur
         ReturnFromReadingReads = 0;
         for (unsigned int i = 0; i < currentState.bams_to_parse.size(); i++) {
             //currentState.Reads_RP.push_back(TempOneRPVector);
+            //std::cout << "Current BAM file: " << currentState.bams_to_parse[i].BamFile.c_str() << std::endl;
             ReturnFromReadingReads = ReadInBamReads_RP_Discovery(
                                                        currentState.bams_to_parse[i].BamFile.c_str(),
                                                        currentWindow.getChromosome()->getName(),
@@ -1053,7 +1063,7 @@ short get_RP_Reads_Discovery(ControlState& currentState, const SearchWindow& cur
                 return 1;
             }
             if (currentState.Reads_RP_Discovery.size() == 0) {
-					*logStream << "No reads in Bamfile " << currentState.bams_to_parse[i].BamFile.c_str() << std::endl;
+					*logStream << "No discordant RP reads in Bamfile " << currentState.bams_to_parse[i].BamFile.c_str() << std::endl;
             }
             else {
 					std::cout << currentState.bams_to_parse[i].BamFile << " RP " << currentState.Reads_RP_Discovery.size() << std::endl;

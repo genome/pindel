@@ -72,7 +72,7 @@
 /* EW: update 0.2.4s: bugfix for -p option of Pindel0.2.4r */
 /* EW: update 0.2.4t, updates now shown in RELEASE document in trunk directory */
 
-const std::string Pindel_Version_str = "Pindel version 0.2.4t, August 13 2012.";
+const std::string Pindel_Version_str = "Pindel version 0.2.4u, Oct 5 2012.";
 
 const Chromosome g_dummyChromosome("","");
 Genome g_genome;
@@ -1244,7 +1244,9 @@ int main(int argc, char *argv[])
          }
 			timer.switchTo("Reading in reads + matching close ends");//
          if (userSettings->bamFilesAsInput() && userSettings->SearchDiscordantReadPair) {
+             //std::cout << "Before" << std::endl;
              get_RP_Reads_Discovery(currentState, currentWindow );
+             //std::cout << "After" << std::endl;
              g_bdData.UpdateBD(currentState);
              std::cout << "Added BreakDancer-like events: " << g_bdData.GetBDSize() << std::endl;
 				
