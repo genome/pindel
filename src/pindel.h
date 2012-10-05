@@ -139,6 +139,19 @@ private:
 	std::vector< UniquePoint> m_positions;
 };
 
+struct REF_READ {
+    REF_READ () {
+        Tag = "";
+        FragName = "";
+        Pos = 0;
+        MQ = 0;
+    }
+    std::string Tag;
+    std::string FragName;
+    unsigned Pos;
+    short MQ;
+};
+
 struct RP_READ {
     RP_READ () {
         ReadName = "";

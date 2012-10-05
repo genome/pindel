@@ -1258,6 +1258,7 @@ int main(int argc, char *argv[])
           //std::cout << "g_bdData.size() " << g_bdData.GetBDSize() << std::endl;
           //std::cout << "Before" << std::endl;
          get_SR_Reads(currentState, currentWindow );
+         std::cout << "There are " << currentState.RefSupportingReads.size() << " reads supporting the reference allele." << std::endl; 
           /*
           for (unsigned index = 0; index < currentState.Reads_SR.size(); index++) {
               if (currentState.Reads_SR[index].Name == "@@HWI-EAS138_4_FC30GP8:3:41:246:959/1")
@@ -1265,7 +1266,7 @@ int main(int argc, char *argv[])
           }*/
          Time_Mine_E = time(NULL);
          if (currentState.Reads_SR.size() ) {
-            *logStream << "There are " << currentState.Reads_SR.size() << " reads for this chromosome region." << std::endl; // what region?
+            *logStream << "There are " << currentState.Reads_SR.size() << " split-reads for this chromosome region.\n" << std::endl; // what region?
 
             if (userSettings->reportCloseMappedReads() ) {
 				 	ReportCloseMappedReads( currentState.Reads_SR );       
@@ -1305,16 +1306,19 @@ int main(int argc, char *argv[])
             AllSortReport += (unsigned int) difftime(Time_Sort_E, Time_Load_E);
             currentState.Reads_SR.clear();
              currentState.OneEndMappedReads.clear();
-            *logStream << "There are " << currentState.FutureReads_SR. size()  << " reads saved for the next cycle.\n" << std::endl;
+            *logStream << "There are " << currentState.FutureReads_SR. size()  << " split-reads saved for the next cycle.\n" << std::endl;
             //currentState.Reads_SR.swap(currentState.FutureReads_SR);
          }
          else {
              *logStream << "There are no reads for this bin.\n";
          }
+
          // std::cout << " 4 " << std::endl;
          //std::cout << "before " << currentState.Reads_RP_Discovery.size() << std::endl;
          if (currentState.Reads_RP_Discovery.size())
              currentState.Reads_RP_Discovery.clear();
+         if (currentState.RefSupportingReads.size()) // std::vector <REF_READ> RefSupportingReads
+             currentState.RefSupportingReads.clear();
          //std::cout << "after " << currentState.Reads_RP_Discovery.size() << std::endl;
           //std::cout << "data " << currentState.Reads_SR.size() << " " << currentState.Reads_RP_Discovery.size() << " " << currentState.OneEndMappedReads.size() << std::endl;
          Time_Load_S = 0;

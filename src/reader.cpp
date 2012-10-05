@@ -68,6 +68,7 @@ struct fetch_func_data_SR {
    fetch_func_data_SR () : CurrentChrSeq( NULL ){
       LeftReads = NULL;
        OneEndMappedReads = NULL;
+       RefSupportingReads = NULL;
       read_to_map_qual = NULL;
       header = NULL;
       b1_flags = NULL;
@@ -78,6 +79,7 @@ struct fetch_func_data_SR {
    fetch_func_data_SR (const std::string* chromosomeSeq) : CurrentChrSeq( chromosomeSeq ){
       LeftReads = NULL;
        OneEndMappedReads = NULL;
+       RefSupportingReads = NULL;
       read_to_map_qual = NULL;
       header = NULL;
       b1_flags = NULL;
@@ -88,6 +90,7 @@ struct fetch_func_data_SR {
    ReadBuffer *readBuffer;
    std::vector < SPLIT_READ > *LeftReads;
    std::vector < SPLIT_READ > *OneEndMappedReads;
+   std::vector <REF_READ> *RefSupportingReads;
    khash_t (read_name) * read_to_map_qual;
    bam_header_t *header;
    flags_hit *b1_flags;
@@ -148,13 +151,13 @@ double safeDivide( int dividend, int divisor )
 
 void showReadStats(const std::vector<SPLIT_READ>& Reads, const std::vector<SPLIT_READ>& OneEndMappedReads)
 {
-   LOG_INFO(*logStream << "Number of reads in current window:                  \t" << g_NumReadInWindow <<
+   LOG_INFO(*logStream << "Number of problematic reads in current window:            \t" << g_NumReadInWindow <<
             ", + " << g_InWinPlus << " - " << g_InWinMinus << std::endl);
-   LOG_INFO(*logStream << "Number of reads where the close end could be mapped:\t" << Reads.size () <<
+   LOG_INFO(*logStream << "Number of split-reads where the close end could be mapped:\t" << Reads.size () <<
             ", + " << g_CloseMappedPlus << " - " << g_CloseMappedMinus << std::endl);
-   LOG_INFO(*logStream << "Number of hanging reads (no close end mapped):\t" << OneEndMappedReads.size () << ", + " << g_InWinPlus - g_CloseMappedPlus << " - " << g_InWinMinus - g_CloseMappedMinus << std::endl);
-   LOG_INFO(*logStream << "Percentage of reads which could be mapped: + " << std::setprecision(2) << std::fixed << safeDivide( (int)(g_CloseMappedPlus * 100.0) , g_InWinPlus ) <<
-            "% - " << safeDivide( (int)(g_CloseMappedMinus * 100.0) , g_InWinMinus ) << "%\n");
+   LOG_INFO(*logStream << "Number of hanging reads (no close end mapped):            \t" << OneEndMappedReads.size () << ", + " << g_InWinPlus - g_CloseMappedPlus << " - " << g_InWinMinus - g_CloseMappedMinus << std::endl);
+   LOG_INFO(*logStream << "Percentage of problematic reads with close end mapped:    \t+ " << std::setprecision(2) << std::fixed << safeDivide( (int)(g_CloseMappedPlus * 100.0) , g_InWinPlus ) <<
+            "% - " << safeDivide( (int)(g_CloseMappedMinus * 100.0) , g_InWinMinus ) << "%");
    *logStream << std::endl;
 }
 
@@ -442,6 +445,7 @@ bool ReadInBamReads_SR (const char *bam_path, const std::string & FragName,
                 const std::string * CurrentChrSeq,
                 std::vector < SPLIT_READ > &LeftReads,
                 std::vector < SPLIT_READ > &OneEndMappedReads,
+                std::vector <REF_READ> &RefSupportingReads,
                 int InsertSize,
                 std::string Tag,
                 const SearchWindow& window,
@@ -467,6 +471,7 @@ bool ReadInBamReads_SR (const char *bam_path, const std::string & FragName,
    //data.CurrentChrSeq = CurrentChrSeq;
    data.LeftReads = &LeftReads;
     data.OneEndMappedReads = &OneEndMappedReads;
+    data.RefSupportingReads = &RefSupportingReads;
    data.read_to_map_qual = NULL;
    data.read_to_map_qual = kh_init (read_name);
    flags_hit b1_flags, b2_flags;
@@ -514,6 +519,19 @@ bool isGoodAnchor( const flags_hit *read, const bam1_core_t *bamCore )
             ( ! read->suboptimal ) &&
             ( read->edits <= maxEdits )
           );
+}
+
+bool isRefRead ( const flags_hit *read, const bam1_t * bamOfRead )
+{
+    uint32_t *cigar_pointer = bam1_cigar (bamOfRead);
+    int cigarMismatchedBases = bam_cigar2mismatch (&bamOfRead->core, cigar_pointer);
+    
+    if ( read->mapped && read->edits <= 1 && cigarMismatchedBases <= 1) {
+        return true;
+    }
+    else {
+        return false;
+    }
 }
 
 bool isWeirdRead( const flags_hit *read, const bam1_t * bamOfRead )
@@ -650,6 +668,29 @@ void build_record_SR (const bam1_t * mapped_read, const bam1_t * unmapped_read, 
     return;
 }
 
+void build_record_RefRead (const bam1_t * mapped_read, const bam1_t * ref_read, void *data)
+{   // std::vector <REF_READ> *RefSupportingReads;
+    REF_READ One_RefRead;
+    fetch_func_data_SR *data_for_bam = (fetch_func_data_SR *) data;
+    bam_header_t *header = (bam_header_t *) data_for_bam->header;
+    //std::string CurrentChrSeq = *(std::string *) data_for_bam->CurrentChrSeq;
+    //std::string Tag = (std::string) data_for_bam->Tag;
+    //int InsertSize = (int) data_for_bam->InsertSize;
+    
+    const bam1_core_t *mapped_core;
+    const bam1_core_t *Ref_read_core;
+    mapped_core = &mapped_read->core;
+    Ref_read_core = &ref_read->core;
+
+    One_RefRead.Pos = Ref_read_core->pos; // mapped_core->pos;
+    One_RefRead.Tag = (std::string) data_for_bam->Tag;
+    One_RefRead.MQ = Ref_read_core->qual;
+    One_RefRead.FragName = header->target_name[mapped_core->tid];
+    
+    data_for_bam->RefSupportingReads->push_back(One_RefRead);// addRead(Temp_One_Read);
+    return;
+}
+
 void build_record_RP (const bam1_t * r1, void *data)
 {
     
@@ -770,7 +811,7 @@ static int fetch_func_SR (const bam1_t * b1, void *data)
    flags_hit *b1_flags = data_for_bam->b1_flags;
    flags_hit *b2_flags = data_for_bam->b2_flags;
    const std::string CurrentChrSeq = *(std::string *) data_for_bam->CurrentChrSeq;
-   SPLIT_READ Temp_One_Read;
+   //SPLIT_READ Temp_One_Read;
    const bam1_core_t *b1_core;
    bam1_t *b2;
    bam1_core_t *b2_core;
@@ -798,16 +839,23 @@ static int fetch_func_SR (const bam1_t * b1, void *data)
    parse_flags_and_tags (b1, b1_flags);
    parse_flags_and_tags (b2, b2_flags);
 
-   if (isGoodAnchor( b1_flags, b1_core ) && isWeirdRead( b2_flags, b2 ) ) {
-       //if (read_name == "DD7DT8Q1:4:1106:17724:13906#GTACCT")
-       //std::cout << "first" << std::endl;
-      build_record_SR (b1, b2, data);
-   }
-   if (isGoodAnchor( b2_flags, b2_core ) && isWeirdRead( b1_flags, b1 ) ) {
-       //if (read_name == "DD7DT8Q1:4:1106:17724:13906#GTACCT")
-       //std::cout << "second" << std::endl;
-      build_record_SR (b2, b1, data);
-   }
+    if (isGoodAnchor( b1_flags, b1_core )) {
+        if (isWeirdRead( b2_flags, b2 )) {
+            build_record_SR (b1, b2, data);
+        }
+        else if (isRefRead( b2_flags, b2 )) {
+            build_record_RefRead (b1, b2, data);
+        }
+    }
+
+    if (isGoodAnchor( b2_flags, b2_core ) ) {
+        if (isWeirdRead( b1_flags, b1 )) {
+            build_record_SR (b2, b1, data);
+        }
+        else if (isRefRead(b1_flags, b1 )) {
+            build_record_RefRead(b2, b1, data);
+        }
+    }
    bam_destroy1 (b2);
    return 0;
 }
@@ -1107,7 +1155,7 @@ short get_SR_Reads(ControlState& currentState, const SearchWindow& currentWindow
    if (userSettings->bamFilesAsInput()) {
       ReturnFromReadingReads = 0;
       for (unsigned int i = 0; i < currentState.bams_to_parse.size(); i++) {
-         *logStream << "Insertsize in bamreads: " << currentState.bams_to_parse[i].InsertSize << std::endl;
+         *logStream << "\nInsertsize in config: " << currentState.bams_to_parse[i].InsertSize << std::endl;
         // std::cout << "before ReadInBamReads_SR " << std::endl;
          ReturnFromReadingReads = ReadInBamReads_SR(
                                                     currentState.bams_to_parse[i].BamFile.c_str(),
@@ -1116,6 +1164,7 @@ short get_SR_Reads(ControlState& currentState, const SearchWindow& currentWindow
 																	//	&currentState.CurrentChrSeq, 
                                                     currentState.Reads_SR,
                                                     currentState.OneEndMappedReads,
+                                                    currentState.RefSupportingReads,
                                                     currentState.bams_to_parse[i].InsertSize,
                                                     currentState.bams_to_parse[i].Tag,
                                                     currentWindow, readBuffer );
@@ -1127,7 +1176,7 @@ short get_SR_Reads(ControlState& currentState, const SearchWindow& currentWindow
          else if (currentState.Reads_SR.size() == 0) {
             LOG_ERROR(*logStream << "No currentState.Reads for " << currentWindow.getChromosome()->getName() << " found in " << currentState.bams_to_parse[i].BamFile << std::endl);
          }
-         *logStream << "BAM file index\t" << i << "\t" << currentState.Reads_SR.size() << std::endl;
+         *logStream << "BAM file index\t" << i << "\nBam file name\t" << currentState.bams_to_parse[i].BamFile.c_str() << "\nNumber of split-reads so far\t" << currentState.Reads_SR.size() << "\n" << std::endl;
       }  
    }
 

@@ -27,9 +27,16 @@
 class PindelReadReader;
 
 void GetOneChrSeq (std::ifstream & inf_Seq, std::string & CurrentChr, bool WhetherBuildUp);
-bool ReadInBamReads_SR (const char *bam_path, const std::string & FragName,
-								const std::string * CurrentChr, std::vector < SPLIT_READ > &LeftReads,  std::vector < SPLIT_READ > & OneEndMappedReads,
-								int InsertSize, std::string Tag, const SearchWindow& currentWindow, ReadBuffer& readBuffer);
+bool ReadInBamReads_SR (const char *bam_path,
+                        const std::string & FragName,
+						const std::string * CurrentChr,
+                        std::vector < SPLIT_READ > &LeftReads,
+                        std::vector < SPLIT_READ > & OneEndMappedReads,
+                        std::vector <REF_READ> &RefSupportingReads,
+						int InsertSize,
+                        std::string Tag,
+                        const SearchWindow& currentWindow,
+                        ReadBuffer& readBuffer);
 /*bool ReadInBamReads_RP (const char *bam_path, const std::string & FragName,
                         std::string * CurrentChr, std::vector <RP_READ> &LeftReads, 
                         int InsertSize, std::string Tag, const SearchWindow& currentWindow, ReadBuffer& readBuffer);

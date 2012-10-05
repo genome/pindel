@@ -82,9 +82,10 @@ public:
 	//std::string CurrentChrSeq;
 	//std::string CurrentChrName;
 
-	std::vector<SPLIT_READ> InputReads_SR, Reads_SR, FutureReads_SR, InterChromosome_SR, OneEndMappedReads;
+	std::vector <SPLIT_READ> InputReads_SR, Reads_SR, FutureReads_SR, InterChromosome_SR, OneEndMappedReads;
     std::vector <RPVector> Reads_RP;
     std::vector <RP_READ> Reads_RP_Discovery;
+    std::vector <REF_READ> RefSupportingReads;
  
 	int CountFarEnd, CountFarEndPlus, CountFarEndMinus;
 
