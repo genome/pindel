@@ -685,7 +685,8 @@ void build_record_RefRead (const bam1_t * mapped_read, const bam1_t * ref_read, 
     One_RefRead.Pos = Ref_read_core->pos; // mapped_core->pos;
     One_RefRead.Tag = (std::string) data_for_bam->Tag;
     One_RefRead.MQ = Ref_read_core->qual;
-    One_RefRead.FragName = header->target_name[mapped_core->tid];
+    One_RefRead.FragName = header->target_name[Ref_read_core->tid];
+    One_RefRead.ReadLength = Ref_read_core->l_qseq;
     
     data_for_bam->RefSupportingReads->push_back(One_RefRead);// addRead(Temp_One_Read);
     return;

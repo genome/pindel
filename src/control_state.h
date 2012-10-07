@@ -86,7 +86,8 @@ public:
     std::vector <RPVector> Reads_RP;
     std::vector <RP_READ> Reads_RP_Discovery;
     std::vector <REF_READ> RefSupportingReads;
- 
+    //SearchWindow::SearchWindow CURRENT_WINDOW;
+    unsigned RegionStart, RegionEnd;
 	int CountFarEnd, CountFarEndPlus, CountFarEndMinus;
 
 	//TODO: explain what are stored in these two vectors.

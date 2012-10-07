@@ -27,6 +27,7 @@
 #include <getopt.h>
 #include <omp.h>
 #include <set>
+#include <map>
 #include <sstream>
 
 // Pindel header files
@@ -82,6 +83,8 @@ int g_binIndex = -1; // global variable for the bin index, as I cannot easily pa
 unsigned int g_maxPos = 0; // to calculate which is the last position in the chromosome, and hence to calculate the number of bins
 short g_MinClose = 8;
 std::set<std::string> g_sampleNames;
+std::map<std::string,unsigned> g_SameName2Index;
+std::vector <RefCoveragePerPosition> g_RefCoverageRegion;
 short Before, After;
 BDData g_bdData;
 //extern BDData g_bdData;
@@ -96,6 +99,7 @@ unsigned int NumberOfDIInstances = 0;
 unsigned int g_numberOfInvInstances = 0;
 unsigned int NumberOfTDInstances = 0;
 short g_reportLength = 1;
+unsigned g_RegionStart, g_RegionEnd;
 char Match[256];
 char Match2N[256];
 char Convert2RC[256];
@@ -1156,6 +1160,72 @@ void UpdateFarFragName(std::vector <SPLIT_READ> & input) {
     }
 }
 
+short UpdateRefReadCoverage(ControlState& currentState, const SearchWindow& currentWindow )
+{
+    //std::set<std::string> g_sampleNames;
+    //std::map<std::string,unsigned> g_SameName2Index;
+    std::cout << "There are " << g_sampleNames.size() << " samples." << std::endl;
+    g_SameName2Index.clear();
+    std::set<std::string>::iterator it;
+    unsigned index = 0;
+    for (it=g_sampleNames.begin(); it != g_sampleNames.end(); it++ ) {
+        g_SameName2Index.insert ( std::pair<std::string, unsigned>(*it, index) );
+        index++;
+    }
+    // std::vector <RefCoveragePerPosition> g_RefCoverageRegion;
+    unsigned Start = currentWindow.getStart();
+    unsigned End = currentWindow.getEnd();
+    unsigned Length = End - Start + 1;
+    unsigned NumberOfSamples = g_sampleNames.size();
+    g_RefCoverageRegion.clear();
+    RefCoveragePerPosition OnePos;
+    for (unsigned SampleIndex = 0; SampleIndex < NumberOfSamples; SampleIndex++) {
+        OnePos.RefCoveragePerSample.push_back(0);
+    }
+    for (unsigned index = 0; index < Length; index++) {
+        g_RefCoverageRegion.push_back(OnePos);
+    }
+    unsigned SampleID, PosStart;
+    for (unsigned readIndex = 0; readIndex < currentState.RefSupportingReads.size(); readIndex++) {
+        if (currentState.RefSupportingReads[readIndex].Pos < Start || currentState.RefSupportingReads[readIndex].Pos + currentState.RefSupportingReads[readIndex].ReadLength > End) {
+            continue;
+        }
+        SampleID = g_SameName2Index.find(currentState.RefSupportingReads[readIndex].Tag)->second;
+        PosStart = currentState.RefSupportingReads[readIndex].Pos - Start;
+        for (unsigned posIndex = 0; posIndex < (unsigned)currentState.RefSupportingReads[readIndex].ReadLength; posIndex++) {
+            g_RefCoverageRegion[PosStart + posIndex].RefCoveragePerSample[SampleID]++;
+        }
+    }//RefSupportingReads
+    /*
+    for (unsigned PosIndex = 0; PosIndex < Length; PosIndex++) {
+        std::cout << Start + PosIndex;
+        it=g_sampleNames.begin();
+        for (unsigned SampleIndex = 0; SampleIndex < NumberOfSamples; SampleIndex++) {
+            std::cout << "\t" << *it << ":" << g_RefCoverageRegion[PosIndex].RefCoveragePerSample[SampleIndex];
+            it++;
+        }
+        std::cout << "\n";
+    }*/
+    return 0;
+}
+
+/*
+ 
+ struct REF_READ {
+ REF_READ () {
+ Tag = "";
+ FragName = "";
+ Pos = 0;
+ MQ = 0;
+ ReadLength = 0;
+ }
+ std::string Tag;
+ std::string FragName;
+ unsigned Pos;
+ short MQ;
+ short ReadLength;
+ };
+ */
 
 
 int main(int argc, char *argv[])
@@ -1237,7 +1307,11 @@ int main(int argc, char *argv[])
       do {
       	/* 3.2.1 preparation starts */
 			*logStream << currentWindow.display();
-			SearchWindow currentWindow_cs = currentWindow.makePindelCoordinateCopy(); // _cs means computer science coordinates
+         //currentState.CURRENT_WINDOW = currentWindow;
+         g_RegionStart = currentWindow.getStart();
+         g_RegionEnd = currentWindow.getEnd();
+
+		 SearchWindow currentWindow_cs = currentWindow.makePindelCoordinateCopy(); // _cs means computer science coordinates
 	     	//g_bdData.loadRegion( currentWindow_cs );
          if (Time_Load_S == 0) {
             Time_Load_S = time(NULL);
@@ -1258,7 +1332,9 @@ int main(int argc, char *argv[])
           //std::cout << "g_bdData.size() " << g_bdData.GetBDSize() << std::endl;
           //std::cout << "Before" << std::endl;
          get_SR_Reads(currentState, currentWindow );
-         std::cout << "There are " << currentState.RefSupportingReads.size() << " reads supporting the reference allele." << std::endl; 
+         std::cout << "There are " << currentState.RefSupportingReads.size() << " reads supporting the reference allele." << std::endl;
+         //if (userSettings->bamFilesAsInput())
+             UpdateRefReadCoverage(currentState, currentWindow);
           /*
           for (unsigned index = 0; index < currentState.Reads_SR.size(); index++) {
               if (currentState.Reads_SR[index].Name == "@@HWI-EAS138_4_FC30GP8:3:41:246:959/1")
@@ -2051,5 +2127,6 @@ void CleanUniquePoints(SortedUniquePoints &Input_UP)
    Input_UP.clear();
    Input_UP = TempUP;
 }
+
 
 

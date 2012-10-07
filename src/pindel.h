@@ -42,11 +42,21 @@
 class LineReader;
 
 extern std::set<std::string> g_sampleNames; // EWL: could make this a singleton instead
+extern std::map<std::string,unsigned> g_SameName2Index;
+
 
 /*
  * Global variables defined in pindel.cpp
  */
 
+struct RefCoveragePerPosition {
+    RefCoveragePerPosition() {
+        //CoveragePerSample.clear();
+    }
+    std::vector <unsigned> RefCoveragePerSample;
+};
+
+extern std::vector <RefCoveragePerPosition> g_RefCoverageRegion;
 extern char Match[256];
 extern char Match2N[256];
 extern char Convert2RC[256];
@@ -72,6 +82,8 @@ extern unsigned int WINDOW_SIZE;
 extern int g_maxInsertSize;
 extern const int g_MAX_RANGE_INDEX; // 5 or 6 or 7 or maximum 8      //# // user
 extern std::vector<unsigned int> g_maxMismatch;
+extern unsigned g_RegionStart;
+extern unsigned g_RegionEnd;
 
 extern const std::string Pindel_Version_str;
 
@@ -145,11 +157,13 @@ struct REF_READ {
         FragName = "";
         Pos = 0;
         MQ = 0;
+        ReadLength = 0;
     }
     std::string Tag;
     std::string FragName;
     unsigned Pos;
     short MQ;
+    short ReadLength;
 };
 
 struct RP_READ {
@@ -285,6 +299,8 @@ private:
 	short TOTAL_SNP_ERROR_CHECKED_Minus; // = MAX_SNP_ERROR + ADDITIONAL_MISMATCH;
 	std::string UnmatchedSeq;
 };
+
+
 
 struct SupportPerSample {
 	int NumPlus;

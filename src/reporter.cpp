@@ -170,7 +170,9 @@ void OutputTDs (const std::vector < SPLIT_READ > &TDs,
    TDOutf << "\t" << g_sampleNames.size() << "\tNumSupSamples " << NumberSupSamples << "\t" <<
           NumU_SupSamples;
    for (unsigned short i = 0; i < g_sampleNames.size (); i++)
-      TDOutf << "\t" << indexToSampleMap[i] << " " << NumSupportPerTag[i].NumPlus
+      TDOutf << "\t" << indexToSampleMap[i]
+             << " " << g_RefCoverageRegion[TDs[C_S].BPLeft + 2 - g_RegionStart].RefCoveragePerSample[i]
+             << " " << NumSupportPerTag[i].NumPlus
              << " " << NumSupportPerTag[i].NumUPlus
              << " " << NumSupportPerTag[i].NumMinus
              << " " << NumSupportPerTag[i].NumUMinus;
@@ -213,6 +215,7 @@ void OutputDeletions (const std::vector < SPLIT_READ > &Deletions,
                  const unsigned int &RealStart,
                  const unsigned int &RealEnd, std::ofstream & DeletionOutf)
 {
+   //std::cout << "Start " << g_RegionStart << "\tEnd " << g_RegionEnd << std::endl;
    LOG_DEBUG(*logStream << "d_1" << std::endl);
    unsigned int NumberOfReads = C_E - C_S + 1;
    unsigned int LeftS = 1;
@@ -287,7 +290,9 @@ void OutputDeletions (const std::vector < SPLIT_READ > &Deletions,
                 size () << "\tNumSupSamples " << NumberSupSamples << "\t" <<
                 NumU_SupSamples;
    for (unsigned short i = 0; i < g_sampleNames.size (); i++)
-      DeletionOutf << "\t" << indexToSampleMap[i] << " " << NumSupportPerTag[i].NumPlus
+      DeletionOutf << "\t" << indexToSampleMap[i]
+                   << " " << g_RefCoverageRegion[Deletions[C_S].BPLeft + 2 - g_RegionStart].RefCoveragePerSample[i]
+                   << " " << NumSupportPerTag[i].NumPlus
                    << " " << NumSupportPerTag[i].NumUPlus
                    << " " << NumSupportPerTag[i].NumMinus
                    << " " << NumSupportPerTag[i].NumUMinus;
@@ -425,7 +430,9 @@ void OutputInversions (const std::vector < SPLIT_READ > &Inv,
            size () << "\tNumSupSamples " << NumberSupSamples << "\t" <<
            NumU_SupSamples;
    for (unsigned short i = 0; i < g_sampleNames.size (); i++)
-      InvOutf << "\t" << indexToSampleMap[i] << " " << NumSupportPerTag[i].NumPlus
+      InvOutf << "\t" << indexToSampleMap[i]
+              << " " << g_RefCoverageRegion[Inv[C_S].BPLeft + 2 - g_RegionStart].RefCoveragePerSample[i]
+              << " " << NumSupportPerTag[i].NumPlus
               << " " << NumSupportPerTag[i].NumUPlus
               << " " << NumSupportPerTag[i].NumMinus
               << " " << NumSupportPerTag[i].NumUMinus;
@@ -565,7 +572,9 @@ void OutputSIs (const std::vector < SPLIT_READ > &SIs,
            size () << "\tNumSupSamples " << NumberSupSamples << "\t" <<
            NumU_SupSamples;
    for (unsigned short i = 0; i < g_sampleNames.size (); i++)
-      SIsOutf << "\t" << indexToSampleMap[i] << " " << NumSupportPerTag[i].NumPlus
+      SIsOutf << "\t" << indexToSampleMap[i]
+              << " " << g_RefCoverageRegion[SIs[C_S].BPLeft + 2 - g_RegionStart].RefCoveragePerSample[i]
+              << " " << NumSupportPerTag[i].NumPlus
               << " " << NumSupportPerTag[i].NumUPlus
               << " " << NumSupportPerTag[i].NumMinus
               << " " << NumSupportPerTag[i].NumUMinus;
@@ -665,7 +674,9 @@ void OutputDI (const std::vector < SPLIT_READ > &DI,
                 size () << "\tNumSupSamples " << NumberSupSamples << "\t" <<
                 NumU_SupSamples;
    for (unsigned short i = 0; i < g_sampleNames.size (); i++)
-      DeletionOutf << "\t" << indexToSampleMap[i] << " " << NumSupportPerTag[i].NumPlus
+      DeletionOutf << "\t" << indexToSampleMap[i]
+                   << " " << g_RefCoverageRegion[DI[C_S].BPLeft + 2 - g_RegionStart].RefCoveragePerSample[i]
+                   << " " << NumSupportPerTag[i].NumPlus
                    << " " << NumSupportPerTag[i].NumUPlus
                    << " " << NumSupportPerTag[i].NumMinus
                    << " " << NumSupportPerTag[i].NumUMinus;
@@ -1178,7 +1189,7 @@ void SortOutputD (ControlState& currentState, const unsigned &NumBoxes, const st
    std::vector < SPLIT_READ > GoodIndels;
    std::vector < Indel4output > IndelEvents;
 	UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
-
+    //std::cout << "here" << std::endl;
    for (unsigned Box_index = 0; Box_index < NumBoxes; Box_index++) {
       LOG_DEBUG(*logStream << Box_index << "\t" << NumBoxes << "\t" << Deletions[Box_index].size() << std::endl);
       if (Deletions[Box_index].size () >= userSettings->NumRead2ReportCutOff) {
@@ -1299,8 +1310,10 @@ void SortOutputD (ControlState& currentState, const unsigned &NumBoxes, const st
                      }
                      else if (ReportEvent( GoodIndels, IndelEvents[EventIndex].Start, IndelEvents[EventIndex].End)) {
                         LOG_DEBUG(*logStream << "ca" << std::endl);
+                        //std::cout << "there 1" << std::endl;
                         OutputDeletions (GoodIndels, CurrentChr, IndelEvents[EventIndex].Start, IndelEvents[EventIndex].End, RealStart, RealEnd,
                                          DeletionOutf);
+                         //std::cout << "there 2" << std::endl;
                         deletionFileData.increaseTemplateSvCounter();
                         LOG_DEBUG(*logStream << "cb" << std::endl);
                      }
@@ -1310,6 +1323,7 @@ void SortOutputD (ControlState& currentState, const unsigned &NumBoxes, const st
          }
       }												// if (!Deletions[Box_index].empty())
    }														// for (unsigned Box_index = 0; Box_index < NumBoxes; Box_index++)
+    //std::cout << "there" << std::endl;
    LOG_INFO(*logStream << "Deletions: " << deletionFileData.getTemplateSvCounter() << std::endl << std::endl);
 }
 
@@ -1387,7 +1401,9 @@ void OutputShortInversion (const std::vector < SPLIT_READ > &supportingReads,
    InversionOutF << "\t" << g_sampleNames.size() << "\tNumSupSamples " << NumberSupSamples << "\t" <<
                  NumU_SupSamples;
    for (unsigned short i = 0; i < g_sampleNames.size (); i++)
-      InversionOutF << "\t" << indexToSampleMap[i] << " " << NumSupportPerTag[i].NumPlus
+      InversionOutF << "\t" << indexToSampleMap[i]
+                    << " " << g_RefCoverageRegion[supportingReads[indexOfFirstRead].BPLeft + 2 - g_RegionStart].RefCoveragePerSample[i]
+                    << " " << NumSupportPerTag[i].NumPlus
                     << " " << NumSupportPerTag[i].NumUPlus
                     << " " << NumSupportPerTag[i].NumMinus
                     << " " << NumSupportPerTag[i].NumUMinus;
