@@ -271,27 +271,37 @@ void BDData::UpdateBD(ControlState & currentState) {
     SortRPByChrPos(currentState.Reads_RP_Discovery, RP_index);
     ModifyRP(currentState.Reads_RP_Discovery, RP_index);
     Summarize(currentState.Reads_RP_Discovery);
-    for (unsigned read_index = 0; read_index < currentState.Reads_RP_Discovery.size(); read_index++) {
-        if (currentState.Reads_RP_Discovery[read_index].Report == false) continue;
+    #pragma omp parallel default(shared)
+    {
+    #pragma omp for
+        for (unsigned read_index = 0; read_index < currentState.Reads_RP_Discovery.size(); read_index++) {
+            #pragma omp critical 
+            {
+                if (read_index % 1000 == 0) std::cout << "index " << read_index << std::endl;
+            }
+            if (currentState.Reads_RP_Discovery[read_index].Report == false) continue;
     
-        std::string firstChrName = currentState.Reads_RP_Discovery[read_index].ChrNameA;
-        std::string secondChrName = currentState.Reads_RP_Discovery[read_index].ChrNameB;
-        unsigned int firstPos = currentState.Reads_RP_Discovery[read_index].PosA + g_SpacerBeforeAfter;
-        unsigned int secondPos  = currentState.Reads_RP_Discovery[read_index].PosB + g_SpacerBeforeAfter;
-        if ( firstChrName!="" && secondChrName!="" ) {
-            BreakDancerCoordinate firstBDCoordinate( firstChrName, firstPos );
-            BreakDancerCoordinate secondBDCoordinate( secondChrName, secondPos );
-                
-            m_bdEvents.push_back(BreakDancerEvent( firstBDCoordinate, secondBDCoordinate ));
-            m_bdEvents.push_back(BreakDancerEvent( secondBDCoordinate, firstBDCoordinate ));
-            
-            //std::cout << "adding " << firstChrName << " " << firstPos - g_SpacerBeforeAfter << "\t" << secondChrName << " " << secondPos - g_SpacerBeforeAfter <<  " to breakdancer events. " << abs((int)secondPos - (int)firstPos) << std::endl;
-        }
+            std::string firstChrName = currentState.Reads_RP_Discovery[read_index].ChrNameA;
+            std::string secondChrName = currentState.Reads_RP_Discovery[read_index].ChrNameB;
+            unsigned int firstPos = currentState.Reads_RP_Discovery[read_index].PosA + g_SpacerBeforeAfter;
+            unsigned int secondPos  = currentState.Reads_RP_Discovery[read_index].PosB + g_SpacerBeforeAfter;
+            if ( firstChrName!="" && secondChrName!="" ) {
+                BreakDancerCoordinate firstBDCoordinate( firstChrName, firstPos );
+                BreakDancerCoordinate secondBDCoordinate( secondChrName, secondPos );
+                #pragma omp critical
+                {
+                    m_bdEvents.push_back(BreakDancerEvent( firstBDCoordinate, secondBDCoordinate ));
+                    m_bdEvents.push_back(BreakDancerEvent( secondBDCoordinate, firstBDCoordinate ));
+                }
+                //std::cout << "adding " << firstChrName << " " << firstPos - g_SpacerBeforeAfter << "\t" << secondChrName << " " << secondPos - g_SpacerBeforeAfter <<  " to breakdancer events. " << abs((int)secondPos - (int)firstPos) << std::endl;
+            }
         
+        }
     }
-
     //currentState.Reads_RP_Discovery.clear();
+    std::cout << "sorting BD..." << std::endl;
 	sort( m_bdEvents.begin(), m_bdEvents.end(), sortOnFirstBDCoordinate );
+    std::cout << "sorting BD... done." << std::endl;
 }
 
 
