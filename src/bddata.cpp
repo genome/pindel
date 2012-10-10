@@ -274,7 +274,7 @@ void BDData::UpdateBD(ControlState & currentState) {
     #pragma omp parallel default(shared)
     {
     #pragma omp for
-        for (unsigned read_index = 0; read_index < currentState.Reads_RP_Discovery.size(); read_index++) {
+        for (int read_index = 0; read_index < currentState.Reads_RP_Discovery.size(); read_index++) {
             #pragma omp critical 
             {
                 if (read_index % 1000 == 0) std::cout << "index " << read_index << std::endl;
