@@ -208,10 +208,18 @@ void SortRPByChrPos(const std::vector <RP_READ> & Reads_RP) {
  */
 
 void ModifyRP(std::vector <RP_READ> & Reads_RP) {
-    unsigned Range, PosA_start, PosA_end, PosB_start, PosB_end, Stop_Pos_A, Stop_Pos_B;
-    int Start_Index_Second;
+    
+    
     int DistanceCutoff = 1000;
-    for (unsigned first = 0; first < Reads_RP.size(); first++) {
+#pragma omp parallel default(shared)
+    {
+#pragma omp for
+    for (int first = 0; first < (int)Reads_RP.size(); first++) {
+        #pragma omp critical 
+        {
+            if (first % 1000 == 0) std::cout << first << std::endl;
+        }
+        unsigned Range, PosA_start, PosA_end, PosB_start, PosB_end, Stop_Pos_A, Stop_Pos_B;
         RP_READ & Current_first = Reads_RP[first];
         Range = (unsigned)(Current_first.InsertSize * 1.1);
         if (Current_first.PosA > Range)
@@ -224,11 +232,11 @@ void ModifyRP(std::vector <RP_READ> & Reads_RP) {
         PosB_end = Current_first.PosB + Range;
         Stop_Pos_A = PosA_end + DistanceCutoff;
         Stop_Pos_B = PosB_end + DistanceCutoff;
-        Start_Index_Second = (int)first - 200;
+        int Start_Index_Second = (int)first - 200;
         if (Start_Index_Second < 0) Start_Index_Second = 0;
         //std::cout << "Before: " << Current_first.DA << " " << Current_first.PosA << " " << Current_first.DB << " " << Current_first.PosB << std::endl;
         for (unsigned second = Start_Index_Second; second < Reads_RP.size(); second++) {
-            if (first == second) continue;
+            if (first == (int)second) continue;
             RP_READ & Current_second = Reads_RP[second];
             if (Current_second.PosA > Stop_Pos_A && Current_second.PosA > Stop_Pos_B && Current_second.PosB > Stop_Pos_A && Current_second.PosB > Stop_Pos_B ) break;
             if (Current_first.ChrNameA == Current_second.ChrNameA
@@ -251,6 +259,7 @@ void ModifyRP(std::vector <RP_READ> & Reads_RP) {
             }
         }
         //std::cout << "After: " << Current_first.DA << " " << Current_first.PosA << " " << Current_first.DB << " " << Current_first.PosB << std::endl;
+    }
     }
     for (unsigned first = 0; first < Reads_RP.size(); first++) {
         if (Reads_RP[first].DA == '+') Reads_RP[first].PosA = Reads_RP[first].PosA + Reads_RP[first].ReadLength;
