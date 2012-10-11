@@ -765,9 +765,6 @@ void build_record_RP_Discovery (const bam1_t * r1, void *data)
 				<< "Total is " << r1_core->l_qseq *2 + 2 * data_for_bam->InsertSize << "\n";*/
         if ((r1_core->tid != r1_core->mtid) || abs(r1_core->isize) > 2 * data_for_bam->InsertSize || ((r1_core->flag & BAM_FREVERSE) == (r1_core->flag & BAM_FMREVERSE))) { // different chr or same strand or insert is too large
             //std::cout << "passed the test\n";
-            Temp_One_Read.Experimental_InsertSize = data_for_bam->InsertSize;
-            Temp_One_Read.ReadName = "";
-            Temp_One_Read.ReadName.append ((const char *) bam1_qname (r1));
             if (r1_core->flag & BAM_FREVERSE) {
                 Temp_One_Read.DA = '-';
             }
@@ -778,10 +775,16 @@ void build_record_RP_Discovery (const bam1_t * r1, void *data)
             else Temp_One_Read.DB = '+';
             
             Temp_One_Read.PosA = r1_core->pos;
-            if (Temp_One_Read.DA == '+') Temp_One_Read.PosA = Temp_One_Read.PosA;// + r1_core->l_qseq;
+            //if (Temp_One_Read.DA == '+') Temp_One_Read.PosA = Temp_One_Read.PosA;// + r1_core->l_qseq;
             //else Temp_One_Read.PosA = Temp_One_Read.PosA;
             Temp_One_Read.PosB = r1_core->mpos;
-            if (Temp_One_Read.DB == '+') Temp_One_Read.PosB = Temp_One_Read.PosB;// + r1_core->l_qseq;
+            //if (Temp_One_Read.DB == '+') Temp_One_Read.PosB = Temp_One_Read.PosB;// + r1_core->l_qseq;
+            
+            //if (r1_core->tid == r1_core->mtid && Temp_One_Read.PosA < Temp_One_Read.PosB) return;
+            
+            Temp_One_Read.Experimental_InsertSize = data_for_bam->InsertSize;
+            Temp_One_Read.ReadName = "";
+            Temp_One_Read.ReadName.append ((const char *) bam1_qname (r1));
             //else Temp_One_Read.PosB = Temp_One_Read.PosB;
             //std::cout << Temp_One_Read.ReadName << " " << Temp_One_Read.DA << " " << Temp_One_Read.PosA << " " << Temp_One_Read.DB << " " << Temp_One_Read.PosB << std::endl;
             Temp_One_Read.MQA = r1_core->qual;

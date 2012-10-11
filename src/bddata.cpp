@@ -168,15 +168,18 @@ bool Compare2Str (const std::string & first, const std::string & second) {
     return false;
 }
 
-void SortRPByChrPos(const std::vector <RP_READ> & Reads_RP, std::vector <unsigned> & RP_index) {
+/*
+void SortRPByChrPos(const std::vector <RP_READ> & Reads_RP) {
     unsigned DistanceCutoff = 1000;
     unsigned Num_RP_Reads = Reads_RP.size();
     for (unsigned index = 0; index < Num_RP_Reads; index++) {
         RP_index.push_back(index);
     }
+    return;
     unsigned TempIndex;
     bool Exchange;
     for (unsigned first = 0; first < Num_RP_Reads - 1; first++) {
+        std::cout << Reads_RP[RP_index[first]].PosA << " " << Reads_RP[RP_index[first]].PosB << std::endl;
         for (unsigned second = first + 1; second < Num_RP_Reads; second++) {
             if (Reads_RP[RP_index[second]].PosA > Reads_RP[RP_index[first]].PosA + DistanceCutoff
                 && Reads_RP[RP_index[second]].PosA > Reads_RP[RP_index[first]].PosB + DistanceCutoff
@@ -197,16 +200,19 @@ void SortRPByChrPos(const std::vector <RP_READ> & Reads_RP, std::vector <unsigne
                 TempIndex = RP_index[first];
                 RP_index[first] = RP_index[second];
                 RP_index[second] = TempIndex;
+                std::cout << "exchanging..." << std::endl;
             }
         }
     }
 }
+ */
 
-void ModifyRP(std::vector <RP_READ> & Reads_RP, std::vector <unsigned> & RP_index) {
+void ModifyRP(std::vector <RP_READ> & Reads_RP) {
     unsigned Range, PosA_start, PosA_end, PosB_start, PosB_end, Stop_Pos_A, Stop_Pos_B;
     int Start_Index_Second;
+    int DistanceCutoff = 1000;
     for (unsigned first = 0; first < Reads_RP.size(); first++) {
-        RP_READ & Current_first = Reads_RP[RP_index[first]];
+        RP_READ & Current_first = Reads_RP[first];
         Range = (unsigned)(Current_first.InsertSize * 1.1);
         if (Current_first.PosA > Range)
         PosA_start = Current_first.PosA - Range;
@@ -216,13 +222,14 @@ void ModifyRP(std::vector <RP_READ> & Reads_RP, std::vector <unsigned> & RP_inde
         PosB_start = Current_first.PosB - Range;
         else PosB_start = 1;
         PosB_end = Current_first.PosB + Range;
-        Stop_Pos_A = PosA_end + Range;
-        Stop_Pos_B = PosB_end + Range;
+        Stop_Pos_A = PosA_end + DistanceCutoff;
+        Stop_Pos_B = PosB_end + DistanceCutoff;
         Start_Index_Second = (int)first - 200;
         if (Start_Index_Second < 0) Start_Index_Second = 0;
         //std::cout << "Before: " << Current_first.DA << " " << Current_first.PosA << " " << Current_first.DB << " " << Current_first.PosB << std::endl;
         for (unsigned second = Start_Index_Second; second < Reads_RP.size(); second++) {
-            RP_READ & Current_second = Reads_RP[RP_index[second]];
+            if (first == second) continue;
+            RP_READ & Current_second = Reads_RP[second];
             if (Current_second.PosA > Stop_Pos_A && Current_second.PosA > Stop_Pos_B && Current_second.PosB > Stop_Pos_A && Current_second.PosB > Stop_Pos_B ) break;
             if (Current_first.ChrNameA == Current_second.ChrNameA
                 && Current_first.ChrNameB == Current_second.ChrNameB
@@ -278,10 +285,10 @@ void Summarize(std::vector <RP_READ> & Reads_RP) {
 
 void BDData::UpdateBD(ControlState & currentState) {
     std::cout << "Discovery RP: " << currentState.Reads_RP_Discovery.size() << std::endl;
-    std::vector <unsigned> RP_index;
-    SortRPByChrPos(currentState.Reads_RP_Discovery, RP_index);
-    std::cout << "sorting RP complete." << std::endl;
-    ModifyRP(currentState.Reads_RP_Discovery, RP_index);
+    //std::vector <unsigned> RP_index;
+    //SortRPByChrPos(currentState.Reads_RP_Discovery);
+    //std::cout << "sorting RP complete." << std::endl;
+    ModifyRP(currentState.Reads_RP_Discovery);
     std::cout << "Modify RP complete." << std::endl;
     Summarize(currentState.Reads_RP_Discovery);
     #pragma omp parallel default(shared)
