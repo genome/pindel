@@ -169,6 +169,7 @@ bool Compare2Str (const std::string & first, const std::string & second) {
 }
 
 void SortRPByChrPos(const std::vector <RP_READ> & Reads_RP, std::vector <unsigned> & RP_index) {
+    unsigned DistanceCutoff = 1000;
     unsigned Num_RP_Reads = Reads_RP.size();
     for (unsigned index = 0; index < Num_RP_Reads; index++) {
         RP_index.push_back(index);
@@ -176,7 +177,11 @@ void SortRPByChrPos(const std::vector <RP_READ> & Reads_RP, std::vector <unsigne
     unsigned TempIndex;
     bool Exchange;
     for (unsigned first = 0; first < Num_RP_Reads - 1; first++) {
-        for (unsigned second = 0; second < Num_RP_Reads; second++) {
+        for (unsigned second = first + 1; second < Num_RP_Reads; second++) {
+            if (Reads_RP[RP_index[second]].PosA > Reads_RP[RP_index[first]].PosA + DistanceCutoff
+                && Reads_RP[RP_index[second]].PosA > Reads_RP[RP_index[first]].PosB + DistanceCutoff
+                && Reads_RP[RP_index[second]].PosB > Reads_RP[RP_index[first]].PosA + DistanceCutoff
+                && Reads_RP[RP_index[second]].PosB > Reads_RP[RP_index[first]].PosB + DistanceCutoff) break;
             Exchange = false;
             if (Compare2Str(Reads_RP[RP_index[first]].ChrNameA, Reads_RP[RP_index[second]].ChrNameA)) Exchange = true;
             else if (Reads_RP[RP_index[first]].ChrNameA == Reads_RP[RP_index[second]].ChrNameA
@@ -198,7 +203,8 @@ void SortRPByChrPos(const std::vector <RP_READ> & Reads_RP, std::vector <unsigne
 }
 
 void ModifyRP(std::vector <RP_READ> & Reads_RP, std::vector <unsigned> & RP_index) {
-    unsigned Range, PosA_start, PosA_end, PosB_start, PosB_end;
+    unsigned Range, PosA_start, PosA_end, PosB_start, PosB_end, Stop_Pos_A, Stop_Pos_B;
+    int Start_Index_Second;
     for (unsigned first = 0; first < Reads_RP.size(); first++) {
         RP_READ & Current_first = Reads_RP[RP_index[first]];
         Range = (unsigned)(Current_first.InsertSize * 1.1);
@@ -210,9 +216,14 @@ void ModifyRP(std::vector <RP_READ> & Reads_RP, std::vector <unsigned> & RP_inde
         PosB_start = Current_first.PosB - Range;
         else PosB_start = 1;
         PosB_end = Current_first.PosB + Range;
+        Stop_Pos_A = PosA_end + Range;
+        Stop_Pos_B = PosB_end + Range;
+        Start_Index_Second = (int)first - 200;
+        if (Start_Index_Second < 0) Start_Index_Second = 0;
         //std::cout << "Before: " << Current_first.DA << " " << Current_first.PosA << " " << Current_first.DB << " " << Current_first.PosB << std::endl;
-        for (unsigned second = 0; second < Reads_RP.size(); second++) {
+        for (unsigned second = Start_Index_Second; second < Reads_RP.size(); second++) {
             RP_READ & Current_second = Reads_RP[RP_index[second]];
+            if (Current_second.PosA > Stop_Pos_A && Current_second.PosA > Stop_Pos_B && Current_second.PosB > Stop_Pos_A && Current_second.PosB > Stop_Pos_B ) break;
             if (Current_first.ChrNameA == Current_second.ChrNameA
                 && Current_first.ChrNameB == Current_second.ChrNameB
                 && Current_first.DA == Current_second.DA
@@ -269,16 +280,14 @@ void BDData::UpdateBD(ControlState & currentState) {
     std::cout << "Discovery RP: " << currentState.Reads_RP_Discovery.size() << std::endl;
     std::vector <unsigned> RP_index;
     SortRPByChrPos(currentState.Reads_RP_Discovery, RP_index);
+    std::cout << "sorting RP complete." << std::endl;
     ModifyRP(currentState.Reads_RP_Discovery, RP_index);
+    std::cout << "Modify RP complete." << std::endl;
     Summarize(currentState.Reads_RP_Discovery);
     #pragma omp parallel default(shared)
     {
     #pragma omp for
-        for (int read_index = 0; read_index < currentState.Reads_RP_Discovery.size(); read_index++) {
-            #pragma omp critical 
-            {
-                if (read_index % 1000 == 0) std::cout << "index " << read_index << std::endl;
-            }
+        for (int read_index = 0; read_index < (int)currentState.Reads_RP_Discovery.size(); read_index++) {
             if (currentState.Reads_RP_Discovery[read_index].Report == false) continue;
     
             std::string firstChrName = currentState.Reads_RP_Discovery[read_index].ChrNameA;
