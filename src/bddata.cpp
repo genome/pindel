@@ -212,16 +212,16 @@ void ModifyRP(std::vector <RP_READ> & Reads_RP) {
     
     int DistanceCutoff = 1000;
 #pragma omp parallel default(shared)
-    {
+{
 #pragma omp for
-    for (int first = 0; first < (int)Reads_RP.size(); first++) {
+    for (int first = 0; first < (int)Reads_RP.size() - 1; first++) {
         #pragma omp critical 
         {
-            if (first % 1000 == 0) std::cout << first << std::endl;
+            if (first != 0 && first % 1000 == 0) std::cout << first << std::endl;
         }
-        unsigned Range, PosA_start, PosA_end, PosB_start, PosB_end, Stop_Pos_A, Stop_Pos_B;
+        unsigned Range, PosA_start, PosA_end, PosB_start, PosB_end, Stop_Pos;
         RP_READ & Current_first = Reads_RP[first];
-        Range = (unsigned)(Current_first.InsertSize * 1.1);
+        Range = (unsigned)(Current_first.InsertSize * 1.2);
         if (Current_first.PosA > Range)
         PosA_start = Current_first.PosA - Range;
         else PosA_start = 1;
@@ -230,37 +230,38 @@ void ModifyRP(std::vector <RP_READ> & Reads_RP) {
         PosB_start = Current_first.PosB - Range;
         else PosB_start = 1;
         PosB_end = Current_first.PosB + Range;
-        Stop_Pos_A = PosA_end + DistanceCutoff;
-        Stop_Pos_B = PosB_end + DistanceCutoff;
-        int Start_Index_Second = (int)first - 200;
+        Stop_Pos = PosA_end + DistanceCutoff;
+        if (Stop_Pos < PosB_end + DistanceCutoff)
+            Stop_Pos = PosB_end + DistanceCutoff;
+        int Start_Index_Second = (int)first - 100;
         if (Start_Index_Second < 0) Start_Index_Second = 0;
         //std::cout << "Before: " << Current_first.DA << " " << Current_first.PosA << " " << Current_first.DB << " " << Current_first.PosB << std::endl;
         for (unsigned second = Start_Index_Second; second < Reads_RP.size(); second++) {
             if (first == (int)second) continue;
             RP_READ & Current_second = Reads_RP[second];
-            if (Current_second.PosA > Stop_Pos_A && Current_second.PosA > Stop_Pos_B && Current_second.PosB > Stop_Pos_A && Current_second.PosB > Stop_Pos_B ) break;
-            if (Current_first.ChrNameA == Current_second.ChrNameA
-                && Current_first.ChrNameB == Current_second.ChrNameB
-                && Current_first.DA == Current_second.DA
-                && Current_first.DB == Current_second.DB) {
-                if (Current_second.PosA > PosA_start
-                    && Current_second.PosA < PosA_end
-                    && Current_second.PosB > PosB_start
-                    && Current_second.PosB < PosB_end) { // same cluster
-                    if ((Current_first.DA == '+' && Current_first.PosA < Current_second.PosA)
-                        || (Current_first.DA == '-' && Current_first.PosA > Current_second.PosA)) {
-                        Current_first.PosA = Current_second.PosA;
-                    }
-                    if ((Current_first.DB == '+' && Current_first.PosB < Current_second.PosB)
-                        || (Current_first.DB == '-' && Current_first.PosB > Current_second.PosB)) {
-                        Current_first.PosB = Current_second.PosB;
+            if (Current_first.ChrNameA == Current_second.ChrNameA && Current_first.ChrNameB == Current_second.ChrNameB) {
+                if (Current_second.PosA > Stop_Pos && Current_second.PosA > Stop_Pos) break;
+                if (Current_first.DA == Current_second.DA
+                    && Current_first.DB == Current_second.DB) {
+                    if (Current_second.PosA > PosA_start
+                        && Current_second.PosA < PosA_end
+                        && Current_second.PosB > PosB_start
+                        && Current_second.PosB < PosB_end) { // same cluster
+                        if ((Current_first.DA == '+' && Current_first.PosA < Current_second.PosA)
+                            || (Current_first.DA == '-' && Current_first.PosA > Current_second.PosA)) {
+                            Current_first.PosA = Current_second.PosA;
+                        }
+                        if ((Current_first.DB == '+' && Current_first.PosB < Current_second.PosB)
+                            || (Current_first.DB == '-' && Current_first.PosB > Current_second.PosB)) {
+                            Current_first.PosB = Current_second.PosB;
+                        }
                     }
                 }
             }
         }
         //std::cout << "After: " << Current_first.DA << " " << Current_first.PosA << " " << Current_first.DB << " " << Current_first.PosB << std::endl;
     }
-    }
+}// #pragma omp parallel default(shared)
     for (unsigned first = 0; first < Reads_RP.size(); first++) {
         if (Reads_RP[first].DA == '+') Reads_RP[first].PosA = Reads_RP[first].PosA + Reads_RP[first].ReadLength;
         if (Reads_RP[first].DB == '+') Reads_RP[first].PosB = Reads_RP[first].PosB + Reads_RP[first].ReadLength;

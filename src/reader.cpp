@@ -553,7 +553,8 @@ bool isWeirdRead( const flags_hit *read, const bam1_t * bamOfRead )
 
 
 void build_record_SR (const bam1_t * mapped_read, const bam1_t * unmapped_read, void *data)
-{
+{   // userSettings->minimalAnchorQuality
+    UserDefinedSettings *userSettings = UserDefinedSettings::Instance();
     SPLIT_READ Temp_One_Read;
     fetch_func_data_SR *data_for_bam = (fetch_func_data_SR *) data;
     bam_header_t *header = (bam_header_t *) data_for_bam->header;
@@ -565,6 +566,8 @@ void build_record_SR (const bam1_t * mapped_read, const bam1_t * unmapped_read, 
     const bam1_core_t *unmapped_core;
     mapped_core = &mapped_read->core;
     unmapped_core = &unmapped_read->core;
+    Temp_One_Read.MS = mapped_core->qual;
+    if ((short)Temp_One_Read.MS < (short)userSettings->minimalAnchorQuality) return;
     Temp_One_Read.Name = "@";
     Temp_One_Read.Name.append ((const char *) bam1_qname (unmapped_read));
     if (unmapped_core->flag & BAM_FREAD1) {
@@ -622,7 +625,7 @@ void build_record_SR (const bam1_t * mapped_read, const bam1_t * unmapped_read, 
     else {
         Temp_One_Read.MatchedD = '+';
     }
-    Temp_One_Read.MS = mapped_core->qual;
+
     //FIXME pass these through from the command line with a struct
     Temp_One_Read.InsertSize = InsertSize;
 	if (InsertSize <= length ) {
@@ -670,6 +673,7 @@ void build_record_SR (const bam1_t * mapped_read, const bam1_t * unmapped_read, 
 
 void build_record_RefRead (const bam1_t * mapped_read, const bam1_t * ref_read, void *data)
 {   // std::vector <REF_READ> *RefSupportingReads;
+    UserDefinedSettings *userSettings = UserDefinedSettings::Instance();
     REF_READ One_RefRead;
     fetch_func_data_SR *data_for_bam = (fetch_func_data_SR *) data;
     bam_header_t *header = (bam_header_t *) data_for_bam->header;
@@ -681,13 +685,16 @@ void build_record_RefRead (const bam1_t * mapped_read, const bam1_t * ref_read, 
     const bam1_core_t *Ref_read_core;
     mapped_core = &mapped_read->core;
     Ref_read_core = &ref_read->core;
+    
+    
+    if (Ref_read_core->qual < userSettings->minimalAnchorQuality) return;
 
     One_RefRead.Pos = Ref_read_core->pos; // mapped_core->pos;
     One_RefRead.Tag = (std::string) data_for_bam->Tag;
     One_RefRead.MQ = Ref_read_core->qual;
     One_RefRead.FragName = header->target_name[Ref_read_core->tid];
     One_RefRead.ReadLength = Ref_read_core->l_qseq;
-    
+
     data_for_bam->RefSupportingReads->push_back(One_RefRead);// addRead(Temp_One_Read);
     return;
 }
@@ -743,7 +750,7 @@ void build_record_RP (const bam1_t * r1, void *data)
 }
 
 void build_record_RP_Discovery (const bam1_t * r1, void *data)
-{
+{   UserDefinedSettings *userSettings = UserDefinedSettings::Instance();
     //std::cout << "entering build_record_RP_Discovery" << std::endl;
     const bam1_core_t * r1_core;
     //const bam1_core_t * r2_core;
@@ -757,13 +764,15 @@ void build_record_RP_Discovery (const bam1_t * r1, void *data)
     bam_header_t *header = (bam_header_t *) data_for_bam->header;
     std::string CurrentChrSeq = *(std::string *) data_for_bam->CurrentChrSeq;
     std::string Tag = (std::string) data_for_bam->Tag;
-    
+
     if (!(r1_core->flag & BAM_FPAIRED)) return;
+    
+    if (r1_core->qual < userSettings->minimalAnchorQuality) return;
     
     if (!(r1_core->flag & BAM_FUNMAP || r1_core->flag & BAM_FMUNMAP)) { // both reads are mapped.
 			/*std::cout << "Read Insertsize=" << abs(r1_core->isize) << ", qseq=" << r1_core->l_qseq << " BAM ISize=" << data_for_bam->InsertSize 
 				<< "Total is " << r1_core->l_qseq *2 + 2 * data_for_bam->InsertSize << "\n";*/
-        if ((r1_core->tid != r1_core->mtid) || abs(r1_core->isize) > 3 * data_for_bam->InsertSize + 1000 || ((r1_core->flag & BAM_FREVERSE) == (r1_core->flag & BAM_FMREVERSE))) { // different chr or same strand or insert is too large
+        if ((r1_core->tid != r1_core->mtid) || abs(r1_core->isize) > 3 * data_for_bam->InsertSize + 500 || ((r1_core->flag & BAM_FREVERSE) == (r1_core->flag & BAM_FMREVERSE))) { // different chr or same strand or insert is too large
             //std::cout << "passed the test\n";
             if (r1_core->flag & BAM_FREVERSE) {
                 Temp_One_Read.DA = '-';

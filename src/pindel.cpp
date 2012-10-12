@@ -83,7 +83,7 @@ int g_binIndex = -1; // global variable for the bin index, as I cannot easily pa
 unsigned int g_maxPos = 0; // to calculate which is the last position in the chromosome, and hence to calculate the number of bins
 short g_MinClose = 8;
 std::set<std::string> g_sampleNames;
-std::map<std::string,unsigned> g_SameName2Index;
+std::map<std::string,unsigned> g_SampleName2Index;
 std::vector <RefCoveragePerPosition> g_RefCoverageRegion;
 short Before, After;
 BDData g_bdData;
@@ -1163,20 +1163,22 @@ void UpdateFarFragName(std::vector <SPLIT_READ> & input) {
 short UpdateRefReadCoverage(ControlState& currentState, const SearchWindow& currentWindow )
 {
     //std::set<std::string> g_sampleNames;
-    //std::map<std::string,unsigned> g_SameName2Index;
+    //std::map<std::string,unsigned> g_SampleName2Index;
     std::cout << "There are " << g_sampleNames.size() << " samples." << std::endl;
-    g_SameName2Index.clear();
+    g_SampleName2Index.clear();
     std::set<std::string>::iterator it;
     unsigned index = 0;
     for (it=g_sampleNames.begin(); it != g_sampleNames.end(); it++ ) {
-        g_SameName2Index.insert ( std::pair<std::string, unsigned>(*it, index) );
+        g_SampleName2Index.insert ( std::pair<std::string, unsigned>(*it, index) );
         index++;
     }
+    std::cout << "SampleName2Index done" << std::endl;
     // std::vector <RefCoveragePerPosition> g_RefCoverageRegion;
     unsigned Start = currentWindow.getStart();
     unsigned End = currentWindow.getEnd();
     unsigned Length = End - Start + 1;
     unsigned NumberOfSamples = g_sampleNames.size();
+    std::cout << "declaring g_RefCoverageRegion for " << g_sampleNames.size() << " samples and " << Length << " positions." << std::endl;
     g_RefCoverageRegion.clear();
     RefCoveragePerPosition OnePos;
     for (unsigned SampleIndex = 0; SampleIndex < NumberOfSamples; SampleIndex++) {
@@ -1185,17 +1187,26 @@ short UpdateRefReadCoverage(ControlState& currentState, const SearchWindow& curr
     for (unsigned index = 0; index < Length; index++) {
         g_RefCoverageRegion.push_back(OnePos);
     }
-    unsigned SampleID, PosStart;
-    for (unsigned readIndex = 0; readIndex < currentState.RefSupportingReads.size(); readIndex++) {
-        if (currentState.RefSupportingReads[readIndex].Pos < Start || currentState.RefSupportingReads[readIndex].Pos + currentState.RefSupportingReads[readIndex].ReadLength > End) {
-            continue;
-        }
-        SampleID = g_SameName2Index.find(currentState.RefSupportingReads[readIndex].Tag)->second;
-        PosStart = currentState.RefSupportingReads[readIndex].Pos - Start;
-        for (unsigned posIndex = 0; posIndex < (unsigned)currentState.RefSupportingReads[readIndex].ReadLength; posIndex++) {
-            g_RefCoverageRegion[PosStart + posIndex].RefCoveragePerSample[SampleID]++;
-        }
-    }//RefSupportingReads
+    std::cout << "declare g_RefCoverageRegion done" << std::endl;
+    
+    #pragma omp parallel default(shared)
+    {
+    #pragma omp for
+        for (int readIndex = 0; readIndex < (int)currentState.RefSupportingReads.size(); readIndex++) {
+            if (currentState.RefSupportingReads[readIndex].Pos < Start || currentState.RefSupportingReads[readIndex].Pos + currentState.RefSupportingReads[readIndex].ReadLength > End) {
+                continue;
+            }
+            unsigned SampleID = g_SampleName2Index.find(currentState.RefSupportingReads[readIndex].Tag)->second;
+            unsigned PosStart = currentState.RefSupportingReads[readIndex].Pos - Start;
+            #pragma omp critical
+            {
+                for (unsigned posIndex = 1; posIndex < (unsigned)currentState.RefSupportingReads[readIndex].ReadLength - 1; posIndex++) {
+                    g_RefCoverageRegion[PosStart + posIndex].RefCoveragePerSample[SampleID]++;
+                }
+            }
+        }//RefSupportingReads
+    }
+    std::cout << "update g_RefCoverageRegion done" << std::endl;
     /*
     for (unsigned PosIndex = 0; PosIndex < Length; PosIndex++) {
         std::cout << Start + PosIndex;
