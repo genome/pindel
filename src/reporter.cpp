@@ -121,7 +121,7 @@ void OutputTDs (const std::vector < SPLIT_READ > &TDs,
            const unsigned int &RealStart,
            const unsigned int &RealEnd, std::ofstream & TDOutf)
 {
-
+    if (!(TDs[C_S].BPLeft + 2 >= g_RegionStart &&  TDs[C_S].BPRight + 2 < g_RegionEnd)) return;
    unsigned int NumberOfReads = C_E - C_S + 1;
    unsigned int LeftS = 1;
    unsigned int RightS = 1;
@@ -214,7 +214,7 @@ void OutputDeletions (const std::vector < SPLIT_READ > &Deletions,
                  const unsigned int &C_E,
                  const unsigned int &RealStart,
                  const unsigned int &RealEnd, std::ofstream & DeletionOutf)
-{
+{  if (!(Deletions[C_S].BPLeft + 2 >= g_RegionStart &&  Deletions[C_S].BPRight + 2 < g_RegionEnd)) return; 
    //std::cout << "Start " << g_RegionStart << "\tEnd " << g_RegionEnd << std::endl;
    LOG_DEBUG(*logStream << "d_1" << std::endl);
    unsigned int NumberOfReads = C_E - C_S + 1;
@@ -350,6 +350,7 @@ void OutputInversions (const std::vector < SPLIT_READ > &Inv,
                   const unsigned int &RealStart,
                   const unsigned int &RealEnd, std::ofstream & InvOutf)
 {
+   if (!(Inv[C_S].BPLeft + 2 >= g_RegionStart &&  Inv[C_S].BPRight + 2 < g_RegionEnd)) return;  
    int LeftNT_index = -1;
    int RightNT_index = -1;
    for (unsigned Index = C_S; Index <= C_E; Index++) {
@@ -513,6 +514,7 @@ void OutputSIs (const std::vector < SPLIT_READ > &SIs,
            const unsigned int &RealStart,
            const unsigned int &RealEnd, std::ofstream & SIsOutf)
 {
+   if (!(SIs[C_S].BPLeft + 2 >= g_RegionStart &&  SIs[C_S].BPRight + 2 < g_RegionEnd)) return; 
    unsigned int NumberOfReads = C_E - C_S + 1;
    unsigned int LeftS = 1;
    unsigned int RightS = 1;
@@ -618,6 +620,7 @@ void OutputDI (const std::vector < SPLIT_READ > &DI,
           const unsigned int &RealStart,
           const unsigned int &RealEnd, std::ofstream & DeletionOutf)
 {
+   if (!(DI[C_S].BPLeft + 2 >= g_RegionStart &&  DI[C_S].BPRight + 2 < g_RegionEnd)) return;
    unsigned int NumberOfReads = C_E - C_S + 1;
    unsigned int LeftS = 1;
    unsigned int RightS = 1;
@@ -950,7 +953,6 @@ bool IsGoodTD(std::vector < SPLIT_READ > & GoodIndels, Indel4output & OneIndelEv
             return true;
         else return false;
     }
-    
     return false;
 }
 
@@ -1350,6 +1352,7 @@ void OutputShortInversion (const std::vector < SPLIT_READ > &supportingReads,
                            const unsigned int &RealStart,
                            const unsigned int &RealEnd, std::ofstream & InversionOutF)
 {
+   if (!(supportingReads[indexOfFirstRead].BPLeft + 2 >= g_RegionStart &&  supportingReads[indexOfFirstRead].BPRight + 2 < g_RegionEnd)) return;
    unsigned int NumberOfReads = indexOfLastRead - indexOfFirstRead + 1;
    unsigned int LeftS = 1;
    unsigned int RightS = 1;

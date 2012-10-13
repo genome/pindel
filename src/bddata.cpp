@@ -201,7 +201,7 @@ void ModifyRP(std::vector <RP_READ> & Reads_RP) {
         }
         unsigned Range, PosA_start, PosA_end, PosB_start, PosB_end, Stop_Pos;
         RP_READ & Current_first = Reads_RP[first];
-        Range = (unsigned)(Current_first.InsertSize);
+        Range = (unsigned)(Current_first.InsertSize * 1.2);
         if (Current_first.PosA > Range)
         PosA_start = Current_first.PosA - Range;
         else PosA_start = 1;
@@ -213,15 +213,14 @@ void ModifyRP(std::vector <RP_READ> & Reads_RP) {
         Stop_Pos = PosA_end + DistanceCutoff;
         if (Stop_Pos < PosB_end + DistanceCutoff)
             Stop_Pos = PosB_end + DistanceCutoff;
-        int Start_Index_Second = (int)first - 100;
+        int Start_Index_Second = (int)first - 1000;
         if (Start_Index_Second < 0) Start_Index_Second = 0;
-        //std::cout << "Before: " << Current_first.DA << " " << Current_first.PosA << " " << Current_first.DB << " " << Current_first.PosB << std::endl;
-        for (unsigned second = Start_Index_Second; second < Reads_RP.size(); second++) {
-            if (first == (int)second) continue;
+        for (unsigned second = 0; second < Reads_RP.size(); second++) {
+            //if (first == (int)second) continue;
             RP_READ & Current_second = Reads_RP[second];
             //if (Current_first.ChrNameA == Current_second.ChrNameA && Current_first.ChrNameB == Current_second.ChrNameB)
             {
-                if (Current_second.PosA > Stop_Pos && Current_second.PosA > Stop_Pos) break;
+                //if (Current_second.PosA > Stop_Pos && Current_second.PosB > Stop_Pos) break;
                 if (Current_first.DA == Current_second.DA
                     && Current_first.DB == Current_second.DB) {
                     if (Current_second.OriginalPosA > PosA_start
@@ -231,21 +230,23 @@ void ModifyRP(std::vector <RP_READ> & Reads_RP) {
                         if ((Current_first.DA == '+' && Current_first.PosA < Current_second.OriginalPosA)
                             || (Current_first.DA == '-' && Current_first.PosA > Current_second.OriginalPosA)) {
                             Current_first.PosA = Current_second.OriginalPosA;
+                            //std::cout << "PosA " << Current_first.PosA << std::endl;
                         }
                         if ((Current_first.DB == '+' && Current_first.PosB < Current_second.OriginalPosB)
                             || (Current_first.DB == '-' && Current_first.PosB > Current_second.OriginalPosB)) {
                             Current_first.PosB = Current_second.OriginalPosB;
+                            //std::cout << "PosB " << Current_first.PosB << std::endl;
                         }
                     }
                 }
             }
         }
-        //std::cout << "After: " << Current_first.DA << " " << Current_first.PosA << " " << Current_first.DB << " " << Current_first.PosB << std::endl;
     }
 }// #pragma omp parallel default(shared)
     for (unsigned first = 0; first < Reads_RP.size(); first++) {
         if (Reads_RP[first].DA == '+') Reads_RP[first].PosA = Reads_RP[first].PosA + Reads_RP[first].ReadLength;
         if (Reads_RP[first].DB == '+') Reads_RP[first].PosB = Reads_RP[first].PosB + Reads_RP[first].ReadLength;
+        if (Reads_RP[first].ChrNameA == Reads_RP[first].ChrNameB && abs(Reads_RP[first].PosA - Reads_RP[first].PosB) < 500) Reads_RP[first].Visited = true;
         //std::cout << "Final: " << Reads_RP[first].ChrNameA << " " << Reads_RP[first].DA << " " << Reads_RP[first].PosA << "\t" << Reads_RP[first].ChrNameB << " " << Reads_RP[first].DB << " " << Reads_RP[first].PosB << std::endl;
     }
 }
@@ -254,6 +255,7 @@ void Summarize(std::vector <RP_READ> & Reads_RP) {
     unsigned Cutoff = 3;
 	if (Reads_RP.size()==0) return;
     for (unsigned int first = 0; first < Reads_RP.size() - 1; first++) {
+        //std::cout << Reads_RP[first].DA << " " << Reads_RP[first].PosA << " " << Reads_RP[first].DB << " " << Reads_RP[first].PosB << std::endl;
         if (Reads_RP[first].Visited == true) continue;
         for (unsigned second = first + 1; second < Reads_RP.size(); second++) {
             if (Reads_RP[second].Visited == true) continue;

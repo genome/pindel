@@ -813,6 +813,7 @@ void build_record_RP_Discovery (const bam1_t * r1, void *data)
             Temp_One_Read.ReadLength = r1_core->l_qseq;
             if (r1_core->tid == r1_core->mtid) {
                 data_for_bam->LeftReads->push_back(Temp_One_Read);
+                /*
                 RP_READ Temp_One_Read_another = Temp_One_Read;
                 Temp_One_Read_another.DA = Temp_One_Read.DB;
                 Temp_One_Read_another.DB = Temp_One_Read.DA;
@@ -823,6 +824,7 @@ void build_record_RP_Discovery (const bam1_t * r1, void *data)
                 Temp_One_Read_another.ChrNameA = Temp_One_Read.ChrNameB;
                 Temp_One_Read_another.ChrNameB = Temp_One_Read.ChrNameA;
                 data_for_bam->LeftReads->push_back(Temp_One_Read_another);
+                 */
             }
             else    data_for_bam->LeftReads_InterChr->push_back(Temp_One_Read);
 			//	std::cout << "finished the procedure\n";
