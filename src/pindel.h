@@ -175,6 +175,8 @@ struct RP_READ {
         DB = 'k';
         PosA = 0;
         PosB = 0;
+        OriginalPosA = 0;
+        OriginalPosB = 0;
         Distance = 0;
         MQA = 0;
         MQB = 0;
@@ -193,6 +195,8 @@ struct RP_READ {
     char DB;
     unsigned PosA;
     unsigned PosB;
+    unsigned OriginalPosA;
+    unsigned OriginalPosB;
     short Distance;
     short MQA;
     short MQB;

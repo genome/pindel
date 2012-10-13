@@ -103,6 +103,7 @@ struct fetch_func_data_SR {
 struct fetch_func_data_RP {
     fetch_func_data_RP () : CurrentChrSeq( NULL ){
         LeftReads = NULL;
+        LeftReads_InterChr = NULL;
         read_to_map_qual = NULL;
         header = NULL;
         b1_flags = NULL;
@@ -113,6 +114,8 @@ struct fetch_func_data_RP {
     }
    fetch_func_data_RP (const std::string* chromosomeSeq) : CurrentChrSeq( chromosomeSeq ){
       LeftReads = NULL;
+       LeftReads_InterChr = NULL;
+
       read_to_map_qual = NULL;
       header = NULL;
       b1_flags = NULL;
@@ -122,6 +125,7 @@ struct fetch_func_data_RP {
    }
     //ReadBuffer *readBuffer;
     std::vector < RP_READ > *LeftReads;
+    std::vector < RP_READ > *LeftReads_InterChr;
     khash_t (read_name) * read_to_map_qual;
     bam_header_t *header;
     flags_hit *b1_flags;
@@ -387,7 +391,7 @@ bool ReadInBamReads_RP (const char *bam_path, const std::string & FragName,
 }
 
 bool ReadInBamReads_RP_Discovery (const char *bam_path, const std::string & FragName,
-                        const std::string * CurrentChrSeq, std::vector <RP_READ> &LeftReads,
+                        const std::string * CurrentChrSeq, std::vector <RP_READ> &LeftReads, std::vector <RP_READ> &LeftReads_InterChr,
                         int InsertSize, std::string Tag, const SearchWindow& currentWindow )
 {
     //std::cout << "Entering ReadInBamReads_RP_Discovery" << std::endl;
@@ -409,6 +413,7 @@ bool ReadInBamReads_RP_Discovery (const char *bam_path, const std::string & Frag
     data.header = header;
     //data.CurrentChrSeq = CurrentChrSeq;
     data.LeftReads = &LeftReads;
+    data.LeftReads_InterChr = &LeftReads_InterChr;
     data.read_to_map_qual = NULL;
     data.read_to_map_qual = kh_init (read_name);
     flags_hit b1_flags;//, b2_flags;
@@ -787,6 +792,8 @@ void build_record_RP_Discovery (const bam1_t * r1, void *data)
             //if (Temp_One_Read.DA == '+') Temp_One_Read.PosA = Temp_One_Read.PosA;// + r1_core->l_qseq;
             //else Temp_One_Read.PosA = Temp_One_Read.PosA;
             Temp_One_Read.PosB = r1_core->mpos;
+            Temp_One_Read.OriginalPosA = Temp_One_Read.PosA;
+            Temp_One_Read.OriginalPosB = Temp_One_Read.PosB;
             //if (Temp_One_Read.DB == '+') Temp_One_Read.PosB = Temp_One_Read.PosB;// + r1_core->l_qseq;
             
             //if (r1_core->tid == r1_core->mtid && Temp_One_Read.PosA < Temp_One_Read.PosB) return;
@@ -804,7 +811,20 @@ void build_record_RP_Discovery (const bam1_t * r1, void *data)
             //FIXME pass these through from the command line with a struct
             Temp_One_Read.Tag = Tag;
             Temp_One_Read.ReadLength = r1_core->l_qseq;
-            data_for_bam->LeftReads->push_back(Temp_One_Read);
+            if (r1_core->tid == r1_core->mtid) {
+                data_for_bam->LeftReads->push_back(Temp_One_Read);
+                RP_READ Temp_One_Read_another = Temp_One_Read;
+                Temp_One_Read_another.DA = Temp_One_Read.DB;
+                Temp_One_Read_another.DB = Temp_One_Read.DA;
+                Temp_One_Read_another.PosA = Temp_One_Read.PosB;
+                Temp_One_Read_another.PosB = Temp_One_Read.PosA;
+                Temp_One_Read_another.OriginalPosA = Temp_One_Read.OriginalPosB;
+                Temp_One_Read_another.OriginalPosB = Temp_One_Read.OriginalPosA;
+                Temp_One_Read_another.ChrNameA = Temp_One_Read.ChrNameB;
+                Temp_One_Read_another.ChrNameB = Temp_One_Read.ChrNameA;
+                data_for_bam->LeftReads->push_back(Temp_One_Read_another);
+            }
+            else    data_for_bam->LeftReads_InterChr->push_back(Temp_One_Read);
 			//	std::cout << "finished the procedure\n";
         }
 
@@ -1116,6 +1136,7 @@ short get_RP_Reads_Discovery(ControlState& currentState, const SearchWindow& cur
                                                        &currentWindow.getChromosome()->getSeq(),
                                                        //&currentState.CurrentChrSeq,
                                                        currentState.Reads_RP_Discovery,
+                                                       currentState.Reads_RP_Discovery_InterChr,
                                                        currentState.bams_to_parse[i].InsertSize,
                                                        currentState.bams_to_parse[i].Tag,
                                                        currentWindow);

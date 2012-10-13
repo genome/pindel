@@ -168,44 +168,24 @@ bool Compare2Str (const std::string & first, const std::string & second) {
     return false;
 }
 
-/*
-void SortRPByChrPos(const std::vector <RP_READ> & Reads_RP) {
-    unsigned DistanceCutoff = 1000;
-    unsigned Num_RP_Reads = Reads_RP.size();
-    for (unsigned index = 0; index < Num_RP_Reads; index++) {
-        RP_index.push_back(index);
-    }
-    return;
-    unsigned TempIndex;
-    bool Exchange;
-    for (unsigned first = 0; first < Num_RP_Reads - 1; first++) {
-        std::cout << Reads_RP[RP_index[first]].PosA << " " << Reads_RP[RP_index[first]].PosB << std::endl;
-        for (unsigned second = first + 1; second < Num_RP_Reads; second++) {
-            if (Reads_RP[RP_index[second]].PosA > Reads_RP[RP_index[first]].PosA + DistanceCutoff
-                && Reads_RP[RP_index[second]].PosA > Reads_RP[RP_index[first]].PosB + DistanceCutoff
-                && Reads_RP[RP_index[second]].PosB > Reads_RP[RP_index[first]].PosA + DistanceCutoff
-                && Reads_RP[RP_index[second]].PosB > Reads_RP[RP_index[first]].PosB + DistanceCutoff) break;
-            Exchange = false;
-            if (Compare2Str(Reads_RP[RP_index[first]].ChrNameA, Reads_RP[RP_index[second]].ChrNameA)) Exchange = true;
-            else if (Reads_RP[RP_index[first]].ChrNameA == Reads_RP[RP_index[second]].ChrNameA
-                     && Reads_RP[RP_index[first]].PosA > Reads_RP[RP_index[second]].PosA) Exchange = true;
-            else if (Reads_RP[RP_index[first]].ChrNameA == Reads_RP[RP_index[second]].ChrNameA
-                     && Reads_RP[RP_index[first]].PosA == Reads_RP[RP_index[second]].PosA
-                     && Compare2Str(Reads_RP[RP_index[first]].ChrNameB, Reads_RP[RP_index[second]].ChrNameB)) Exchange = true;
-            else if (Reads_RP[RP_index[first]].ChrNameA == Reads_RP[RP_index[second]].ChrNameA
-                     && Reads_RP[RP_index[first]].PosA == Reads_RP[RP_index[second]].PosA
-                     && Reads_RP[RP_index[first]].ChrNameB == Reads_RP[RP_index[second]].ChrNameB
-                     && Reads_RP[RP_index[first]].PosB > Reads_RP[RP_index[second]].PosB) Exchange = true;
-            if (Exchange) {
-                TempIndex = RP_index[first];
-                RP_index[first] = RP_index[second];
-                RP_index[second] = TempIndex;
-                std::cout << "exchanging..." << std::endl;
-            }
-        }
-    }
+bool SortByFirstAndThenSecondCoordinate(const RP_READ & read1, const RP_READ & read2) {
+    if (read1.PosA != read2.PosA ) {
+		return (read1.PosA < read2.PosA );
+	}
+	else if (read1.PosB != read2.PosB ) {
+		return (read1.PosB < read2.PosB );
+	}
+	else return false; // they're exactly equal so event1 is not 'smaller than' event2
 }
- */
+
+/*
+void SortRPByChrPos(std::vector <RP_READ> & Reads_RP) { // no interchromosome RP reads is here.
+    //unsigned DistanceCutoff = 1000;
+    //unsigned Num_RP_Reads = Reads_RP.size();
+    
+    sort(Reads_RP.begin(), Reads_RP.end(), SortByFirstAndThenSecondCoordinate);
+}*/
+
 
 void ModifyRP(std::vector <RP_READ> & Reads_RP) {
     
@@ -221,7 +201,7 @@ void ModifyRP(std::vector <RP_READ> & Reads_RP) {
         }
         unsigned Range, PosA_start, PosA_end, PosB_start, PosB_end, Stop_Pos;
         RP_READ & Current_first = Reads_RP[first];
-        Range = (unsigned)(Current_first.InsertSize * 1.2);
+        Range = (unsigned)(Current_first.InsertSize);
         if (Current_first.PosA > Range)
         PosA_start = Current_first.PosA - Range;
         else PosA_start = 1;
@@ -239,21 +219,22 @@ void ModifyRP(std::vector <RP_READ> & Reads_RP) {
         for (unsigned second = Start_Index_Second; second < Reads_RP.size(); second++) {
             if (first == (int)second) continue;
             RP_READ & Current_second = Reads_RP[second];
-            if (Current_first.ChrNameA == Current_second.ChrNameA && Current_first.ChrNameB == Current_second.ChrNameB) {
+            //if (Current_first.ChrNameA == Current_second.ChrNameA && Current_first.ChrNameB == Current_second.ChrNameB)
+            {
                 if (Current_second.PosA > Stop_Pos && Current_second.PosA > Stop_Pos) break;
                 if (Current_first.DA == Current_second.DA
                     && Current_first.DB == Current_second.DB) {
-                    if (Current_second.PosA > PosA_start
-                        && Current_second.PosA < PosA_end
-                        && Current_second.PosB > PosB_start
-                        && Current_second.PosB < PosB_end) { // same cluster
-                        if ((Current_first.DA == '+' && Current_first.PosA < Current_second.PosA)
-                            || (Current_first.DA == '-' && Current_first.PosA > Current_second.PosA)) {
-                            Current_first.PosA = Current_second.PosA;
+                    if (Current_second.OriginalPosA > PosA_start
+                        && Current_second.OriginalPosA < PosA_end
+                        && Current_second.OriginalPosB > PosB_start
+                        && Current_second.OriginalPosB < PosB_end) { // same cluster
+                        if ((Current_first.DA == '+' && Current_first.PosA < Current_second.OriginalPosA)
+                            || (Current_first.DA == '-' && Current_first.PosA > Current_second.OriginalPosA)) {
+                            Current_first.PosA = Current_second.OriginalPosA;
                         }
-                        if ((Current_first.DB == '+' && Current_first.PosB < Current_second.PosB)
-                            || (Current_first.DB == '-' && Current_first.PosB > Current_second.PosB)) {
-                            Current_first.PosB = Current_second.PosB;
+                        if ((Current_first.DB == '+' && Current_first.PosB < Current_second.OriginalPosB)
+                            || (Current_first.DB == '-' && Current_first.PosB > Current_second.OriginalPosB)) {
+                            Current_first.PosB = Current_second.OriginalPosB;
                         }
                     }
                 }
@@ -296,8 +277,9 @@ void Summarize(std::vector <RP_READ> & Reads_RP) {
 void BDData::UpdateBD(ControlState & currentState) {
     std::cout << "Discovery RP: " << currentState.Reads_RP_Discovery.size() << std::endl;
     //std::vector <unsigned> RP_index;
+    sort(currentState.Reads_RP_Discovery.begin(), currentState.Reads_RP_Discovery.end(), SortByFirstAndThenSecondCoordinate);
     //SortRPByChrPos(currentState.Reads_RP_Discovery);
-    //std::cout << "sorting RP complete." << std::endl;
+    std::cout << "sorting RP complete." << std::endl;
     ModifyRP(currentState.Reads_RP_Discovery);
     std::cout << "Modify RP complete." << std::endl;
     Summarize(currentState.Reads_RP_Discovery);
@@ -325,7 +307,7 @@ void BDData::UpdateBD(ControlState & currentState) {
         }
     }
     //currentState.Reads_RP_Discovery.clear();
-    std::cout << "sorting BD..." << std::endl;
+    std::cout << "summarize BP as BD complete. Now start sorting BD..." << std::endl;
 	sort( m_bdEvents.begin(), m_bdEvents.end(), sortOnFirstBDCoordinate );
     std::cout << "sorting BD... done." << std::endl;
 }
