@@ -121,7 +121,7 @@ void OutputTDs (const std::vector < SPLIT_READ > &TDs,
            const unsigned int &RealStart,
            const unsigned int &RealEnd, std::ofstream & TDOutf)
 {
-    if (!(TDs[C_S].BPLeft + 2 >= g_RegionStart &&  TDs[C_S].BPRight + 2 < g_RegionEnd)) return;
+    
    unsigned int NumberOfReads = C_E - C_S + 1;
    unsigned int LeftS = 1;
    unsigned int RightS = 1;
@@ -169,13 +169,35 @@ void OutputTDs (const std::vector < SPLIT_READ > &TDs,
 
    TDOutf << "\t" << g_sampleNames.size() << "\tNumSupSamples " << NumberSupSamples << "\t" <<
           NumU_SupSamples;
-   for (unsigned short i = 0; i < g_sampleNames.size (); i++)
+   std::vector <int> CoverageStart, CoverageEnd; //if (!(TDs[C_S].BPLeft + 2 >= g_RegionStart &&  TDs[C_S].BPRight + 2 < g_RegionEnd)) return;
+   if (TDs[C_S].BPLeft + 1 >= g_RegionStart && TDs[C_S].BPLeft + 1 < g_RegionEnd) {
+       for (unsigned short i = 0; i < g_sampleNames.size (); i++) {
+           CoverageStart.push_back(g_RefCoverageRegion[TDs[C_S].BPLeft + 1 - g_RegionStart].RefCoveragePerSample[i]);
+       }
+   }
+   else {
+       for (unsigned short i = 0; i < g_sampleNames.size (); i++) {
+           CoverageStart.push_back(-1);
+       }
+   }
+    if (TDs[C_S].BPRight + 1 > g_RegionStart && TDs[C_S].BPRight + 1 < g_RegionEnd) {
+        for (unsigned short i = 0; i < g_sampleNames.size (); i++) {
+            CoverageEnd.push_back(g_RefCoverageRegion[TDs[C_S].BPRight + 1 - g_RegionStart].RefCoveragePerSample[i]);
+        }
+    }
+    else {
+        for (unsigned short i = 0; i < g_sampleNames.size (); i++) {
+            CoverageEnd.push_back(-1);
+        }
+    }
+   for (unsigned short i = 0; i < g_sampleNames.size (); i++) {
       TDOutf << "\t" << indexToSampleMap[i]
-             << " " << g_RefCoverageRegion[TDs[C_S].BPLeft + 2 - g_RegionStart].RefCoveragePerSample[i]
+             << " " << CoverageStart[i] << " " << CoverageEnd[i]
              << " " << NumSupportPerTag[i].NumPlus
              << " " << NumSupportPerTag[i].NumUPlus
              << " " << NumSupportPerTag[i].NumMinus
              << " " << NumSupportPerTag[i].NumUMinus;
+   }
    TDOutf << std::endl;
 
    TDOutf << TheInput.substr (TDs[C_S].BPRight + g_SpacerBeforeAfter - g_reportLength + 1, g_reportLength);	// << endl;//
@@ -214,7 +236,7 @@ void OutputDeletions (const std::vector < SPLIT_READ > &Deletions,
                  const unsigned int &C_E,
                  const unsigned int &RealStart,
                  const unsigned int &RealEnd, std::ofstream & DeletionOutf)
-{  if (!(Deletions[C_S].BPLeft + 2 >= g_RegionStart &&  Deletions[C_S].BPRight + 2 < g_RegionEnd)) return; 
+{  //if (!(Deletions[C_S].BPLeft + 2 >= g_RegionStart &&  Deletions[C_S].BPRight + 2 < g_RegionEnd)) return;
    //std::cout << "Start " << g_RegionStart << "\tEnd " << g_RegionEnd << std::endl;
    LOG_DEBUG(*logStream << "d_1" << std::endl);
    unsigned int NumberOfReads = C_E - C_S + 1;
@@ -289,9 +311,30 @@ void OutputDeletions (const std::vector < SPLIT_READ > &Deletions,
    DeletionOutf << "\t" << g_sampleNames.
                 size () << "\tNumSupSamples " << NumberSupSamples << "\t" <<
                 NumU_SupSamples;
+    std::vector <int> CoverageStart, CoverageEnd; //if (!(TDs[C_S].BPLeft + 2 >= g_RegionStart &&  TDs[C_S].BPRight + 2 < g_RegionEnd)) return;
+    if (Deletions[C_S].BPLeft + 2 >= g_RegionStart && Deletions[C_S].BPLeft + 2 < g_RegionEnd) {
+        for (unsigned short i = 0; i < g_sampleNames.size (); i++) {
+            CoverageStart.push_back(g_RefCoverageRegion[Deletions[C_S].BPLeft + 2 - g_RegionStart].RefCoveragePerSample[i]);
+        }
+    }
+    else {
+        for (unsigned short i = 0; i < g_sampleNames.size (); i++) {
+            CoverageStart.push_back(-1);
+        }
+    }
+    if (Deletions[C_S].BPRight > g_RegionStart && Deletions[C_S].BPRight < g_RegionEnd) {
+        for (unsigned short i = 0; i < g_sampleNames.size (); i++) {
+            CoverageEnd.push_back(g_RefCoverageRegion[Deletions[C_S].BPRight - g_RegionStart].RefCoveragePerSample[i]);
+        }
+    }
+    else {
+        for (unsigned short i = 0; i < g_sampleNames.size (); i++) {
+            CoverageEnd.push_back(-1);
+        }
+    }
    for (unsigned short i = 0; i < g_sampleNames.size (); i++)
       DeletionOutf << "\t" << indexToSampleMap[i]
-                   << " " << g_RefCoverageRegion[Deletions[C_S].BPLeft + 2 - g_RegionStart].RefCoveragePerSample[i]
+                   << " " << CoverageStart[i] << " " << CoverageEnd[i]
                    << " " << NumSupportPerTag[i].NumPlus
                    << " " << NumSupportPerTag[i].NumUPlus
                    << " " << NumSupportPerTag[i].NumMinus
@@ -350,7 +393,7 @@ void OutputInversions (const std::vector < SPLIT_READ > &Inv,
                   const unsigned int &RealStart,
                   const unsigned int &RealEnd, std::ofstream & InvOutf)
 {
-   if (!(Inv[C_S].BPLeft + 2 >= g_RegionStart &&  Inv[C_S].BPRight + 2 < g_RegionEnd)) return;  
+   //if (!(Inv[C_S].BPLeft + 2 >= g_RegionStart &&  Inv[C_S].BPRight + 2 < g_RegionEnd)) return;
    int LeftNT_index = -1;
    int RightNT_index = -1;
    for (unsigned Index = C_S; Index <= C_E; Index++) {
@@ -430,9 +473,32 @@ void OutputInversions (const std::vector < SPLIT_READ > &Inv,
    InvOutf << "\t" << g_sampleNames.
            size () << "\tNumSupSamples " << NumberSupSamples << "\t" <<
            NumU_SupSamples;
+   
+    std::vector <int> CoverageStart, CoverageEnd; //if (!(TDs[C_S].BPLeft + 2 >= g_RegionStart &&  TDs[C_S].BPRight + 2 < g_RegionEnd)) return;
+    if (Inv[C_S].BPLeft + 1 >= g_RegionStart && Inv[C_S].BPLeft + 1 < g_RegionEnd) {
+        for (unsigned short i = 0; i < g_sampleNames.size (); i++) {
+            CoverageStart.push_back(g_RefCoverageRegion[Inv[C_S].BPLeft + 1 - g_RegionStart].RefCoveragePerSample[i]);
+        }
+    }
+    else {
+        for (unsigned short i = 0; i < g_sampleNames.size (); i++) {
+            CoverageStart.push_back(-1);
+        }
+    }
+    if (Inv[C_S].BPRight + 1 > g_RegionStart && Inv[C_S].BPRight + 1 < g_RegionEnd) {
+        for (unsigned short i = 0; i < g_sampleNames.size (); i++) {
+            CoverageEnd.push_back(g_RefCoverageRegion[Inv[C_S].BPRight + 1 - g_RegionStart].RefCoveragePerSample[i]);
+        }
+    }
+    else {
+        for (unsigned short i = 0; i < g_sampleNames.size (); i++) {
+            CoverageEnd.push_back(-1);
+        }
+    }
+    
    for (unsigned short i = 0; i < g_sampleNames.size (); i++)
       InvOutf << "\t" << indexToSampleMap[i]
-              << " " << g_RefCoverageRegion[Inv[C_S].BPLeft + 2 - g_RegionStart].RefCoveragePerSample[i]
+              << " " << CoverageStart[i] << " " << CoverageEnd[i]
               << " " << NumSupportPerTag[i].NumPlus
               << " " << NumSupportPerTag[i].NumUPlus
               << " " << NumSupportPerTag[i].NumMinus
@@ -514,7 +580,7 @@ void OutputSIs (const std::vector < SPLIT_READ > &SIs,
            const unsigned int &RealStart,
            const unsigned int &RealEnd, std::ofstream & SIsOutf)
 {
-   if (!(SIs[C_S].BPLeft + 2 >= g_RegionStart &&  SIs[C_S].BPRight + 2 < g_RegionEnd)) return; 
+   //if (!(SIs[C_S].BPLeft + 2 >= g_RegionStart &&  SIs[C_S].BPRight + 2 < g_RegionEnd)) return;
    unsigned int NumberOfReads = C_E - C_S + 1;
    unsigned int LeftS = 1;
    unsigned int RightS = 1;
@@ -573,9 +639,32 @@ void OutputSIs (const std::vector < SPLIT_READ > &SIs,
    SIsOutf << "\t" << g_sampleNames.
            size () << "\tNumSupSamples " << NumberSupSamples << "\t" <<
            NumU_SupSamples;
+    
+    std::vector <int> CoverageStart, CoverageEnd; //if (!(TDs[C_S].BPLeft + 2 >= g_RegionStart &&  TDs[C_S].BPRight + 2 < g_RegionEnd)) return;
+    if (SIs[C_S].BPLeft + 2 >= g_RegionStart && SIs[C_S].BPLeft + 2 < g_RegionEnd) {
+        for (unsigned short i = 0; i < g_sampleNames.size (); i++) {
+            CoverageStart.push_back(g_RefCoverageRegion[SIs[C_S].BPLeft + 2 - g_RegionStart].RefCoveragePerSample[i]);
+        }
+    }
+    else {
+        for (unsigned short i = 0; i < g_sampleNames.size (); i++) {
+            CoverageStart.push_back(-1);
+        }
+    }
+    if (SIs[C_S].BPRight > g_RegionStart && SIs[C_S].BPRight < g_RegionEnd) {
+        for (unsigned short i = 0; i < g_sampleNames.size (); i++) {
+            CoverageEnd.push_back(g_RefCoverageRegion[SIs[C_S].BPRight - g_RegionStart].RefCoveragePerSample[i]);
+        }
+    }
+    else {
+        for (unsigned short i = 0; i < g_sampleNames.size (); i++) {
+            CoverageEnd.push_back(-1);
+        }
+    }
+    
    for (unsigned short i = 0; i < g_sampleNames.size (); i++)
       SIsOutf << "\t" << indexToSampleMap[i]
-              << " " << g_RefCoverageRegion[SIs[C_S].BPLeft + 2 - g_RegionStart].RefCoveragePerSample[i]
+              << " " << CoverageStart[i] << " " << CoverageEnd[i]
               << " " << NumSupportPerTag[i].NumPlus
               << " " << NumSupportPerTag[i].NumUPlus
               << " " << NumSupportPerTag[i].NumMinus
@@ -620,7 +709,7 @@ void OutputDI (const std::vector < SPLIT_READ > &DI,
           const unsigned int &RealStart,
           const unsigned int &RealEnd, std::ofstream & DeletionOutf)
 {
-   if (!(DI[C_S].BPLeft + 2 >= g_RegionStart &&  DI[C_S].BPRight + 2 < g_RegionEnd)) return;
+   //if (!(DI[C_S].BPLeft + 2 >= g_RegionStart &&  DI[C_S].BPRight + 2 < g_RegionEnd)) return;
    unsigned int NumberOfReads = C_E - C_S + 1;
    unsigned int LeftS = 1;
    unsigned int RightS = 1;
@@ -676,9 +765,32 @@ void OutputDI (const std::vector < SPLIT_READ > &DI,
    DeletionOutf << "\t" << g_sampleNames.
                 size () << "\tNumSupSamples " << NumberSupSamples << "\t" <<
                 NumU_SupSamples;
+   
+    std::vector <int> CoverageStart, CoverageEnd; //if (!(TDs[C_S].BPLeft + 2 >= g_RegionStart &&  TDs[C_S].BPRight + 2 < g_RegionEnd)) return;
+    if (DI[C_S].BPLeft + 2 >= g_RegionStart && DI[C_S].BPLeft + 2 < g_RegionEnd) {
+        for (unsigned short i = 0; i < g_sampleNames.size (); i++) {
+            CoverageStart.push_back(g_RefCoverageRegion[DI[C_S].BPLeft + 2 - g_RegionStart].RefCoveragePerSample[i]);
+        }
+    }
+    else {
+        for (unsigned short i = 0; i < g_sampleNames.size (); i++) {
+            CoverageStart.push_back(-1);
+        }
+    }
+    if (DI[C_S].BPRight > g_RegionStart && DI[C_S].BPRight < g_RegionEnd) {
+        for (unsigned short i = 0; i < g_sampleNames.size (); i++) {
+            CoverageEnd.push_back(g_RefCoverageRegion[DI[C_S].BPRight - g_RegionStart].RefCoveragePerSample[i]);
+        }
+    }
+    else {
+        for (unsigned short i = 0; i < g_sampleNames.size (); i++) {
+            CoverageEnd.push_back(-1);
+        }
+    }
+    
    for (unsigned short i = 0; i < g_sampleNames.size (); i++)
       DeletionOutf << "\t" << indexToSampleMap[i]
-                   << " " << g_RefCoverageRegion[DI[C_S].BPLeft + 2 - g_RegionStart].RefCoveragePerSample[i]
+                   << " " << CoverageStart[i] << " " << CoverageEnd[i]
                    << " " << NumSupportPerTag[i].NumPlus
                    << " " << NumSupportPerTag[i].NumUPlus
                    << " " << NumSupportPerTag[i].NumMinus
@@ -1352,7 +1464,7 @@ void OutputShortInversion (const std::vector < SPLIT_READ > &supportingReads,
                            const unsigned int &RealStart,
                            const unsigned int &RealEnd, std::ofstream & InversionOutF)
 {
-   if (!(supportingReads[indexOfFirstRead].BPLeft + 2 >= g_RegionStart &&  supportingReads[indexOfFirstRead].BPRight + 2 < g_RegionEnd)) return;
+   //if (!(supportingReads[indexOfFirstRead].BPLeft + 2 >= g_RegionStart &&  supportingReads[indexOfFirstRead].BPRight + 2 < g_RegionEnd)) return;
    unsigned int NumberOfReads = indexOfLastRead - indexOfFirstRead + 1;
    unsigned int LeftS = 1;
    unsigned int RightS = 1;
@@ -1403,9 +1515,32 @@ void OutputShortInversion (const std::vector < SPLIT_READ > &supportingReads,
 
    InversionOutF << "\t" << g_sampleNames.size() << "\tNumSupSamples " << NumberSupSamples << "\t" <<
                  NumU_SupSamples;
+    
+    std::vector <int> CoverageStart, CoverageEnd; //if (!(TDs[C_S].BPLeft + 2 >= g_RegionStart &&  TDs[C_S].BPRight + 2 < g_RegionEnd)) return;
+    if (supportingReads[indexOfFirstRead].BPLeft + 2 >= g_RegionStart && supportingReads[indexOfFirstRead].BPLeft + 2 < g_RegionEnd) {
+        for (unsigned short i = 0; i < g_sampleNames.size (); i++) {
+            CoverageStart.push_back(g_RefCoverageRegion[supportingReads[indexOfFirstRead].BPLeft + 2 - g_RegionStart].RefCoveragePerSample[i]);
+        }
+    }
+    else {
+        for (unsigned short i = 0; i < g_sampleNames.size (); i++) {
+            CoverageStart.push_back(-1);
+        }
+    }
+    if (supportingReads[indexOfFirstRead].BPRight > g_RegionStart && supportingReads[indexOfFirstRead].BPRight < g_RegionEnd) {
+        for (unsigned short i = 0; i < g_sampleNames.size (); i++) {
+            CoverageEnd.push_back(g_RefCoverageRegion[supportingReads[indexOfFirstRead].BPRight - g_RegionStart].RefCoveragePerSample[i]);
+        }
+    }
+    else {
+        for (unsigned short i = 0; i < g_sampleNames.size (); i++) {
+            CoverageEnd.push_back(-1);
+        }
+    }
+    
    for (unsigned short i = 0; i < g_sampleNames.size (); i++)
       InversionOutF << "\t" << indexToSampleMap[i]
-                    << " " << g_RefCoverageRegion[supportingReads[indexOfFirstRead].BPLeft + 2 - g_RegionStart].RefCoveragePerSample[i]
+                    << " " << CoverageStart[i] << " " << CoverageEnd[i]
                     << " " << NumSupportPerTag[i].NumPlus
                     << " " << NumSupportPerTag[i].NumUPlus
                     << " " << NumSupportPerTag[i].NumMinus
