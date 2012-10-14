@@ -32,6 +32,7 @@
 #include "kseq.h"
 #include "khash.h"
 #include "ksort.h"
+#include "sam_header.h"
 
 // Pindel header files
 #include "logstream.h"
@@ -98,6 +99,9 @@ struct fetch_func_data_SR {
    const std::string * CurrentChrSeq;
    std::string Tag;
    int InsertSize;
+    
+    // Map linking read groups to sample names for current bam file.
+    std::map<std::string, std::string> sample_dictionary;
 };
 
 struct fetch_func_data_RP {
@@ -134,6 +138,56 @@ struct fetch_func_data_RP {
     std::string Tag;
     int InsertSize;
 };
+
+
+// Set up map linking read group ids with sample names.
+std::map<std::string, std::string> get_sample_dictionary(bam_header_t* header) {
+    std::map<std::string, std::string> sample_dict;
+    int num_ids;
+    int num_names;
+    char** tmp_ids;
+    if (header->dict == 0) header->dict = sam_header_parse2(header->text);
+    // Convert string literals to char* to feed into samtools api.
+    char* rg_tag = new char[3];
+    strncpy(rg_tag, "RG", 2); 
+    rg_tag[2] = '\0';
+    char* id_tag = new char[3];
+    strncpy(id_tag, "ID", 2);
+    id_tag[2] = '\0';
+    char* sm_tag = new char[3];
+    strncpy(sm_tag, "SM", 2);
+    id_tag[2] = '\0';
+    tmp_ids = sam_header2list(header->dict, rg_tag, id_tag, &num_ids);
+    char** tmp_names;
+    tmp_names = sam_header2list(header->dict, rg_tag, sm_tag, &num_names);
+    if (num_ids > 0 && num_ids == num_names) {
+        for (int i = 0; i < num_ids; i++) {
+            sample_dict.insert(std::make_pair(tmp_ids[i], tmp_names[i]));
+        }
+    }
+    delete rg_tag;
+    delete id_tag;
+    delete sm_tag;
+    return sample_dict;
+}
+
+
+// Return sample name for given alignment, according to known read group to sample mapping.
+std::string get_sample_name(const bam1_t* alignment, std::map<std::string, std::string>& sample_dictionary) {
+    std::string sample_name = "";
+    uint8_t* s = bam_aux_get(alignment, "RG");
+    if (s != NULL) {
+        std::string read_group = bam_aux2Z(s);
+        try {
+            sample_name = sample_dictionary.at(read_group);
+        } catch (std::exception& e) {
+            // Read group id not found in mapping. todo: increase severity of warning?
+            LOG_DEBUG(*logStream << "Could not find sample name for read group: " << read_group << std::endl);
+        }
+    }
+    return sample_name;
+}
+
 
 void GetOneChrSeq (std::ifstream & fastaFile, std::string & chromosomeSequence, bool WhetherBuildUp)
 {
@@ -173,8 +227,6 @@ short ReadInRead (PindelReadReader & inf_ReadSeq, const std::string & FragName,
    LOG_INFO(*logStream << "Scanning and processing reads anchored in " << FragName << std::endl);
    SPLIT_READ Temp_One_Read;
    std::vector < SPLIT_READ > BufferReads;
-	// LeftReads does not seem to be defined here... remove line?
-   LOG_DEBUG(*logStream << LeftReads.size() << std::endl);
    std::string TempQC, TempLine, TempStr, TempFragName;
 
 	inf_ReadSeq.Reset();
@@ -242,9 +294,9 @@ short ReadInRead (PindelReadReader & inf_ReadSeq, const std::string & FragName,
                   currentRead.Used = false;
                   currentRead.UniqueRead = true; 
 
-                  LOG_DEBUG(*logStream << Temp_One_Read.MatchedD << "\t" << Temp_One_Read.UP_Close.size() << "\t");
+//                  LOG_DEBUG(*logStream << Temp_One_Read.MatchedD << "\t" << Temp_One_Read.UP_Close.size() << "\t");
                   CleanUniquePoints (currentRead.UP_Close);
-                  LOG_DEBUG(*logStream << Temp_One_Read.UP_Close.size() << "\t" << Temp_One_Read.UP_Close[0].Direction << std::endl);
+//                  LOG_DEBUG(*logStream << Temp_One_Read.UP_Close.size() << "\t" << Temp_One_Read.UP_Close[0].Direction << std::endl);
 						
 						// CloseEndLength duplicates MaxLenCloseEnd() (and is only used in reader, so does not seem time-saving) remove?
                   currentRead.CloseEndLength = currentRead.UP_Close[currentRead.UP_Close.size() - 1].LengthStr;
@@ -289,11 +341,11 @@ short ReadInRead (PindelReadReader & inf_ReadSeq, const std::string & FragName,
          }
          currentRead.Used = false;
          currentRead.UniqueRead = true; 
-         LOG_DEBUG(*logStream << Temp_One_Read.MatchedD  << "\t" << Temp_One_Read.UP_Close.size() << "\t");
+//         LOG_DEBUG(*logStream << Temp_One_Read.MatchedD  << "\t" << Temp_One_Read.UP_Close.size() << "\t");
 
          CleanUniquePoints (currentRead.UP_Close);
 
-         LOG_DEBUG(*logStream << Temp_One_Read.UP_Close.size() << "\t" << Temp_One_Read.UP_Close[0].Direction << std::endl);
+//         LOG_DEBUG(*logStream << Temp_One_Read.UP_Close.size() << "\t" << Temp_One_Read.UP_Close[0].Direction << std::endl);
 
          currentRead.CloseEndLength = currentRead.UP_Close[currentRead.UP_Close.size () - 1].LengthStr;
          if (currentRead.MatchedD == Plus) {
@@ -335,7 +387,6 @@ short ReadInRead (PindelReadReader & inf_ReadSeq, const std::string & FragName,
    if (Reads.size() == 0) {
       return 0;
    }
-   LOG_DEBUG(*logStream << LeftReads.size() << std::endl);
    LOG_INFO(*logStream << " finished!" << std::endl);
    return 0;
 }
@@ -485,6 +536,7 @@ bool ReadInBamReads_SR (const char *bam_path, const std::string & FragName,
    data.InsertSize = InsertSize;
    data.Tag = Tag;
    data.readBuffer=&readBuffer;
+   data.sample_dictionary = get_sample_dictionary(header);
    // std:: cout << " before bam_fetch " << std::endl;
    bam_fetch (fp, idx, tid, window.getStart(), window.getEnd(), &data, fetch_func_SR);
    // std:: cout << " after bam_fetch " << std::endl;
@@ -581,6 +633,10 @@ void build_record_SR (const bam1_t * mapped_read, const bam1_t * unmapped_read, 
     else if (unmapped_core->flag & BAM_FREAD2) {
         Temp_One_Read.Name.append ("/2");
     }
+    
+    // Determine sample name for read.
+    Temp_One_Read.sample_name = get_sample_name(mapped_read, data_for_bam->sample_dictionary);
+    
     //if (Temp_One_Read.Name == "@DD7DT8Q1:4:1106:17724:13906#GTACCT/1") {
     //    std::cout << "I am here." << std::endl;
     //}
@@ -645,14 +701,14 @@ void build_record_SR (const bam1_t * mapped_read, const bam1_t * unmapped_read, 
 
     Temp_One_Read.FragName = header->target_name[mapped_core->tid];
     //Temp_One_Read.FragName = FragName;
-    LOG_DEBUG(cout << Temp_One_Read.Name << std::endl
-              << Temp_One_Read.getUnmatchedSeq() << std::endl);
-    LOG_DEBUG(cout << Temp_One_Read.MatchedD <<
-              "\t" << Temp_One_Read.FragName <<
-              "\t" << Temp_One_Read.MatchedRelPos <<
-              "\t" << Temp_One_Read.MS <<
-              "\t" << Temp_One_Read.InsertSize <<
-              "\t" << Temp_One_Read.Tag << std.endl);
+//    LOG_DEBUG(*logStream << Temp_One_Read.Name << std::endl
+//              << Temp_One_Read.getUnmatchedSeq() << std::endl);
+//    LOG_DEBUG(*logStream << Temp_One_Read.MatchedD <<
+//              "\t" << Temp_One_Read.FragName <<
+//              "\t" << Temp_One_Read.MatchedRelPos <<
+//              "\t" << Temp_One_Read.MS <<
+//              "\t" << Temp_One_Read.InsertSize <<
+//              "\t" << Temp_One_Read.Tag << std::endl);
     
     
     g_NumReadInWindow++;
@@ -1286,11 +1342,11 @@ void updateReadAfterCloseEndMapping( SPLIT_READ& Temp_One_Read )
     }
     Temp_One_Read.Used = false;
     Temp_One_Read.UniqueRead = true;
-    LOG_DEBUG(cout << Temp_One_Read.MatchedD << "\t" << Temp_One_Read.UP_Close.size() << "\t");
+//    LOG_DEBUG(*logStream << Temp_One_Read.MatchedD << "\t" << Temp_One_Read.UP_Close.size() << "\t" << std::endl);
 
     CleanUniquePoints (Temp_One_Read.UP_Close);
 
-    LOG_DEBUG(cout << Temp_One_Read.UP_Close.size() << "\t" << Temp_One_Read.UP_Close[0].Direction << endl);
+//    LOG_DEBUG(*logStream << Temp_One_Read.UP_Close.size() << "\t" << Temp_One_Read.UP_Close[0].Direction << std::endl);
 
     Temp_One_Read.CloseEndLength = Temp_One_Read.UP_Close[Temp_One_Read.UP_Close.size () - 1].LengthStr; // possibly remove CloseEndLength
 

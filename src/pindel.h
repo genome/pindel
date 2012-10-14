@@ -242,6 +242,7 @@ struct SPLIT_READ {
 		LeftMostPos = 0;
         CloseEndMismatch = 0;
         FarEndMismatch = 0;
+        sample_name = "";
 	}
 	std::string FragName;
    std::string FarFragName;
@@ -287,6 +288,7 @@ struct SPLIT_READ {
     short FarEndMismatch;
 	int LeftMostPos;
     std::map <std::string, int> ReadCountPerSample;
+    std::string sample_name;
 
 	unsigned int getLastAbsLocCloseEnd() const;
 	bool goodFarEndFound() const;
@@ -598,6 +600,6 @@ private:
 
 void safeGetline(std::istream& is, std::string& t);
 
-
+void SearchFarEnds( const std::string chromosomeSeq, std::vector<SPLIT_READ>& reads, const Chromosome& currentChromosome);
 
 #endif /* PINDEL_H */

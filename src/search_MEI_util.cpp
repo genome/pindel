@@ -23,9 +23,9 @@
 
 // Comparator for sorting connected reads, first on mapped strand, then on position.
 bool comp_simple_read(simple_read* read1, simple_read* read2) {
-    if (read1->strand && ! read2->strand) {
+    if (read1->strand == '+' && read2->strand != '+') {
         return true;
-    } else if (!read1->strand && read2->strand) {
+    } else if (read1->strand != '+' && read2->strand == '+') {
         return false;
     } else {
         return read1->pos < read2->pos;
@@ -39,11 +39,17 @@ bool comp_simple_read_pos(const simple_read& read1, const simple_read& read2) {
 }
 
 
+// Compare two split reads on size of mapped part.
+bool comp_simple_read_mapsize(const simple_read& read1, const simple_read& read2) {
+    return read1.mapped_sequence.length() > read2.mapped_sequence.length();
+}
+
+
 // Simply print a read to stdout.
 void print_read(simple_read read) {
     std::cout << read.name << " (";
     std::cout << read.pos << ")";
-    if (read.strand) {
+    if (read.strand == '+') {
         std::cout << " <--";
     } else {
         std::cout << " -->";
@@ -136,5 +142,10 @@ std::string get_whitespace(unsigned int amount) {
 }
 
 
-
+std::string time_log() {
+    std::stringstream ss;
+    ss.precision(2);
+    ss << std::fixed << ((float) clock()) / CLOCKS_PER_SEC << ": ";
+    return ss.str();
+}
 

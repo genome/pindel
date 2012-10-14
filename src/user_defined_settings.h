@@ -84,6 +84,7 @@ public:
 	std::string getCloseEndOutputFilename() const { return outputFilename + "_CloseEndMapped"; };
 	std::string getASMOutputFilename() const { return outputFilename + "_ASM"; };
 	std::string getGTOutputFilename() const { return outputFilename + "_GT"; };
+    std::string getMEIOutputFilename() const { return outputFilename + "_MEI"; };
 
 	bool loopOverAllChromosomes() { return ! getRegion()->isTargetChromosomeDefined(); };
 

@@ -1712,9 +1712,9 @@ void GetCloseEndInner(const std::string & CurrentChrSeq, SPLIT_READ & Temp_One_R
             }
         }
         //std::cout << "1\t" << PD[0].size() << "\t" << PD[1].size() << std::endl;
-        LOG_DEBUG(*logStream << "1\t" << PD[0].size() << "\t" << PD[1].size() << std::endl);
+//        LOG_DEBUG(*logStream << "1\t" << PD[0].size() << "\t" << PD[1].size() << std::endl);
         CheckRight_Close(Temp_One_Read, CurrentChrSeq, CurrentReadSeq, PD, BP_Start, BP_End, 1, UP);
-        LOG_DEBUG(*logStream << UP.size() << std::endl);
+//        LOG_DEBUG(*logStream << UP.size() << std::endl);
         if (UP.empty()) {}
         else {
             Temp_One_Read.Used = false;
@@ -1788,11 +1788,11 @@ void GetCloseEndInnerPerfectMatch(const std::string & CurrentChrSeq, SPLIT_READ 
             }
         }
         //std::cout << "1\t" << PD[0].size() << "\t" << PD[1].size() << std::endl;
-        LOG_DEBUG(*logStream << "1\t" << PD[0].size() << "\t" << PD[1].size() << std::endl);
+//        LOG_DEBUG(*logStream << "1\t" << PD[0].size() << "\t" << PD[1].size() << std::endl);
         if (PD[0].size()) {
            CheckRight_Close_Perfect(Temp_One_Read, CurrentChrSeq, CurrentReadSeq, PD, BP_Start, BP_End, 1, UP);
         }
-        LOG_DEBUG(*logStream << UP.size() << std::endl);
+//        LOG_DEBUG(*logStream << UP.size() << std::endl);
         if (UP.empty()) {}
         else {
             Temp_One_Read.Used = false;

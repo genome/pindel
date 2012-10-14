@@ -441,7 +441,7 @@ void OutputInversions (const std::vector < SPLIT_READ > &Inv,
 
    short SpaceBeforeReadSeq;
    InvOutf << TheInput.substr (Inv[C_S].BPLeft + g_SpacerBeforeAfter - g_reportLength, g_reportLength);	//;// << endl;// g_reportLength
-   LOG_DEBUG(*logStream << Inv[C_S].NT_size << "\t" << Inv[C_S].NT_2size << std::endl);
+//   LOG_DEBUG(*logStream << Inv[C_S].NT_size << "\t" << Inv[C_S].NT_2size << std::endl);
    if (LeftNT_size) {
       for (int i = 0; i < LeftNT_size; i++) {
          InvOutf << " ";

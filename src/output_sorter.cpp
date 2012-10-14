@@ -76,8 +76,8 @@ int OutputSorter::DoSortAndOutputInversions (ControlState& currentState, std::ve
          LOG_DEBUG (*logStream << Box_index << "\t" << Inv[Box_index].size () << std::endl);
          for (unsigned int First = 0; First < InversionsNum - 1; First++) {
             for (unsigned int Second = First + 1; Second < InversionsNum; Second++) {
-               LOG_DEBUG (*logStream << InputIndels[First].BPLeft << "\t" << InputIndels[First].BPRight << "\t"
-                          InputIndels[Second].BPLeft << "\t" << InputIndels[Second].BPRight << std::endl);
+//               LOG_DEBUG (*logStream << InputIndels[First].BPLeft << "\t" << InputIndels[First].BPRight << "\t"
+//                          InputIndels[Second].BPLeft << "\t" << InputIndels[Second].BPRight << std::endl);
                {  
                   CompareResult = 0; 
                   if (Reads[Inv[Box_index][First]].BPLeft + Reads[Inv[Box_index][First]].BPRight < Reads[Inv[Box_index][Second]].BPLeft + Reads[Inv[Box_index][Second]].BPRight) {

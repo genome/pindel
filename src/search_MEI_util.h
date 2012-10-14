@@ -26,9 +26,14 @@
 #include "pindel.h"
 #include "search_MEI.h"
 
+// Return current time in string format as used for logging.
+std::string time_log();
+
 bool comp_simple_read(simple_read* read1, simple_read* read2);
 
 bool comp_simple_read_pos(const simple_read& read1, const simple_read& read2);
+
+bool comp_simple_read_mapsize(const simple_read& read1, const simple_read& read2);
 
 void print_read(simple_read read);
 
