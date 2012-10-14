@@ -85,6 +85,7 @@ public:
 	std::string getASMOutputFilename() const { return outputFilename + "_ASM"; };
 	std::string getGTOutputFilename() const { return outputFilename + "_GT"; };
     std::string getMEIOutputFilename() const { return outputFilename + "_MEI"; };
+    std::string getINTOutputFilename() const { return outputFilename + "_INT"; };
 
 	bool loopOverAllChromosomes() { return ! getRegion()->isTargetChromosomeDefined(); };
 

@@ -2281,8 +2281,10 @@ std::string SameStrand(const char input) {
     else return "";
 }
 
-void SortAndReportInterChromosomalEvents(ControlState& current_state, Genome& genome, UserDefinedSettings* user_settings) {
+void SortAndReportInterChromosomalEvents(ControlState& current_state, Genome& genome, UserDefinedSettings* user_settings)
+{
     
+    std::ofstream INToutputfile(user_settings->getINTOutputFilename().c_str(), std::ios::app);
     //std::map Result;
     std::map<std::string,int> CallAndSupport;
     std::string tempResult;
@@ -2391,6 +2393,6 @@ void SortAndReportInterChromosomalEvents(ControlState& current_state, Genome& ge
     }
     
     for ( std::map<std::string,int> ::iterator it = CallAndSupport.begin() ; it != CallAndSupport.end(); it++ )
-        std::cout << (*it).first << "\tsupport: " << (*it).second << std::endl;
+        INToutputfile << (*it).first << "\tsupport: " << (*it).second << std::endl;
     
 }
