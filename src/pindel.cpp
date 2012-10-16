@@ -360,38 +360,52 @@ SearchWindow::SearchWindow(const SearchWindow& other) :
 	m_chromosome(other.m_chromosome), m_currentStart( other.m_currentStart ), m_currentEnd( other.m_currentEnd) 
 {}
 
-LoopingSearchWindow::LoopingSearchWindow(const SearchRegion* region, const Chromosome* chromosome, const int binSize ) : 
-	SearchWindow(chromosome,0,chromosome->getBiolSize()), m_BIN_SIZE( binSize )
+LoopingSearchWindow::LoopingSearchWindow(const SearchRegion* region, const Chromosome* chromosome, const int binSize ) :
+SearchWindow(chromosome,0,chromosome->getBiolSize()), m_BIN_SIZE( binSize )
 {
-	if (region->isStartDefined()) {
-		m_officialStart = region->getStart();
-		// if the user defines a region, you need to start with reads before that, but not before the start of the chromosome
-		m_globalStart = ( region->getStart() >= AROUND_REGION_BUFFER ? region->getStart() - AROUND_REGION_BUFFER : 0); 
-	}
-	else {
-		m_officialStart = m_globalStart = 0;
-	}
-
-	if (region->isEndDefined()) {
-		m_officialEnd = region->getEnd();
-		// if the user defines a region, you need to end with reads after that, but not after the end of the chromosome
-		m_globalEnd = std::min( chromosome->getBiolSize() , region->getEnd() + AROUND_REGION_BUFFER ); 
-	}
-	else {
-		m_officialEnd = m_globalEnd = chromosome->getBiolSize();
-	}
-
-	m_currentStart = m_globalStart;
-	m_displayedStart = m_officialStart;
-	updateEndPositions();
+    bool noOverlapWithChromosome = false;
+    if (region->isStartDefined()) {
+        m_officialStart = region->getStart();
+        if (m_officialStart > chromosome->getBiolSize()) {
+            noOverlapWithChromosome = true;
+        }
+        // if the user defines a region, you need to start with reads before that, but not before the start of the chromosome
+        m_globalStart = ( region->getStart() >= AROUND_REGION_BUFFER ? region->getStart() - AROUND_REGION_BUFFER : 0);
+    }
+    else {
+        m_officialStart = m_globalStart = 0;
+    }
+    
+    if (region->isEndDefined()) {
+        m_officialEnd = region->getEnd();
+        if (m_officialEnd < 0 ) {
+            noOverlapWithChromosome = true;
+        }
+        // if the user defines a region, you need to end with reads after that, but not after the end of the chromosome
+        m_globalEnd = std::min( chromosome->getBiolSize() , region->getEnd() + AROUND_REGION_BUFFER );
+    }
+    else {
+        m_officialEnd = m_globalEnd = chromosome->getBiolSize();
+    }
+    
+    if (noOverlapWithChromosome) {
+        std::cout << "Error: the region to scan (" << m_officialStart << ", " << m_officialEnd << ") does not overlap with the "
+        << "chromosome (positions 0 to " << chromosome->getBiolSize() << std::endl;
+        exit( EXIT_FAILURE );
+    }
+    
+    m_currentStart = m_globalStart;
+    m_displayedStart = m_officialStart;
+    updateEndPositions();
 }
+
 
 
 void LoopingSearchWindow::updateEndPositions()
 {
 	m_currentEnd = m_currentStart + m_BIN_SIZE;
-	if (m_currentEnd > m_globalEnd ) { 
-		m_currentEnd = m_globalEnd; 
+	if (m_currentEnd > m_globalEnd ) {
+		m_currentEnd = m_globalEnd;
 	}
 	m_displayedEnd = m_displayedStart + m_BIN_SIZE;
 	if (m_displayedEnd > m_officialEnd ) {
