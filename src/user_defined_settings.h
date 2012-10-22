@@ -43,6 +43,7 @@ public:
 	std::string bamConfigFilename;
 	std::string breakdancerFilename;
 	std::string breakdancerOutputFilename;
+    std::string PloidyFileName;
 	double FLOAT_WINDOW_SIZE;
    std::string inf_AssemblyInputFilename; 
 	std::string inf_GenotypingInputFilename;

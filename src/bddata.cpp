@@ -14,32 +14,6 @@ bool isNumber(const std::string & input)
    for (unsigned int index = 0; index < input.size(); index++) {
 		if (input[ index ]<'0' || input[ index ]>'9') return false;
 	}	
- /*       switch (input[index]) {
-            case '0':
-                break;
-            case '1':
-                break;
-            case '2':
-                break;
-            case '3':
-                break;
-            case '4':
-                break;
-            case '5':
-                break;
-            case '6':
-                break;
-            case '7':
-                break;
-            case '8':
-                break;
-            case '9':
-                break;
-            default:
-                return false;
-                //break;
-        }
-    }*/
     return true;
 }
 
@@ -388,15 +362,16 @@ void BDData::UpdateBD(ControlState & currentState) {
                 {
                     m_bdEvents.push_back(BreakDancerEvent( firstBDCoordinate, secondBDCoordinate ));
                     m_bdEvents.push_back(BreakDancerEvent( secondBDCoordinate, firstBDCoordinate ));
+                
+                    std::cout << "adding " << firstChrName << " " << firstPos - g_SpacerBeforeAfter << "\t" << secondChrName << " " << secondPos - g_SpacerBeforeAfter <<  " to breakdancer events. " << abs((int)secondPos - (int)firstPos) << std::endl;
                 }
-                std::cout << "adding " << firstChrName << " " << firstPos - g_SpacerBeforeAfter << "\t" << secondChrName << " " << secondPos - g_SpacerBeforeAfter <<  " to breakdancer events. " << abs((int)secondPos - (int)firstPos) << std::endl;
             }
         
         }
     }
-#pragma omp parallel default(shared)
+    #pragma omp parallel default(shared)
     {
-#pragma omp for
+    #pragma omp for
         for (int read_index = 0; read_index < (int)currentState.Reads_RP_Discovery_InterChr.size(); read_index++) {
             if (currentState.Reads_RP_Discovery_InterChr[read_index].Report == false) continue;
             
@@ -407,12 +382,13 @@ void BDData::UpdateBD(ControlState & currentState) {
             if ( firstChrName!="" && secondChrName!="" ) {
                 BreakDancerCoordinate firstBDCoordinate( firstChrName, firstPos );
                 BreakDancerCoordinate secondBDCoordinate( secondChrName, secondPos );
-#pragma omp critical
+                #pragma omp critical
                 {
                     m_bdEvents.push_back(BreakDancerEvent( firstBDCoordinate, secondBDCoordinate ));
                     m_bdEvents.push_back(BreakDancerEvent( secondBDCoordinate, firstBDCoordinate ));
+                
+                    std::cout << "adding interchr " << firstChrName << " " << firstPos - g_SpacerBeforeAfter << "\t" << secondChrName << " " << secondPos - g_SpacerBeforeAfter <<  " to breakdancer events. " << abs((int)secondPos - (int)firstPos) << std::endl;
                 }
-                std::cout << "adding interchr " << firstChrName << " " << firstPos - g_SpacerBeforeAfter << "\t" << secondChrName << " " << secondPos - g_SpacerBeforeAfter <<  " to breakdancer events. " << abs((int)secondPos - (int)firstPos) << std::endl;
             }
             
         }

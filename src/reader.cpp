@@ -833,7 +833,7 @@ void build_record_RP_Discovery (const bam1_t * r1, void *data)
     if (!(r1_core->flag & BAM_FUNMAP || r1_core->flag & BAM_FMUNMAP)) { // both reads are mapped.
 			/*std::cout << "Read Insertsize=" << abs(r1_core->isize) << ", qseq=" << r1_core->l_qseq << " BAM ISize=" << data_for_bam->InsertSize 
 				<< "Total is " << r1_core->l_qseq *2 + 2 * data_for_bam->InsertSize << "\n";*/
-        if ((r1_core->tid != r1_core->mtid) || abs(r1_core->isize) > 3 * data_for_bam->InsertSize + 500 || ((r1_core->flag & BAM_FREVERSE) == (r1_core->flag & BAM_FMREVERSE))) { // different chr or same strand or insert is too large
+        if ((r1_core->tid != r1_core->mtid) || abs(r1_core->isize) > 3 * data_for_bam->InsertSize + 1000 /*|| ((r1_core->flag & BAM_FREVERSE) == (r1_core->flag & BAM_FMREVERSE))*/) { // different chr or same strand or insert is too large
             //std::cout << "passed the test\n";
             if (r1_core->flag & BAM_FREVERSE) {
                 Temp_One_Read.DA = '-';

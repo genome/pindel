@@ -29,6 +29,19 @@
 #include "control_state.h"
 #include "bddata.h"
 
+struct Variant {
+    std::string VariantType;
+    unsigned Length;
+    unsigned NT_length;
+    std::string NT_str;
+    std::string ChrName;
+    unsigned Start;
+    unsigned End;
+    unsigned RefSupport;
+    unsigned AlleleSupport;
+    bool Report;
+};
+
 
 void SortOutputD (ControlState& currentState, const unsigned &NumBoxes, const std::string & CurrentChr,
 									std::vector < SPLIT_READ > &AllReads,
@@ -55,5 +68,7 @@ void SortOutputLI (ControlState& currentState, const std::string & CurrentChr, s
 void SortOutputRest (ControlState& currentState, const std::string & CurrentChr,  std::vector < SPLIT_READ > &Reads,  const SearchWindow& currentWindow, const std::string& filename);
 
 void SortAndReportInterChromosomalEvents(ControlState& current_state, Genome& genome, UserDefinedSettings* user_settings);
+
+void GetConsensusBasedOnPloidy(ControlState& current_state, Genome& genome, UserDefinedSettings* user_settings);
 
 #endif /* REPORTER_H */

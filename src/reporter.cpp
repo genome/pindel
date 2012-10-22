@@ -2396,3 +2396,128 @@ void SortAndReportInterChromosomalEvents(ControlState& current_state, Genome& ge
         INToutputfile << (*it).first << "\tsupport: " << (*it).second << std::endl;
     
 }
+
+void GetVariants(std::ifstream & input_file, std::vector <Variant> & variants) {
+    Variant TempOne;
+    TempOne.Report = true;
+    unsigned NumberOfSamples;
+    std::string tempStr;
+    int tempInt;
+    char tempChar;
+    unsigned RefStartSupport, RefEndSupport, AlleleStartSupport, AlleleEndSupport;
+    while (input_file >> tempStr) {
+        if (tempStr.substr(0, 2) == "##") {
+            input_file >> tempInt >> TempOne.VariantType >> TempOne.Length
+                       >> tempStr >> TempOne.NT_length >> TempOne.NT_str
+                       >> tempStr >> TempOne.ChrName
+                       >> tempStr >> tempInt >> tempInt // BP
+                       >> tempStr >> TempOne.Start >> TempOne.End // BP_range
+                       >> tempStr >> TempOne.AlleleSupport >> tempInt // support
+                       >> tempChar >> tempInt >> tempInt // +
+                       >> tempChar >> tempInt >> tempInt // -
+                       >> tempStr >> tempInt // S
+                       >> tempStr >> tempInt // SUM_MS
+                       >> NumberOfSamples // total number of samples
+                       >> tempStr >> tempInt >> tempInt
+                       >> tempStr >> RefStartSupport >> RefEndSupport
+                       >> AlleleStartSupport >> tempInt >> AlleleEndSupport >> tempInt;
+            getline(input_file, tempStr);
+            if (NumberOfSamples != 1) {
+                std::cout << "NumberOfSamples != 1: " << NumberOfSamples << std::endl;
+                return;
+            }
+            for (unsigned i = 0; i <= TempOne.AlleleSupport; i++) {
+                getline(input_file, tempStr);
+            }
+            if (RefStartSupport >= RefEndSupport) TempOne.RefSupport = RefStartSupport;
+            else TempOne.RefSupport = RefEndSupport;
+            TempOne.AlleleSupport = AlleleStartSupport + AlleleEndSupport;
+            if (TempOne.AlleleSupport > 10 && TempOne.AlleleSupport > TempOne.RefSupport * 1.5) {
+                
+                variants.push_back(TempOne);
+                std::cout << TempOne.VariantType << " " << TempOne.Length << " " << TempOne.ChrName << " " << TempOne.Start << " " << TempOne.End << " " << TempOne.RefSupport << " " << TempOne.AlleleSupport << std::endl;
+            }
+        }
+        else {
+            std::cout << "someting is wrong here: " << tempStr << std::endl;
+        }
+    }
+    //std::cout << "There are " << variants.size() << " variants reported." << std::endl;
+}
+
+bool CompareTwoVariants(const Variant & first, const Variant & second) {
+    if (first.ChrName.size() != second.ChrName.size()) { // name length !=
+        if (first.ChrName.size() < second.ChrName.size()) return true;
+        else return false;
+    }
+    else if (first.ChrName != second.ChrName) { // name length equal
+        for (unsigned CharIndex = 0; CharIndex < first.ChrName.size(); CharIndex++) {
+            if ((int)first.ChrName[CharIndex] < (int)second.ChrName[CharIndex]) return true;
+            else if ((int)first.ChrName[CharIndex] > (int)second.ChrName[CharIndex]) return false;
+        }
+    }
+    else {
+        if (first.Start < second.Start) return true;
+        else if (first.Start > second.Start) return false;
+        else if (first.End < second.End) return true;
+        else if (first.End > second.End) return false;
+        else {
+            std::cout << "we shall never be here: WhetherExchange() in reporter.cpp" << std::endl;
+            return true;
+        }
+    }
+    return true;
+}
+
+void GetConsensusBasedOnPloidy(ControlState& current_state, Genome& genome, UserDefinedSettings* user_settings) {
+    for ( std::map<std::string, unsigned>::iterator it = g_ChrName2Ploidy.begin(); it != g_ChrName2Ploidy.end(); it++ ) {
+        if ((*it).second != 1) {
+            std::cout << "only accept ploidy 1 for testing at this stage" << std::endl;
+            return;
+        }
+    }
+    std::ifstream D_Input_file(user_settings->getDOutputFilename().c_str());
+    std::ifstream SI_input_file(user_settings->getSIOutputFilename().c_str());
+    std::ofstream Ploidy_Variant_Output_File( (user_settings->PloidyFileName + "_ploidy_Variant").c_str() );
+    std::ofstream Ploidy_Contig_Output_File( (user_settings->PloidyFileName + "_ploidy_Contig").c_str() );
+    std::vector <Variant> Variants;
+    GetVariants(D_Input_file, Variants);
+    GetVariants(SI_input_file, Variants);
+    for (unsigned first = 0; first < Variants.size() - 1; first++) {
+        if (Variants[first].Report == false) continue;
+        for (unsigned second = first + 1; second < Variants.size(); second++) {
+            if (Variants[second].Report == false) continue;
+            if (Variants[first].ChrName == Variants[second].ChrName) {
+                if (Variants[first].Start >= Variants[second].End || Variants[second].Start >= Variants[first].End) { // no overlap
+                    continue;
+                }
+                else {
+                    if (Variants[first].AlleleSupport >= Variants[second].AlleleSupport) {
+                        Variants[second].Report = false;
+                    }
+                    else {
+                        Variants[first].Report = false;
+                        break;
+                    }
+                }
+            }
+            else continue;
+        }
+    }
+    std::vector <Variant> VariantsForReport;
+    for (unsigned index = 0; index < Variants.size(); index++) {
+        if (Variants[index].Report) VariantsForReport.push_back(Variants[index]);
+    }
+    sort(VariantsForReport.begin(), VariantsForReport.end(), CompareTwoVariants);
+    for (unsigned index = 0; index < VariantsForReport.size(); index++) {
+            Ploidy_Variant_Output_File << "Type " << VariantsForReport[index].VariantType << "\t"
+                                       << "Size " << VariantsForReport[index].Length << "\t"
+                                       << "NT_Length " << VariantsForReport[index].NT_length << "\t"
+                                       << "NT_String " << VariantsForReport[index].NT_str << "\t"
+                                       << "ChrName " << VariantsForReport[index].ChrName << "\t"
+                                       << "Start " << VariantsForReport[index].Start << "\t"
+                                       << "End " << VariantsForReport[index].End << "\t"
+                                       << "RefSupport " << VariantsForReport[index].RefSupport << "\t"
+                                       << "VariantSupport " << VariantsForReport[index].AlleleSupport << std::endl;
+    }
+}

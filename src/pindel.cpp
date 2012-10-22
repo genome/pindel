@@ -59,6 +59,7 @@
 #include "ifstream_line_reader.h"
 #include "gz_line_reader.h"
 
+
 /*v Kai Ye update 0.2.4h, Oct 31 2011, update for MOSAIK */
 /*v EW update 0.2.4j, Pindel will now abort when insert size is set too small. */
 /*v Kai/EW update 0.2.4k, pindel will now give the consensus inserted sequence instead of always the first one. */
@@ -73,7 +74,7 @@
 /* EW: update 0.2.4s: bugfix for -p option of Pindel0.2.4r */
 /* EW: update 0.2.4t, updates now shown in RELEASE document in trunk directory */
 
-const std::string Pindel_Version_str = "Pindel version 0.2.4u, Oct 5 2012.";
+const std::string Pindel_Version_str = "Pindel version 0.2.4v, Oct 22 2012.";
 
 const Chromosome g_dummyChromosome("","");
 Genome g_genome;
@@ -84,6 +85,7 @@ unsigned int g_maxPos = 0; // to calculate which is the last position in the chr
 short g_MinClose = 8;
 std::set<std::string> g_sampleNames;
 std::map<std::string,unsigned> g_SampleName2Index;
+std::map<std::string,unsigned> g_ChrName2Ploidy;
 std::vector <RefCoveragePerPosition> g_RefCoverageRegion;
 short Before, After;
 BDData g_bdData;
@@ -1234,25 +1236,6 @@ short UpdateRefReadCoverage(ControlState& currentState, const SearchWindow& curr
     return 0;
 }
 
-/*
- 
- struct REF_READ {
- REF_READ () {
- Tag = "";
- FragName = "";
- Pos = 0;
- MQ = 0;
- ReadLength = 0;
- }
- std::string Tag;
- std::string FragName;
- unsigned Pos;
- short MQ;
- short ReadLength;
- };
- */
-
-
 int main(int argc, char *argv[])
 {
 	//TODO: These are counters that are only used in individual steps. They should be moved to separate functions later.
@@ -1285,6 +1268,23 @@ int main(int argc, char *argv[])
     // If -q parameter given, search for mobile element insertions and quit.
     if (parameters[findParameter("-q", parameters)]->isSet()) {
         exit(searchMEImain(currentState, g_genome, userSettings));
+    }
+    
+    if (parameters[findParameter("-Y", parameters)]->isSet()) {
+        std::string ChrName, TempStr;
+        unsigned Ploidy;
+        std::ifstream PloidyFile( userSettings->PloidyFileName.c_str() );
+        std::map<std::string,unsigned>::iterator it;
+        while (PloidyFile >> ChrName >> Ploidy) {
+            std::cout << ChrName << "\t" << Ploidy << std::endl;
+            getline(PloidyFile, TempStr);
+            it = g_ChrName2Ploidy.find(ChrName);
+            if (it != g_ChrName2Ploidy.end()) {
+                std::cout << "This chromosome " << ChrName << " already seen. Please check " << userSettings->PloidyFileName << std::endl;
+                return 1;
+            }
+            else g_ChrName2Ploidy.insert(std::pair<std::string, unsigned>(ChrName, Ploidy) );
+        }
     }
 
    /* Normal pindel functioning: search SVs*/
@@ -1406,7 +1406,7 @@ int main(int argc, char *argv[])
             AllLoadings += (unsigned int) difftime(Time_Load_E, Time_Load_S);
             AllSortReport += (unsigned int) difftime(Time_Sort_E, Time_Load_E);
             currentState.Reads_SR.clear();
-             currentState.OneEndMappedReads.clear();
+            currentState.OneEndMappedReads.clear();
             *logStream << "There are " << currentState.FutureReads_SR. size()  << " split-reads saved for the next cycle.\n" << std::endl;
             //currentState.Reads_SR.swap(currentState.FutureReads_SR);
          }
@@ -1418,6 +1418,8 @@ int main(int argc, char *argv[])
          //std::cout << "before " << currentState.Reads_RP_Discovery.size() << std::endl;
          if (currentState.Reads_RP_Discovery.size())
              currentState.Reads_RP_Discovery.clear();
+         if (currentState.Reads_RP_Discovery.size())
+             currentState.Reads_RP_Discovery_InterChr.clear();
          if (currentState.RefSupportingReads.size()) // std::vector <REF_READ> RefSupportingReads
              currentState.RefSupportingReads.clear();
          //std::cout << "after " << currentState.Reads_RP_Discovery.size() << std::endl;
@@ -1431,6 +1433,10 @@ int main(int argc, char *argv[])
 
     if (userSettings->reportInterchromosomalEvents)
        SortAndReportInterChromosomalEvents(currentState, g_genome, userSettings);
+    
+    if (g_sampleNames.size() == 1 && parameters[findParameter("-Y", parameters)]->isSet()) {
+        GetConsensusBasedOnPloidy(currentState, g_genome, userSettings);
+    }
     
 	timer.reportAll( *logStream );
    //*logStream << "Loading genome sequences and reads: " << AllLoadings << " seconds." << std::endl;

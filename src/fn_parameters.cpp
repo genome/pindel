@@ -12,7 +12,7 @@
 /* 'defineParameters' defines the parameters to be used by Pindel. Takes the variables from the calling function as argument for those variables which
  do not need to be stored in the par structure. */
 // _________j___n____________
-// __CD_FGH_JK__NO_____UVWXYZ
+// __CD_FGH_JK__NO_____UVWX_Z
 void defineParameters(std::vector<Parameter *>& parameters)
 {
 	UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
@@ -200,6 +200,7 @@ void defineParameters(std::vector<Parameter *>& parameters)
             "-A",
             "--anchor_quality",
             "the minimal mapping quality of the reads Pindel uses as anchor "
+            "If you only need high confident calls, set to 30 or higher"
             "(default 20)", false, 20));
     parameters.push_back(
         new UIntParameter(
@@ -243,6 +244,15 @@ void defineParameters(std::vector<Parameter *>& parameters)
     parameters.push_back(new BoolParameter(&userSettings->Analyze_MEI, "-q", "--detect_MEI", 
                                            "Flag indicating whether to search for mobile element insertions.", false, 
                                            false));
+    parameters.push_back(
+                         new StringParameter(
+                                             &userSettings->PloidyFileName,
+                                             "-Y",
+                                             "--Ploidy",
+                                             "Ploidy information per chr will be used to genotype and"
+                                             " report consensus variant calls. per line in format: ChrName Ploidy."
+                                             " For example, chr1 2",
+                                             false, ""));
 
 }
 
@@ -261,8 +271,6 @@ unsigned int findParameter(const std::string& name, const std::vector<Parameter 
 /* 'readParameters' reads the parameters as entered in the command line. */
 void readParameters(int argc, char *argv[], std::vector<Parameter *>& parameters)
 {
-    // TODO: Ask Kai whether this can be removed
-    //for (int argumentIndex=1; argumentIndex<argc; argumentIndex++ ) { log << argumentIndex  << ". " << argv[argumentIndex] << endl; }
 
     for (int argumentIndex = 1; argumentIndex < argc; argumentIndex++) {
         std::string currentArgument = argv[argumentIndex];

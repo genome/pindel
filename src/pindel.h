@@ -43,6 +43,7 @@ class LineReader;
 
 extern std::set<std::string> g_sampleNames; // EWL: could make this a singleton instead
 extern std::map<std::string,unsigned> g_SameName2Index;
+extern std::map<std::string,unsigned> g_ChrName2Ploidy;
 
 
 /*
