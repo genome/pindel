@@ -37,9 +37,18 @@ struct Variant {
     std::string ChrName;
     unsigned Start;
     unsigned End;
+    unsigned Start_Range;
+    unsigned End_Range;
     unsigned RefSupport;
     unsigned AlleleSupport;
     bool Report;
+};
+
+struct VariantsPerChr {
+    
+    std::string ChrName;
+    std::string ChrSeq;
+    std::vector <unsigned> IndexOfVariants;
 };
 
 

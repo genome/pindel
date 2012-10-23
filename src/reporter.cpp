@@ -2410,8 +2410,8 @@ void GetVariants(std::ifstream & input_file, std::vector <Variant> & variants) {
             input_file >> tempInt >> TempOne.VariantType >> TempOne.Length
                        >> tempStr >> TempOne.NT_length >> TempOne.NT_str
                        >> tempStr >> TempOne.ChrName
-                       >> tempStr >> tempInt >> tempInt // BP
-                       >> tempStr >> TempOne.Start >> TempOne.End // BP_range
+                       >> tempStr >> TempOne.Start >> TempOne.End // BP
+                       >> tempStr >> TempOne.Start_Range >> TempOne.End_Range // BP_range
                        >> tempStr >> TempOne.AlleleSupport >> tempInt // support
                        >> tempChar >> tempInt >> tempInt // +
                        >> tempChar >> tempInt >> tempInt // -
@@ -2435,7 +2435,7 @@ void GetVariants(std::ifstream & input_file, std::vector <Variant> & variants) {
             if (TempOne.AlleleSupport > 10 && TempOne.AlleleSupport > TempOne.RefSupport * 1.5) {
                 
                 variants.push_back(TempOne);
-                std::cout << TempOne.VariantType << " " << TempOne.Length << " " << TempOne.ChrName << " " << TempOne.Start << " " << TempOne.End << " " << TempOne.RefSupport << " " << TempOne.AlleleSupport << std::endl;
+                //std::cout << TempOne.VariantType << " " << TempOne.Length << " " << TempOne.ChrName << " " << TempOne.Start << " " << TempOne.End << " " << TempOne.RefSupport << " " << TempOne.AlleleSupport << std::endl;
             }
         }
         else {
@@ -2457,10 +2457,10 @@ bool CompareTwoVariants(const Variant & first, const Variant & second) {
         }
     }
     else {
-        if (first.Start < second.Start) return true;
-        else if (first.Start > second.Start) return false;
-        else if (first.End < second.End) return true;
-        else if (first.End > second.End) return false;
+        if (first.Start_Range < second.Start_Range) return true;
+        else if (first.Start_Range > second.Start_Range) return false;
+        else if (first.End_Range < second.End_Range) return true;
+        else if (first.End_Range > second.End_Range) return false;
         else {
             std::cout << "we shall never be here: WhetherExchange() in reporter.cpp" << std::endl;
             return true;
@@ -2469,13 +2469,46 @@ bool CompareTwoVariants(const Variant & first, const Variant & second) {
     return true;
 }
 
-void GetConsensusBasedOnPloidy(ControlState& current_state, Genome& genome, UserDefinedSettings* user_settings) {
-    for ( std::map<std::string, unsigned>::iterator it = g_ChrName2Ploidy.begin(); it != g_ChrName2Ploidy.end(); it++ ) {
-        if ((*it).second != 1) {
-            std::cout << "only accept ploidy 1 for testing at this stage" << std::endl;
-            return;
-        }
+void ModifyRefAndOutput(std::map<std::string, short> ChrName2Index, std::vector <Variant> & VariantsForReport, std::vector <VariantsPerChr> & WholeGenomeVariants, std::ofstream & Ploidy_Contig_Output_File) {
+    //std::cout << "entering ModifyRefAndOutput" << std::endl;
+    std::string NT_String, Left, Right;
+    for (unsigned index = 0; index < VariantsForReport.size(); index++) {
+        
+        //std::cout << "Adding " << index << std::endl;
+        WholeGenomeVariants[ChrName2Index.find(VariantsForReport[index].ChrName)->second].IndexOfVariants.push_back(index);
     }
+    for (unsigned ChrIndex = 0; ChrIndex < WholeGenomeVariants.size(); ChrIndex++) {
+        std::string & Current_ChrName = WholeGenomeVariants[ChrIndex].ChrName;
+        std::string & Current_ChrSeq = WholeGenomeVariants[ChrIndex].ChrSeq;
+        Current_ChrSeq = Current_ChrSeq.substr(g_SpacerBeforeAfter, Current_ChrSeq.size() - 2 * g_SpacerBeforeAfter);
+        //std::cout << "Before: " << Current_ChrName << " " << Current_ChrSeq.size() << std::endl;
+        if (WholeGenomeVariants[ChrIndex].IndexOfVariants.size()) {
+            for (int VariantIndex = (int)WholeGenomeVariants[ChrIndex].IndexOfVariants.size() - 1; VariantIndex >= 0; VariantIndex--) {
+                Variant & Current_Variant = VariantsForReport[WholeGenomeVariants[ChrIndex].IndexOfVariants[VariantIndex]];
+                //std::cout << Current_Variant.VariantType << " " << Current_Variant.Length << " " << Current_Variant.NT_length << " " << Current_Variant.NT_str << " " << Current_Variant.ChrName << " " << Current_Variant.Start << " " << Current_Variant.End << std::endl;
+                if (Current_Variant.NT_length == 0) NT_String = "";
+                else NT_String = Current_Variant.NT_str.substr(1, Current_Variant.NT_length);
+                //std::cout << "NT_String = |" << NT_String << "|" << std::endl;
+                Left = Current_ChrSeq.substr(0, Current_Variant.Start);
+                //std::cout << "Left = |" << Left.size() << "|" << std::endl;
+                Right = Current_ChrSeq.substr(Current_Variant.End - 1, Current_ChrSeq.size() - Current_Variant.End + 1);
+                //std::cout << "Right = |" << Right.size() << "|" << std::endl;
+                Current_ChrSeq = Left + NT_String + Right;
+            }
+        }
+        //std::cout << "After: " << Current_ChrName << " " << Current_ChrSeq.size() << std::endl;
+        Ploidy_Contig_Output_File << ">" << Current_ChrName << "\n" << Current_ChrSeq << std::endl;
+    }
+    //std::cout << "leaving ModifyRefAndOutput" << std::endl;
+}
+
+void GetConsensusBasedOnPloidy(ControlState& current_state, Genome& genome, UserDefinedSettings* user_settings) {
+    //for ( std::map<std::string, unsigned>::iterator it = g_ChrName2Ploidy.begin(); it != g_ChrName2Ploidy.end(); it++ ) {
+    //    if ((*it).second != 1) {
+    //        std::cout << "only accept ploidy 1 for testing at this stage" << std::endl;
+    //        return;
+    //    }
+    //}
     std::ifstream D_Input_file(user_settings->getDOutputFilename().c_str());
     std::ifstream SI_input_file(user_settings->getSIOutputFilename().c_str());
     std::ofstream Ploidy_Variant_Output_File( (user_settings->PloidyFileName + "_ploidy_Variant").c_str() );
@@ -2520,4 +2553,18 @@ void GetConsensusBasedOnPloidy(ControlState& current_state, Genome& genome, User
                                        << "RefSupport " << VariantsForReport[index].RefSupport << "\t"
                                        << "VariantSupport " << VariantsForReport[index].AlleleSupport << std::endl;
     }
+    std::vector <VariantsPerChr> WholeGenomeVariants;
+    g_genome.reset();
+    std::map<std::string, short> ChrName2Index;
+    short ChrIndex = 0;
+    while (const Chromosome* currentChromosome = g_genome.getNextChromosome()) {
+        //std::cout << "ChrName: " << currentChromosome->getName() << "\tSize: " << (currentChromosome->getSeq()).size() - 2 * g_SpacerBeforeAfter << std::endl;
+        VariantsPerChr tempOne;
+        tempOne.ChrName = currentChromosome->getName();
+        tempOne.ChrSeq = currentChromosome->getSeq();
+        ChrName2Index.insert(std::pair<std::string, short>(tempOne.ChrName, ChrIndex) );
+        ChrIndex++;
+        WholeGenomeVariants.push_back(tempOne);
+    }
+    ModifyRefAndOutput(ChrName2Index, VariantsForReport, WholeGenomeVariants, Ploidy_Contig_Output_File);
 }
