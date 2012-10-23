@@ -66,6 +66,7 @@ public:
 	bool ReportCloseMappedRead;
 	bool reportOnlyCloseMappedReads;
 	bool reportInterchromosomalEvents;
+    bool IndelCorrection;
 	std::string userDefinedRegion;
 	double Seq_Error_Rate;
 	bool showHelp;
@@ -87,6 +88,8 @@ public:
 	std::string getGTOutputFilename() const { return outputFilename + "_GT"; };
     std::string getMEIOutputFilename() const { return outputFilename + "_MEI"; };
     std::string getINTOutputFilename() const { return outputFilename + "_INT"; };
+    std::string getContigOutputFilename() const { return outputFilename + "_contig"; };
+    std::string getIndelConsensusOutputFilename() const { return outputFilename + "_CINDEL"; };
 
 	bool loopOverAllChromosomes() { return ! getRegion()->isTargetChromosomeDefined(); };
 

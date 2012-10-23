@@ -12,7 +12,7 @@
 /* 'defineParameters' defines the parameters to be used by Pindel. Takes the variables from the calling function as argument for those variables which
  do not need to be stored in the par structure. */
 // _________j___n____________
-// __CD_FGH_JK__NO_____UVWX_Z
+// ___D_FGH_JK__NO_____UVWX_Z
 void defineParameters(std::vector<Parameter *>& parameters)
 {
 	UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
@@ -144,6 +144,14 @@ void defineParameters(std::vector<Parameter *>& parameters)
             "-I",
             "--report_interchromosomal_events",
             "search for interchromosomal events. Note: will require the computer to have at least 4 GB of memory (default true)", false, true));
+    
+    parameters.push_back(
+        new BoolParameter(
+            &userSettings->IndelCorrection,
+            "-C",
+            "--IndelCorrection",
+            "search for consensus indels to corret contigs", false, false));
+    
 
     parameters.push_back(
         new StringParameter(

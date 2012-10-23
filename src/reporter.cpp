@@ -2512,8 +2512,8 @@ void GetConsensusBasedOnPloidy(ControlState& current_state, Genome& genome, User
     //}
     std::ifstream D_Input_file(user_settings->getDOutputFilename().c_str());
     std::ifstream SI_input_file(user_settings->getSIOutputFilename().c_str());
-    std::ofstream Ploidy_Variant_Output_File( (user_settings->PloidyFileName + "_ploidy_Variant").c_str() );
-    std::ofstream Ploidy_Contig_Output_File( (user_settings->PloidyFileName + "_ploidy_Contig").c_str() );
+    std::ofstream Ploidy_Variant_Output_File( (user_settings->getIndelConsensusOutputFilename()).c_str() );
+    std::ofstream Ploidy_Contig_Output_File( (user_settings->getContigOutputFilename()).c_str() );
     std::vector <Variant> Variants;
     GetVariants(D_Input_file, Variants);
     GetVariants(SI_input_file, Variants);

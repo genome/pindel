@@ -1434,7 +1434,7 @@ int main(int argc, char *argv[])
     if (userSettings->reportInterchromosomalEvents)
        SortAndReportInterChromosomalEvents(currentState, g_genome, userSettings);
     
-    if (g_sampleNames.size() == 1 && parameters[findParameter("-Y", parameters)]->isSet())
+    if (g_sampleNames.size() == 1 && userSettings->IndelCorrection) 
     {
         GetConsensusBasedOnPloidy(currentState, g_genome, userSettings);
     }
