@@ -25,6 +25,7 @@
 #include <map>
 #include <set>
 #include <sstream>
+#include <algorithm>
 
 // Pindel header files
 #include "logstream.h"
