@@ -266,7 +266,8 @@ bool IsGoodINV(std::vector < SPLIT_READ > & GoodIndels, Indel4output & OneIndelE
     
     UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
     
-    if (userSettings->pindelConfigFileAsInput() ||userSettings->singlePindelFileAsInput()) return true;
+    //if (userSettings->pindelConfigFileAsInput() ||userSettings->singlePindelFileAsInput()) return true;
+    if (userSettings->pindelConfigFileAsInput() || userSettings->singlePindelFileAsInput() || userSettings->NormalSamples == false) return true;
     //return true;
     
     //std::cout << "IsGoodINV " << std::endl;

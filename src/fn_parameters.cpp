@@ -12,7 +12,7 @@
 /* 'defineParameters' defines the parameters to be used by Pindel. Takes the variables from the calling function as argument for those variables which
  do not need to be stored in the par structure. */
 // _________j___n____________
-// ___D_FGH_JK__NO_____UVWX_Z
+// ___D_FGH_JK___O_____UVWX_Z
 void defineParameters(std::vector<Parameter *>& parameters)
 {
 	UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
@@ -54,8 +54,8 @@ void defineParameters(std::vector<Parameter *>& parameters)
         new BoolParameter(&userSettings->showHelp, "-h", "--help",
                           "show the command line options of Pindel", false, false));
     parameters.push_back(
-                         new BoolParameter(&userSettings->SearchDiscordantReadPair, "-R", "--RP",
-                                           "search for discordant read-pair", false, true));
+            new BoolParameter(&userSettings->SearchDiscordantReadPair, "-R", "--RP",
+                                           "search for discordant read-pair to improve sensitivity (default true)", false, true));
     
     parameters.push_back(
         new IntParameter(&userSettings->numThreads, "-T", "--number_of_threads",
@@ -79,7 +79,7 @@ void defineParameters(std::vector<Parameter *>& parameters)
             "-w",
             "--window_size",
             "for saving RAM, divides the reference in bins of X million bases and only analyzes the reads that belong in the current "
-            "bin, " "(default 10 (=10 million))", false, 10.0));
+            "bin, " "(default 5 (=5 million))", false, 5.0));
 
     parameters.push_back(
         new FloatParameter(&userSettings->Seq_Error_Rate, "-e",
@@ -150,8 +150,14 @@ void defineParameters(std::vector<Parameter *>& parameters)
             &userSettings->IndelCorrection,
             "-C",
             "--IndelCorrection",
-            "search for consensus indels to corret contigs", false, false));
-    
+            "search for consensus indels to corret contigs (default false)", false, false));
+
+    parameters.push_back(
+            new BoolParameter(
+                &userSettings->NormalSamples,
+                "-N",
+                "--NormalSamples",
+                "Turn on germline filtering, less sensistive and you may miss somatic calls (default true)", false, true));
 
     parameters.push_back(
         new StringParameter(
@@ -232,7 +238,7 @@ void defineParameters(std::vector<Parameter *>& parameters)
                       &userSettings->inf_GenotypingInputFilename,
                       "-g",
                       "--genotyping",
-                      "gentype variants if -i is also turn true."
+                      "gentype variants if -i is also used."
                       "", false, ""));
     parameters.push_back(
         new StringParameter(
@@ -250,15 +256,15 @@ void defineParameters(std::vector<Parameter *>& parameters)
 			"Specifies a file to write Pindel's log to (default: no logfile, log is written to the screen/stdout)", 
 			false, ""));
     parameters.push_back(new BoolParameter(&userSettings->Analyze_MEI, "-q", "--detect_MEI", 
-                                           "Flag indicating whether to search for mobile element insertions.", false, 
+                                           "Flag indicating whether to search for mobile element insertions. (default false)", false,
                                            false));
     parameters.push_back(
                          new StringParameter(
                                              &userSettings->PloidyFileName,
                                              "-Y",
                                              "--Ploidy",
-                                             "Ploidy information per chr will be used to genotype and"
-                                             " report consensus variant calls. per line in format: ChrName Ploidy."
+                                             "a file with Ploidy information per chr for genotype."
+                                             " per line: ChrName Ploidy."
                                              " For example, chr1 2",
                                              false, ""));
 

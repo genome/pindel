@@ -162,7 +162,7 @@ void SortRPByChrPos(std::vector <RP_READ> & Reads_RP) { // no interchromosome RP
 
 
 void ModifyRP(std::vector <RP_READ> & Reads_RP) {
-    
+    if (Reads_RP.size() == 0) return;
     
     int DistanceCutoff = 1000;
 #pragma omp parallel default(shared)
@@ -227,7 +227,7 @@ void ModifyRP(std::vector <RP_READ> & Reads_RP) {
 
 void ModifyRP_InterChr(std::vector <RP_READ> & Reads_RP) {
     std::cout << "InterChr RP reads: " << Reads_RP.size() << std::endl;
-
+    if (Reads_RP.size() == 0) return;
 //#pragma omp parallel default(shared)
     {
 //#pragma omp for
@@ -282,6 +282,7 @@ void ModifyRP_InterChr(std::vector <RP_READ> & Reads_RP) {
         //if (Reads_RP[first].ChrNameA == Reads_RP[first].ChrNameB && abs(Reads_RP[first].PosA - Reads_RP[first].PosB) < 500) Reads_RP[first].Visited = true;
         //std::cout << "Final: " << Reads_RP[first].ChrNameA << " " << Reads_RP[first].DA << " " << Reads_RP[first].PosA << "\t" << Reads_RP[first].ChrNameB << " " << Reads_RP[first].DB << " " << Reads_RP[first].PosB << std::endl;
     }
+    //std::cout << "Leaving" << std::endl;
 }
 
 void Summarize(std::vector <RP_READ> & Reads_RP) {
@@ -290,6 +291,7 @@ void Summarize(std::vector <RP_READ> & Reads_RP) {
     for (unsigned int first = 0; first < Reads_RP.size() - 1; first++) {
         //std::cout << Reads_RP[first].DA << " " << Reads_RP[first].PosA << " " << Reads_RP[first].DB << " " << Reads_RP[first].PosB << std::endl;
         if (Reads_RP[first].Visited == true) continue;
+        Reads_RP[first].NumberOfIdentical = 0;
         for (unsigned second = first + 1; second < Reads_RP.size(); second++) {
             if (Reads_RP[second].Visited == true) continue;
             if (//Reads_RP[first].ChrNameA == Reads_RP[second].ChrNameA
@@ -306,6 +308,7 @@ void Summarize(std::vector <RP_READ> & Reads_RP) {
             Reads_RP[first].Report = true;
             //std::cout << Reads_RP[first].ChrNameA << " " << Reads_RP[first].PosA << " " << Reads_RP[first].ChrNameB << " " << Reads_RP[first].PosB << std::endl;
         }
+        else Reads_RP[first].Report = false;
     }
 }
 
@@ -315,6 +318,7 @@ void Summarize_InterChr(std::vector <RP_READ> & Reads_RP) {
     for (unsigned int first = 0; first < Reads_RP.size() - 1; first++) {
         //std::cout << Reads_RP[first].DA << " " << Reads_RP[first].PosA << " " << Reads_RP[first].DB << " " << Reads_RP[first].PosB << std::endl;
         if (Reads_RP[first].Visited == true) continue;
+        Reads_RP[first].NumberOfIdentical = 0;
         for (unsigned second = first + 1; second < Reads_RP.size(); second++) {
             if (Reads_RP[second].Visited == true) continue;
             if (Reads_RP[first].ChrNameA == Reads_RP[second].ChrNameA
@@ -331,7 +335,9 @@ void Summarize_InterChr(std::vector <RP_READ> & Reads_RP) {
             Reads_RP[first].Report = true;
             //std::cout << Reads_RP[first].ChrNameA << " " << Reads_RP[first].PosA << " " << Reads_RP[first].ChrNameB << " " << Reads_RP[first].PosB << std::endl;
         }
+        else Reads_RP[first].Report = false;
     }
+    //std::cout << "Leaving Summarize_InterChr" << std::endl;
 }
 
 void BDData::UpdateBD(ControlState & currentState) {
@@ -345,54 +351,68 @@ void BDData::UpdateBD(ControlState & currentState) {
     Summarize(currentState.Reads_RP_Discovery);
     ModifyRP_InterChr(currentState.Reads_RP_Discovery_InterChr);
     Summarize_InterChr(currentState.Reads_RP_Discovery_InterChr);
-    #pragma omp parallel default(shared)
-    {
-    #pragma omp for
-        for (int read_index = 0; read_index < (int)currentState.Reads_RP_Discovery.size(); read_index++) {
-            if (currentState.Reads_RP_Discovery[read_index].Report == false) continue;
+
+    if (currentState.Reads_RP_Discovery.size()) {
+        #pragma omp parallel default(shared)
+        {
+        #pragma omp for
+            for (int read_index = 0; read_index < (int)currentState.Reads_RP_Discovery.size(); read_index++) {
+                if (currentState.Reads_RP_Discovery[read_index].Report == false) continue;
     
-            std::string firstChrName = currentState.Reads_RP_Discovery[read_index].ChrNameA;
-            std::string secondChrName = currentState.Reads_RP_Discovery[read_index].ChrNameB;
-            unsigned int firstPos = currentState.Reads_RP_Discovery[read_index].PosA + g_SpacerBeforeAfter;
-            unsigned int secondPos  = currentState.Reads_RP_Discovery[read_index].PosB + g_SpacerBeforeAfter;
-            if ( firstChrName!="" && secondChrName!="" ) {
-                BreakDancerCoordinate firstBDCoordinate( firstChrName, firstPos );
-                BreakDancerCoordinate secondBDCoordinate( secondChrName, secondPos );
-                #pragma omp critical
-                {
-                    m_bdEvents.push_back(BreakDancerEvent( firstBDCoordinate, secondBDCoordinate ));
-                    m_bdEvents.push_back(BreakDancerEvent( secondBDCoordinate, firstBDCoordinate ));
+                std::string firstChrName = currentState.Reads_RP_Discovery[read_index].ChrNameA;
+                std::string secondChrName = currentState.Reads_RP_Discovery[read_index].ChrNameB;
+                unsigned int firstPos = currentState.Reads_RP_Discovery[read_index].PosA + g_SpacerBeforeAfter;
+                unsigned int secondPos  = currentState.Reads_RP_Discovery[read_index].PosB + g_SpacerBeforeAfter;
+                if ( firstChrName!="" && secondChrName!="" ) {
+                    BreakDancerCoordinate firstBDCoordinate( firstChrName, firstPos );
+                    BreakDancerCoordinate secondBDCoordinate( secondChrName, secondPos );
+                    #pragma omp critical
+                    {
+                        m_bdEvents.push_back(BreakDancerEvent( firstBDCoordinate, secondBDCoordinate ));
+                        m_bdEvents.push_back(BreakDancerEvent( secondBDCoordinate, firstBDCoordinate ));
                 
-                    std::cout << "adding " << firstChrName << " " << firstPos - g_SpacerBeforeAfter << "\t" << secondChrName << " " << secondPos - g_SpacerBeforeAfter <<  " to breakdancer events. " << abs((int)secondPos - (int)firstPos) << std::endl;
+                        std::cout << "adding " << firstChrName << " " << firstPos - g_SpacerBeforeAfter << "\t" << secondChrName << " " << secondPos - g_SpacerBeforeAfter <<  " to breakdancer events. " << abs((int)secondPos - (int)firstPos) << " Support: " << currentState.Reads_RP_Discovery[read_index].NumberOfIdentical << std::endl;
+                    }
                 }
-            }
         
-        }
-    }
-    #pragma omp parallel default(shared)
-    {
-    #pragma omp for
-        for (int read_index = 0; read_index < (int)currentState.Reads_RP_Discovery_InterChr.size(); read_index++) {
-            if (currentState.Reads_RP_Discovery_InterChr[read_index].Report == false) continue;
-            
-            std::string firstChrName = currentState.Reads_RP_Discovery_InterChr[read_index].ChrNameA;
-            std::string secondChrName = currentState.Reads_RP_Discovery_InterChr[read_index].ChrNameB;
-            unsigned int firstPos = currentState.Reads_RP_Discovery_InterChr[read_index].PosA + g_SpacerBeforeAfter;
-            unsigned int secondPos  = currentState.Reads_RP_Discovery_InterChr[read_index].PosB + g_SpacerBeforeAfter;
-            if ( firstChrName!="" && secondChrName!="" ) {
-                BreakDancerCoordinate firstBDCoordinate( firstChrName, firstPos );
-                BreakDancerCoordinate secondBDCoordinate( secondChrName, secondPos );
-                #pragma omp critical
-                {
-                    m_bdEvents.push_back(BreakDancerEvent( firstBDCoordinate, secondBDCoordinate ));
-                    m_bdEvents.push_back(BreakDancerEvent( secondBDCoordinate, firstBDCoordinate ));
-                
-                    std::cout << "adding interchr " << firstChrName << " " << firstPos - g_SpacerBeforeAfter << "\t" << secondChrName << " " << secondPos - g_SpacerBeforeAfter <<  " to breakdancer events. " << abs((int)secondPos - (int)firstPos) << std::endl;
-                }
             }
-            
         }
     }
+
+    if (currentState.Reads_RP_Discovery_InterChr.size()) {
+        #pragma omp parallel default(shared)
+        {
+            #pragma omp for
+            for (int read_index = 0; read_index < (int)currentState.Reads_RP_Discovery_InterChr.size(); read_index++) {
+
+                if (currentState.Reads_RP_Discovery_InterChr[read_index].Report == false) continue;
+                
+                std::string firstChrName = currentState.Reads_RP_Discovery_InterChr[read_index].ChrNameA;
+                std::string secondChrName = currentState.Reads_RP_Discovery_InterChr[read_index].ChrNameB;
+
+                unsigned int firstPos = currentState.Reads_RP_Discovery_InterChr[read_index].PosA + g_SpacerBeforeAfter;
+                unsigned int secondPos  = currentState.Reads_RP_Discovery_InterChr[read_index].PosB + g_SpacerBeforeAfter;
+
+                if ( firstChrName!="" && secondChrName!="" ) {
+                    BreakDancerCoordinate firstBDCoordinate( firstChrName, firstPos );
+                    BreakDancerCoordinate secondBDCoordinate( secondChrName, secondPos );
+
+                    #pragma omp critical
+                    {
+
+                        m_bdEvents.push_back(BreakDancerEvent( firstBDCoordinate, secondBDCoordinate ));
+
+                        m_bdEvents.push_back(BreakDancerEvent( secondBDCoordinate, firstBDCoordinate ));
+
+                        std::cout << "adding interchr " << firstChrName << " " << firstPos - g_SpacerBeforeAfter << "\t" << secondChrName << " " << secondPos - g_SpacerBeforeAfter <<  " to breakdancer events. " << " Support: " << currentState.Reads_RP_Discovery_InterChr[read_index].NumberOfIdentical << std::endl;
+                    }
+
+                }
+                
+            }
+        }
+    }
+
     //currentState.Reads_RP_Discovery.clear();
     std::cout << "summarize BP as BD complete. Now start sorting BD..." << std::endl;
 	sort( m_bdEvents.begin(), m_bdEvents.end(), sortOnFirstBDCoordinate );

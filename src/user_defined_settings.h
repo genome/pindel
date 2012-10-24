@@ -67,6 +67,7 @@ public:
 	bool reportOnlyCloseMappedReads;
 	bool reportInterchromosomalEvents;
     bool IndelCorrection;
+    bool NormalSamples;
 	std::string userDefinedRegion;
 	double Seq_Error_Rate;
 	bool showHelp;

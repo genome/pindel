@@ -1023,7 +1023,8 @@ bool IsGoodTD(std::vector < SPLIT_READ > & GoodIndels, Indel4output & OneIndelEv
     
     UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
     
-    if (userSettings->pindelConfigFileAsInput() ||userSettings->singlePindelFileAsInput()) return true;
+    //if (userSettings->pindelConfigFileAsInput() ||userSettings->singlePindelFileAsInput()) return true;
+    if (userSettings->pindelConfigFileAsInput() || userSettings->singlePindelFileAsInput() || userSettings->NormalSamples == false) return true;
     //return true;
     
     //<< std::endl;
@@ -1233,7 +1234,7 @@ bool IsGoodDeletion(std::vector < SPLIT_READ > & GoodIndels, Indel4output & OneI
     
     UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
     
-    if (userSettings->pindelConfigFileAsInput() ||userSettings->singlePindelFileAsInput()) return true;
+    if (userSettings->pindelConfigFileAsInput() || userSettings->singlePindelFileAsInput() || userSettings->NormalSamples == false) return true;
     //return true;
     
     if (RealEnd < RealStart) return false;
@@ -2393,8 +2394,11 @@ void SortAndReportInterChromosomalEvents(ControlState& current_state, Genome& ge
         }
     }
     
-    for ( std::map<std::string,int> ::iterator it = CallAndSupport.begin() ; it != CallAndSupport.end(); it++ )
-        INToutputfile << (*it).first << "\tsupport: " << (*it).second << std::endl;
+    for ( std::map<std::string,int> ::iterator it = CallAndSupport.begin() ; it != CallAndSupport.end(); it++ ) {
+        if ((*it).second >=3)
+            INToutputfile << (*it).first << "\tsupport: " << (*it).second << std::endl;
+    }
+        
     
 }
 
@@ -2407,6 +2411,7 @@ void GetVariants(std::ifstream & input_file, std::vector <Variant> & variants) {
     char tempChar;
     unsigned RefStartSupport, RefEndSupport, AlleleStartSupport, AlleleEndSupport;
     while (input_file >> tempStr) {
+        if (tempStr.size() == 0) return;
         if (tempStr.substr(0, 2) == "##") {
             input_file >> tempInt >> TempOne.VariantType >> TempOne.Length
                        >> tempStr >> TempOne.NT_length >> TempOne.NT_str
@@ -2515,8 +2520,11 @@ void GetConsensusBasedOnPloidy(ControlState& current_state, Genome& genome, User
     std::ofstream Ploidy_Variant_Output_File( (user_settings->getIndelConsensusOutputFilename()).c_str() );
     std::ofstream Ploidy_Contig_Output_File( (user_settings->getContigOutputFilename()).c_str() );
     std::vector <Variant> Variants;
+    std::cout << "1" << std::endl;
     GetVariants(D_Input_file, Variants);
     GetVariants(SI_input_file, Variants);
+    std::cout << "2" << std::endl;
+    if (Variants.size() == 0) return;
     for (unsigned first = 0; first < Variants.size() - 1; first++) {
         if (Variants[first].Report == false) continue;
         for (unsigned second = first + 1; second < Variants.size(); second++) {
@@ -2538,11 +2546,14 @@ void GetConsensusBasedOnPloidy(ControlState& current_state, Genome& genome, User
             else continue;
         }
     }
+    std::cout << "3" << std::endl;
     std::vector <Variant> VariantsForReport;
     for (unsigned index = 0; index < Variants.size(); index++) {
         if (Variants[index].Report) VariantsForReport.push_back(Variants[index]);
     }
+    std::cout << "4" << std::endl;
     sort(VariantsForReport.begin(), VariantsForReport.end(), CompareTwoVariants);
+    std::cout << "5" << std::endl;
     for (unsigned index = 0; index < VariantsForReport.size(); index++) {
             Ploidy_Variant_Output_File << "Type " << VariantsForReport[index].VariantType << "\t"
                                        << "Size " << VariantsForReport[index].Length << "\t"
@@ -2554,6 +2565,7 @@ void GetConsensusBasedOnPloidy(ControlState& current_state, Genome& genome, User
                                        << "RefSupport " << VariantsForReport[index].RefSupport << "\t"
                                        << "VariantSupport " << VariantsForReport[index].AlleleSupport << std::endl;
     }
+    std::cout << "6" << std::endl;
     std::vector <VariantsPerChr> WholeGenomeVariants;
     g_genome.reset();
     std::map<std::string, short> ChrName2Index;
@@ -2567,5 +2579,7 @@ void GetConsensusBasedOnPloidy(ControlState& current_state, Genome& genome, User
         ChrIndex++;
         WholeGenomeVariants.push_back(tempOne);
     }
+    std::cout << "7" << std::endl;
     ModifyRefAndOutput(ChrName2Index, VariantsForReport, WholeGenomeVariants, Ploidy_Contig_Output_File);
+    std::cout << "8" << std::endl;
 }
