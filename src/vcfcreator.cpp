@@ -509,7 +509,10 @@ void Chromosome::readFromFile()
          getline(referenceFile,currentLine);
       }
       makeStrangeBasesN(tempChromosome);
-		d_sequence = new string( tempChromosome );
+      if (d_sequence == NULL)
+         d_sequence = new string( tempChromosome );
+      else
+         *d_sequence = tempChromosome;
       refLine = currentLine;
    }
    while (!referenceFile.eof() && !targetChromosomeRead);
