@@ -35,7 +35,7 @@
 #include "output_sorter.h"
 #include "reporter.h"
 #include "shifted_vector.h"
-#include "genotyping.h"
+//#include "genotyping.h"
 #include "bam2depth.h"
 
 

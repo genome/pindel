@@ -21,6 +21,7 @@
 #include "control_state.h"
 #include "pindel.h"
 #include "assembly.h"
+//#include "user_defined_settings.h"
 #include <vector>
 #include <map>
 #include <string>
@@ -89,13 +90,13 @@ struct Genotyping {
 
 
 
-void doGenotyping (ControlState & CurrentState, std::ifstream& FastaFile );
+void doGenotyping (ControlState & CurrentState, UserDefinedSettings* userSettings);//std::ifstream& FastaFile );
 
-short GenotypingOneDEL(const std::vector <AChromosome> & AllChromosomes, std::map<std::string,int> & ChrName2Index, ControlState & CurrentState, Genotyping & OneSV, std::map<std::string, unsigned> & SampleName2IndexAsMap, std::ofstream & ASM_Output);
+short GenotypingOneDEL(std::map<std::string,int> & ChrName2Index, ControlState & CurrentState, Genotyping & OneSV, std::map<std::string, unsigned> & SampleName2IndexAsMap, std::ofstream & ASM_Output);
 
-short GetRP4OnDEL(const std::vector <AChromosome> & AllChromosomes, std::map<std::string,int> & ChrName2Index, ControlState & CurrentState, const Genotyping & OneSV, std::map<std::string, unsigned> & SampleName2IndexAsMap, std::ofstream & GT_Output);
+short GetRP4OnDEL(std::map<std::string,int> & ChrName2Index, ControlState & CurrentState, const Genotyping & OneSV, std::map<std::string, unsigned> & SampleName2IndexAsMap, std::ofstream & GT_Output);
 
-short GenotypingOneDUP(const std::vector <AChromosome> & AllChromosomes, std::map<std::string,int> &ChrName2Index, ControlState & CurrentState, Genotyping & OneSV, std::map<std::string, unsigned> & SampleName2IndexAsMap, std::ofstream & GT_Output);
+short GenotypingOneDUP(std::map<std::string,int> &ChrName2Index, ControlState & CurrentState, Genotyping & OneSV, std::map<std::string, unsigned> & SampleName2IndexAsMap, std::ofstream & GT_Output);
 /*
 short getWholeGenome(ControlState & CurrentState, std::vector <AChromosome> & AllChromosomes) ;
 short AssembleOneSV(const std::vector <AChromosome> & AllChromosomes, std::map<std::string,int> & ChrName2Index, ControlState & CurrentState, ParCollection & par, const Assembly & OneSV, std::ofstream & ASM_Output);

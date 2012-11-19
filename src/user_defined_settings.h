@@ -78,6 +78,8 @@ public:
 	bool bamFilesAsInput() const { return bamConfigFilename != ""; };
 	bool pindelFilesAsInput() const { return ( singlePindelFileAsInput() || pindelConfigFileAsInput() ); };
 
+    std::string getRefFilename() const { return referenceFilename; };
+    
 	std::string getSIOutputFilename() const { return outputFilename + "_SI"; };
 	std::string getDOutputFilename() const { return outputFilename + "_D"; };
 	std::string getTDOutputFilename() const { return outputFilename + "_TD"; };

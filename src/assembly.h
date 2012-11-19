@@ -19,6 +19,7 @@
  */
 
 #include "control_state.h"
+#include "user_defined_settings.h"
 #include "pindel.h"
 #include <vector>
 #include <map>
@@ -27,6 +28,7 @@
 #ifndef ASSEMBLY_H
 #define ASSEMBLY_H
 
+/*
 struct AChromosome {
     AChromosome() {
         ChrName = "";
@@ -35,6 +37,7 @@ struct AChromosome {
     std::string ChrName;
     std::string ChrSeq;
 };
+ */
 
 struct Assembly {
     Assembly() {
@@ -57,14 +60,14 @@ struct Assembly {
     unsigned CI_B;
 };
 
-void doAssembly (ControlState & CurrentState, std::ifstream& FastaFile );
-short getWholeGenome(std::ifstream& FastaFile, std::vector <AChromosome> & AllChromosomes); 
-short AssembleOneSV(const std::vector <AChromosome> & AllChromosomes, std::map<std::string,int> & ChrName2Index, ControlState & CurrentState, const Assembly & OneSV, std::ofstream & ASM_Output);
-void CombineAndSort(const std::vector <AChromosome> & AllChromosomes, std::map<std::string,int> &ChrName2Index, ControlState & CurrentState, const Assembly & OneSV, std::vector <SPLIT_READ> & output_reads, const unsigned & lowerBinBorder, const unsigned & upperBinBorder, const bool & First);
+void doAssembly (ControlState & CurrentState, UserDefinedSettings* userSettings);//std::ifstream& FastaFile );
+//short getWholeGenome(std::ifstream& FastaFile, std::vector <AChromosome> & AllChromosomes);
+short AssembleOneSV(std::map<std::string,int> & ChrName2Index, ControlState & CurrentState, const Assembly & OneSV, std::ofstream & ASM_Output);
+void CombineAndSort(std::map<std::string,int> &ChrName2Index, ControlState & CurrentState, const Assembly & OneSV, std::vector <SPLIT_READ> & output_reads, const unsigned & lowerBinBorder, const unsigned & upperBinBorder, const bool & First);
 void CombineReads(const std::string & CurrentChrSeq, const char & Strand, const std::vector <SPLIT_READ> & input_reads, const std::vector <unsigned int> Index_Of_Useful_Reads, std::vector <SPLIT_READ> & output_reads);
-void OutputCurrentRead(const std::vector <AChromosome> & AllChromosomes, std::map<std::string,int> & ChrName2Index, ControlState & CurrentState, const Assembly & OneSV, SPLIT_READ & OneRead, std::ofstream & ASM_Output);
-void TryLI(const std::vector <AChromosome> & AllChromosomes, std::map<std::string,int> & ChrName2Index, ControlState & CurrentState, const Assembly & OneSV,  std::vector <SPLIT_READ> & First, std::vector <SPLIT_READ> & Second, std::ofstream & ASM_Output);
-void ReportLI(const std::vector <AChromosome> & AllChromosomes, std::map<std::string,int> & ChrName2Index, ControlState & CurrentState, const Assembly & OneSV,  SPLIT_READ & First, SPLIT_READ & Second, const std::string & MergedString, short & OverlapCount, std::ofstream & ASM_Output);
+void OutputCurrentRead(std::map<std::string,int> & ChrName2Index, ControlState & CurrentState, const Assembly & OneSV, SPLIT_READ & OneRead, std::ofstream & ASM_Output);
+void TryLI(std::map<std::string,int> & ChrName2Index, ControlState & CurrentState, const Assembly & OneSV,  std::vector <SPLIT_READ> & First, std::vector <SPLIT_READ> & Second, std::ofstream & ASM_Output);
+void ReportLI(std::map<std::string,int> & ChrName2Index, ControlState & CurrentState, const Assembly & OneSV,  SPLIT_READ & First, SPLIT_READ & Second, const std::string & MergedString, short & OverlapCount, std::ofstream & ASM_Output);
 void GetReadCountPerSample(const std::vector <SPLIT_READ> & input_reads, const std::vector <unsigned int> Index_Of_Useful_Reads, SPLIT_READ & output_one_read);
 void CleanUpCloseEnd(std::vector <SPLIT_READ> & input, const unsigned & Left, const unsigned & Right);
 void CleanUpFarEnd(std::vector <SPLIT_READ> & input, const unsigned & Left, const unsigned & Right);

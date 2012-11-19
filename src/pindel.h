@@ -86,6 +86,14 @@ extern std::vector<unsigned int> g_maxMismatch;
 extern unsigned g_RegionStart;
 extern unsigned g_RegionEnd;
 
+struct ChrNameAndSizeAndIndex {
+    std::string ChrName;
+    unsigned ChrSize;
+    short ChrIndex;
+};
+extern std::vector <ChrNameAndSizeAndIndex> g_ChrNameAndSizeAndIndex;
+
+
 extern const std::string Pindel_Version_str;
 
 /*

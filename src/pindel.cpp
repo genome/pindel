@@ -55,7 +55,7 @@
 #include "user_defined_settings.h"
 #include "logdef.h"
 #include "assembly.h"
-#include "genotyping.h"
+//#include "genotyping.h"
 #include "ifstream_line_reader.h"
 #include "gz_line_reader.h"
 
@@ -74,11 +74,17 @@
 /* EW: update 0.2.4s: bugfix for -p option of Pindel0.2.4r */
 /* EW: update 0.2.4t, updates now shown in RELEASE document in trunk directory */
 
-const std::string Pindel_Version_str = "Pindel version 0.2.4v, Oct 22 2012.";
+const std::string Pindel_Version_str = "Pindel version 0.2.4v, Nov 15 2012.";
 
 const Chromosome g_dummyChromosome("","");
 Genome g_genome;
 std::ofstream g_logFile;
+
+
+
+
+
+std::vector <ChrNameAndSizeAndIndex> g_ChrNameAndSizeAndIndex;
 
 int g_binIndex = -1; // global variable for the bin index, as I cannot easily pass an extra parameter to the diverse functions
 unsigned int g_maxPos = 0; // to calculate which is the last position in the chromosome, and hence to calculate the number of bins
@@ -1236,6 +1242,28 @@ short UpdateRefReadCoverage(ControlState& currentState, const SearchWindow& curr
     return 0;
 }
 
+short init_g_ChrNameAndSizeAndIndex(std::string RefIndexFileName) {
+    ChrNameAndSizeAndIndex OneChr;
+    std::string TempStr;
+    std::ifstream RefIndexInput(RefIndexFileName.c_str());
+    if (!RefIndexInput) return 1;
+    short ChrCount = 0;
+    while (RefIndexInput >> OneChr.ChrName >> OneChr.ChrSize) {
+        getline(RefIndexInput, TempStr);
+        OneChr.ChrIndex = ChrCount;
+        ChrCount++;
+        g_ChrNameAndSizeAndIndex.push_back(OneChr);
+    }
+    return 0;
+}
+
+short CheckChrName(std::string ChrName) {
+    for (unsigned index = 0; index < g_ChrNameAndSizeAndIndex.size(); index++) {
+        if (g_ChrNameAndSizeAndIndex[index].ChrName == ChrName) return 1;
+    }
+    return 0;
+}
+
 int main(int argc, char *argv[])
 {
 	//TODO: These are counters that are only used in individual steps. They should be moved to separate functions later.
@@ -1251,19 +1279,35 @@ int main(int argc, char *argv[])
 	UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
 
    init(argc, argv, currentState );
+    
+    if (init_g_ChrNameAndSizeAndIndex(userSettings->getRefFilename() + ".fai") == 1) {
+        std::cout << "Please use samtools to index your reference file.\n .fai is missing.\n" << std::endl;
+        return 1;
+    }
+    
+    if (!userSettings->loopOverAllChromosomes()) {
+        if (CheckChrName(userSettings->getRegion()->getTargetChromosomeName()) == 0) {
+            std::cout << "Please check chromosome name in the reference file, BAM files and command line. \n Make sure that they are consistent.\n" << std::endl;
+            return 1;
+        }
+    }
+    
 
-    /* Start of shortcut to genotyping */ // currentState.inf_AssemblyInput.open(par.inf_AssemblyInputFilename.c_str());
-	/*bool GenotypingInputDefined = parameters[findParameter("-g",parameters)]->isSet();
+    /* Start of shortcut to genotyping *///
+    currentState.inf_AssemblyInput.open(userSettings->inf_AssemblyInputFilename.c_str());
+	bool GenotypingInputDefined = parameters[findParameter("-g",parameters)]->isSet();
+    
+    //std::ifstream FastaFile(userSettings->getRefFilename().c_str());
    if (GenotypingInputDefined) {
-      doGenotyping(currentState, FastaFile );
+      //doGenotyping(currentState, userSettings );
       exit(EXIT_SUCCESS);
    }
     
    bool AssemblyInputDefined = parameters[findParameter("-z",parameters)]->isSet();
    if (AssemblyInputDefined) {
-      doAssembly(currentState, FastaFile );
+      doAssembly(currentState, userSettings );
       exit(EXIT_SUCCESS);
-   }*/
+   }
 
     // If -q parameter given, search for mobile element insertions and quit.
     if (parameters[findParameter("-q", parameters)]->isSet()) {
@@ -1291,7 +1335,7 @@ int main(int argc, char *argv[])
 
    // Get a new chromosome again and again until you have visited the specified chromosome or the file ends
    // CurrentChrName stores the name of the chromosome.
-
+    std::cout << "loading reference genome" << std::endl;
    bool SpecifiedChrVisited = false;
 
    do {
@@ -1418,7 +1462,7 @@ int main(int argc, char *argv[])
          //std::cout << "before " << currentState.Reads_RP_Discovery.size() << std::endl;
          if (currentState.Reads_RP_Discovery.size())
              currentState.Reads_RP_Discovery.clear();
-         if (currentState.Reads_RP_Discovery.size())
+         if (currentState.Reads_RP_Discovery_InterChr.size())
              currentState.Reads_RP_Discovery_InterChr.clear();
          if (currentState.RefSupportingReads.size()) // std::vector <REF_READ> RefSupportingReads
              currentState.RefSupportingReads.clear();

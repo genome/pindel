@@ -24,11 +24,13 @@
 #include "reader.h"
 #include "pindel.h"
 #include "farend_searcher.h"
+#include "control_state.h"
+#include "user_defined_settings.h"
 #include <map>
 #include <string>
 #include <utility>
 
-void doAssembly (ControlState & CurrentState, std::ifstream& FastaFile ) {
+void doAssembly (ControlState & CurrentState, UserDefinedSettings* userSettings){// std::ifstream& FastaFile ) {
         /*
         // step 1: define output file
        // std:string AssemblyOutputFilename = inf_AssemblyInputFilename + "_ASM";
@@ -38,20 +40,31 @@ void doAssembly (ControlState & CurrentState, std::ifstream& FastaFile ) {
         
         // step 2: get a list of breakpoints 
          */
+    
+    
+    //std::ifstream FastaFile((userSettings->getRefFilename()).c_str());
     std::cout << "Entering assembly mode ..." << std::endl; 
     std::map<std::string,int> ChrName2Index;
     
     std::cout << "Get whole genome sequence..." << std::endl;
     // step 1. get the whole genome sequence
 
-    std::vector <AChromosome> AllChromosomes;
-    getWholeGenome(FastaFile, AllChromosomes);
-    
-    for (unsigned i = 0; i < AllChromosomes.size(); i++) {
-        std::cout << "ChrName " << AllChromosomes[i].ChrName << "\tChrSeqSize " << AllChromosomes[i].ChrSeq.size() << std::endl;
-        ChrName2Index[AllChromosomes[i].ChrName] = i;
-    }
+    g_genome.loadAll( userSettings->getRefFilename() );
 
+
+    //std::vector <AChromosome> AllChromosomes;
+    //getWholeGenome(FastaFile, AllChromosomes);
+    unsigned CountChr = 0;
+    do {
+        const Chromosome* currentChromosome = g_genome.getNextChromosome();
+        if (currentChromosome == NULL) {
+			break;
+		}
+        std::cout << "ChrName " << currentChromosome->getName() << "\tChrSeqSize " << currentChromosome->getBiolSize() << std::endl;
+        ChrName2Index[currentChromosome->getName()] = CountChr;
+        CountChr++;
+        
+    } while (true);
 
     // step 2. get all SVs
     //CurrentState.inf_AssemblyInput.open(par.inf_AssemblyInputFilename.c_str());
@@ -85,68 +98,15 @@ void doAssembly (ControlState & CurrentState, std::ifstream& FastaFile ) {
     // step 3.2 per SV, collect reads around BP, sort, combine and output.
     for (unsigned SV_index = 0; SV_index < AllSV4Assembly.size(); SV_index++) {
         std::cout << AllSV4Assembly[SV_index].Type << "\t" << AllSV4Assembly[SV_index].ChrA << "\t" << AllSV4Assembly[SV_index].PosA << "\t" << AllSV4Assembly[SV_index].CI_A << "\t" << AllSV4Assembly[SV_index].ChrB << "\t" << AllSV4Assembly[SV_index].PosB << "\t" << AllSV4Assembly[SV_index].CI_B << std::endl;
-        AssembleOneSV(AllChromosomes, ChrName2Index, CurrentState, AllSV4Assembly[SV_index], ASM_Output);
+        AssembleOneSV(ChrName2Index, CurrentState, AllSV4Assembly[SV_index], ASM_Output);
     }
     std::cout << "Leaving assembly mode and terminating this run." << std::endl;
+     
     return;
 }
 
-short getWholeGenome(std::ifstream& FastaFile, std::vector <AChromosome> & AllChromosomes) {
-    std::string Spacer = "";
-    for (unsigned i = 0; i < g_SpacerBeforeAfter; i++) Spacer += "N";
-    //std::string Spacer("N", g_SpacerBeforeAfter);
-    //std::cout << "2" << std::endl;
-    AChromosome OneChr;
-    std::string TempLine;
-    char TempChar;
-    FastaFile.clear();
-    FastaFile.seekg(0);
-    FastaFile >> TempChar;
-    while (FastaFile >> OneChr.ChrName) {
-        safeGetline(FastaFile, TempLine);
-        while (FastaFile >> TempChar) {
-            if (TempChar != '\n' && TempChar != '\r') {
-                if (TempChar == '>') {
-                    OneChr.ChrSeq = Spacer + OneChr.ChrSeq + Spacer;
-                    std::cout << OneChr.ChrName << " " << OneChr.ChrSeq.size() << std::endl;
-                    AllChromosomes.push_back(OneChr);
-                    OneChr.ChrSeq = "";
-                    OneChr.ChrName = "";
-                    break;
-                }
-                else {
-                    //if ('a' <= TempChar && TempChar <= 'z') {
-                    TempChar = toupper(TempChar);// + Diff2UpperCase;
-                    //}
-                    switch (TempChar) {
-                        case 'A':
-                            OneChr.ChrSeq += 'A';
-                            break;	// 00000000
-                        case 'C':
-                            OneChr.ChrSeq += 'C';
-                            break;	// 00010000
-                        case 'G':
-                            OneChr.ChrSeq += 'G';
-                            break;	// 00100000
-                        case 'T':
-                            OneChr.ChrSeq += 'T';
-                            break;	// 00110000
-                        default:
-                            OneChr.ChrSeq += 'N';
-                            // 01000000
-                    }
-                }						
-            }
-        }
-    }
-    OneChr.ChrSeq = Spacer + OneChr.ChrSeq + Spacer;
-    std::cout << OneChr.ChrName << " " << OneChr.ChrSeq.size() << std::endl;
-    AllChromosomes.push_back(OneChr);
-    FastaFile.close();
-    return 0;
-}
 
-short AssembleOneSV(const std::vector <AChromosome> & AllChromosomes, std::map<std::string,int> &ChrName2Index, ControlState & CurrentState, const Assembly & OneSV, std::ofstream & ASM_Output) {
+short AssembleOneSV(std::map<std::string,int> &ChrName2Index, ControlState & CurrentState, const Assembly & OneSV, std::ofstream & ASM_Output) {
     //std::cout << "AssembleOneSV 1" << std::endl;
     //short Max_NT_Size = 30;
     bool WhetherFirstBP = true;
@@ -157,14 +117,20 @@ short AssembleOneSV(const std::vector <AChromosome> & AllChromosomes, std::map<s
               << "\t" << OneSV.ChrB << " " << OneSV.PosB << " " << OneSV.CI_B << std::endl;
     // get first BP
     CurrentState.Reads_SR.clear();
-    currentState.OneEndMappedReads.clear();
+    CurrentState.OneEndMappedReads.clear();
     //std::cout << "AssembleOneSV 2" << std::endl;
+    const Chromosome* currentChromosomeFirst = g_genome.getChr(OneSV.ChrA);
+    const Chromosome* currentChromosomeSecond = g_genome.getChr(OneSV.ChrB);
+    std::string FirstChrSeq = currentChromosomeFirst->getSeq();
+    std::string SecondChrSeq = currentChromosomeSecond->getSeq();
+    
     if (CurrentState.CurrentChrName != OneSV.ChrA) {
         CurrentState.CurrentChrName = OneSV.ChrA;
-        CurrentState.CurrentChrSeq = AllChromosomes[ChrName2Index.find(OneSV.ChrA)->second].ChrSeq; // change later, copying one chrseq for each SV is expensive. 
+        CurrentState.CurrentChrSeq = FirstChrSeq;
+        //CurrentState.CurrentChrSeq = AllChromosomes[ChrName2Index.find(OneSV.ChrA)->second].ChrSeq; // change later, copying one chrseq for each SV is expensive.
     }
 
-    CONS_Chr_Size = CurrentState.CurrentChrSeq.size() - 2 * g_SpacerBeforeAfter; // #################
+    //const unsigned CONS_Chr_Size = currentChromosome->getBiolSize(); // #################
     //std::cout << "CONS_Chr_Size " << CONS_Chr_Size << std::endl;
     g_maxPos = 0; // #################
     unsigned Left, Right;
@@ -172,7 +138,7 @@ short AssembleOneSV(const std::vector <AChromosome> & AllChromosomes, std::map<s
     if (OneSV.PosA > OneSV.CI_A + 1000)  
         lowerBinBorder = OneSV.PosA - OneSV.CI_A - 1000; //CurrentState.
     unsigned int upperBinBorder = OneSV.PosA + OneSV.CI_A + 1000;
-	SearchWindow window( CurrentState.CurrentChrName, lowerBinBorder, upperBinBorder );
+	SearchWindow window( currentChromosomeFirst, lowerBinBorder, upperBinBorder );
     Left = OneSV.PosA + g_SpacerBeforeAfter - OneSV.CI_A;
     Right = OneSV.PosA + g_SpacerBeforeAfter + OneSV.CI_A;
 
@@ -180,7 +146,7 @@ short AssembleOneSV(const std::vector <AChromosome> & AllChromosomes, std::map<s
     get_SR_Reads(CurrentState, window );
 
     //std::cout << "First size: " << CurrentState.Reads_SR.size() << std::endl;
-    CombineAndSort(AllChromosomes, ChrName2Index, CurrentState, OneSV, First, lowerBinBorder, upperBinBorder, WhetherFirstBP);
+    CombineAndSort(ChrName2Index, CurrentState, OneSV, First, lowerBinBorder, upperBinBorder, WhetherFirstBP);
 
     CleanUpCloseEnd(First, Left, Right); // vector of reads
 
@@ -188,14 +154,14 @@ short AssembleOneSV(const std::vector <AChromosome> & AllChromosomes, std::map<s
     SearchRange = OneSV.CI_B + 1000;
     SearchCenter = OneSV.PosB + g_SpacerBeforeAfter;
 	std::vector< SearchWindow > searchCluster;
-	searchCluster.push_back( SearchWindow( AllChromosomes[ChrName2Index.find(OneSV.ChrB)->second].ChrName, SearchCenter-SearchRange, SearchCenter+SearchRange ) );
+	searchCluster.push_back( SearchWindow( currentChromosomeSecond, SearchCenter-SearchRange, SearchCenter+SearchRange ) );
     Left = OneSV.PosB + g_SpacerBeforeAfter - OneSV.CI_B;
     Right = OneSV.PosB + g_SpacerBeforeAfter + OneSV.CI_B;
     
 	for (unsigned ReadIndex = 0; ReadIndex < First.size(); ReadIndex++) {
       First[ReadIndex].FarFragName = OneSV.ChrB;
       //SearchFarEndAtPos(AllChromosomes[ChrName2Index.find(OneSV.ChrB)->second].ChrSeq, First[ReadIndex], SearchCenter, SearchRange);
-		SearchFarEndAtPos(AllChromosomes[ChrName2Index.find(OneSV.ChrB)->second].ChrSeq, First[ReadIndex], searchCluster);
+		SearchFarEndAtPos(SecondChrSeq, First[ReadIndex], searchCluster);
     }
     //std::cout << "AssembleOneSV 7" << std::endl;
 
@@ -204,33 +170,34 @@ short AssembleOneSV(const std::vector <AChromosome> & AllChromosomes, std::map<s
 
 
 	for (unsigned ReadIndex = 0; ReadIndex < First.size(); ReadIndex++) {
-   	if (First[ReadIndex].UP_Close.size()) {
+        if (First[ReadIndex].UP_Close.size()) {
 			if (First[ReadIndex].UP_Far.size()) {
-				OutputCurrentRead(AllChromosomes, ChrName2Index, CurrentState, OneSV, First[ReadIndex], ASM_Output);
-         }
-      }
-   }
+				OutputCurrentRead(ChrName2Index, CurrentState, OneSV, First[ReadIndex], ASM_Output);
+            }
+        }
+    }
     
     
     // get second BP
     CurrentState.Reads_SR.clear();
     WhetherFirstBP = false;
     CurrentState.CurrentChrName = OneSV.ChrB;
-    CurrentState.CurrentChrSeq = AllChromosomes[ChrName2Index.find(OneSV.ChrB)->second].ChrSeq;
-    CONS_Chr_Size = CurrentState.CurrentChrSeq.size() - 2 * g_SpacerBeforeAfter; // #################
+    
+    CurrentState.CurrentChrSeq = SecondChrSeq;
+    //CONS_Chr_Size = CurrentState.CurrentChrSeq.size() - 2 * g_SpacerBeforeAfter; // #################
     g_maxPos = 0; // #################
 	lowerBinBorder = 1;
     if (OneSV.PosB > OneSV.CI_B + 1000)  
         lowerBinBorder = OneSV.PosB - OneSV.CI_B - 1000;
     upperBinBorder = OneSV.PosB + OneSV.CI_B + 1000;
-	SearchWindow window2( CurrentState.CurrentChrName, lowerBinBorder, upperBinBorder );
+	SearchWindow window2( currentChromosomeSecond, lowerBinBorder, upperBinBorder );
     Left = OneSV.PosB + g_SpacerBeforeAfter - OneSV.CI_B;
     Right = OneSV.PosB + g_SpacerBeforeAfter + OneSV.CI_B;
 
     std::cout << "\nSecond BP\tChrName " << CurrentState.CurrentChrName << "\tRange " << lowerBinBorder << " " << upperBinBorder << std::endl;    
     get_SR_Reads(CurrentState, window2 );
 
-    CombineAndSort(AllChromosomes, ChrName2Index, CurrentState, OneSV, Second, lowerBinBorder, upperBinBorder, WhetherFirstBP);
+    CombineAndSort(ChrName2Index, CurrentState, OneSV, Second, lowerBinBorder, upperBinBorder, WhetherFirstBP);
 
     CleanUpCloseEnd(Second, Left, Right);
 
@@ -240,12 +207,12 @@ short AssembleOneSV(const std::vector <AChromosome> & AllChromosomes, std::map<s
     Left = OneSV.PosA + g_SpacerBeforeAfter - OneSV.CI_A;
     Right = OneSV.PosA + g_SpacerBeforeAfter + OneSV.CI_A;
 	searchCluster.clear();
-	searchCluster.push_back( SearchWindow( AllChromosomes[ChrName2Index.find(OneSV.ChrA)->second].ChrName, SearchCenter-SearchRange, SearchCenter+SearchRange ) );
+	searchCluster.push_back( SearchWindow( currentChromosomeFirst, SearchCenter-SearchRange, SearchCenter+SearchRange ) );
   
    for (unsigned ReadIndex = 0; ReadIndex < Second.size(); ReadIndex++) {
       Second[ReadIndex].FarFragName = OneSV.ChrA;
       //SearchFarEndAtPos(AllChromosomes[ChrName2Index.find(OneSV.ChrA)->second].ChrSeq, Second[ReadIndex], SearchCenter, SearchRange);
-		SearchFarEndAtPos(AllChromosomes[ChrName2Index.find(OneSV.ChrA)->second].ChrSeq, Second[ReadIndex], searchCluster);  
+		SearchFarEndAtPos(FirstChrSeq, Second[ReadIndex], searchCluster);
    }
 
     CleanUpFarEnd(Second, Left, Right);
@@ -253,7 +220,7 @@ short AssembleOneSV(const std::vector <AChromosome> & AllChromosomes, std::map<s
    for (unsigned ReadIndex = 0; ReadIndex < Second.size(); ReadIndex++) {
       if (Second[ReadIndex].UP_Close.size()) {
          if (Second[ReadIndex].UP_Far.size()) {
-            OutputCurrentRead(AllChromosomes, ChrName2Index, CurrentState, OneSV, Second[ReadIndex], ASM_Output);
+            OutputCurrentRead(ChrName2Index, CurrentState, OneSV, Second[ReadIndex], ASM_Output);
          }
       }
    }
@@ -266,12 +233,12 @@ short AssembleOneSV(const std::vector <AChromosome> & AllChromosomes, std::map<s
         SumSize += Second[ReadIndex].UP_Far.size(); 
     }
     if (SumSize == 0 && OneSV.ChrA == OneSV.ChrB) {
-        TryLI(AllChromosomes, ChrName2Index, CurrentState, OneSV, First, Second, ASM_Output);
+        TryLI(ChrName2Index, CurrentState, OneSV, First, Second, ASM_Output);
     }
     return 0;
 }
 
-void CombineAndSort(const std::vector <AChromosome> & AllChromosomes, std::map<std::string,int> &ChrName2Index, ControlState & CurrentState, const Assembly & OneSV, std::vector <SPLIT_READ> & output_reads, const unsigned & lowerBinBorder, const unsigned & upperBinBorder, const bool & First) {
+void CombineAndSort(std::map<std::string,int> &ChrName2Index, ControlState & CurrentState, const Assembly & OneSV, std::vector <SPLIT_READ> & output_reads, const unsigned & lowerBinBorder, const unsigned & upperBinBorder, const bool & First) {
     
     const unsigned AssemblyCutOff = 3;
     const char Plus = '+';
@@ -514,7 +481,7 @@ void CombineReads(const std::string & CurrentChrSeq, const char & Strand, const 
     }
 }
 
-void OutputCurrentRead(const std::vector <AChromosome> & AllChromosomes, std::map<std::string,int> & ChrName2Index, ControlState & CurrentState, const Assembly & OneSV, SPLIT_READ & OneRead, std::ofstream & ASM_Output) {
+void OutputCurrentRead(std::map<std::string,int> & ChrName2Index, ControlState & CurrentState, const Assembly & OneSV, SPLIT_READ & OneRead, std::ofstream & ASM_Output) {
     int CountSupportingSamples;
     //std::cout << "start of OutputCurrentRead" << std::endl;
     //if (OneRead.UP_Far_backup.size())
@@ -544,7 +511,7 @@ void OutputCurrentRead(const std::vector <AChromosome> & AllChromosomes, std::ma
     }   
 }
 
-void TryLI(const std::vector <AChromosome> & AllChromosomes, std::map<std::string,int> & ChrName2Index, ControlState & CurrentState, const Assembly & OneSV,  std::vector <SPLIT_READ> & First, std::vector <SPLIT_READ> & Second, std::ofstream & ASM_Output) {
+void TryLI(std::map<std::string,int> & ChrName2Index, ControlState & CurrentState, const Assembly & OneSV,  std::vector <SPLIT_READ> & First, std::vector <SPLIT_READ> & Second, std::ofstream & ASM_Output) {
     short MinimumOverlap = 10;
     short MaximumOverlap;// = min();
     short MaxMismatch = 3;
@@ -582,7 +549,7 @@ void TryLI(const std::vector <AChromosome> & AllChromosomes, std::map<std::strin
                 if (CountMismatch <= MaxMismatch) {
                     MergedString = FirstOne.substr(0, FirstLength - OverlapCount) + SecondOne;
                     std::cout << "MergedString: " << OverlapCount << " " << MergedString << std::endl;
-                    ReportLI(AllChromosomes, ChrName2Index, CurrentState, OneSV, First[ReadIndex_Plus], Second[ReadIndex_Minus], MergedString, OverlapCount, ASM_Output);
+                    //ReportLI(AllChromosomes, ChrName2Index, CurrentState, OneSV, First[ReadIndex_Plus], Second[ReadIndex_Minus], MergedString, OverlapCount, ASM_Output);
                 }
             }
         }
@@ -636,7 +603,8 @@ void TryLI(const std::vector <AChromosome> & AllChromosomes, std::map<std::strin
     }
 }*/
 
-void ReportLI(const std::vector <AChromosome> & AllChromosomes, std::map<std::string,int> & ChrName2Index, ControlState & CurrentState, const Assembly & OneSV,  SPLIT_READ & First, SPLIT_READ & Second, const std::string & MergedString, short & OverlapCount, std::ofstream & ASM_Output){
+/*
+void ReportLI(ControlState & CurrentState, const Assembly & OneSV,  SPLIT_READ & First, SPLIT_READ & Second, const std::string & MergedString, short & OverlapCount, std::ofstream & ASM_Output){
     
     unsigned CountSupportingSamples = 0;
     SPLIT_READ OneRead = Second;
@@ -645,7 +613,7 @@ void ReportLI(const std::vector <AChromosome> & AllChromosomes, std::map<std::st
     OneRead.UP_Close.clear();
     OneRead.UP_Far.clear();
     //OneRead.UP_Far_backup.clear();
-    GetCloseEnd(AllChromosomes[ChrName2Index.find(OneSV.ChrB)->second].ChrSeq, OneRead); //        
+    GetCloseEnd((g_genome.getChr(OneSV.ChrB))->getSeq(), OneRead); //
     unsigned SearchRange = OneSV.CI_A + 1000;
     unsigned SearchCenter = OneSV.PosA + g_SpacerBeforeAfter;
 	std::vector< SearchWindow > searchCluster;
@@ -686,6 +654,7 @@ void ReportLI(const std::vector <AChromosome> & AllChromosomes, std::map<std::st
         }
     }
 }
+ */
 
 void GetReadCountPerSample(const std::vector <SPLIT_READ> & input_reads, const std::vector <unsigned int> Index_Of_Useful_Reads, SPLIT_READ & output_one_read) {
     //std::map <std::string, int> ReadCountPerSample;

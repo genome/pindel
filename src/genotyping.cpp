@@ -26,6 +26,7 @@
 #include "reader.h"
 #include "pindel.h"
 #include "farend_searcher.h"
+//#include "user_defined_settings.h"
 #include <map>
 #include <set>
 //#include <pair.h>
@@ -35,23 +36,30 @@
 #include <math.h>
 
 
-void doGenotyping (ControlState & CurrentState, std::ifstream& FastaFile ) {
+void doGenotyping (ControlState & CurrentState, UserDefinedSettings* userSettings ) {
     const int SV_Genotype_Cutoff = 1000;
     
     // step 1 load whole genome sequences into memory
+    
+    //std::ifstream FastaFile((userSettings->getRefFilename()).c_str());
     
     std::map<std::string,int> ChrName2Index;
     
     std::cout << "Get whole genome sequence..." << std::endl;
     // step 1. get the whole genome sequence
+    g_genome.loadAll( userSettings->getRefFilename() );
     
-    std::vector <AChromosome> AllChromosomes;
-    getWholeGenome(FastaFile, AllChromosomes);
-    
-    for (unsigned i = 0; i < AllChromosomes.size(); i++) {
-        //std::cout << "ChrName " << AllChromosomes[i].ChrName << "\tChrSeqSize " << AllChromosomes[i].ChrSeq.size() << std::endl;
-        ChrName2Index[AllChromosomes[i].ChrName] = i;
-    }
+    unsigned CountChr = 0;
+    do {
+        const Chromosome* currentChromosome = g_genome.getNextChromosome();
+        if (currentChromosome == NULL) {
+			break;
+		}
+        std::cout << "ChrName " << currentChromosome->getName() << "\tChrSeqSize " << currentChromosome->getBiolSize() << std::endl;
+        ChrName2Index[currentChromosome->getName()] = CountChr;
+        CountChr++;
+        
+    } while (true);
     
     std::set<std::string> SampleNameAsSet;
     std::map<std::string, unsigned> SampleName2IndexAsMap;
@@ -121,10 +129,10 @@ void doGenotyping (ControlState & CurrentState, std::ifstream& FastaFile ) {
                       << OneSV.CI_A << " " << OneSV.ChrB << " " << OneSV.PosB << " " 
                       << OneSV.CI_B << std::endl;
         }
-        if (AllSV4Genotyping[SV_index].Type == "DEL") GenotypingOneDEL(AllChromosomes, ChrName2Index, CurrentState, AllSV4Genotyping[SV_index], SampleName2IndexAsMap, GT_Output);
+        if (AllSV4Genotyping[SV_index].Type == "DEL") GenotypingOneDEL(ChrName2Index, CurrentState, AllSV4Genotyping[SV_index], SampleName2IndexAsMap, GT_Output);
 
         // step 4.2 if type == DUP, GenotypeDup
-        if (AllSV4Genotyping[SV_index].Type == "DUP" || AllSV4Genotyping[SV_index].Type == "TD" || AllSV4Genotyping[SV_index].Type == "GT") GenotypingOneDUP(AllChromosomes, ChrName2Index, CurrentState, AllSV4Genotyping[SV_index], SampleName2IndexAsMap, GT_Output);
+        if (AllSV4Genotyping[SV_index].Type == "DUP" || AllSV4Genotyping[SV_index].Type == "TD" || AllSV4Genotyping[SV_index].Type == "GT") GenotypingOneDUP(ChrName2Index, CurrentState, AllSV4Genotyping[SV_index], SampleName2IndexAsMap, GT_Output);
         // step 4.3 if type == INV, GenotypeINV
         
         // step 4.4 if type == ITX, GenotypeINV
@@ -133,16 +141,18 @@ void doGenotyping (ControlState & CurrentState, std::ifstream& FastaFile ) {
     }
 }
 
-short GenotypingOneDEL(const std::vector <AChromosome> & AllChromosomes, std::map<std::string,int> &ChrName2Index, ControlState & CurrentState, Genotyping & OneSV, std::map<std::string, unsigned> & SampleName2IndexAsMap, std::ofstream & GT_Output) {
+short GenotypingOneDEL(std::map<std::string,int> &ChrName2Index, ControlState & CurrentState, Genotyping & OneSV, std::map<std::string, unsigned> & SampleName2IndexAsMap, std::ofstream & GT_Output) {
     std::cout << "\nGenotyping " << OneSV.Type << " " << OneSV.ChrA << " " << OneSV.PosA << " " 
     << OneSV.CI_A << " " << OneSV.ChrB << " " << OneSV.PosB << " " << OneSV.CI_B << std::endl;
+    const Chromosome* currentChromosome = g_genome.getChr(OneSV.ChrA);
+    std::string CurrentChrSeq = currentChromosome->getSeq();
     // get RD signals
-    const std::string & CurrentChrSeq = AllChromosomes[ ChrName2Index[ OneSV.ChrA ]].ChrSeq;
+    //const std::string & CurrentChrSeq = AllChromosomes[ ChrName2Index[ OneSV.ChrA ]].ChrSeq;
     CurrentState.CurrentChrName = OneSV.ChrA;
     //std::cout << "1" << std::endl;
-    getRelativeCoverage(CurrentChrSeq, ChrName2Index[OneSV.ChrA], CurrentState, OneSV);
+    getRelativeCoverage(CurrentChrSeq, ChrName2Index[OneSV.ChrA], CurrentState, OneSV, currentChromosome);
     //std::cout << "2" << std::endl;
-    GetRP4OnDEL(AllChromosomes, ChrName2Index, CurrentState, OneSV, SampleName2IndexAsMap, GT_Output);
+    GetRP4OnDEL(ChrName2Index, CurrentState, OneSV, SampleName2IndexAsMap, GT_Output);
     //std::cout << "3" << std::endl;
     //short AssembleOneSV(const std::vector <AChromosome> & AllChromosomes, std::map<std::string,int> & ChrName2Index, ControlState & CurrentState, ParCollection & par, const Assembly & OneSV, std::ofstream & ASM_Output);
     //getRP_counts4DEL(CurrentChrSeq, ChrName2Index[OneSV.ChrA], CurrentState, OneSV);
@@ -154,12 +164,14 @@ short GenotypingOneDEL(const std::vector <AChromosome> & AllChromosomes, std::ma
     return 0;
 }
 
-short GenotypingOneDUP(const std::vector <AChromosome> & AllChromosomes, std::map<std::string,int> &ChrName2Index, ControlState & CurrentState, Genotyping & OneSV, std::map<std::string, unsigned> & SampleName2IndexAsMap, std::ofstream & GT_Output) {
+short GenotypingOneDUP(std::map<std::string,int> &ChrName2Index, ControlState & CurrentState, Genotyping & OneSV, std::map<std::string, unsigned> & SampleName2IndexAsMap, std::ofstream & GT_Output) {
     std::cout << "\nGenotyping " << OneSV.Type << " " << OneSV.ChrA << " " << OneSV.PosA << " "
     << OneSV.CI_A << " " << OneSV.ChrB << " " << OneSV.PosB << " " << OneSV.CI_B << std::endl;
-    const std::string & CurrentChrSeq = AllChromosomes[ ChrName2Index[ OneSV.ChrA ]].ChrSeq;
+    const Chromosome* currentChromosome = g_genome.getChr(OneSV.ChrA);
+    const std::string & CurrentChrSeq = currentChromosome->getSeq();
+    
     CurrentState.CurrentChrName = OneSV.ChrA;
-    getRelativeCoverage(CurrentChrSeq, ChrName2Index[OneSV.ChrA], CurrentState, OneSV);
+    getRelativeCoverage(CurrentChrSeq, ChrName2Index[OneSV.ChrA], CurrentState, OneSV, currentChromosome);
     return 0;
 }
 
@@ -257,15 +269,17 @@ void CountRPSupport4DEL(const std::vector <RPVector> & Reads_RP, const std::vect
     //std::cout << "leaving CountRPSupport4DEL ..." << std::endl;
 }
 
-short GetRP4OnDEL(const std::vector <AChromosome> & AllChromosomes, std::map<std::string,int> & ChrName2Index, ControlState & CurrentState, const Genotyping & OneSV, std::map<std::string, unsigned> & SampleName2IndexAsMap, std::ofstream & GT_Output) {
+short GetRP4OnDEL(std::map<std::string,int> & ChrName2Index, ControlState & CurrentState, const Genotyping & OneSV, std::map<std::string, unsigned> & SampleName2IndexAsMap, std::ofstream & GT_Output) {
     //std::vector <RP_READ> ALL_RP_reads;
     //std::cout << "GetRP4OnDEL 1" << std::endl;
+    const Chromosome* currentChromosome = g_genome.getChr(OneSV.ChrA);
+    //std::string CurrentChrSeq = currentChromosome->getSeq();
     short Min_MQ = 20;
     std::set<std::string> ReadNames;
     
     if (CurrentState.CurrentChrName != OneSV.ChrA) {
         CurrentState.CurrentChrName = OneSV.ChrA;
-        CurrentState.CurrentChrSeq = AllChromosomes[ChrName2Index.find(OneSV.ChrA)->second].ChrSeq; // change later, copying one chrseq for each SV is expensive. 
+        CurrentState.CurrentChrSeq = currentChromosome->getSeq(); // change later, copying one chrseq for each SV is expensive. 
     }
     //std::cout << "GetRP4OnDEL 2" << std::endl;
     //unsigned SearchCenter;
@@ -277,7 +291,7 @@ short GetRP4OnDEL(const std::vector <AChromosome> & AllChromosomes, std::map<std
     if (OneSV.PosA > OneSV.CI_A + Overhead)  
         lowerBinBorder = OneSV.PosA - OneSV.CI_A - Overhead; //CurrentState.
    unsigned int upperBinBorder = OneSV.PosB + OneSV.CI_B + Overhead;
-	SearchWindow window(CurrentState.CurrentChrName,lowerBinBorder, upperBinBorder); 
+	SearchWindow window(currentChromosome,lowerBinBorder, upperBinBorder); 
     //std::cout << "GetRP4OnDEL 3" << std::endl;
     get_RP_Reads(CurrentState, window );
     //std::cout << "Reads around BP 1 " << CurrentState.Reads_RP.size() << std::endl;
