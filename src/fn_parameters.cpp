@@ -157,7 +157,7 @@ void defineParameters(std::vector<Parameter *>& parameters)
                 &userSettings->NormalSamples,
                 "-N",
                 "--NormalSamples",
-                "Turn on germline filtering, less sensistive and you may miss somatic calls (default true)", false, true));
+                "Turn on germline filtering, less sensistive and you may miss somatic calls (default false)", false, false));
 
     parameters.push_back(
         new StringParameter(
