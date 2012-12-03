@@ -271,11 +271,11 @@ bool IsGoodINV(std::vector < SPLIT_READ > & GoodIndels, Indel4output & OneIndelE
     //return true;
     
     //std::cout << "IsGoodINV " << std::endl;
-    unsigned Cutoff = (OneIndelEvent.End - OneIndelEvent.Start + 1) * 2;
-    if (Cutoff > 20) Cutoff = 20;
+    unsigned Cutoff = (OneIndelEvent.End - OneIndelEvent.Start + 1) / 2;
+    if (Cutoff < 5) Cutoff = 5;
     //std::cout << "Real Start and End: INV " << RealStart << " " << RealEnd << " " << (OneIndelEvent.End - OneIndelEvent.Start + 1)
-    //<< " " << RP_support_D(currentState, OneIndelEvent, RealStart, RealEnd)
-    //<< " " << Cutoff << std::endl;
+                //<< " " << RP_support_D(currentState, OneIndelEvent, RealStart, RealEnd)
+    //            << " " << Cutoff << std::endl;
     bool LeftGood = false;
     bool RightGood = false;
     unsigned CountLeft = 0;
@@ -296,7 +296,7 @@ bool IsGoodINV(std::vector < SPLIT_READ > & GoodIndels, Indel4output & OneIndelE
             if (CountLeft >= Cutoff) LeftGood = true;
             if (CountRight >= Cutoff) RightGood = true;
             if (LeftGood && RightGood) {
-                //std::cout << "Reporting true for INV" << std::endl;
+                //std::cout << "Reporting true for INV " << Cutoff << " " << CountLeft << " " << CountRight << std::endl;
                 return true;
             }
             RP_READ & currentread = currentState.Reads_RP_Discovery[index];
@@ -308,7 +308,7 @@ bool IsGoodINV(std::vector < SPLIT_READ > & GoodIndels, Indel4output & OneIndelE
             //std::cout << currentread.ChrNameA << " " << currentread.PosA << " " << currentread.DA << " "
             //<< currentread.ChrNameB << " " << currentread.PosB << " " << currentread.DB << " "
             //<< currentread.Experimental_InsertSize << std::endl;
-            
+            //std::cout << currentread.DA
             if (currentread.DA == '+') {
                 if (currentread.PosA < currentread.PosB) {
                     if (currentread.PosA < RealStart + currentread.ReadLength && currentread.PosB + currentread.ReadLength > RealStart && currentread.PosB < RealEnd + currentread.ReadLength) {
@@ -352,7 +352,7 @@ bool IsGoodINV(std::vector < SPLIT_READ > & GoodIndels, Indel4output & OneIndelE
         }
     }
 
-    
+    //std::cout << "Return false " << CountLeft << " " << CountRight << " cutoff " << Cutoff <<  std::endl;
     return false;
 }
 

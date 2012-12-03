@@ -371,7 +371,7 @@ void BDData::UpdateBD(ControlState & currentState) {
                         m_bdEvents.push_back(BreakDancerEvent( firstBDCoordinate, secondBDCoordinate ));
                         m_bdEvents.push_back(BreakDancerEvent( secondBDCoordinate, firstBDCoordinate ));
                 
-                        std::cout << "adding " << firstChrName << " " << firstPos - g_SpacerBeforeAfter << "\t" << secondChrName << " " << secondPos - g_SpacerBeforeAfter <<  " to breakdancer events. " << abs((int)secondPos - (int)firstPos) << " Support: " << currentState.Reads_RP_Discovery[read_index].NumberOfIdentical << std::endl;
+                        std::cout << "adding " << firstChrName << " " << firstPos - g_SpacerBeforeAfter << "\t" << currentState.Reads_RP_Discovery[read_index].DA << "\t" << secondChrName << " " << secondPos - g_SpacerBeforeAfter << "\t" << currentState.Reads_RP_Discovery[read_index].DB << " to breakdancer events. " << abs((int)secondPos - (int)firstPos) << " Support: " << currentState.Reads_RP_Discovery[read_index].NumberOfIdentical << std::endl;
                     }
                 }
         

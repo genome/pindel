@@ -1458,7 +1458,7 @@ int main(int argc, char *argv[])
              *logStream << "There are no reads for this bin.\n";
          }
 
-         // std::cout << " 4 " << std::endl;
+         //std::cout << " 4 " << std::endl;
          //std::cout << "before " << currentState.Reads_RP_Discovery.size() << std::endl;
          if (currentState.Reads_RP_Discovery.size())
              currentState.Reads_RP_Discovery.clear();

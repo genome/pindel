@@ -835,16 +835,34 @@ void build_record_RP_Discovery (const bam1_t * r1, void *data)
     bam_header_t *header = (bam_header_t *) data_for_bam->header;
     std::string CurrentChrSeq = *(std::string *) data_for_bam->CurrentChrSeq;
     std::string Tag = (std::string) data_for_bam->Tag;
-
-    if (!(r1_core->flag & BAM_FPAIRED)) return;
+    std::string read_name = bam1_qname (r1);
     
+    //if ("read_10038" == read_name) {
+    //    std::cout << "print " << read_name << " is on line 840." << std::endl;
+    //}
+    if (!(r1_core->flag & BAM_FPAIRED)) return;
+    //if ("read_10038" == read_name) {
+    //    std::cout << "print " << read_name << " is on line 844." << std::endl;
+    //}
     if (r1_core->qual < userSettings->minimalAnchorQuality) return;
+    //if ("read_10038" == read_name) {
+    //    std::cout << "print " << read_name << " is on line 848." << std::endl;
+    //}
     
     if (!(r1_core->flag & BAM_FUNMAP || r1_core->flag & BAM_FMUNMAP)) { // both reads are mapped.
 			/*std::cout << "Read Insertsize=" << abs(r1_core->isize) << ", qseq=" << r1_core->l_qseq << " BAM ISize=" << data_for_bam->InsertSize 
 				<< "Total is " << r1_core->l_qseq *2 + 2 * data_for_bam->InsertSize << "\n";*/
-        if ((r1_core->tid != r1_core->mtid) || abs(r1_core->isize) > 3 * data_for_bam->InsertSize + 1000 /*|| ((r1_core->flag & BAM_FREVERSE) == (r1_core->flag & BAM_FMREVERSE))*/) { // different chr or same strand or insert is too large
+        //if ("read_10038" == read_name || "read_100478" ==  read_name) {
+        //    std::cout << "########print " << read_name << " is on line 854." << std::endl;
+        //    std::cout << r1_core->tid << " " << r1_core->mtid << " " << abs(r1_core->isize) << " "
+        //    << (r1_core->flag & BAM_FREVERSE) << " "
+        //    << (r1_core->flag & BAM_FMREVERSE) << std::endl;
+        //}
+        if ((r1_core->tid != r1_core->mtid) || abs(r1_core->isize) > 3 * data_for_bam->InsertSize + 1000 || ((bool)(r1_core->flag & BAM_FREVERSE) == (bool)(r1_core->flag & BAM_FMREVERSE))) { // different chr or same strand or insert is too large
             //std::cout << "passed the test\n";
+            //if ("read_10038" == read_name) {
+            //    std::cout << "print " << read_name << " is on line 859." << std::endl;
+            //}
             if (r1_core->flag & BAM_FREVERSE) {
                 Temp_One_Read.DA = '-';
             }
@@ -867,6 +885,9 @@ void build_record_RP_Discovery (const bam1_t * r1, void *data)
             Temp_One_Read.Experimental_InsertSize = data_for_bam->InsertSize;
             Temp_One_Read.ReadName = "";
             Temp_One_Read.ReadName.append ((const char *) bam1_qname (r1));
+            //if ("read_10038" == Temp_One_Read.ReadName) {
+            //    std::cout << "print " << Temp_One_Read.ReadName << " is on line 881." << std::endl;
+            //}
             //else Temp_One_Read.PosB = Temp_One_Read.PosB;
             //std::cout << Temp_One_Read.ReadName << " " << Temp_One_Read.DA << " " << Temp_One_Read.PosA << " " << Temp_One_Read.DB << " " << Temp_One_Read.PosB << std::endl;
             Temp_One_Read.MQA = r1_core->qual;
@@ -877,6 +898,7 @@ void build_record_RP_Discovery (const bam1_t * r1, void *data)
             //FIXME pass these through from the command line with a struct
             Temp_One_Read.Tag = Tag;
             Temp_One_Read.ReadLength = r1_core->l_qseq;
+            //std::cout << Temp_One_Read.ReadName << " " << Temp_One_Read.DA << " " << Temp_One_Read.PosA << " " << Temp_One_Read.DB << " " << Temp_One_Read.PosB << std::endl;
             if (r1_core->tid == r1_core->mtid) {
                 data_for_bam->LeftReads->push_back(Temp_One_Read);
                 /*
@@ -1020,7 +1042,10 @@ static int fetch_func_RP_Discovery (const bam1_t * b1, void *data)
     //bam1_t *b2;
     //bam1_core_t *b2_core;
     b1_core = &b1->core;
-    std::string read_name = bam1_qname (b1);
+    //std::string read_name = bam1_qname (b1);
+    //if ("read_10038" == read_name) {
+    //    std::cout << "see read_10038 in fetch_func_RP_Discovery" << std::endl;
+    //}
     /*
      khint_t key = kh_get (read_name, read_to_map_qual, bam1_qname (b1));
      if (key == kh_end (read_to_map_qual)) {
