@@ -24,7 +24,7 @@
 
 // Maximal distance between two MEI breakpoints found on opposite strands to
 // be assumed to refer to the same event.
-const int MAX_MEI_BREAKPOINT_DISTANCE = 100;
+const int MAX_MEI_BREAKPOINT_DISTANCE = 150;
 
 // Maximal distance between reads for them to be assigned to the same cluster.
 const int MAX_DISTANCE_CLUSTER_READS = 100;
@@ -38,12 +38,21 @@ const std::string COMMENT_PREFIX = "# ";
 // Minimal size of cluster.
 const int MIN_MEI_CLUSTER_SIZE = 3;
 
-// Minimal number of reads needed to support a breakpoint.
+// Minimal number of split reads needed to support a breakpoint.
 const int MIN_MEI_BREAKPOINT_SUPPORT = 3;
 
 // Minimal distance between mapped reads to consider them for detection of
 // mobile element insertions.
 const int MIN_MEI_MAP_DISTANCE = 8000;
+
+// Minimal fraction of collection of split reads that must have identical bases at each position
+// in the sequence to construct a valid consensus sequence.  (e.g. 0.8 means at least 80% of the
+// sequences must have the same base at an arbitrary position).
+const float MIN_FRACTION_CONSENSUS = 0.8;
+
+// Minimal length of a consensus string (if shorther than this, the strings may be similar
+// by coincidence).
+const int MIN_CONSENSUS_LENGTH = 15;
 
 // A contig, being a collection of overlapping reads paired with relative 
 // indexes indicating their distance in mapping.
@@ -74,42 +83,52 @@ bool is_concordant(const bam1_t* read, unsigned int insert_size) {
 // Cluster reads by their orientation and mapping location.  Each read linked
 // in the given vector will be assigned to a single cluster (in the form of a
 // vector) in the output.
-static std::vector<std::vector<simple_read*>*> cluster_reads(std::vector<simple_read*>& reads) {
-    std::vector<std::vector<simple_read*>*> clusters;
+static void cluster_reads(std::vector<simple_read*>& reads, int insert_size, 
+                          std::vector<std::vector<simple_read*> >& clusters) {
     if (reads.size() == 0) {
-        return clusters;
+        return;
     }
     
     // Sort reads first by mapping strand, then on mapping location.
     sort(reads.begin(), reads.end(), comp_simple_read);
     
     // Initialize first cluster.
-    std::vector<simple_read*>* current_cluster = new std::vector<simple_read*>;
+    std::vector<simple_read*> current_cluster;
     simple_read* read_last_analyzed = reads.at(0);
-    current_cluster->push_back(read_last_analyzed);
+    simple_read* first_read_in_cluster = read_last_analyzed;
+    current_cluster.push_back(read_last_analyzed);
     
     for (size_t i = 1; i < reads.size(); i++) {
         simple_read* current_read = reads.at(i);
         
-        if (read_last_analyzed->strand == current_read->strand && 
-            (current_read->pos - read_last_analyzed->pos) <= MAX_DISTANCE_CLUSTER_READS) {
-            current_cluster->push_back(current_read);
+        if (// Max distance between reads in cluster.
+            (current_read->pos - read_last_analyzed->pos) <= MAX_DISTANCE_CLUSTER_READS &&
+            // Max spanning length of cluster on reference.
+            (unsigned) (current_read->pos - first_read_in_cluster->pos) <= 
+                (insert_size - first_read_in_cluster->sequence.length()) &&
+            // Reads of same cluster must be on same strand.
+            read_last_analyzed->strand == current_read->strand) {
+            
+            current_cluster.push_back(current_read);
         } else {
             // Close current cluster and initialize a new.
             clusters.push_back(current_cluster);
-            current_cluster = new std::vector<simple_read*>;
-            current_cluster->push_back(current_read);
+            current_cluster.clear();
+            current_cluster.push_back(current_read);
+            first_read_in_cluster = current_read;
         }
         read_last_analyzed = current_read;
     }
     
     // Save remaining cluster.
-    if (current_cluster->size() > 0) {
+    if (current_cluster.size() > 0) {
         clusters.push_back(current_cluster);
     }
-    return clusters;
 }
 
+int all_sr = 0;
+int far_end_found = 0;
+int far_end_found_elsewhere = 0;
 
 // Find split reads around the given cluster edge position (outer_pos), put
 // them in split_reads.
@@ -137,169 +156,302 @@ static int get_split_reads_for_cluster(std::vector<bam_info>& bam_sources, char 
         // Read split reads in defined window.
         ReadBuffer read_buffer(SPLIT_READ_BUFFER_SIZE, split_reads, HangingReads, chromosome->getSeq());
 
-        int read_result = ReadInBamReads_SR(source.BamFile.c_str(), chromosome->getName(), &chromosome->getSeq(), 
-                                            split_reads, HangingReads, Ref_Supporting_Reads, source.InsertSize, 
-                                            source.Tag, search_window, read_buffer);
-        if (read_result > 0) {
-            return read_result;
+        ReadInBamReads_SR(source.BamFile.c_str(), chromosome->getName(), &chromosome->getSeq(), split_reads, 
+                          HangingReads, Ref_Supporting_Reads, source.InsertSize, source.Tag, search_window, 
+                          read_buffer);
         }
-        
-        // Remove any split reads for which a far end can be found locally, these are
-        // assumed to contribute to some local variants.
-        // Todo: determine region that is searched for far end.
-        std::vector<SearchWindow> window_holder;
-        for (int i = (split_reads.size() - 1); i >= 0; i--) {
-            SPLIT_READ current_SR = split_reads.at(i);
-            
-            int far_end_lower_bound = current_SR.getLastAbsLocCloseEnd();
-            int far_end_upper_bound;
-            if (cluster_strand == Plus) {
-                far_end_upper_bound = far_end_lower_bound + MIN_MEI_MAP_DISTANCE;
-            } else {
-                far_end_upper_bound = far_end_lower_bound;
-                far_end_lower_bound -= MIN_MEI_MAP_DISTANCE;
-            }
-            
-            SearchWindow window(chromosome, far_end_lower_bound, far_end_upper_bound);
-            window_holder.clear();
-            window_holder.push_back(window);
-            SearchFarEndAtPos(chromosome->getSeq(), current_SR, window_holder);
-            
-            // If far end is found in local window, delete it.
-            if (current_SR.goodFarEndFound()) {
-                split_reads.erase(split_reads.begin() + i);
-            }
-        }
-    }
     return 0;
 }
+
+
+// Return a consensus sequence for the mapping parts of reads, if no consensus found return 
+// empty string.  strand is the strand to which the reads are mapped -- defining whether the
+// sequences should be aligned by left or right side.
+static std::string get_consensus_unmapped(std::vector<simple_read>& reads, char strand) {
+    
+    if (reads.size() == 0) {
+        return "";
+    }
+    
+    sort(reads.begin(), reads.end(), comp_simple_read_unmapped_seqsize);
+    int max_len = reads.at(0).unmapped_sequence.length();
+    
+    std::stringstream consensus_ss;
+    int index; // Position in the consensus read.
+    std::vector<simple_read>::iterator read_iter;
+    for (int i = 0; i < max_len; i++) {
+        std::map<char, int> char_counts;
+        std::map<char, int>::iterator char_iter;
+        int read_count = 0; // Nr of reads contributing to current position in consensus read.
+        
+        // Count character occurrences for current index.
+        for (read_iter = reads.begin(); read_iter != reads.end(); ++read_iter) {
+            // Get index (either i or i'th position from end of mapped seq)
+            index = (strand == Minus)? i : (*read_iter).unmapped_sequence.length() - 1 - i;
+            if (index < 0 || index >= (int) (*read_iter).unmapped_sequence.length()) {
+                continue;
+            }
+            read_count++;
+            
+            char_iter = char_counts.find((*read_iter).unmapped_sequence.at(index));
+            if (char_iter != char_counts.end()) {
+                char_counts[(*char_iter).first] = (*char_iter).second + 1;
+            } else {
+                char_counts[(*read_iter).unmapped_sequence.at(index)] = 1;
+            }
+        }
+        
+        // Get consensus char from counts.
+        char consensus_char = '?';
+        int max_count = 0;
+        for (char_iter = char_counts.begin(); char_iter != char_counts.end(); ++char_iter) {
+            if ((*char_iter).second > max_count) {
+                max_count = (*char_iter).second;
+                consensus_char = (*char_iter).first;
+            }
+        }
+        
+        if (max_count >= MIN_FRACTION_CONSENSUS * read_count) {
+            consensus_ss << consensus_char;
+        } else {
+            // Too much deviating characters at this position.
+            break;
+        }
+    }
+
+    // If needed, reverse the consensus string before returning.
+    std::string output = consensus_ss.str();
+    if (output.length() < (unsigned) MIN_CONSENSUS_LENGTH) {
+        return "";
+    }
+    if (strand == Plus) {
+        std::reverse(output.begin(), output.end());
+    }
+    return output;
+}
+
 
 
 // Returns a breakpoint for a cluster of connected reads.  If no viable
 // breakpoint can be found, it returns a breakpoint with position -1.
 // Note: returned pointer must be deleted by caller.
-static MEI_breakpoint* get_breakpoint(std::vector<simple_read*>* cluster, std::vector<bam_info>& bam_sources,
-                                      int cluster_tid, char cluster_strand, const Chromosome* chromosome) {
+static void get_breakpoints(std::vector<simple_read*>& cluster, std::vector<bam_info>& bam_sources, int insert_size,
+                            int cluster_tid, char cluster_strand, const Chromosome* chromosome, 
+                            std::map<std::string, std::string>& sample_dict, std::vector<MEI_breakpoint>& breakpoints) {
     std::vector<SPLIT_READ> split_reads;
-    int outer_read_pos = cluster_strand? cluster->at(cluster->size()-1)->pos : cluster->at(0)->pos;
+    int outer_read_pos = (cluster_strand == Minus)? cluster.at(cluster.size()-1)->pos : cluster.at(0)->pos;
+    int inner_read_pos = (cluster_strand == Minus)? cluster.at(0)->pos : cluster.at(cluster.size()-1)->pos;
     get_split_reads_for_cluster(bam_sources, cluster_strand, outer_read_pos, chromosome, split_reads);
-        
+    
     // Search for split reads with a mate close to the outer read of the
     // cluster.  Store candidate breakpoints.
     // Todo: speedup by exploiting the fact that both clusters and split reads are sorted
     // by mapping location.
-    std::vector<simple_read> simple_split_reads;
-    std::vector<int> candidate_breakpoints;
+    std::map<int, std::vector<simple_read> > bio_candidate_breakpoints;
     for (size_t i = 0; i < split_reads.size(); i++) {
         SPLIT_READ read = split_reads.at(i);
-        int read_pos = read.MatchedRelPos;
+        
         char anchor_strand = read.MatchedD;
-        if (anchor_strand == Minus) {
-            read_pos -= read.getReadLength();
+        if (cluster_strand != anchor_strand) {
+            continue;
         }
         
-        if (cluster_strand == anchor_strand) {
-            // Anchor mate of current split read is close to cluster, save the breakpoint.
-            int candidate_bp = read.getLastAbsLocCloseEnd();
-            candidate_breakpoints.push_back(get_true_chr_index(candidate_bp));
-
-            // Store the unmatched sequence as it should be matched on the opposite strand of
-            // the mapped mate.
-            std::string whole_sequence;
-            std::string mapped_part;
-            std::string unmapped_part;
-            if (anchor_strand == Plus) {
-                whole_sequence = ReverseComplement(read.getUnmatchedSeq());
-                mapped_part = whole_sequence.substr(0, read.CloseEndLength);
-                unmapped_part = whole_sequence.substr(read.CloseEndLength, whole_sequence.length());
-            } else {
-                whole_sequence = read.getUnmatchedSeq();
-                mapped_part = whole_sequence.substr(whole_sequence.length() - read.CloseEndLength, 
-                                                    whole_sequence.length());
-                unmapped_part = whole_sequence.substr(0, whole_sequence.length() - read.CloseEndLength);
+        unsigned int comp_candidate_bp = read.getLastAbsLocCloseEnd();
+        unsigned int bio_candidate_bp = get_bio_chr_index(comp_candidate_bp);
+        
+        // Check if breakpoint is too far away from cluster.
+        if (cluster_strand == Plus && (bio_candidate_bp < (unsigned) inner_read_pos || 
+                                       bio_candidate_bp > (unsigned) (inner_read_pos + 3 * insert_size))) {
+            continue;
+        } else if (cluster_strand == Minus && (bio_candidate_bp > (unsigned) inner_read_pos || 
+                                               bio_candidate_bp < (unsigned) (inner_read_pos - 3 * insert_size))) {
+            continue;
+        }
+        
+        if (bio_candidate_breakpoints.find(bio_candidate_bp) == bio_candidate_breakpoints.end()) {
+            // New candidate, look ahead to check whether there are enough supporting split reads.
+            int SR_support = 1;
+            for (size_t j = i + 1; j < split_reads.size(); j++) {
+                if (split_reads.at(j).getLastAbsLocCloseEnd() == comp_candidate_bp && 
+                    split_reads.at(j).MatchedD == cluster_strand) {
+                    SR_support++;
+                }
             }
-
-            char strand = (anchor_strand == Plus)? Minus : Plus;
-            // Save the split read contributing to the candidate breakpoint.
-            simple_read simple_split_read(read.Name, cluster_tid, candidate_bp, strand, read.sample_name, 
-                                          whole_sequence, mapped_part, unmapped_part);
-            simple_split_reads.push_back(simple_split_read);
+            if (SR_support < MIN_MEI_BREAKPOINT_SUPPORT) {
+                // Not enough support, skip it.
+                continue;
+            } else {
+                std::vector<simple_read> new_bp_split_reads;
+                bio_candidate_breakpoints.insert(std::make_pair(bio_candidate_bp, new_bp_split_reads));
+            }
         }
-    }
-    
-    LOG_DEBUG(*logStream << time_log() << "Cluster: pos=" << outer_read_pos << " size=" << cluster->size() <<
-              " split_reads=" << simple_split_reads.size() << std::endl);
-    
-    // Return the most frequently occurring candidate.
-    std::vector<int> cb_copy = candidate_breakpoints;
-    sort(cb_copy.begin(), cb_copy.end());
-    int max_count = 0;
-    int current_count = 0;
-    int current = -1;
-    int best = -1;
-    for (size_t i = 0; i < cb_copy.size(); i++) {
-        if (cb_copy.at(i) == current) {
-            current_count += 1;
+        
+        // Store the unmatched sequence as it should be matched on the opposite strand of
+        // the mapped mate.
+        std::string whole_sequence;
+        std::string mapped_part;
+        std::string unmapped_part;
+        if (anchor_strand == Plus) {
+            whole_sequence = ReverseComplement(read.getUnmatchedSeq());
+            mapped_part = whole_sequence.substr(0, read.CloseEndLength);
+            unmapped_part = whole_sequence.substr(read.CloseEndLength, whole_sequence.length());
         } else {
-            current = cb_copy.at(i);
-            current_count = 1;
+            whole_sequence = read.getUnmatchedSeq();
+            mapped_part = whole_sequence.substr(whole_sequence.length() - read.CloseEndLength, 
+                                                whole_sequence.length());
+            unmapped_part = whole_sequence.substr(0, whole_sequence.length() - read.CloseEndLength);
         }
-        if (current_count > max_count) {
-            max_count = current_count;
-            best = current;
-        }
+
+        std::string sample_name;
+        get_sample_name(read.read_group, sample_dict, sample_name);
+        simple_read simple_split_read(read.Name, -1, -1, '?', sample_name, whole_sequence, mapped_part, 
+                                      unmapped_part);
+        (*bio_candidate_breakpoints.find(bio_candidate_bp)).second.push_back(simple_split_read);
     }
     
-    if (max_count < MIN_MEI_BREAKPOINT_SUPPORT) {
-        // No valid breakpoint was found.
-        return new MEI_breakpoint(-1);
-    }
+  
+    char SR_mapping_strand = (cluster_strand == Plus)? Minus : Plus;
     
-    // Link associated discordant reads (all reads from cluster) and split reads.
-    MEI_breakpoint* bp = new MEI_breakpoint(best);
-    bp->cluster_strand = cluster_strand;
-    bp->chromosome_name = chromosome->getName();
-    // Add split reads supporting 'best' candidate breakpoint.
-    for (size_t i = 0; i < candidate_breakpoints.size(); i++) {
-        if (candidate_breakpoints.at(i) == best) {
-            bp->associated_split_reads.push_back(simple_split_reads.at(i));
+    // Remove any split reads for which a far end can be found locally, these are
+    // assumed to contribute to some local variants.
+    // Todo: determine region that is searched for far end.
+    std::map<int, std::vector<simple_read> >::iterator map_iter;
+    for (map_iter = bio_candidate_breakpoints.begin(); map_iter != bio_candidate_breakpoints.end(); ++map_iter) {
+        
+        std::string mapped_consensus = get_consensus_unmapped((*map_iter).second, SR_mapping_strand);
+        std::vector<simple_read> sreads = (*map_iter).second;
+        if (mapped_consensus.length() == 0) {
+            LOG_DEBUG(*logStream << time_log() << "Consensus building failed for split read mapping ends (" << 
+                      map_iter->second.size() << " reads @ " << map_iter->first << ")" << std::endl);
+            continue;
+        }
+        int bio_bp = (*map_iter).first;
+                
+        // If far end consensus is not found in local window, store breakpoint.
+        size_t FE_window_start = std::max(0, get_comp_chr_index(bio_bp) - MIN_MEI_MAP_DISTANCE);
+        size_t FE_window_size = std::min(chromosome->getCompSize() - (unsigned) FE_window_start, 
+                                         2 * (unsigned) MIN_MEI_MAP_DISTANCE);
+        if (!contains_subseq_any_strand(mapped_consensus, chromosome->getSeq().substr(FE_window_start, 
+                FE_window_size), MIN_CONSENSUS_LENGTH)) {
+            MEI_breakpoint bp(cluster_tid, bio_bp, cluster_strand);
+            bp.associated_split_reads = (*map_iter).second;
+
+            // Link associated discordant reads (all reads from cluster) and split reads.
+            std::vector<simple_read*>::iterator read_iter;
+            for (read_iter = cluster.begin(); read_iter != cluster.end(); ++read_iter) {
+                bp.associated_reads.push_back(*(*read_iter));
+            }
+            breakpoints.push_back(bp);
         }
     }
-    for (size_t i = 0; i < cluster->size(); i++) {
-        bp->associated_reads.push_back(*cluster->at(i));
-    }
-    
-    return bp;
 }
+
+
+
+// Generate an estimated breakpoint from mapping positions of discordant reads.  New breakpoint is
+// added to MEI_bps.  This function assumes that objects in cluster are already ordered by position.
+// Another assumption is that there are at least 2 reads in the cluster (i.e. 
+// MIN_MEI_CLUSTER_SIZE > 1).
+void get_breakpoint_estimation(std::vector<simple_read*>& cluster, int insert_size, int cluster_tid, 
+                               char cluster_strand, std::vector<MEI_breakpoint>& MEI_bps) {
+    // Compute average distance between read mapping positions.
+    float dist_mean = 0;
+    int current_dist;
+    for (unsigned int i = 0; i < (cluster.size() - 1); i++) {
+        current_dist = (cluster.at(i+1)->pos + cluster.at(i+1)->sequence.length()) - 
+                       (cluster.at(i)->pos + cluster.at(i)->sequence.length());
+        dist_mean += (1.0 / (i+1)) * (current_dist - dist_mean);
+    }
+    
+    // Take length of first read in cluster as standard value.
+    int read_len = cluster.at(0)->sequence.length();
+    
+    int outer_pos_high = cluster.at(cluster.size()-1)->pos + cluster.at(cluster.size()-1)->sequence.length();
+    int outer_pos_low = cluster.at(0)->pos;
+    
+    // Mapping position furthest to the MEI.
+    int furthest_from_MEI = (cluster_strand == Plus)? outer_pos_low : outer_pos_high;
+
+    // Estimate outer position of cluster and then the breakpoint of the MEI.
+    int estimation;
+    if (cluster_strand == Plus) {
+        estimation = (furthest_from_MEI - dist_mean) + (insert_size - read_len);
+    } else {
+        estimation = (furthest_from_MEI + dist_mean) - (insert_size - read_len);
+    }
+    
+    MEI_breakpoint new_bp(cluster_tid, estimation, cluster_strand);
+    // Link associated discordant reads (all reads from cluster) and split reads.
+    std::vector<simple_read*>::iterator read_iter;
+    for (read_iter = cluster.begin(); read_iter != cluster.end(); ++read_iter) {
+        new_bp.associated_reads.push_back(*(*read_iter));
+    }
+    MEI_bps.push_back(new_bp);
+}
+
 
 
 // See documentation in header file.
 void searchMEIBreakpoints(MEI_data& currentState, std::vector<bam_info>& bam_sources, const Chromosome* chromosome) {
     LOG_DEBUG(*logStream << time_log() << "Start searching for breakpoints..." << std::endl);
-    std::vector<std::vector<simple_read*>*> clusters = cluster_reads(currentState.discordant_reads);
+    std::vector<std::vector<simple_read*> > clusters;
+    cluster_reads(currentState.discordant_reads, currentState.current_insert_size, clusters);
     
     // Find breakpoints per cluster.
     int bp_count = 0;
     for (size_t i = 0; i < clusters.size(); i++) {
         // print cluster debug info
-        std::vector<simple_read*>* cluster = clusters.at(i);
+        std::vector<simple_read*> cluster = clusters.at(i);
         
-        if (cluster->size() < ((size_t) MIN_MEI_CLUSTER_SIZE)) {
+//        LOG_INFO(*logStream << time_log() << "Found cluster of " << cluster.size() << " reads @ " << 
+//                 cluster.at(0)->tid << ", " << cluster.at(0)->pos << std::endl);
+        
+        if (cluster.size() < ((size_t) MIN_MEI_CLUSTER_SIZE)) {
             // Fluke cluster, skip it. (If there are very few reads in the cluster,
             // we likely won't find enough split reads supporting an insertion)
             continue;
         }
+
+//        #if LOG_LEVEL == LOGLEVEL_INFO || LOG_LEVEL == LOGLEVEL_DEBUG
+//        for (size_t i = 0; i < cluster.size(); i++) {
+//            LOG_INFO(*logStream << cluster.at(i)->name << ", " << cluster.at(i)->tid << ", " << cluster.at(i)->pos << 
+//                     ", " << cluster.at(i)->sequence << std::endl);
+//        }
+//        #endif
+
         
         // Find breakpoint for this cluster
-        char cluster_strand = cluster->at(0)->strand;
-        int cluster_tid = cluster->at(0)->tid;
-        MEI_breakpoint* MEI_bp = get_breakpoint(cluster, bam_sources, cluster_tid, cluster_strand, chromosome);
-        // Check breakpoint validity.
-        if (MEI_bp->breakpoint_pos >= 0) {
-            currentState.MEI_breakpoints.push_back(*MEI_bp);
-            bp_count += 1;
+        char cluster_strand = cluster.at(0)->strand;
+        int cluster_tid = cluster.at(0)->tid;
+        std::vector<MEI_breakpoint> MEI_bps;
+        std::vector<MEI_breakpoint>::iterator MEI_iter;
+        get_breakpoints(cluster, bam_sources, currentState.current_insert_size, cluster_tid, cluster_strand, chromosome,
+                        currentState.sample_names, MEI_bps);
+        if (MEI_bps.size() > 1) {
+            // More than one breakpoints found for current cluster.  Select only the one with the
+            // most split reads supporting it.
+            size_t best_support = 0;
+            MEI_breakpoint best_bp;
+            for (MEI_iter = MEI_bps.begin(); MEI_iter != MEI_bps.end(); ++MEI_iter) {
+                if (MEI_iter->associated_split_reads.size() > best_support) {
+                    best_bp = *MEI_iter;
+                    best_support = MEI_iter->associated_split_reads.size();
+                }
+            }
+            MEI_bps.clear();
+            MEI_bps.push_back(best_bp);
+        } else if (MEI_bps.size() == 0) {
+            // No breakpoint found with split read support.  Estimate breakpoint from cluster reads.
+            get_breakpoint_estimation(cluster, currentState.current_insert_size, cluster_tid, cluster_strand, MEI_bps);
         }
-        delete MEI_bp;
+        // Check breakpoint validity.
+        for (MEI_iter = MEI_bps.begin(); MEI_iter != MEI_bps.end(); ++MEI_iter) {
+            currentState.MEI_breakpoints.push_back(*MEI_iter);
+            bp_count += 1;
+            LOG_INFO(*logStream << "Found potential MEI breakpoint: " << (*MEI_iter).breakpoint_tid << ", " <<
+                     (*MEI_iter).breakpoint_pos << ", " << (*MEI_iter).associated_reads.size() << ", " << 
+                     (*MEI_iter).associated_split_reads.size() << std::endl);
+        }
     }
     LOG_DEBUG(*logStream << time_log() << "Found " << bp_count << " breakpoints for " << clusters.size() <<
               " clusters." << std::endl);
@@ -311,8 +463,9 @@ static std::vector<std::pair<simple_read, simple_read> > get_shared_reads(MEI_br
     std::vector<std::pair<simple_read, simple_read> > output;
     for (size_t i = 0; i < bp1.associated_reads.size(); i++) {
         for (size_t j = 0; j < bp2.associated_reads.size(); j++) {
-            // Check if reads from both breakpoints have the same name.
-            if (base_read_name(bp1.associated_reads.at(i).name) == base_read_name(bp2.associated_reads.at(j).name)) {
+            // Check if reads from both breakpoints are mates.
+            if (base_read_name(bp1.associated_reads.at(i).name) == base_read_name(bp2.associated_reads.at(j).name) &&
+                bp1.associated_reads.at(i).name != bp2.associated_reads.at(j).name) {
                 std::pair<simple_read, simple_read> share(bp1.associated_reads.at(i), bp2.associated_reads.at(j));
                 output.push_back(share);
             }
@@ -337,6 +490,7 @@ static bool refer_to_same_event(MEI_breakpoint& bp1, MEI_breakpoint& bp2) {
 class MEI_event {
 public:
     MEI_event(MEI_breakpoint bp1, MEI_breakpoint bp2) : fwd_cluster_bp(bp1), rev_cluster_bp(bp2) {};
+    
     MEI_breakpoint fwd_cluster_bp; // bp estimated from cluster on forward strand.
     MEI_breakpoint rev_cluster_bp; // bp estimated from cluster on reversed strand.
 
@@ -350,7 +504,8 @@ public:
 
 static void report_supporting_reads(std::vector<simple_read>& reads, std::map<int, std::string>& seq_name_dict,
                                     std::ostream& out) {
-    out << "# All supporting sequences for this insertion:" << std::endl;
+    out << "# All supporting sequences for this insertion (i.e. sequences that map inside the inserted element):" << 
+            std::endl;
     sort(reads.begin(), reads.end(), comp_simple_read_pos);
     std::vector<simple_read>::iterator support_iter;
     for (support_iter = reads.begin(); support_iter != reads.end(); ++support_iter) {
@@ -436,7 +591,11 @@ static void get_bp_supporting_reads(MEI_breakpoint& breakpoint, std::vector<MEI_
 
 // Output split reads at breakpoint, position reads based on close end mapping.
 static void report_split_read_support(Genome& genome, MEI_breakpoint& breakpoint, bool fiveprime_end,
-                                      std::ostream& out) {
+                                      std::map<int, std::string>& seq_name_dict, std::ostream& out) {
+    if (breakpoint.associated_split_reads.size() == 0) {
+        // No split reads to report.
+        return;
+    }
     
     // Sort on length of mapped part.
     sort(breakpoint.associated_split_reads.begin(), breakpoint.associated_split_reads.end(), comp_simple_read_mapsize);
@@ -456,9 +615,8 @@ static void report_split_read_support(Genome& genome, MEI_breakpoint& breakpoint
     
     // Get reference sequence at breakpoint location.
     int offset = (fiveprime_end)? 1 : 0;
-    std::string reference = get_fasta_subseq(genome, breakpoint.chromosome_name, 
-                                             breakpoint.breakpoint_pos - base + offset, base + end);
-    
+    std::string reference = get_fasta_subseq(genome, seq_name_dict.at(breakpoint.breakpoint_tid), 
+                                             breakpoint.breakpoint_pos - base + offset, base + end);    
     // Output local reference sequence.
     set_reference_highlight(reference, base, fiveprime_end);
     std::string REFERENCE_PREFIX = "Reference: ";
@@ -483,18 +641,8 @@ static void report_split_read_support(Genome& genome, MEI_breakpoint& breakpoint
 
 
 // Report MEI events.
-static void reportMEIevents(MEI_data& mei_data, std::vector<MEI_event>& insertion_events, Genome& genome,
+static void reportMEIevent(MEI_data& mei_data, MEI_event& event, int MEI_count, Genome& genome,
                             std::map<int, std::string>& seq_name_dict, std::ostream& out) {
-    int MEI_counter = 0;
-    for (size_t i = 0; i < insertion_events.size(); i++) {
-        MEI_event event = insertion_events.at(i);
-        
-        LOG_DEBUG(*logStream << time_log() << 
-                  "reporting MEI: #fwd.disc.: " << event.fwd_cluster_bp.associated_reads.size() <<
-                  ", #fwd.split: " << event.fwd_cluster_bp.associated_split_reads.size() <<
-                  ", #rev.disc.: " << event.rev_cluster_bp.associated_reads.size() <<
-                  ", #rev.split: " << event.rev_cluster_bp.associated_split_reads.size() << std::endl);
-        
         // Gather all supporting reads for current event.
         std::vector<simple_read> fwd_reads;
         std::vector<simple_read> rev_reads;
@@ -516,82 +664,104 @@ static void reportMEIevents(MEI_data& mei_data, std::vector<MEI_event>& insertio
             }
         }
         
-        // Todo: Get lower bound on size of element.
-        int summed_contig_span = 0;
+        LOG_DEBUG(*logStream << time_log() << 
+                  "reporting MEI: #fwd.disc.: " << (fwd_reads.size() - fwd_split_count) <<
+                  ", #fwd.split: " << fwd_split_count <<
+                  ", #rev.disc.: " << (rev_reads.size() - rev_split_count) <<
+                  ", #rev.split: " << rev_split_count << std::endl);
         
         out << "####################################################################################################" << std::endl;
         // Print machine summary line.
-        out << MEI_counter << "\t" << "MEI" << "\t" << event.fwd_cluster_bp.chromosome_name << "\t" << 
-               event.fwd_cluster_bp.breakpoint_pos << "\t" << event.rev_cluster_bp.breakpoint_pos << "\t" <<
-               summed_contig_span << "\t" << all_reads.size() << "\t" << (fwd_reads.size() - fwd_split_count) << "\t" <<
-               fwd_split_count << "\t" << (rev_reads.size() - rev_split_count) << "\t" << rev_split_count << std::endl;
+        out << MEI_count << "\t" << "MEI" << "\t";
+        out << seq_name_dict.at(event.fwd_cluster_bp.breakpoint_tid) << "\t" << 
+               event.fwd_cluster_bp.breakpoint_pos << "\t" << event.rev_cluster_bp.breakpoint_pos;
+        out << "\t" << all_reads.size() << "\t" << 
+               (fwd_reads.size() - fwd_split_count) << "\t" << fwd_split_count << "\t" <<
+               (rev_reads.size() - rev_split_count) << "\t" << rev_split_count << std::endl;
         // Print human-readable summary lines.
         out << COMMENT_PREFIX << "Mobile element insertion (MEI) found on chromosome '" << 
-               event.fwd_cluster_bp.chromosome_name << "', breakpoint at " << event.fwd_cluster_bp.breakpoint_pos << 
-               " (estimated from + strand), " << event.rev_cluster_bp.breakpoint_pos << " (estimated from - strand)," <<
-               " the inserted element is at least " << summed_contig_span << " bp long." << std::endl;
+               seq_name_dict.at(event.fwd_cluster_bp.breakpoint_tid) << "', breakpoint at " << 
+               event.fwd_cluster_bp.breakpoint_pos << " (estimated from + strand), " <<
+               event.rev_cluster_bp.breakpoint_pos << " (estimated from - strand)" << std::endl;
         out << COMMENT_PREFIX << "Found " << all_reads.size() << " supporting reads, of which " <<
                (fwd_reads.size() - fwd_split_count) << " discordant reads and " << fwd_split_count << 
                " split reads at 5' end, " << (rev_reads.size() - rev_split_count) << " discordant reads and " <<
                rev_split_count << " split reads at 3' end." << std::endl;
-        
+
         // Print support for breakpoint at 5' end.
         out << COMMENT_PREFIX << "Supporting reads for insertion location (5' end):" << std::endl;
-        report_split_read_support(genome, event.fwd_cluster_bp, true, out);
-        
+        report_split_read_support(genome, event.fwd_cluster_bp, true, seq_name_dict, out);
         // Print support for breakpoint at 3' end.
         out << COMMENT_PREFIX << "Supporting reads for insertion location (3' end):" << std::endl;
-        report_split_read_support(genome, event.rev_cluster_bp, false, out);
+        report_split_read_support(genome, event.rev_cluster_bp, false, seq_name_dict, out);
         
         // Print all supporting reads and read fragments for the inserted element.
         report_supporting_reads(all_reads, seq_name_dict, out);
-        MEI_counter++;
-    }
 }
 
 
-// See documentation in header file.
+bool comp_breakpoint_pos(const MEI_breakpoint& bp1, const MEI_breakpoint& bp2) {
+    return bp1.breakpoint_tid < bp2.breakpoint_tid || 
+           (bp1.breakpoint_tid == bp2.breakpoint_tid && bp1.breakpoint_pos < bp2.breakpoint_pos);
+}
+
+
 void searchMEI(MEI_data& finalState, Genome& genome, std::map<int, std::string>& seq_name_dict, std::ostream& out) {
-    LOG_DEBUG(*logStream << time_log() << "Start calling MEI events from found breakpoints..." << std::endl);
+    LOG_INFO(*logStream << time_log() << "Start calling MEI events from found breakpoints..." << std::endl);
     std::vector<MEI_event> insertion_events;
     
-    LOG_DEBUG(*logStream << time_log() << "Examining " << finalState.MEI_breakpoints.size() << 
-              " breakpoints in total." << std::endl);
-    // Loop over all breakpoint combinations to see if they refer to the same
-    // insertion event.
-    for (size_t i = 0; i < finalState.MEI_breakpoints.size(); i++) {
-        for (size_t j = i+1; j < finalState.MEI_breakpoints.size(); j++) {
-            
-            MEI_breakpoint& bp1 = finalState.MEI_breakpoints.at(i);
-            MEI_breakpoint& bp2 = finalState.MEI_breakpoints.at(j);
-            
-            if (refer_to_same_event(bp1, bp2)) {
-                // Current 2 selected breakpoints refer to same event.
-                
-                MEI_event event = (bp1.cluster_strand == Plus)? MEI_event(bp1, bp2) : MEI_event(bp2, bp1);
-                
-                // Find other clusters (with bp) that contain mates of reads in current inserted element.
-                for (size_t k = 0; k < finalState.MEI_breakpoints.size(); k++) {
-                    if (k == i || k == j) {
-                        // Avoid connecting a cluster to one of the same event.
-                        continue;
-                    }
-                    MEI_breakpoint& bp_connect = finalState.MEI_breakpoints.at(k);
-                    if (get_shared_reads(event.fwd_cluster_bp, bp_connect).size() > 0) {
-                        event.fwd_cluster_connections.push_back(bp_connect);
-                    } else if (get_shared_reads(event.rev_cluster_bp, bp_connect).size() > 0) {
-                        event.rev_cluster_connections.push_back(bp_connect);
-                    }
+    size_t bp_amount = finalState.MEI_breakpoints.size();
+    LOG_INFO(*logStream << time_log() << "Examining " << bp_amount << 
+             " breakpoints in total." << std::endl);
+    
+    std::sort(finalState.MEI_breakpoints.begin(), finalState.MEI_breakpoints.end(), comp_breakpoint_pos);
+    LOG_INFO(*logStream << time_log() << "Sorted breakpoints." << std::endl);
+    
+    int MEI_counter = 0;
+    
+    for (size_t i = 0; i < (bp_amount-1); i++) {
+        if (finalState.MEI_breakpoints.at(i).cluster_strand == Minus ||
+            finalState.MEI_breakpoints.at(i+1).cluster_strand != Minus ||
+            (finalState.MEI_breakpoints.at(i+1).breakpoint_pos - finalState.MEI_breakpoints.at(i).breakpoint_pos) > 
+                MAX_MEI_BREAKPOINT_DISTANCE ||
+            finalState.MEI_breakpoints.at(i).breakpoint_tid != finalState.MEI_breakpoints.at(i+1).breakpoint_tid) {
+            // Current two consecutive breakpoints cannot be combined into an event.
+            continue;
+        }
+        
+        MEI_event event(finalState.MEI_breakpoints.at(i), finalState.MEI_breakpoints.at(i+1));
+        
+        
+        // Find other clusters (with bp) that contain mates of reads in current inserted element.
+        for (size_t k = 0; k < bp_amount; k++) {
+            if (k == i || k == (i+1)) {
+                // Avoid connecting a cluster to one of the same event.
+                continue;
+            }
+            MEI_breakpoint bp_connect = finalState.MEI_breakpoints.at(k);
+            if (get_shared_reads(event.fwd_cluster_bp, bp_connect).size() > 0) {
+                try {
+                    event.fwd_cluster_connections.push_back(bp_connect);
+                } catch (std::bad_alloc& ex) {
+                    LOG_ERROR(*logStream << time_log() << " bad allocation: could not push back forward connection.");
+                    exit(921);
                 }
-                insertion_events.push_back(event);
+            } else if (get_shared_reads(event.rev_cluster_bp, bp_connect).size() > 0) {
+                try {
+                    event.rev_cluster_connections.push_back(bp_connect);
+                } catch (std::bad_alloc& ex) {
+                    LOG_ERROR(*logStream << time_log() << " bad allocation: could not push back reverse connection.");
+                    exit(922);
+                }
             }
         }
+        
+        reportMEIevent(finalState, event, MEI_counter, genome, seq_name_dict, out);
+        MEI_counter++;
     }
-    LOG_DEBUG(*logStream << time_log() << "Found " << insertion_events.size() << " MEI events." << std::endl);
-    
-    // Report MEI events constructed from pairing breakpoints.
-    reportMEIevents(finalState, insertion_events, genome, seq_name_dict, out);
+    LOG_INFO(*logStream << time_log() << "Found " << MEI_counter << " MEI events." << std::endl);
 }
+
 
 
 //#####################################################################################
@@ -618,7 +788,10 @@ static int fetch_disc_read_callback(const bam1_t* alignment, void* data) {
         std::string read_name = enrich_read_name(bam1_qname(alignment), alignment->core.flag & BAM_FREAD1);
         char strand = bam1_strand(alignment)? Minus : Plus;
         char mate_strand = bam1_mstrand(alignment)? Minus : Plus;
-        std::string sample_name = get_sample_name(alignment, mei_data->sample_names);    
+        std::string read_group;
+        get_read_group(alignment, read_group);
+        std::string sample_name;
+        get_sample_name(read_group, mei_data->sample_names, sample_name);    
         
         simple_read* read = new simple_read(read_name, alignment->core.tid, alignment->core.pos, strand, sample_name,
                                             get_sequence(bam1_seq(alignment), alignment->core.l_qseq), 
@@ -688,7 +861,6 @@ std::map<int, std::string> get_sequence_name_dictionary(ControlState& state) {
 
 // This function is based on Pindel's main function.  Todo: integrate with pindel's main structure.
 int searchMEImain(ControlState& current_state, Genome& genome, UserDefinedSettings* userSettings) {
-
     std::ofstream file_output(userSettings->getMEIOutputFilename().c_str());
     MEI_data mei_data;
     int result;
@@ -708,9 +880,9 @@ int searchMEImain(ControlState& current_state, Genome& genome, UserDefinedSettin
         LoopingSearchWindow currentWindow(userSettings->getRegion(), currentChromosome, WINDOW_SIZE); 
         // loop over one chromosome
         do {
-            LOG_DEBUG(*logStream << time_log() << "MEI detection current window: " <<
-                      currentWindow.getChromosomeName() << " " << currentWindow.getStart() << "--" <<
-                      currentWindow.getEnd() << std::endl);
+            LOG_INFO(*logStream << time_log() << "MEI detection current window: " <<
+                     currentWindow.getChromosomeName() << " " << currentWindow.getStart() << "--" <<
+                     currentWindow.getEnd() << std::endl);
             result = load_discordant_reads(mei_data, current_state.bams_to_parse, currentChromosome->getName(),
                                            currentWindow);
             if (result) {
@@ -719,7 +891,7 @@ int searchMEImain(ControlState& current_state, Genome& genome, UserDefinedSettin
             }
             
             searchMEIBreakpoints(mei_data, current_state.bams_to_parse, currentChromosome);
-            mei_data.discordant_reads.clear();
+            cleanup_reads(mei_data.discordant_reads);
             currentWindow.next();
             
         } while (!currentWindow.finished());

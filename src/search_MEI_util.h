@@ -35,6 +35,8 @@ bool comp_simple_read_pos(const simple_read& read1, const simple_read& read2);
 
 bool comp_simple_read_mapsize(const simple_read& read1, const simple_read& read2);
 
+bool comp_simple_read_unmapped_seqsize(const simple_read& read1, const simple_read& read2);
+
 void print_read(simple_read read);
 
 std::string enrich_read_name(char* base_name, bool is_first_read);
@@ -43,14 +45,26 @@ std::string base_read_name(std::string& enriched_read_name);
 
 std::string get_sequence(uint8_t* sam_seq, int sam_seq_len);
 
-int get_safe_chr_index(int true_index);
+int get_comp_chr_index(int true_index);
 
-int get_true_chr_index(int safety_index);
+int get_bio_chr_index(int safety_index);
 
 std::string get_fasta_subseq(Genome& genome, std::string& chr_name, int chr_position, int subsequence_length);
 
 bool comp_indexed_read(std::pair<simple_read, int> read1, std::pair<simple_read, int> read2);
 
 std::string get_whitespace(unsigned int amount);
+
+bool contains_subseq(const std::string& query, const std::string& db, int min_length);
+
+bool contains_subseq_any_strand(const std::string& query, const std::string& db, int min_score=12);
+
+// Construct a mapping from read group ID to sample name given a BAM header.
+std::map<std::string, std::string> get_sample_dictionary(bam_header_t* header);
+
+void get_sample_name(std::string& read_group, std::map<std::string, std::string>& sample_dictionary, 
+                     std::string& sample_name);
+
+void cleanup_reads(std::vector<simple_read*>& read_vector);
 
 #endif

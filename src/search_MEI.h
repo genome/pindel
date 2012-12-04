@@ -66,6 +66,7 @@ public:
 
 class MEI_breakpoint {
 public:
+    MEI_breakpoint() {};
     MEI_breakpoint(int breakpoint_pos) : breakpoint_pos(breakpoint_pos) {};
     MEI_breakpoint(int breakpoint_tid, int breakpoint_pos, char cluster_strand) : 
     breakpoint_tid(breakpoint_tid), breakpoint_pos(breakpoint_pos), cluster_strand(cluster_strand) {};

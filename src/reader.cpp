@@ -32,7 +32,6 @@
 #include "kseq.h"
 #include "khash.h"
 #include "ksort.h"
-#include "sam_header.h"
 
 // Pindel header files
 #include "logstream.h"
@@ -99,9 +98,6 @@ struct fetch_func_data_SR {
    const std::string * CurrentChrSeq;
    std::string Tag;
    int InsertSize;
-    
-    // Map linking read groups to sample names for current bam file.
-    std::map<std::string, std::string> sample_dictionary;
 };
 
 struct fetch_func_data_RP {
@@ -140,52 +136,13 @@ struct fetch_func_data_RP {
 };
 
 
-// Set up map linking read group ids with sample names.
-std::map<std::string, std::string> get_sample_dictionary(bam_header_t* header) {
-    std::map<std::string, std::string> sample_dict;
-    int num_ids;
-    int num_names;
-    char** tmp_ids;
-    if (header->dict == 0) header->dict = sam_header_parse2(header->text);
-    // Convert string literals to char* to feed into samtools api.
-    char* rg_tag = new char[3];
-    strncpy(rg_tag, "RG", 2); 
-    rg_tag[2] = '\0';
-    char* id_tag = new char[3];
-    strncpy(id_tag, "ID", 2);
-    id_tag[2] = '\0';
-    char* sm_tag = new char[3];
-    strncpy(sm_tag, "SM", 2);
-    id_tag[2] = '\0';
-    tmp_ids = sam_header2list(header->dict, rg_tag, id_tag, &num_ids);
-    char** tmp_names;
-    tmp_names = sam_header2list(header->dict, rg_tag, sm_tag, &num_names);
-    if (num_ids > 0 && num_ids == num_names) {
-        for (int i = 0; i < num_ids; i++) {
-            sample_dict.insert(std::make_pair(tmp_ids[i], tmp_names[i]));
-        }
-    }
-    delete rg_tag;
-    delete id_tag;
-    delete sm_tag;
-    return sample_dict;
-}
-
 
 // Return sample name for given alignment, according to known read group to sample mapping.
-std::string get_sample_name(const bam1_t* alignment, std::map<std::string, std::string>& sample_dictionary) {
-    std::string sample_name = "";
+void get_read_group(const bam1_t* alignment, std::string& read_group) {
     uint8_t* s = bam_aux_get(alignment, "RG");
     if (s != NULL) {
-        std::string read_group = bam_aux2Z(s);
-        try {
-            sample_name = sample_dictionary.at(read_group);
-        } catch (std::exception& e) {
-            // Read group id not found in mapping. todo: increase severity of warning?
-            LOG_DEBUG(*logStream << "Could not find sample name for read group: " << read_group << std::endl);
-        }
+        read_group = bam_aux2Z(s);
     }
-    return sample_name;
 }
 
 
@@ -536,7 +493,6 @@ bool ReadInBamReads_SR (const char *bam_path, const std::string & FragName,
    data.InsertSize = InsertSize;
    data.Tag = Tag;
    data.readBuffer=&readBuffer;
-   data.sample_dictionary = get_sample_dictionary(header);
    // std:: cout << " before bam_fetch " << std::endl;
    bam_fetch (fp, idx, tid, window.getStart(), window.getEnd(), &data, fetch_func_SR);
    // std:: cout << " after bam_fetch " << std::endl;
@@ -645,7 +601,7 @@ void build_record_SR (const bam1_t * mapped_read, const bam1_t * unmapped_read, 
     }
     
     // Determine sample name for read.
-    Temp_One_Read.sample_name = get_sample_name(mapped_read, data_for_bam->sample_dictionary);
+    get_read_group(mapped_read, Temp_One_Read.read_group);
     
     //if (Temp_One_Read.Name == "@DD7DT8Q1:4:1106:17724:13906#GTACCT/1") {
     //    std::cout << "I am here." << std::endl;

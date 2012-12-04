@@ -52,10 +52,7 @@ short get_RP_Reads_Discovery(ControlState& currentState, const SearchWindow& cur
 //short get_RP_Reads(ControlState& currentState, const SearchWindow& currentWindow );
 //void readInPindelReads(PindelReadReader &reader, const std::string& pindelFilename, ControlState& currentState, const SearchWindow& currentWindow  );
 
-// Construct a mapping from read group ID to sample name given a BAM header.
-std::map<std::string, std::string> get_sample_dictionary(bam_header_t* header);
-
-// Return sample name for given alignment, according to known read group to sample mapping.
-std::string get_sample_name(const bam1_t* alignment, std::map<std::string, std::string>& sample_dictionary);
+// Get the read group ID as a string for an alignment.
+void get_read_group(const bam1_t* alignment, std::string& read_group);
 
 #endif /* READER_H */

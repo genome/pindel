@@ -251,7 +251,7 @@ struct SPLIT_READ {
 		LeftMostPos = 0;
         CloseEndMismatch = 0;
         FarEndMismatch = 0;
-        sample_name = "";
+        read_group = "";
 	}
 	std::string FragName;
    std::string FarFragName;
@@ -297,7 +297,7 @@ struct SPLIT_READ {
     short FarEndMismatch;
 	int LeftMostPos;
     std::map <std::string, int> ReadCountPerSample;
-    std::string sample_name;
+    std::string read_group;
 
 	unsigned int getLastAbsLocCloseEnd() const;
 	bool goodFarEndFound() const;
