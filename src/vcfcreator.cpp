@@ -4,11 +4,16 @@
 	This version sorts the records before outputting; may need to make version that uses external memory later!
 
    Created by Eric-Wubbo Lameijer, section of Molecular Epidemiology, Leiden University Medical Center, March 3rd, 2011.
-	e.m.w.lameijer@lumc.nl
-	+31(0)71-526 9745
+	e.m.w.lameijer@gmail.com
+	+31(0)71-5 125 831
 
+	Version 0.5.5 [December 10th, 2012] Modified the code so that LI / -P now gives correct GT:AD instead of GT:RD:AD output. Also fixed small bug in creating ALT of NT-inversions
+	Version 0.5.4 [December 6th, 2012] Error found by David Hannah on using the -P option debugged
+   Version 0.5.3 [November 8th, 2012] Now should genotype newer pindel output as 0/0, 1/1 or 0/1 based on apparent balance between alleles
+	Version 0.5.2 [November 8th, 2012] Bugs removed from 0.5.1 and added GT:RD:AD output to show reference coverage
+	Version 0.5.1 [October 31st, 2012] Now also compatible with Pindel's new output format
 	Version 0.5.0 [July 9th, 2012] removed small error that caused the -c option to process all other chromosomes as well...
-	Version 0.4.9 [July 2nd, 2012] added -P option to allow fusing all output files of one pindel run 
+	Version 0.4.9 [July 2nd, 2012] added -P option to allow fusing all output files of one pindel run
 	Version 0.4.8 [July 2nd, 2012] debugged .:10 genotype (due to 'dual-encoding' of genotype, while Pindel not having actual chromosome data
 	Version 0.4.7 [June 21th, 2012] LI now also have proper labels <as per updated Pindel>
 	Version 0.4.6 [June 20th, 2012] END-position now proper according to http://www.1000genomes.org/wiki/Analysis/Variant%20Call%20Format/vcf-variant-call-format-version-41, access date June 20, 2012
@@ -25,17 +30,17 @@
 	Version 0.3.5 [June 1st, 2012] Refined microhomology/microsattelite sequencing to distinguish internal repeats and 'postindel' repeats
 	Version 0.3.4 [May 21st, 2012] Alternative homology calling; now checks whether inserted/deleted sequence is part of a longer repetitive sequence
 	Version 0.3.3 [May 2nd, 2012] Debugged -sb/-ss option: now works if 1 sample is selected
-	Version 0.3.2 [May 1st, 2012] Adds -sb and -ss options to allow users to only count samples with sufficient individual support. 
+	Version 0.3.2 [May 1st, 2012] Adds -sb and -ss options to allow users to only count samples with sufficient individual support.
 	Version 0.3.1 [March 27th, 2012] -c option now works!
 	Version 0.3.0 [March 27th, 2012] now also works correctly for small inversions (as NT is then only "TG", gave wrong code, ACA ATGTGTG instead of ACA ATG
 	Version 0.2.9 [March 27th, 2012] Adds an option for counting samples only if they are balanced with at least N reads on each side
    Version 0.2.8 [March 2nd, 2012] Now does not skip chromosome when compiling long insertions
 	Version 0.2.7 [March 2nd, 2012] Skip chromosomes in which Pindel has not called any SVs
-	Version 0.2.6 [March 2nd, 2012] Fixed problem in which chromosome was not properly freed from memory 
+	Version 0.2.6 [March 2nd, 2012] Fixed problem in which chromosome was not properly freed from memory
 	Version 0.2.5 [March 2nd, 2012] Fixed segmentation fault error when there are no reads in a chromosome
 	Version 0.2.4 [February 6th, 2012] Can save memory at the cost of time by implementing a window-size option.
 	Version 0.2.3 [February 6th, 2012] More memory-efficient by not explicitly storing REF and ALT strings, but by using recalculation instead of storage
-	Version 0.2.1 [January 3rd, 2012] Now also correctly reads in fasta files which do not only contain uppercase characters. 
+	Version 0.2.1 [January 3rd, 2012] Now also correctly reads in fasta files which do not only contain uppercase characters.
 	Version 0.2.0 [November 10th, 2011. The support of an indel, previously called "DP" is now more appropriately called "AD".
 					    Also, genotypes are somewhat more correctly indicated with . and 1/.
                                             Also, replaces -1 by . to indicate unknown number of fields in the declarations in the header
@@ -63,6 +68,7 @@ CHAPTER 2. Defining the parameters and the 'Parameter class' to handle them.
 #include <vector>
 
 #include <ctype.h> // tolower
+#include <math.h> //sqrt
 #include <stdlib.h> // for atoi
 #include <time.h>
 
@@ -70,12 +76,12 @@ const int FIRST_SAMPLE_INDEX = 32; // index of first sample name
 
 using namespace std;
 
-string g_versionString = "0.5.0";
+string g_versionString = "0.5.5";
 string g_programName = "pindel2vcf";
 
 bool g_normalBaseArray[256];
 
-/* the global parameter g_par stores the values of all parameters set by the user; the Parameter class, in contrast, is for user-friendly IO. */ 
+/* the global parameter g_par stores the values of all parameters set by the user; the Parameter class, in contrast, is for user-friendly IO. */
 struct ParameterSettings {
    string reference;
    string referenceName;
@@ -96,12 +102,14 @@ struct ParameterSettings {
    int maxInterRepeatNo;
    int maxInterRepeatLength;
    int maxPostRepeatNo;
-   int maxPostRepeatLength;	
+   int maxPostRepeatLength;
 	bool onlyBalancedSamples;
 	int minimumStrandSupport;
    bool showHelp;
 	bool gatkCompatible;
 } g_par;
+
+bool pindel024uOrLater = false;
 
 /*** END OF PREFACE: include files and global constants ***/
 
@@ -156,7 +164,7 @@ private:
 	void moveToNextFile();
 };
 
-string InputReader::getLine() 
+string InputReader::getLine()
 {
 	if (canReadMore()) {
 		string line;
@@ -174,7 +182,7 @@ bool InputReader::canReadMore()
 	if (m_currentFile && !m_currentFile.eof()) {
 		return true;
 	}
-	
+
 	while (!m_currentFile || m_currentFile.eof()) {
 		moveToNextFile();
 		if (!m_readable) { break; } // final EOF
@@ -188,8 +196,8 @@ void InputReader::moveToNextFile()
 	if (m_nextFileIndex<m_filenames.size()) {
 		m_currentFile.close();
 		m_currentFile.open( m_filenames[ m_nextFileIndex ].c_str() );
-		m_nextFileIndex++;	
-	} 
+		m_nextFileIndex++;
+	}
 	else {
 		m_readable = false;
 	}
@@ -503,16 +511,13 @@ void Chromosome::readFromFile()
       getline(referenceFile,currentLine);
       while (!referenceFile.eof() && currentLine[0]!='>') {
          if (refName == d_identifier ) {
-				
+
             tempChromosome += convertToUppercase( currentLine );
          }
          getline(referenceFile,currentLine);
       }
       makeStrangeBasesN(tempChromosome);
-      if (d_sequence == NULL)
-         d_sequence = new string( tempChromosome );
-      else
-         *d_sequence = tempChromosome;
+		d_sequence = new string( tempChromosome );
       refLine = currentLine;
    }
    while (!referenceFile.eof() && !targetChromosomeRead);
@@ -591,6 +596,9 @@ void createHeader(ofstream &outFile, const string& sourceProgram, const string& 
    //outFile << "##ALT=<ID=INV,Description=\"Inversion\">" << endl;
    //outFile << "##ALT=<ID=CNV,Description=\"Copy number variable region\">" << endl;
    outFile << "##FORMAT=<ID=GT,Number=1,Type=String,Description=\"Genotype\">" << endl;
+	if (pindel024uOrLater) {
+	   outFile << "##FORMAT=<ID=RD,Number=1,Type=Integer,Description=\"Reference depth, how many reads support the reference\">" << endl;
+	}
    outFile << "##FORMAT=<ID=AD,Number=1,Type=Integer,Description=\"Allele depth, how many reads support this allele\">" << endl;
 
    // headers of columns
@@ -665,12 +673,13 @@ class Genotype
 
 public:
    Genotype();
-   Genotype( int readDepthPlus, int readDepthMinus );
+   Genotype( const int readDepthPlus, const int readDepthMinus, const int totalRefSupport );
    void fuse( const Genotype& gt );
    void reset() {
       d_readDepthPlus=0;
       d_readDepthMinus=0;
-   }
+   	d_totalRefSupport = 0;
+	}
    int getReadDepthPlus() const {
       return d_readDepthPlus;
    }
@@ -681,53 +690,139 @@ public:
       return ( d_readDepthPlus + d_readDepthMinus ) ;
    }
 
+	int getAverageRefSupport() const {
+		return d_totalRefSupport / 2;
+	}
+
+	int getTotalRefSupport() const {
+		return d_totalRefSupport;
+	}
+	const string getGTRDAD() const;
+	const string getGTAD() const;
+
 private:
    int d_readDepthPlus;
    int d_readDepthMinus;
+	int d_totalRefSupport;
+	const string getGTold() const;
+	const string getGTnew() const;
 };
 
 Genotype::Genotype()
 {
-   Genotype( 0, 0 );
+   Genotype( 0, 0, 0 );
 }
 
-Genotype::Genotype( int readDepthPlus, int readDepthMinus )
+Genotype::Genotype( const int readDepthPlus, const int readDepthMinus, const int totalRefSupport )
 {
    d_readDepthPlus = readDepthPlus;
    d_readDepthMinus = readDepthMinus;
+	d_totalRefSupport = totalRefSupport;
 }
 
 void Genotype::fuse( const Genotype& gt )
 {
    d_readDepthPlus += gt.d_readDepthPlus;
    d_readDepthMinus += gt.d_readDepthMinus;
+	d_totalRefSupport += gt.d_totalRefSupport;
 }
 
-ostream& operator<<(ostream& os, const Genotype& gt)
+/** 'balanced' returns whether the a and b seem derived from a normal genomic binomial distribution of a and b, chance should be over 95% that the distribution is believable given heterozygosy (theoretically, as many
+     reference strands as event strands. */
+bool balanced( const unsigned int a, const unsigned int b)
+{
+    if (a==b) { return true; }
+    unsigned int smallest = min( a, b );
+    unsigned int largest = max( a, b);
+    unsigned int sum = a + b;
+    if (sum>22) { return (smallest >= (sum/2) - sqrt( sum )); }
+    else if (sum>19) { return ( smallest >= 6 ); }
+    else if (sum>16) { return ( smallest >= 5 ); }
+    else if (sum>14) { return ( smallest >= 4 ); }
+    else if (sum>11) { return ( smallest >= 3 ); }
+    else if (sum>8) { return ( smallest >= 2 ); }
+    else if (sum>5) { return ( smallest >= 1 ); }
+    else return true;
+}
+
+string deriveGenotype( const Genotype& rawGenotype )
+			// we may want to replace this simple logic by a function that assesses if reference support and event support are balanced, like 'isBalanced( eventSupp, refSupp );
+{
+	int totalEventReads = rawGenotype.getTotalReads();
+	int totalReferenceReads = rawGenotype.getAverageRefSupport();
+
+	if (totalEventReads == 0 ) {
+		if (totalReferenceReads == 0) {
+			return ".";
+		}
+		else {
+			return "0/0";
+		}
+	}
+	else {
+        if (totalEventReads > totalReferenceReads) {
+            if ( balanced( totalReferenceReads, totalEventReads )) {
+                return "0/1";
+            }
+            else {
+                return "1/1";
+            }
+        }
+        else if ( totalEventReads < totalReferenceReads ) {
+            if ( balanced( totalEventReads, totalReferenceReads )) {
+                return "0/1";
+            }
+            else {
+                return "0/0";
+            }
+        }
+		else {
+			return "0/1";
+		}
+	}
+}
+
+
+const string Genotype::getGTold() const
 {
 	if (g_par.gatkCompatible) {
-		if (gt.d_readDepthPlus==0 && gt.d_readDepthMinus==0) {
-	      os << "0/0";
+		if (d_readDepthPlus==0 && d_readDepthMinus==0) {
+	      return "0/0";
 	   }
-	   else { // at least one genotype is 1
-	      os << "0/1";
-	   }
-
-
-	}
-   else { 
-		if (gt.d_readDepthPlus==0 && gt.d_readDepthMinus==0) {
-	      os << ".";
-	   }
-	   else { // at least one genotype is 1
-	      os << "1/.";
+	   else { // at least one read depth is 1
+	      return "0/1";
 	   }
 	}
-   os << ":" << ( gt.d_readDepthPlus + gt.d_readDepthMinus );
-   return os;
+   else {
+		if (d_readDepthPlus==0 && d_readDepthMinus==0) {
+      	return ".";
+   	}
+   	else { // at least one genotype is 1
+      	return "1/.";
+		}
+	} // gatk compatibility not required
+
+   return "ERROR"; // this should not happen
 }
 
+const string Genotype::getGTnew() const
+{
+	return deriveGenotype( *this );
+}
 
+const string Genotype::getGTRDAD() const
+{
+	stringstream ss;
+	ss << getGTnew() << ":" << getTotalRefSupport() << ":" << getTotalReads();
+	return ss.str();
+}
+
+const string Genotype::getGTAD() const
+{
+	stringstream ss;
+	ss << getGTold() << ":" << getTotalReads();
+	return ss.str();
+}
 
 
 /* 'SVData' stores the data of a certain structural variant. */
@@ -783,10 +878,10 @@ public:
 
       d_end = end;
    }
-	int getVCFPrintEnd() const 
+	int getVCFPrintEnd() const
 	{
 		if (d_end <= d_position ) {
-			cout << "Warning: end position of the SV (" << d_end << ") appears to be before the startposition (" << d_position << "). Will adjust end to be startposition+reflen-1.\n";
+			//cout << "Warning: end position of the SV (" << d_end << ") appears to be before the startposition (" << d_position << "). Will adjust end to be startposition+reflen-1.\n";
 		}
 		else {} // empty else.
 		return d_position+getReference().size()-1;
@@ -809,8 +904,8 @@ public:
    }
 
    //void setSupportingReads(const int supportingreads) { d_supportingreads = supportingreads; }
-   void addGenotype(const int sampleID, const int readDepthPlus, const int readDepthMinus) {
-      Genotype gt(readDepthPlus,readDepthMinus);
+   void addGenotype(const int sampleID, const int readDepthPlus, const int readDepthMinus, const int totalRefSupport) {
+      Genotype gt(readDepthPlus,readDepthMinus, totalRefSupport);
       d_format[ sampleID ] = gt ;
    }
 
@@ -832,7 +927,7 @@ public:
 	void setSecondNT(string secondNT) { d_nt2 = secondNT; };
 	bool withinAllowedRepeatsPostIndel(const int maxRepeatLen, const int maxNoRepeats) const;
 	bool withinAllowedRepeatsInternal(const int maxRepeatLen, const int maxNoRepeats) const;
-	bool isEquilengthReplacement() const { 
+	bool isEquilengthReplacement() const {
 		if ((d_svtype=="RPL" && d_svlen == d_replaceLen ) || (d_svtype=="INV" && d_replaceLen==0 && d_replaceLenTwo==0 )) return true;
 		else return false;
 	}
@@ -872,7 +967,7 @@ string SVData::getAlternative() const
 {
 	if (d_svtype == "INS" && d_svlen == 0)  { // long insertion
 		return "<INS>";
-	}	
+	}
 	string altVariant = "";
 	const string* reference = d_genome_ptr->getChromosome( d_chromosome );
 	if ( d_svtype == "INS" || d_svtype == "DEL" || d_svtype == "RPL" ) {
@@ -881,7 +976,7 @@ string SVData::getAlternative() const
 		}
       altVariant += d_nt;
    }
-   else if ( d_svtype == "DUP:TANDEM" ) {	
+   else if ( d_svtype == "DUP:TANDEM" ) {
 		string refVariant = getReference();
       altVariant += refVariant;
       altVariant += d_nt;
@@ -895,8 +990,8 @@ string SVData::getAlternative() const
 			altVariant = complement;
       }
 		else {
-			altVariant += d_nt;
       	altVariant += (*reference)[ d_position ];
+			altVariant += d_nt;
       	string referenceInv = refVariant.substr(1);
       	string complement = "";
       	createComplement( referenceInv, complement );
@@ -914,7 +1009,7 @@ string SVData::getReference() const
 	const string* reference = d_genome_ptr->getChromosome( d_chromosome );
 	if (d_svtype == "INS" && d_svlen == 0)  { // long insertion
 		string refVariant = "";
-		refVariant+= (*reference)[ d_position ];	
+		refVariant+= (*reference)[ d_position ];
 		return refVariant;
 	}
 	else { // normal insertion/deletion or whatever
@@ -925,10 +1020,10 @@ string SVData::getReference() const
 		}
    	for (int position=startPosition; position<d_end; position++ ) {
       	refVariant += (*reference)[ position ];
-   	}		
+   	}
 		return refVariant;
 	}
-} 
+}
 
 SVData::SVData(const int genotypeTotal) // default settings
 {
@@ -945,7 +1040,7 @@ SVData::SVData(const int genotypeTotal) // default settings
    if (numberOfSamples<=0) {
       numberOfSamples=1;
    }
-   d_format.resize( numberOfSamples, Genotype(0,0) );
+   d_format.resize( numberOfSamples, Genotype(0,0,0) );
 };
 
 
@@ -982,7 +1077,7 @@ int SVData::getNumSupportSamples(const bool onlyBalancedSamples, const int minim
 		else { // Sample does not need to be balanced
 			if (plusSupport>=minimumStrandSupport || minSupport>=minimumStrandSupport ) {
 				numSupportingSamples++;
-			}	
+			}
 		}
    }
    return numSupportingSamples;
@@ -1027,7 +1122,7 @@ int testHypothesis(const string& hypothesis, const string& sequence )
 		if ( currentHypothesisBase != sequence[ testedBaseIndex ] ) {
 			return 0;
 		}
-	} 
+	}
    return sequenceLen/hypLen;
 }
 
@@ -1035,11 +1130,11 @@ int testHypothesis(const string& hypothesis, const string& sequence )
 /* 'countRepeats' counts the repeats in a sequence. Returns the shortest result which can explain (allowing for rotation, CACAC => CA) the input sequence */
 int countRepeats( const string& sequence, const int maxRepeatLength, int &bestSize )
 {
-   int maximumLen = min( maxRepeatLength, (int)(sequence.size()/2) ); 
+   int maximumLen = min( maxRepeatLength, (int)(sequence.size()/2) );
 	if (maxRepeatLength<0 ) {
-		// no maximum repeat length set; assume it is infinite		
+		// no maximum repeat length set; assume it is infinite
 		maximumLen = (int)(sequence.size()/2);
-	} 
+	}
    string hypothesis = "";
 	int bestRepeatLength = 0;
 	int bestRepeatNumber = 0;
@@ -1066,7 +1161,7 @@ string SVData::getSVSequence() const
 	int maxPos=min( ref.size(), alt.size() );
 	while (pos < maxPos && ref[pos]==alt[pos]) { pos++;};
 	if (pos == maxPos ) { // simple insertion or deletion...
-		modifiedSequence = ( maxPos==ref.size() ? alt.substr(pos) : ref.substr(pos));  
+		modifiedSequence = ( maxPos==ref.size() ? alt.substr(pos) : ref.substr(pos));
 	}
 	else { // replacement
 		modifiedSequence = alt.substr( pos );
@@ -1075,7 +1170,7 @@ string SVData::getSVSequence() const
 }
 
 
-/* 'withinAllowedRepeatsPostIndel' Is the number of repeats after the detected SV within the maximum allowed number of repeats (maxNoRepeats) of the 
+/* 'withinAllowedRepeatsPostIndel' Is the number of repeats after the detected SV within the maximum allowed number of repeats (maxNoRepeats) of the
 	fundamental repetitive unit of the SV? */
 bool SVData::withinAllowedRepeatsPostIndel(const int maxRepeatLen, const int maxNoRepeats) const
 {
@@ -1102,7 +1197,7 @@ bool SVData::withinAllowedRepeatsPostIndel(const int maxRepeatLen, const int max
 /* 'withinAllowedRepeatsInternal' Is the number of repeats of the smallest repetitive unit in the detected SV within the maximum allowed number of repeats (maxNoRepeats)? */
 bool SVData::withinAllowedRepeatsInternal(const int maxRepeatLen, const int maxNoRepeats) const
 {
-	string sequenceToAnalyze = getSVSequence();  
+	string sequenceToAnalyze = getSVSequence();
 	int actualRepeatLength = 0;
 	int repeatCount = countRepeats( sequenceToAnalyze, maxRepeatLen, actualRepeatLength );
 	if ( repeatCount > maxNoRepeats ) {
@@ -1195,11 +1290,21 @@ ostream& operator<<(ostream& os, const SVData& svd)
       os << "," << svd.d_replaceLenTwo;
    }
 
-
-   os << "\tGT:AD";
+	if (pindel024uOrLater && svd.getAlternative()!="<INS>") {
+   	os << "\tGT:RD:AD";
+	}
+	else {
+		os << "\tGT:AD";
+	}
 
    for (int counter=0; counter<svd.d_format.size(); counter++ ) {
-      os << "\t" << svd.d_format[ counter ];
+		os << "\t";
+		if (pindel024uOrLater && svd.getAlternative()!="<INS>") {
+			os << svd.d_format[ counter ].getGTRDAD();
+		}
+      else {
+			os << svd.d_format[ counter ].getGTAD();
+		}
    }
 
    os << endl;
@@ -1217,9 +1322,32 @@ string fetchElement( istream& instream, const int index )
    return element;
 }
 
+/* 'countElements' counts the number of elements in stream "instream" */
+int countElements( istream& instream )
+{
+   string element = "";
+	int counter = 0;
+   while (! instream.fail() ) {
+      instream >> element;
+		counter++;
+   }
+   return counter;
+}
+
+void showSet( set<string> aSet )
+{
+
+   set<string>::iterator index;
+   int counter=1;
+   for (index=aSet.begin(); index!=aSet.end(); index++ ) {
+      cout << counter++ << ". " << *index << endl;
+   }
+}
+
 void getSampleNamesAndChromosomeNames(InputReader& pindelInput, set<string>& sampleNames, set<string>&chromosomeNames)
 {
    string line;
+unsigned int counter=0;
    while (!pindelInput.eof()) {
       do {
          line = pindelInput.getLine();
@@ -1228,14 +1356,18 @@ void getSampleNamesAndChromosomeNames(InputReader& pindelInput, set<string>& sam
       if (pindelInput.eof()) {
          return;
       }
+counter++;
       stringstream lineStream;
       lineStream << line;
+      stringstream streamForCounting;
+		streamForCounting << line;
+		int elementsInLine = countElements( streamForCounting );
       string svType = fetchElement( lineStream, 2 );
 
       if ( svType.compare("LI")==0 ) {
 			string chromosomeName = fetchElement( lineStream, 2 );
 			chromosomeNames.insert( chromosomeName );
-			string firstSampleName = fetchElement( lineStream, 7);	
+			string firstSampleName = fetchElement( lineStream, 7);
 	      sampleNames.insert( firstSampleName );
    	   string newSampleName = fetchElement( lineStream, 5 );
    	   while (!lineStream.fail()) {
@@ -1249,12 +1381,21 @@ void getSampleNamesAndChromosomeNames(InputReader& pindelInput, set<string>& sam
 //		cout << "Studying chromosome " << chromosome << endl;
 
 		// 8 = 2+6, so corrects for previous reads
-      string firstSampleName = fetchElement( lineStream, FIRST_SAMPLE_INDEX-8 );
+		int numberOfSamples = atoi( fetchElement( lineStream, FIRST_SAMPLE_INDEX - 12 ).c_str() );
+      string firstSampleName = fetchElement( lineStream, 4 );
       sampleNames.insert( firstSampleName );
-      string newSampleName = fetchElement( lineStream, 5 );
+//cout << "ElInLine: " << elementsInLine << ", FSINDEX: " << FIRST_SAMPLE_INDEX << ", NoS=" << numberOfSamples << endl;
+		if (elementsInLine> FIRST_SAMPLE_INDEX + 5* numberOfSamples ) {
+			pindel024uOrLater = true;
+		}
+      else {
+			pindel024uOrLater = false;
+      }
+		int numberOfElementsPerSample = ( pindel024uOrLater ? 7 : 5 );
+      string newSampleName = fetchElement( lineStream, numberOfElementsPerSample );
       while (!lineStream.fail()) {
          sampleNames.insert( newSampleName );
-         newSampleName = fetchElement( lineStream, 5 );
+         newSampleName = fetchElement( lineStream, numberOfElementsPerSample );
       }
    }
 }
@@ -1268,15 +1409,7 @@ template<class T> void showVector( vector<T> vect )
    cout << "End of printing.\n";
 }
 
-void showSet( set<string> aSet )
-{
 
-   set<string>::iterator index;
-   int counter=1;
-   for (index=aSet.begin(); index!=aSet.end(); index++ ) {
-      cout << counter++ << ". " << *index << endl;
-   }
-}
 
 
 /* 'convertIndelToSVdata' converts insertions and deletions to nicely formatted SV-data. */
@@ -1317,9 +1450,20 @@ void convertIndelToSVdata( InputReader& pindelInput, map< string, int>& sampleMa
       svd.setEnd( rightmostEndPos );
       svd.setBPrange( beforeStartPos, rightmostEndPos );
       int totalMinSupport = atoi( fetchElement( lineStream, 2 ).c_str());
+
+		// if the file has been created by a recent version of pindel, read in the extra elements
  		string sampleName = fetchElement( lineStream, 1);
-   	int samplePlusSupport = atoi( fetchElement( lineStream, 2 ).c_str()); 
-	   int sampleMinSupport = atoi( fetchElement( lineStream, 2 ).c_str()); // now at position 35, total +supports sample 1
+      int refSupportAtStartOfEvent = 0;
+		int refSupportAtEndOfEvent = 0;
+
+		/*if ( pindel024uOrLater ) {
+			refSupportAtStartOfEvent = atoi( fetchElement( lineStream, 1 ).c_str());
+			refSupportAtEndOfEvent = atoi( fetchElement( lineStream, 1 ).c_str());
+		}*/
+		int totalRefSupport = refSupportAtStartOfEvent + refSupportAtEndOfEvent;
+		int numberItemsUntilNextSupport = ( pindel024uOrLater ? 2 : 2 );
+   	int samplePlusSupport = atoi( fetchElement( lineStream, numberItemsUntilNextSupport ).c_str());
+	   int sampleMinSupport = atoi( fetchElement( lineStream, numberItemsUntilNextSupport ).c_str()); // now at position 35, total +supports sample 1
    	//int count=0;
   		while (!lineStream.fail()) {
       	if (sampleMap.find( sampleName )==sampleMap.end() ) {
@@ -1327,11 +1471,16 @@ void convertIndelToSVdata( InputReader& pindelInput, map< string, int>& sampleMa
       	}
       	else {
          	int sampleID = sampleMap[ sampleName ];
-         	svd.addGenotype( sampleID, samplePlusSupport , sampleMinSupport );
+         	svd.addGenotype( sampleID, samplePlusSupport , sampleMinSupport, totalRefSupport );
       	}
+			/*if ( pindel024uOrLater ) {
+				refSupportAtStartOfEvent = atoi( fetchElement( lineStream, 1 ).c_str() );
+				refSupportAtEndOfEvent = atoi( fetchElement( lineStream, 1 ).c_str());
+			}*/
+			int totalRefSupport = refSupportAtStartOfEvent + refSupportAtEndOfEvent;
       	sampleName = fetchElement( lineStream, 1); // for unique support, 2->1,
-	      samplePlusSupport = atoi( fetchElement( lineStream, 2 ).c_str()); // for unique support, 2->1
-   	   sampleMinSupport = atoi( fetchElement( lineStream, 2 ).c_str()); // now at position 33, total +supports sample 1
+	      samplePlusSupport = atoi( fetchElement( lineStream, numberItemsUntilNextSupport ).c_str()); // for unique support, 2->1
+   	   sampleMinSupport = atoi( fetchElement( lineStream, numberItemsUntilNextSupport ).c_str()); // now at position 33, total +supports sample 1
   		}
       return;
    }
@@ -1349,7 +1498,7 @@ void convertIndelToSVdata( InputReader& pindelInput, map< string, int>& sampleMa
 			//cout << "Found simple inversion!\n";
          simpleInversion = true;
       }
-      else { 
+      else {
          int separatorPos = numNTaddedStr.find(":");
          string secondNumber = numNTaddedStr.substr(separatorPos+1);
          numNTinvAdded = atoi( secondNumber.c_str() );
@@ -1359,7 +1508,7 @@ void convertIndelToSVdata( InputReader& pindelInput, map< string, int>& sampleMa
    string ntAdded = fetchElement( lineStream, 1 ); // to 6
    string ntInvAdded = "";
 
-	// basically, there are two type of inversions: 
+	// basically, there are two type of inversions:
 	//	a) The 'alternatively called small deletions' INV 2 NT 2 "TG"
 	// b) the regular inversions INV98 NT 0:60 "":"GCT"
    if ( svType.compare("INV") == 0 ) {
@@ -1428,8 +1577,17 @@ void convertIndelToSVdata( InputReader& pindelInput, map< string, int>& sampleMa
       }
    }
    string sampleName = fetchElement( lineStream, 18);
-   int plusSupport = atoi( fetchElement( lineStream, 1 ).c_str()); // now at position 33, total +supports sample 1; for unique support 1->2
-   int minSupport = atoi( fetchElement( lineStream, 2 ).c_str()); // now at position 35, total +supports sample 1
+   int refSupportAtStartOfEvent = 0;
+	int refSupportAtEndOfEvent = 0;
+
+	if ( pindel024uOrLater ) {
+		refSupportAtStartOfEvent = atoi( fetchElement( lineStream, 1 ).c_str() );
+		refSupportAtEndOfEvent = atoi( fetchElement( lineStream, 1 ).c_str() );
+	}
+	int totalRefSupport = refSupportAtStartOfEvent + refSupportAtEndOfEvent;
+	int numberOfItemsUntilNextSupport = ( pindel024uOrLater ? 2 : 2 );
+   int plusSupport = atoi( fetchElement( lineStream, numberOfItemsUntilNextSupport - 1 ).c_str()); // now at position 33, total +supports sample 1; for unique support 1->2
+   int minSupport = atoi( fetchElement( lineStream, numberOfItemsUntilNextSupport ).c_str()); // now at position 35, total +supports sample 1
    int count=0;
    while (!lineStream.fail()) {
       if (sampleMap.find( sampleName )==sampleMap.end() ) {
@@ -1437,11 +1595,16 @@ void convertIndelToSVdata( InputReader& pindelInput, map< string, int>& sampleMa
       }
       else {
          int sampleID = sampleMap[ sampleName ];
-         svd.addGenotype( sampleID, plusSupport , minSupport );
+         svd.addGenotype( sampleID, plusSupport , minSupport, totalRefSupport );
       }
       sampleName = fetchElement( lineStream, 2); // for unique support, 2->1,
-      plusSupport = atoi( fetchElement( lineStream, 1 ).c_str()); // for unique support, 2->1
-      minSupport = atoi( fetchElement( lineStream, 2 ).c_str()); // now at position 33, total +supports sample 1
+		if ( pindel024uOrLater ) {
+			refSupportAtStartOfEvent = atoi( fetchElement( lineStream, 1 ).c_str() );
+			refSupportAtEndOfEvent = atoi( fetchElement( lineStream, 1 ).c_str() );
+		}
+		totalRefSupport = refSupportAtStartOfEvent + refSupportAtEndOfEvent;
+      plusSupport = atoi( fetchElement( lineStream, numberOfItemsUntilNextSupport - 1 ).c_str()); // for unique support, 2->1
+      minSupport = atoi( fetchElement( lineStream, numberOfItemsUntilNextSupport ).c_str()); // now at position 33, total +supports sample 1
    }
 }
 
@@ -1694,11 +1857,11 @@ bool throughFilter(SVData sv)
 	if ( g_par.maxPostRepeatNo >= 0 && !sv.withinAllowedRepeatsPostIndel(g_par.maxPostRepeatLength, g_par.maxPostRepeatNo )) {
 		return false;
    }
-	
+
 	/*if (g_par.gatkCompatible && sv.isEquilengthReplacement() ) {
 		return false;
 	}*/
-	
+
 
 
    // all filters passed
@@ -1760,7 +1923,7 @@ void reportSVsInChromosome(const string& chromosomeID, const set<string>& chromo
    		sort ( svs.begin(), svs.end() );
       	cout << "Sorting completed" << endl;
 			// now output the SVs
-	      for (int svIndex=0; svIndex<svs.size(); svIndex++ ) { 
+	      for (int svIndex=0; svIndex<svs.size(); svIndex++ ) {
    	      if ( (svIndex+1)<svs.size() && ( svs[ svIndex ] == svs[ svIndex+1 ] ) ) {
    	         svs[ svIndex+1 ].fuse( svs[ svIndex ]);
    	      }
@@ -1818,6 +1981,8 @@ int main(int argc, char* argv[])
       cout << "The pindel file (-p) does not exist.\n";
       exit( EXIT_FAILURE );
    }
+	//cout<< "Samples0:\n";
+   //showSet( sampleNames );
    getSampleNamesAndChromosomeNames(pindelInput,sampleNames,chromosomeNames);
 	cout<< "Samples:\n";
    showSet( sampleNames );
@@ -1831,20 +1996,21 @@ int main(int argc, char* argv[])
    // read in reference
    Genome genome;
    readReference(g_par.reference,genome);
-	
+
 	if (g_par.chromosome != "" ) {
 		// a specific chromosome has been specified
 		reportSVsInChromosome( g_par.chromosome, chromosomeNames, sampleNames, pindelInput, sampleMap, genome, vcfFile );
 	}
+
    else for (int chromosomeCount=0; chromosomeCount<genome.d_chromosomes.size(); chromosomeCount++ ) {
       reportSVsInChromosome( genome.d_chromosomes[ chromosomeCount ].getID(), chromosomeNames, sampleNames, pindelInput, sampleMap, genome, vcfFile );
       genome.d_chromosomes[ chromosomeCount ].removeFromMemory(); // to prevent memory overload
-   } 
+   }
 
 	if (g_par.gatkCompatible) {
 		cout << "\nNote: for this conversion, the -G (GATK) compatibility option was used; it's possible that this format is not compatible with other VCF-reading software. " <<
 				  "Also note that GATK requires genotypes to be 0/0, 0/1 or 1/1 instead of undefined, like ./1 or . ('not detected'). However, since pindel cannot yet " <<
-				  "genotype events " << 		
+				  "genotype events " <<
 				  "(distinguish between 0/1 and 1/1) all events are called as 0/0 (not found) or 0/1, even while some may very well be homozygous alternative (1/1).\n\n";
 	}
 	else {
