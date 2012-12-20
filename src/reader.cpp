@@ -522,8 +522,10 @@ bool ReadInBamReads_SR (const char *bam_path, const std::string & FragName,
 
 bool isGoodAnchor( const flags_hit *read, const bam1_core_t *bamCore )
 {
+    UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
+    if (userSettings->minimalAnchorQuality == 0) return true;	
     if (bamCore->flag & BAM_FSECONDARY || bamCore->flag & BAM_FQCFAIL) return false;
-	UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
+	
    int maxEdits = int (bamCore->l_qseq * userSettings->MaximumAllowedMismatchRate) + 1;
    unsigned int mappingQuality = bamCore->qual;
 
@@ -552,13 +554,13 @@ bool isWeirdRead( const flags_hit *read, const bam1_t * bamOfRead )
 {
    const bam1_core_t *b1_core;
    b1_core = &bamOfRead->core; 
-   if ( ! read->mapped
-       //|| b1_core->flag & BAM_CINS
-       //|| b1_core->flag & BAM_CDEL
-       //|| b1_core->flag & BAM_CREF_SKIP
-       //|| b1_core->flag & BAM_CSOFT_CLIP
-       //|| b1_core->flag & BAM_CHARD_CLIP
-       //|| b1_core->flag & BAM_CPAD
+   if ( (! (read->mapped))
+       || (b1_core->flag & BAM_CINS)
+       || (b1_core->flag & BAM_CDEL)
+       || (b1_core->flag & BAM_CREF_SKIP)
+       || (b1_core->flag & BAM_CSOFT_CLIP)
+       || (b1_core->flag & BAM_CHARD_CLIP)
+       || (b1_core->flag & BAM_CPAD)
        ) {
       return true;
    }
@@ -647,10 +649,11 @@ void build_record_SR (const bam1_t * mapped_read, const bam1_t * unmapped_read, 
         uint32_t *cigar_pointer = bam1_cigar (mapped_read);
         //reusing length to be something else now. eat it.
         length = bam_cigar2len (mapped_core, cigar_pointer);
-        Temp_One_Read.MatchedRelPos += length;
+        Temp_One_Read.MatchedRelPos += length + InsertSize;
     }
     else {
         Temp_One_Read.MatchedD = '+';
+        Temp_One_Read.MatchedRelPos -= InsertSize;
     }
 
     //FIXME pass these through from the command line with a struct
