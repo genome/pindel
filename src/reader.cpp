@@ -701,6 +701,7 @@ void build_record_SR (const bam1_t * mapped_read, const bam1_t * unmapped_read, 
     return;
 }
 
+
 void build_record_RefRead (const bam1_t * mapped_read, const bam1_t * ref_read, void *data)
 {   // std::vector <REF_READ> *RefSupportingReads;
     UserDefinedSettings *userSettings = UserDefinedSettings::Instance();
