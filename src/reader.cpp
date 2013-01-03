@@ -555,12 +555,13 @@ bool isWeirdRead( const flags_hit *read, const bam1_t * bamOfRead )
    const bam1_core_t *b1_core;
    b1_core = &bamOfRead->core; 
    if ( (! (read->mapped))
+/*
        || (b1_core->flag & BAM_CINS)
        || (b1_core->flag & BAM_CDEL)
        || (b1_core->flag & BAM_CREF_SKIP)
        || (b1_core->flag & BAM_CSOFT_CLIP)
        || (b1_core->flag & BAM_CHARD_CLIP)
-       || (b1_core->flag & BAM_CPAD)
+       || (b1_core->flag & BAM_CPAD)*/
        ) {
       return true;
    }
