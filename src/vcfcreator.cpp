@@ -7,6 +7,8 @@
 	e.m.w.lameijer@gmail.com
 	+31(0)71-5 125 831
 
+check sample names.
+
 	Version 0.5.5 [December 10th, 2012] Modified the code so that LI / -P now gives correct GT:AD instead of GT:RD:AD output. Also fixed small bug in creating ALT of NT-inversions
 	Version 0.5.4 [December 6th, 2012] Error found by David Hannah on using the -P option debugged
    Version 0.5.3 [November 8th, 2012] Now should genotype newer pindel output as 0/0, 1/1 or 0/1 based on apparent balance between alleles
