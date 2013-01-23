@@ -1,0 +1,90 @@
+From: Gabriel Sanderson <gsanders@genome.wustl.edu>
+Date: Thu, 24 Jan 2013 17:09:14 -0600
+Subject: [PATCH] Break SAMTOOLS out into SAMTOOLS_LIB and SAMTOOLS_INC
+
+---
+ Makefile       |  3 ++-
+ Makefile.local |  3 ++-
+ src/Makefile   | 14 +++++++-------
+ 3 files changed, 11 insertions(+), 9 deletions(-)
+
+diff --git a/Makefile b/Makefile
+index 37c391e..e7064be 100644
+--- a/Makefile
++++ b/Makefile
+@@ -22,7 +22,8 @@ clean:
+ Makefile.local:
+ 	echo '# Local configuration' > $@
+ 	echo '# Location of SAMTools' >> $@
+-	echo "SAMTOOLS=$(realpath $(SAMTOOLS))" >> $@
++	echo "SAMTOOLS_LIB=$(realpath $(SAMTOOLS_LIB))" >> $@
++	echo "SAMTOOLS_INC=$(realpath $(SAMTOOLS_INC))" >> $@
+ 	echo '' >> $@
+ 	echo '# Number of threads for functional tests, set to 2 or more, recommended to match number of cores' >> $@
+ 	(if [ -e /proc/cpuinfo ] ; then THREADS=`fgrep -c processor /proc/cpuinfo` ; echo "THREADS=${THREADS}" ; else echo 'THREADS=2' ; fi) >> $@
+diff --git a/Makefile.local b/Makefile.local
+index 8a622f5..0472b96 100644
+--- a/Makefile.local
++++ b/Makefile.local
+@@ -1,6 +1,7 @@
+ # Local configuration
+ # Location of SAMTools
+-SAMTOOLS=/gsc/pkg/bio/samtools/samtools-0.1.18
++SAMTOOLS_LIB=/usr/lib/samtools0.1.18
++SAMTOOLS_INC=/usr/include/samtools0.1.18
+ 
+ # Number of threads for functional tests, set to 2 or more, recommended to match number of cores
+ THREADS=
+diff --git a/src/Makefile b/src/Makefile
+index 4ea63b0..bfca443 100644
+--- a/src/Makefile
++++ b/src/Makefile
+@@ -21,11 +21,11 @@ test:	pindel $(addprefix cppcheck-result-,$(SOURCES:.cpp=.xml))
+ # Debug version of pindel
+ pindel-debug: $(SOURCES:.cpp=-debug.o)
+ 	$(CXX) $(LDFLAGS) $^ -fopenmp -g -pg -fprofile-arcs -ftest-coverage \
+-	  -lm -lz -L$(SAMTOOLS) -lbam -o $@
++	  -lm -lz -L$(SAMTOOLS_LIB) -lbam -o $@
+ 
+ # Normal version of pindel	
+ pindel:	$(SOURCES:.cpp=.o)
+-	$(CXX) $(LDFLAGS) $^ -O3 -fopenmp -lm -lz -L$(SAMTOOLS) -lbam -o $@
++	$(CXX) $(LDFLAGS) $^ -O3 -fopenmp -lm -lz -L$(SAMTOOLS_LIB) -lbam -o $@
+ 
+ clean:
+ 	$(RM) pindel pindel-debug $(OBJECTS) $(OBJECTS_DEBUG) $(CPPCHECKS) \
+@@ -33,28 +33,28 @@ clean:
+ 
+ # Pattern rule to create normal .o files	
+ %.o: %.cpp
+-	$(CXX) $(CXXFLAGS) -Wall -g -c -O3 -fopenmp -I$(SAMTOOLS) $< -o $@
++	$(CXX) $(CXXFLAGS) -Wall -g -c -O3 -fopenmp -I$(SAMTOOLS_INC) $< -o $@
+ 
+ # Pattern rule to create debug version of .o files
+ %-debug.o: %.cpp
+ 	$(CXX) $(CXXFLAGS) -Wall -g -c -fopenmp -g -pg \
+-	  -fprofile-arcs -ftest-coverage -I$(SAMTOOLS) $< -o $@
++	  -fprofile-arcs -ftest-coverage -I$(SAMTOOLS_INC) $< -o $@
+ 
+ # Pattern rule to create cppcheck files	
+ cppcheck-result-%.xml: %.cpp
+-	cppcheck --quiet --enable=all --xml -I$(SAMTOOLS) $(realpath $<) 2> $@
++	cppcheck --quiet --enable=all --xml -I$(SAMTOOLS_INC) $(realpath $<) 2> $@
+ 
+ # Pattern rule to create the .d dependency files
+ %.d: %.cpp
+ 	@set -e; rm -f $@; \
+-	    $(CXX) -I$(SAMTOOLS) -MM $(CPPFLAGS) $< > $@.$$$$; \
++	    $(CXX) -I$(SAMTOOLS_INC) -MM $(CPPFLAGS) $< > $@.$$$$; \
+ 	    sed 's,\($*\)\.o[ :]*,\1.o $@ : ,g' < $@.$$$$ > $@; \
+ 	    $(RM) $@.$$$$
+ 
+ # Pattern rule to create the .d dependency files for the debug version
+ %-debug.d: %.cpp
+ 	@set -e; rm -f $@; \
+-	    $(CXX) -I$(SAMTOOLS) -MM $(CPPFLAGS) $< > $@.$$$$; \
++	    $(CXX) -I$(SAMTOOLS_INC) -MM $(CPPFLAGS) $< > $@.$$$$; \
+ 	    sed 's,\($*\)\.o[ :]*,\1-debug.o $@ : ,g' < $@.$$$$ > $@; \
+ 	    $(RM) $@.$$$$
+ 	
+-- 

@@ -1,0 +1,56 @@
+From: Gabriel Sanderson <gsanders@genome.wustl.edu>
+Date: Wed, 23 Jan 2013 17:27:24 -0600
+Subject: [PATCH] Removed tests that dont exist
+
+---
+ Makefile | 21 +++------------------
+ 1 file changed, 3 insertions(+), 18 deletions(-)
+
+diff --git a/Makefile b/Makefile
+index 07606eb..3aa7440 100644
+--- a/Makefile
++++ b/Makefile
+@@ -4,9 +4,8 @@
+ 
+ default: pindel
+ 
+-all: pindel cppcheck functional-tests coverage-tests acceptance-tests \
+-	regression-tests
+-test: pindel cppcheck functional-tests
++all: pindel cppcheck
++test: pindel cppcheck
+ 
+ pindel: Makefile.local
+ 	make -C src pindel
+@@ -17,21 +16,8 @@ pindel-debug: Makefile.local
+ cppcheck: Makefile.local
+ 	make -C src test
+ 
+-acceptance-tests: Makefile.local pindel
+-	make -C test acceptance-tests
+-
+-coverage-tests: Makefile.local pindel-debug
+-	make -C test coverage-tests
+-
+-functional-tests: Makefile.local pindel
+-	make -C test functional-tests
+-
+-regression-tests: Makefile.local pindel
+-	make -C test regression-tests
+-
+ clean:
+ 	make -C src clean
+-	make -C test clean
+ 
+ Makefile.local:
+ 	echo '# Local configuration' > $@
+@@ -50,7 +36,6 @@ Makefile.local:
+ 
+ # Pseudo targets for configuration
+ .SILENT: Makefile.local
+-.PHONY: default all clean test pindel pindel-debug cppcheck acceptance-tests \
+-	coverage-tests functional-tests regression-tests
++.PHONY: default all clean pindel pindel-debug cppcheck \
+ .PRECIOUS: Makefile.local
+ .IGNORE: clean
+-- 

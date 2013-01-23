@@ -1,0 +1,11 @@
+Source: pindel0.2.4t
+Section: science
+Priority: optional
+Build-Depends: debhelper (>= 7), libbam0.1.18-dev, zlib1g-dev, cppcheck, build-essential
+Maintainer: TGI <genome-dev@genome.wustl.edu>
+Homepage: https://trac.nbic.nl/pindel/
+
+Package: pindel0.2.4t
+Architecture: amd64
+Depends: zlib1g
+Description: Pindel can detect breakpoints of large deletions, medium sized insertions, inversions, tandem duplications and other structural variants at single-based resolution from next-gen sequence data. It uses a pattern growth approach to identify the breakpoints of these variants from paired-end short reads.

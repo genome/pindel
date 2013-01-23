@@ -1,0 +1,35 @@
+From: Gabriel Sanderson <gsanders@genome.wustl.edu>
+Date: Wed, 23 Jan 2013 17:32:25 -0600
+Subject: [PATCH] cleanup cppcheck xml
+
+---
+ Makefile     | 2 +-
+ src/Makefile | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/Makefile b/Makefile
+index 3aa7440..37c391e 100644
+--- a/Makefile
++++ b/Makefile
+@@ -36,6 +36,6 @@ Makefile.local:
+ 
+ # Pseudo targets for configuration
+ .SILENT: Makefile.local
+-.PHONY: default all clean pindel pindel-debug cppcheck \
++.PHONY: default all clean pindel pindel-debug cppcheck
+ .PRECIOUS: Makefile.local
+ .IGNORE: clean
+diff --git a/src/Makefile b/src/Makefile
+index f96b405..4ea63b0 100644
+--- a/src/Makefile
++++ b/src/Makefile
+@@ -29,7 +29,7 @@ pindel:	$(SOURCES:.cpp=.o)
+ 
+ clean:
+ 	$(RM) pindel pindel-debug $(OBJECTS) $(OBJECTS_DEBUG) $(CPPCHECKS) \
+-	    *.gcov *.gcda *.gcno gmon.out *.d *.o
++	    *.gcov *.gcda *.gcno gmon.out *.d *.o cppcheck-result*.xml
+ 
+ # Pattern rule to create normal .o files	
+ %.o: %.cpp
+-- 

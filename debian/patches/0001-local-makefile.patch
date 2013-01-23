@@ -1,0 +1,28 @@
+From: Gabriel Sanderson <gsanders@genome.wustl.edu>
+Date: Wed, 23 Jan 2013 16:49:42 -0600
+Subject: [PATCH] local makefile
+
+---
+ Makefile.local | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
+ create mode 100644 Makefile.local
+
+diff --git a/Makefile.local b/Makefile.local
+new file mode 100644
+index 0000000..8a622f5
+--- /dev/null
++++ b/Makefile.local
+@@ -0,0 +1,12 @@
++# Local configuration
++# Location of SAMTools
++SAMTOOLS=/gsc/pkg/bio/samtools/samtools-0.1.18
++
++# Number of threads for functional tests, set to 2 or more, recommended to match number of cores
++THREADS=
++
++# Acceptance test tuning variables (seconds), set to realistic values for your system
++# Numbers based on running in CI on Intel i7 2.8GHz, 8 cores, 24GB RAM
++COLOUSINGBD15_TIME=36
++COLOWOBD15_TIME=40
++SIM1CHRVS20305_TIME=31
+-- 

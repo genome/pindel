@@ -1,0 +1,17 @@
+#!/usr/bin/make -f
+
+DEB_DIR=debian/pindel0.2.4t
+VERSION=0.2.4t
+
+%:
+	dh $@
+
+override_dh_auto_clean:
+	git clean -xdf src
+
+override_dh_auto_install:
+	mkdir -p $(DEB_DIR)/usr/bin
+	install -m 755 src/pindel $(DEB_DIR)/usr/bin/pindel$(VERSION)
+
+override_dh_strip:
+	echo "Do not create a *dbgsym*.ddeb package."
