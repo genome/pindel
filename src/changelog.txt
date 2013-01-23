@@ -1,0 +1,26 @@
+pindel 0.2.4o, March 9 2012
+1. Matthijs: what: added delete to destructor in OutputSorter.cpp. Why: small memory leak in 0.2.4n (string allocated in constructor was never deallocated)
+2. Eric-Wubbo: what: made separate procedure for reading LI headers in getSampleNamesAndChromosomes in pindel2vcf. Why: no long insertions were reported by pindel2vcf0.2.7, because chromosome was skipped as we tried to save runtime by skipping chromosomes without SV-calls, but pindel2vcf0.2.7 did not correctly find the chromosomes of long insertions due to LI headers having a different format than other Pindel output files.
+3. Kai: what: added sample name and read name to LI/BP output. Why: user request
+4. Eric-Wubbo: what: changed two bugs in the reporting of short inversions: they were erroneously indicated as 'D', and the inverted region was displayed several times (so 5x if it was 5 bases long, making a '25-base' inversion instead of a 5 one). Why: user notified us of small inversions being miscalled as deletions, manual inspection also revealed the other bug.
+5. Kai: what: changed quality check (MAX_ALLOWED_MISMATCHES now float). Is slightly less sensitive when using default parameters, but speed improves. Why: in response to reports that newer versions of pindel were considering many more reads than old versions even while the number of SV-calls stayed almost the same.
+
+pindel 0.2.4p, March 26 2012
+1. Kai: what: added output sorting for reads to fix the 'unique' number that was not reported correctly for some events. Why? unique count (column 19) sometimes showed 0 or other incorrect numbers.
+2. Eric-Wubbo: what: made separate function for reading configuration files. Why: old version did not give clear error messages when confronted with config files which did not exist, were empty, were formatted incorrectly, or when the bam-files called did not exist or did not have accompanying error files. The new version should make it much easier for users (and programmers) to find out why a test or a run go wrong. The new version can also handle it if the final line does not end in a newline.
+
+pindel 0.2.4q, March 27 2012
+1. Eric-Wubbo: ensured that -c all also works (why: question on seq-answers of someone who could not run pindel because using -c all; now compare ucase-version of c-argument to all)
+2. Eric-Wubbo: for Jan's work on the grid (data size reduction), reimplemented the -S option that only reports close ends and skips SV finding.
+3. Eric-Wubbo: for Jan's work on the grid, added -L option to redirect output to log file when so desired.
+4. Eric-Wubbo: added -P option for Jan's work on the grid
+5. Eric-Wubbo: updated pindel2vcf to version 0.3.2; now it is possible to add requirements to samples to count towards reporting a SV (-ss and -sb parameters)
+6. Eric-Wubbo: added -M parameter for users to set their own minimum support for events.
+
+Pindel 0.2.4r, June 14 2012
+1. Kai: changed the insert size quality check to 1x the read length as some users had fragments of which both read ends overlapped
+2. Eric-Wubbo: updated pindel2vcf to version 0.3.9; adds some extra options for homology filtering and filtering out regions with suspiciously high coverage
+
+Pindel 0.2.4s, June 18 2012
+1. Eric-Wubbo: added a 'clear' and small check for empty buffer at end of file
+2. Eric-Wubbo: corrected for only checking for PindelReadDefined at end of bin; now also checks for PindelConfigDefined
