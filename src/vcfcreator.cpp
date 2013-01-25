@@ -7,8 +7,7 @@
 	e.m.w.lameijer@gmail.com
 	+31(0)71-5 125 831
 
-kai ye check sample names. reported by the users on Jan 10 2013
-
+	Version 0.5.6 [January 25th, 2013] Hotfixed cases where 'empty' samples were reported. Still need to get enough data for more thorough fixing
 	Version 0.5.5 [December 10th, 2012] Modified the code so that LI / -P now gives correct GT:AD instead of GT:RD:AD output. Also fixed small bug in creating ALT of NT-inversions
 	Version 0.5.4 [December 6th, 2012] Error found by David Hannah on using the -P option debugged
    Version 0.5.3 [November 8th, 2012] Now should genotype newer pindel output as 0/0, 1/1 or 0/1 based on apparent balance between alleles
@@ -204,6 +203,8 @@ void InputReader::moveToNextFile()
 		m_readable = false;
 	}
 }
+
+
 
 void InputReader::rewind()
 {
@@ -1385,7 +1386,7 @@ counter++;
 		// 8 = 2+6, so corrects for previous reads
 		int numberOfSamples = atoi( fetchElement( lineStream, FIRST_SAMPLE_INDEX - 12 ).c_str() );
       string firstSampleName = fetchElement( lineStream, 4 );
-      sampleNames.insert( firstSampleName );
+      if ( firstSampleName != "" ) { sampleNames.insert( firstSampleName ); }
 //cout << "ElInLine: " << elementsInLine << ", FSINDEX: " << FIRST_SAMPLE_INDEX << ", NoS=" << numberOfSamples << endl;
 		if (elementsInLine> FIRST_SAMPLE_INDEX + 5* numberOfSamples ) {
 			pindel024uOrLater = true;
@@ -1396,7 +1397,7 @@ counter++;
 		int numberOfElementsPerSample = ( pindel024uOrLater ? 7 : 5 );
       string newSampleName = fetchElement( lineStream, numberOfElementsPerSample );
       while (!lineStream.fail()) {
-         sampleNames.insert( newSampleName );
+         if ( newSampleName != "" ) { sampleNames.insert( newSampleName ); }
          newSampleName = fetchElement( lineStream, numberOfElementsPerSample );
       }
    }
@@ -1490,6 +1491,7 @@ void convertIndelToSVdata( InputReader& pindelInput, map< string, int>& sampleMa
 
    // get number(s) of NT bases added (two numbers for inversions!)
    string numNTaddedStr = fetchElement( lineStream, 2 ); // to 5
+
    int numNTadded = atoi( numNTaddedStr.c_str() ); // should get first number
 	bool simpleInversion = false;
    int numNTinvAdded=-1;
