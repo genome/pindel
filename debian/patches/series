@@ -2,3 +2,4 @@
 0002-Removed-tests-that-dont-exist.patch
 0003-cleanup-cppcheck-xml.patch
 0004-Break-SAMTOOLS-out-into-SAMTOOLS_LIB-and-SAMTOOLS_IN.patch
+0005-Added-distclean.patch

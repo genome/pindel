@@ -1,0 +1,31 @@
+From: Gabriel Sanderson <gsanders@genome.wustl.edu>
+Date: Fri, 25 Jan 2013 15:53:41 -0600
+Subject: [PATCH] Added distclean
+
+---
+ Makefile | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/Makefile b/Makefile
+index e7064be..f54c266 100644
+--- a/Makefile
++++ b/Makefile
+@@ -19,6 +19,8 @@ cppcheck: Makefile.local
+ clean:
+ 	make -C src clean
+ 
++distclean: clean
++
+ Makefile.local:
+ 	echo '# Local configuration' > $@
+ 	echo '# Location of SAMTools' >> $@
+@@ -37,6 +39,6 @@ Makefile.local:
+ 
+ # Pseudo targets for configuration
+ .SILENT: Makefile.local
+-.PHONY: default all clean pindel pindel-debug cppcheck
++.PHONY: default all clean distclean pindel pindel-debug cppcheck
+ .PRECIOUS: Makefile.local
+-.IGNORE: clean
++.IGNORE: clean distclean
+-- 
