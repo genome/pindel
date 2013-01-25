@@ -1,3 +1,9 @@
+pindel0.2.4t (0.2.4t-3) lucid; urgency=low
+
+  * remove quilt
+
+ -- Gabriel Sanderson <gsanders@linus220.gsc.wustl.edu>  Fri, 25 Jan 2013 16:44:14 -0600
+
 pindel0.2.4t (0.2.4t-2) lucid; urgency=low
 
   * Fixed dh_auto_clean to not use make clean, since make clean builds

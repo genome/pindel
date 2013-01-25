@@ -4,7 +4,7 @@ DEB_DIR=debian/pindel0.2.4t
 VERSION=0.2.4t
 
 %:
-	dh $@ --with quilt
+	dh $@
 
 override_dh_auto_clean:
 	$(RM) pindel pindel-debug *.gcov *.gcda *.gcno gmon.out *.d *.o
