@@ -266,7 +266,7 @@ void Genome::loadAll(const std::string& referenceFileName)
 	load( referenceFileName );
 	while (!m_referenceFile.eof() ) {
 		loadChromosome();
-                std::cout << "m_chromosomes.size() " << m_chromosomes.size() << " " << m_chromosomes[m_chromosomes.size() - 1]->getName() << std::endl;
+                //std::cout << "m_chromosomes.size() " << m_chromosomes.size() << " " << m_chromosomes[m_chromosomes.size() - 1]->getName() << std::endl;
 	}
 	m_fullMode = true;
 }
@@ -783,57 +783,57 @@ void createProbTable(const double seqErrorRate, const double sensitivity)
 
 void init(int argc, char *argv[], ControlState& currentState )
 {
-	std::cout << "1" << std::endl;
+	//std::cout << "1" << std::endl;
 	UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
 	logStream=&std::cout;
-std::cout << "2" << std::endl;
+//std::cout << "2" << std::endl;
     if (userSettings->NumRead2ReportCutOff == 1) {
         userSettings->BalanceCutoff = 300000000;
     }
-std::cout << "2" << std::endl;
+//std::cout << "2" << std::endl;
     // define all the parameters you have
     defineParameters( parameters );
-std::cout << "3" << std::endl;
+//std::cout << "3" << std::endl;
     // now read the parameters from the command line
     readParameters(argc, argv, parameters);
-std::cout << "4" << std::endl;
+//std::cout << "4" << std::endl;
 	if (userSettings->logFilename != "" ) {
 		g_logFile.open( userSettings->logFilename.c_str() );
 		logStream = &g_logFile;
 	}
-std::cout << "5" << std::endl;
+//std::cout << "5" << std::endl;
     *logStream << Pindel_Version_str << std::endl;
 
     if (argc <= 1) { // the user has not given any parameters
         printHelp( parameters );
         exit ( EXIT_FAILURE);
     }
-std::cout << "6" << std::endl;
+//std::cout << "6" << std::endl;
     // check parameters
     if (!checkParameters( parameters )) {
         exit ( EXIT_FAILURE);
     }
-std::cout << "7" << std::endl;
+//std::cout << "7" << std::endl;
 	createProbTable(0.001+userSettings->Seq_Error_Rate, userSettings->sensitivity); 
-std::cout << "7a" << std::endl;
+//std::cout << "7a" << std::endl;
 	std::string fastaFilename( userSettings->referenceFilename.c_str() );
 	if (userSettings->reportInterchromosomalEvents) {
-                std::cout << "7b" << std::endl; 
+                //std::cout << "7b" << std::endl; 
 		g_genome.loadAll( fastaFilename );
-                std::cout << "7c" << std::endl; 
+                //std::cout << "7c" << std::endl; 
 	}
 	else {
-                std::cout << "7d" << std::endl; 
+                //std::cout << "7d" << std::endl; 
 		g_genome.load( fastaFilename );
-                std::cout << "7e" << std::endl; 
+                //std::cout << "7e" << std::endl; 
 	}
-std::cout << "8" << std::endl;
+//std::cout << "8" << std::endl;
    bool BreakDancerDefined = parameters[findParameter("-b",parameters)]->isSet();
    if (BreakDancerDefined) {
       g_bdData.loadBDFile(userSettings->breakdancerFilename);
    }
 
-std::cout << "9" << std::endl;
+//std::cout << "9" << std::endl;
     if (userSettings->FLOAT_WINDOW_SIZE > 5000.0) {
         LOG_ERROR(*logStream << "Window size of " << userSettings->FLOAT_WINDOW_SIZE << " million bases is too large" << std::endl);
         exit ( EXIT_FAILURE);
@@ -844,7 +844,7 @@ std::cout << "9" << std::endl;
     }
     WINDOW_SIZE = (unsigned int)(1000000 * userSettings->FLOAT_WINDOW_SIZE);
 
-std::cout << "10" << std::endl;
+//std::cout << "10" << std::endl;
 
     // if all parameters are okay, open the files
 
@@ -852,7 +852,7 @@ std::cout << "10" << std::endl;
 		currentState.lineReader= getLineReaderByFilename(userSettings->pindelFilename.c_str());
         currentState.inf_Pindel_Reads = new PindelReadReader(*currentState.lineReader);
     }
-std::cout << "11" << std::endl;
+//std::cout << "11" << std::endl;
    if (userSettings->pindelConfigFileAsInput()) {
 		readPindelConfigFile( userSettings->pindelConfigFilename, currentState.pindelfilesToParse );
 	}
@@ -861,7 +861,7 @@ std::cout << "11" << std::endl;
         readBamConfigFile( userSettings->bamConfigFilename, currentState );
     }
 
-std::cout << "12" << std::endl;
+//std::cout << "12" << std::endl;
 
     bool AssemblyInputDefined = parameters[findParameter("-z",parameters)]->isSet();
     if (AssemblyInputDefined) {
@@ -872,16 +872,16 @@ std::cout << "12" << std::endl;
     if (GenotypingInputDefined) {
         currentState.inf_GenotypingInput.open(userSettings->inf_GenotypingInputFilename.c_str());
     }
-std::cout << "13" << std::endl;
+//std::cout << "13" << std::endl;
 
     omp_set_num_threads(userSettings->numThreads);
-std::cout << "14" << std::endl;
+//std::cout << "14" << std::endl;
     if (userSettings->MaxRangeIndex > g_MAX_RANGE_INDEX) {
        LOG_ERROR(*logStream
                   << "Maximal range index (-x) exceeds the allowed value (" << g_MAX_RANGE_INDEX << ") - resetting to " << g_MAX_RANGE_INDEX << ".\n" );
         userSettings->MaxRangeIndex = g_MAX_RANGE_INDEX;
     }
-std::cout << "15" << std::endl;
+//std::cout << "15" << std::endl;
 	if (userSettings->ADDITIONAL_MISMATCH<1) {
        LOG_ERROR(*logStream << "Number of additional mismatches (-a) is less than the allowed value (1) - resetting to 1.\n" );
         userSettings->ADDITIONAL_MISMATCH = 1;
@@ -896,12 +896,12 @@ std::cout << "15" << std::endl;
 	TestFileForOutput( userSettings->getCloseEndOutputFilename() );
 	CheckWhetherFasta( userSettings->referenceFilename );
 
-std::cout << "16" << std::endl;
+//std::cout << "16" << std::endl;
 
    if ( userSettings->breakdancerOutputFilename != "" ) {
 		TestFileForOutput( userSettings->breakdancerOutputFilename );
    }
-std::cout << "17" << std::endl;
+//std::cout << "17" << std::endl;
 
     Match[(short) 'A'] = 'A';
     Match[(short) 'C'] = 'C';
@@ -933,13 +933,13 @@ std::cout << "17" << std::endl;
     Cap2LowArray[(short) 'N'] = 'n';
     Cap2LowArray[(short) '$'] = 'n';
 
-std::cout << "18" << std::endl;
+//std::cout << "18" << std::endl;
 
     std::string Spacer = "";
     for (unsigned int i = 0; i < g_SpacerBeforeAfter; i++) {
         Spacer += "N";
     }
-std::cout << "19" << std::endl;
+//std::cout << "19" << std::endl;
     //Distance = 300;
 
 
@@ -952,7 +952,7 @@ std::cout << "19" << std::endl;
     if (!userSettings->getRegion()->isTargetChromosomeDefined() && AssemblyInputDefined == false && GenotypingInputDefined == false) {
         *logStream << "Looping over all chromosomes." << std::endl;
     }
-std::cout << "20" << std::endl;
+//std::cout << "20" << std::endl;
 }
 
 
