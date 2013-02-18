@@ -47,7 +47,7 @@ if [ "$?" -ne 0 ]; then
     echo "and run 'make'."
     echo " "
     echo "For futher help, see the pindel wiki and its FAQ on https://trac.nbic.nl/pindel/wiki/PindelFaq"
-    echo "Or contact us on k.ye@lumc.nl" 
+    echo "Or contact us on kye@genome.wustl.edu" 
     exit 1
 else
     echo "  "
@@ -65,6 +65,6 @@ else
     echo "You can test pindel with the example files in the demo directory; example commands are given in the RUNME in that directory."
     echo " " 
     echo "For help and background information, see the pindel wiki and its FAQ on https://trac.nbic.nl/pindel/wiki/PindelFaq"
-    echo "Or contact us on k.ye@lumc.nl" 
+    echo "Or contact us on kye@genome.wustl.edu" 
     echo " "
 fi 
