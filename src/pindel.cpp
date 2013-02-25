@@ -1079,36 +1079,39 @@ void SearchFarEnds( const std::string chromosomeSeq, std::vector<SPLIT_READ>& re
 
 
 void SearchSVs(ControlState& currentState, const int NumBoxes, const SearchWindow& currentWindow )
-{					
+{
+    //std::cout << "1" << std::endl;
 	UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
 
    SearchDeletions searchD;
    searchD.Search(g_bdData, currentState, NumBoxes, currentWindow);
-
+//std::cout << "2" << std::endl;
    searchIndels(currentState, NumBoxes, currentWindow);
-
+//std::cout << "3" << std::endl;
    if (userSettings->Analyze_TD) {
    	searchTandemDuplications(currentState, NumBoxes, currentWindow);
    	searchTandemDuplicationsNT(currentState, NumBoxes, currentWindow);
    }
-
+//std::cout << "4" << std::endl;
    if (userSettings->Analyze_INV) {
    	searchInversions(currentState, NumBoxes, currentWindow);
    	searchInversionsNT(currentState, NumBoxes, currentWindow);
    }
+//std::cout << "5" << std::endl;
 
    SearchShortInsertions searchSI;
    searchSI.Search(g_bdData, currentState, NumBoxes, currentWindow);
-
+//std::cout << "6" << std::endl;
 	ReportCloseAndFarEndCounts( currentState.Reads_SR );                 
-
+//std::cout << "7" << std::endl;
    if (userSettings->Analyze_LI) {
    	SortOutputLI(currentState, currentWindow.getChromosome()->getSeq(), currentState.Reads_SR, currentWindow, userSettings->getLIOutputFilename());
    }
-
+//std::cout << "8" << std::endl;
    if (userSettings->Analyze_BP) {
    	SortOutputRest(currentState, currentWindow.getChromosome()->getSeq(), currentState.Reads_SR, currentWindow, userSettings->getBPOutputFilename());
    }
+//std::cout << "9" << std::endl;
 }
 
 class TimerItem {

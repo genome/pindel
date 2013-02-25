@@ -37,21 +37,29 @@ int searchTandemDuplications(ControlState& currentState, unsigned NumBoxes, cons
 
 
    LOG_INFO(*logStream << "Searching tandem duplication events ... " << std::endl);
+    //std::cout << "std1" << std::endl;
    for (unsigned ReadIndex = 0; ReadIndex < currentState.Reads_SR.size(); ReadIndex++) {
 		SPLIT_READ& currentRead = currentState.Reads_SR[ReadIndex];
+       //std::cout << "std1a" << std::endl;
       if (currentRead.Used || currentRead.UP_Far.empty() || currentRead.FragName != currentRead.FarFragName) {
          continue;
       }
+       //std::cout << "std1b" << std::endl;
       if (currentRead.MatchedD == Plus) {
+          //std::cout << "in plus" << std::endl;
          for (short MAX_SNP_ERROR_index = 0; MAX_SNP_ERROR_index <= currentRead.getMAX_SNP_ERROR(); MAX_SNP_ERROR_index++) {
+             //std::cout << "std1c" << std::endl;
             for (unsigned int CloseIndex = 0; CloseIndex < currentRead.UP_Close.size(); CloseIndex++) {
-               if (currentRead.Used) {
+                //std::cout << "std1d" << std::endl;
+               if (currentRead.Used  || currentRead. BPLeft == 0) {
                   break;
                }
                if (currentRead.UP_Close[CloseIndex].Mismatches > MAX_SNP_ERROR_index) {
                   continue;
                }
+                //std::cout << "std1e " << currentRead.UP_Far.size() << std::endl;
                for (int FarIndex = currentRead.UP_Far.size() - 1; FarIndex >= 0; FarIndex--) {
+                  //std::cout << "std1f" << std::endl;
                   if (currentRead.Used) {
                      break;
                   }
@@ -61,6 +69,7 @@ int searchTandemDuplications(ControlState& currentState, unsigned NumBoxes, cons
                   if (currentRead.UP_Far[FarIndex].Mismatches + currentRead.UP_Close[CloseIndex].Mismatches > MAX_SNP_ERROR_index) {
                      continue;
                   }
+                   //std::cout << "std1g" << std::endl;
                   if (currentRead.UP_Far[FarIndex].Direction  == Minus) {
 
                      if (currentRead.UP_Far[FarIndex].LengthStr + currentRead.UP_Close[CloseIndex].LengthStr == currentRead.getReadLength() && 
@@ -94,14 +103,18 @@ int searchTandemDuplications(ControlState& currentState, unsigned NumBoxes, cons
 
       }
       else if (currentRead.MatchedD == Minus) {
+         //std::cout << "in Minus" << std::endl;
          for (short MAX_SNP_ERROR_index = 0; MAX_SNP_ERROR_index <= currentRead.getMAX_SNP_ERROR(); MAX_SNP_ERROR_index++) {
+            //std::cout << "in Minus 1" << std::endl;
             for (int CloseIndex = currentRead.UP_Close.size() - 1; CloseIndex >= 0; CloseIndex--) {
-               if (currentRead.Used) {
+                //std::cout << "in Minus 2" << std::endl;
+               if (currentRead.Used || currentRead. BPLeft == 0) {
                   break;
                }
                if (currentRead.UP_Close[CloseIndex].Mismatches > MAX_SNP_ERROR_index) {
                   continue;
                }
+                //std::cout << "in Minus 3" << std::endl;
                for (int FarIndex = 0; FarIndex < (int) currentRead.UP_Far.size(); FarIndex++) {
                   if (currentRead.Used) {
                      break;
@@ -113,6 +126,7 @@ int searchTandemDuplications(ControlState& currentState, unsigned NumBoxes, cons
                      continue;
                   }
                   if (currentRead.UP_Far[FarIndex]. Direction == Plus) {
+                      //std::cout << "BPLeft" << currentRead. BPLeft << std::endl;
                      if (currentRead.UP_Close[CloseIndex].LengthStr + currentRead.UP_Far[FarIndex].LengthStr == currentRead.getReadLength() && 
                          currentRead.UP_Close[CloseIndex].AbsLoc + currentRead.UP_Close[CloseIndex].LengthStr < currentRead.UP_Far[FarIndex]. AbsLoc && 
                          currentRead.UP_Close[CloseIndex].AbsLoc + currentRead.UP_Far[FarIndex].LengthStr < currentRead.UP_Far[FarIndex]. AbsLoc) {
@@ -139,17 +153,20 @@ int searchTandemDuplications(ControlState& currentState, unsigned NumBoxes, cons
                      }
                   }
                }
+                //std::cout << "in Minus 4" << std::endl;
             }
          }
       }
    }
+    //std::cout << "std2" << std::endl;
    LOG_INFO(*logStream << "Total: " << Count_TD << "\t+" << Count_TD_Plus << "\t-"  << Count_TD_Minus << std::endl);
    std::ofstream TDOutf(userSettings->getTDOutputFilename().c_str(), std::ios::app);
    SortAndOutputTandemDuplications(currentState, NumBoxes, window.getChromosome()->getSeq(), currentState.Reads_SR, TD, TDOutf, false);
+    //std::cout << "std3" << std::endl;
    for (unsigned int i = 0; i < NumBoxes; i++) {
       TD[i].clear();
    }
-
+   // std::cout << "std4" << std::endl;
    return EXIT_SUCCESS;
 }
 

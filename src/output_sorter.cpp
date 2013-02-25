@@ -264,9 +264,16 @@ int OutputSorter::DoSortAndOutputInversions (ControlState& currentState, std::ve
 
 bool IsGoodINV(std::vector < SPLIT_READ > & GoodIndels, Indel4output & OneIndelEvent, unsigned RealStart, unsigned RealEnd, ControlState& currentState) {
     
+    if (RealEnd < RealStart || RealStart == 0) {
+        //std::cout << "RealEnd < RealStart false" << std::endl;
+        return false;
+    }
+    
+    
     UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
     
     //if (userSettings->pindelConfigFileAsInput() ||userSettings->singlePindelFileAsInput()) return true;
+    //std::cout << "three " << userSettings->pindelConfigFileAsInput() << " || " << userSettings->singlePindelFileAsInput() << " || " << userSettings->NormalSamples << std::endl;
     if (userSettings->pindelConfigFileAsInput() || userSettings->singlePindelFileAsInput() || userSettings->NormalSamples == false) return true;
     //return true;
     
@@ -281,10 +288,7 @@ bool IsGoodINV(std::vector < SPLIT_READ > & GoodIndels, Indel4output & OneIndelE
     unsigned CountLeft = 0;
     unsigned CountRight = 0;
     //bool WhetherIsGood;
-    if (RealEnd < RealStart) {
-        //std::cout << "RealEnd < RealStart false" << std::endl;
-        return false;
-    }
+
     if (RealEnd - RealStart < (unsigned)GoodIndels[OneIndelEvent.Start].getReadLength() * 2) {
         //std::cout << "< readlength, good" << std::endl;
         return true;
