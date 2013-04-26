@@ -31,9 +31,9 @@ coverage-tests: $(COVERAGE)
 small-functional-test:
 	-rm -rf $(DST)
 	mkdir -p $(DST)
-	$(PINDEL) -T $(THREADS) $(SIM1CHRVS20305_ARGS) > sim1chrVs20305.log
-	$(PINDEL) -T $(THREADS) $(COLOWOBD15_ARGS) > colowobd15.log
-	$(PINDEL) -T $(THREADS) $(COLOUSINGBD15_ARGS) > colousingbd15.log
+	$(PINDEL) -T 1 $(SIM1CHRVS20305_ARGS) > sim1chrVs20305.log
+	$(PINDEL) -T 1 $(COLOWOBD15_ARGS) > colowobd15.log
+	$(PINDEL) -T 1 $(COLOUSINGBD15_ARGS) > colousingbd15.log
 	./compare.sh
 
 # Verify that the time to execute will not increase
