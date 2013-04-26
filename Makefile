@@ -34,7 +34,8 @@ clean:
 	make -C test clean
 
 Makefile.local:
-	echo '# Local configuration' > $@
+        rm -rf Makefile.local
+        echo '# Local configuration' > $@
 	echo '# Location of SAMTools' >> $@
 	echo "SAMTOOLS=$(realpath $(SAMTOOLS))" >> $@
 	echo '' >> $@
