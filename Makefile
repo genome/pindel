@@ -34,22 +34,21 @@ clean:
 	make -C test clean
 
 Makefile.local:
-	echo '# Local configuration' > $@
-	echo '# Location of SAMTools' >> $@
-	echo "SAMTOOLS=$(realpath $(SAMTOOLS))" >> $@
-	echo '' >> $@
-	echo '# Number of threads for functional tests, set to 2 or more, recommended to match number of cores' >> $@
-	(if [ -e /proc/cpuinfo ] ; then THREADS=`fgrep -c processor /proc/cpuinfo` ; echo "THREADS=${THREADS}" ; else echo 'THREADS=2' ; fi) >> $@
-	echo '' >> $@
-	echo '# Acceptance test tuning variables (seconds), set to realistic values for your system' >> $@
-	echo '# Numbers based on running in CI on Intel i7 2.8GHz, 8 cores, 24GB RAM' >> $@
-	echo 'COLOUSINGBD15_TIME=60' >> $@
-	echo 'COLOWOBD15_TIME=80' >> $@
-	echo 'SIM1CHRVS20305_TIME=60' >> $@
-	echo 'Created Makefile.local, please review the configuration' && exit 1
+	@echo '# Local configuration' > $@
+	@echo '# Location of SAMTools' >> $@
+	@echo "SAMTOOLS=$(realpath $(SAMTOOLS))" >> $@
+	@echo '' >> $@
+	@echo '# Number of threads for functional tests, set to 2 or more, recommended to match number of cores' >> $@
+	@(if [ -e /proc/cpuinfo ] ; then THREADS=`fgrep -c processor /proc/cpuinfo` ; echo "THREADS=${THREADS}" ; else echo 'THREADS=2' ; fi) >> $@
+	@echo '' >> $@
+	@echo '# Acceptance test tuning variables (seconds), set to realistic values for your system' >> $@
+	@echo '# Numbers based on running in CI on Intel i7 2.8GHz, 8 cores, 24GB RAM' >> $@
+	@echo 'COLOUSINGBD15_TIME=60' >> $@
+	@echo 'COLOWOBD15_TIME=80' >> $@
+	@echo 'SIM1CHRVS20305_TIME=60' >> $@
+	@echo 'Created Makefile.local, please review the configuration' && exit 1
 
 # Pseudo targets for configuration
-.SILENT: Makefile.local
 .PHONY: default all clean test pindel pindel-debug cppcheck acceptance-tests \
 	coverage-tests functional-tests regression-tests
 .PRECIOUS: Makefile.local
