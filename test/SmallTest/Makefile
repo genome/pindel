@@ -41,9 +41,9 @@ execution-time:
 	-rm -rf $(DST)
 	mkdir -p $(DST)
 	# Run in 1 thread otherwise it will skew on multicore machines
-	$(TIMEX) $(SIM1CHRVS20305_TIME) $(PINDEL) -T 1 $(SIM1CHRVS20305_ARGS) > timex-sim1chrVs20305.log
-	$(TIMEX) $(COLOWOBD15_TIME) $(PINDEL) -T 1 $(COLOWOBD15_ARGS) > timex-colowobd15.log
-	$(TIMEX) $(COLOUSINGBD15_TIME) $(PINDEL) -T 1 $(COLOUSINGBD15_ARGS) > timex-colousingbd15.log
+	$(TIMEX) $(SIM1CHRVS20305_TIME) $(PINDEL) -T $(THREADS) $(SIM1CHRVS20305_ARGS) > timex-sim1chrVs20305.log
+	$(TIMEX) $(COLOWOBD15_TIME) $(PINDEL) -T $(THREADS) $(COLOWOBD15_ARGS) > timex-colowobd15.log
+	$(TIMEX) $(COLOUSINGBD15_TIME) $(PINDEL) -T $(THREADS) $(COLOUSINGBD15_ARGS) > timex-colousingbd15.log
 
 # Generate code coverage reports
 $(COVERAGE): assemble-coverage
