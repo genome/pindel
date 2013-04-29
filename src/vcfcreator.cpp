@@ -7,7 +7,12 @@
 	e.m.w.lameijer@gmail.com
 	+31(0)71-5 125 831
 
-	Version 0.5.6 [January 25th, 2013] Hotfixed cases where 'empty' samples were reported. Still need to get enough data for more thorough fixing
+	Version 0.5.8 [April 28th, 2013] Added "-co" option for compact output; -co followed by an integer indicates
+ 		the longest variation displayed with full base sequence. If, for example, the user gives as command line parameter 
+		"-co 10", then if either the reference or the alternative allele exceeds 10 bases, the output will be transformed
+		into the format chrom pos firstrefbase <SVType>.	
+	Version 0.5.7 [February 1st, 2013] Now updated my contact information.
+	Version 0.5.6 [February 1st, 2013]  Quickfix since user detected empty labels. Note: since no input was delivered that enabled me to reproduce the bug, I could not find the true cause. So problems may still crop up in the future.
 	Version 0.5.5 [December 10th, 2012] Modified the code so that LI / -P now gives correct GT:AD instead of GT:RD:AD output. Also fixed small bug in creating ALT of NT-inversions
 	Version 0.5.4 [December 6th, 2012] Error found by David Hannah on using the -P option debugged
    Version 0.5.3 [November 8th, 2012] Now should genotype newer pindel output as 0/0, 1/1 or 0/1 based on apparent balance between alleles
@@ -77,7 +82,7 @@ const int FIRST_SAMPLE_INDEX = 32; // index of first sample name
 
 using namespace std;
 
-string g_versionString = "0.5.5";
+string g_versionString = "0.5.7";
 string g_programName = "pindel2vcf";
 
 bool g_normalBaseArray[256];
@@ -106,6 +111,7 @@ struct ParameterSettings {
    int maxPostRepeatLength;
 	bool onlyBalancedSamples;
 	int minimumStrandSupport;
+	int compactOutput;
    bool showHelp;
 	bool gatkCompatible;
 } g_par;
@@ -926,6 +932,8 @@ public:
    void fuse( SVData& otherSV );
 	string getReference() const; // reference sequence, for indels including the base before it
 	string getAlternative() const;
+	string getOutputFormattedReference() const;
+	string getOutputFormattedAlternative() const;
 	void setNT(string nt) { d_nt = nt; };
 	void setSecondNT(string secondNT) { d_nt2 = secondNT; };
 	bool withinAllowedRepeatsPostIndel(const int maxRepeatLen, const int maxNoRepeats) const;
@@ -1026,6 +1034,40 @@ string SVData::getReference() const
    	}
 		return refVariant;
 	}
+}
+
+string SVData::getOutputFormattedReference() const
+{
+   string defaultRef = getReference();
+	string defaultAlt = getAlternative();
+   if (defaultAlt == "<INS>" ) {
+		return defaultRef;
+	} 
+	else {
+		if (g_par.compactOutput>1) {
+			if ( defaultRef.size() > g_par.compactOutput || defaultAlt.size() > g_par.compactOutput ) {
+				defaultRef.erase(1);
+			}
+		}
+	}
+	return defaultRef; 
+}
+
+string SVData::getOutputFormattedAlternative() const
+{
+	string defaultRef = getReference();
+	string defaultAlt = getAlternative();
+	if (defaultAlt == "<INS>" ) {
+		return defaultAlt;
+	}
+	else {
+		if ( g_par.compactOutput > 1 ) {
+			if ( defaultRef.size() > g_par.compactOutput || defaultAlt.size() > g_par.compactOutput ) {
+				defaultAlt = "<" + d_svtype + ">";
+			}
+		}
+	}
+	return defaultAlt;
 }
 
 SVData::SVData(const int genotypeTotal) // default settings
@@ -1267,8 +1309,8 @@ ostream& operator<<(ostream& os, const SVData& svd)
    os << svd.d_chromosome << "\t";
    os << svd.getPosition() << "\t";
    os << svd.d_id << "\t";
-   os << svd.getReference() << "\t";
-   os << svd.getAlternative() << "\t";
+   os << svd.getOutputFormattedReference() << "\t";
+   os << svd.getOutputFormattedAlternative() << "\t";
    os << svd.d_quality << "\t";
    os << svd.d_filter << "\t";
 
@@ -1391,9 +1433,9 @@ counter++;
 		if (elementsInLine> FIRST_SAMPLE_INDEX + 5* numberOfSamples ) {
 			pindel024uOrLater = true;
 		}
-      else {
+/*      else { //*** This code seems to give trouble with some pindel output; pindel output format not consistent?
 			pindel024uOrLater = false;
-      }
+      }*/
 		int numberOfElementsPerSample = ( pindel024uOrLater ? 7 : 5 );
       string newSampleName = fetchElement( lineStream, numberOfElementsPerSample );
       while (!lineStream.fail()) {
@@ -1686,7 +1728,9 @@ void createParameters()
    parameters.push_back(
       new IntParameter( &g_par.maxInterRepeatNo, "-ir", "--max_internal_repeats", "Filters out all indels where the inserted/deleted sequence is a homopolymer/microsatellite of more than X repetitions (default infinite). For example: T->TCACACA has CACACA as insertion, which is a microsattelite of 3 repeats; this would be filtered out by setting -ir to 2", false, -1 ) );
    parameters.push_back(
-      new IntParameter( &g_par.maxInterRepeatLength, "-il", "--max_internal_repeatlength", "Filters out all indels where the inserted/deleted sequence is a homopolymers/microsatellite with an unit size of more than Y, combine with the option -ir. Default value of -il is infinite. For example: T->TCAGCAG has CAGCAG as insertion, which has the fundamental repetitive unit CAG of length 3. This would be filtered out if -il has been set to 3 or above, but would be deemed 'sufficiently unrepetitive' if -il is 2", false, -1 ) );
+		new IntParameter( &g_par.compactOutput, "-co", "--compact_output_limit", "Puts all structural variations of which either the ref allele or the alt allele exceeds the specified size (say 10 in '-co 10') in the format 'chrom pos first_base <SVType>'", false, -1 ) );
+   parameters.push_back(
+	   new IntParameter( &g_par.maxInterRepeatLength, "-il", "--max_internal_repeatlength", "Filters out all indels where the inserted/deleted sequence is a homopolymers/microsatellite with an unit size of more than Y, combine with the option -ir. Default value of -il is infinite. For example: T->TCAGCAG has CAGCAG as insertion, which has the fundamental repetitive unit CAG of length 3. This would be filtered out if -il has been set to 3 or above, but would be deemed 'sufficiently unrepetitive' if -il is 2", false, -1 ) );
 	parameters.push_back(
      	new IntParameter( &g_par.maxPostRepeatNo, "-pr", "--max_postindel_repeats", "Filters out all indels where the inserted/deleted sequence is followed by a repetition (of over X times) of the fundamental repeat unit of the inserted/deleted sequence. For example, T->TCACA would usually be a normal insertion, which is not filtered out, but if the real sequence change is TCACACA->TCACACACACA, it will be filtered out by -pr of 1 or above, as the fundamental repeat unit of the inserted sequence (CA) is repeated more than one time in the postindel sequence [indel sequence CACA, postindel sequence CACACA]. Note: when CAC is inserted next to ACACAC, the repeat sequence is recognized as CA, even though the 'postrepeat' sequence is ACACAC", false, -1 ) );
   	parameters.push_back(
@@ -1758,7 +1802,7 @@ void printHelp()
 {
    cout << "\nProgram:   " << g_programName <<" (conversion of Pindel output to VCF format)\n";
    cout << "Version:   " << g_versionString << endl;
-   cout << "Contact:   Eric-Wubbo Lameijer <e.m.w.lameijer@lumc.nl>\n\n";
+   cout << "Contact:   Eric-Wubbo Lameijer <e.m.w.lameijer@gmail.com>\n";
    cout << "Usage:     " << g_programName << " -p <pindel_output_file> -r <reference_file>\n";
    cout << "              -R <name_and_version_of_reference_genome> -d <date_of_reference_genome_version>\n";
    cout << "              [-v <vcf_output_file>]\n\n";
