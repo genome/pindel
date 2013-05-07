@@ -91,7 +91,7 @@ public:
 	int CountFarEnd, CountFarEndPlus, CountFarEndMinus;
 
 	//TODO: explain what are stored in these two vectors.
-	std::vector<BreakDancerEvent> All_BD_events_WG, All_BD_events;
+	std::vector<BreakDancerEvent> External_BD, All_BD_events_WG, All_BD_events;
 };
 
 #endif /* CONTROLSTATE_H_ */

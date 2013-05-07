@@ -1390,7 +1390,7 @@ void SortOutputD (ControlState& currentState, const unsigned &NumBoxes, const st
          //std::cout << "S8" << std::endl;
          OneIndelEvent.RealStart = OneIndelEvent.BPLeft;
          OneIndelEvent.RealEnd = OneIndelEvent.BPRight;
-          std::cout << OneIndelEvent.RealStart << " " << OneIndelEvent.RealEnd << std::endl;
+         // std::cout << OneIndelEvent.RealStart << " " << OneIndelEvent.RealEnd << std::endl;
          OneIndelEvent.Support = OneIndelEvent.End - OneIndelEvent.Start + 1;
          GetRealStart4Deletion (CurrentChr, OneIndelEvent.RealStart,
                                 OneIndelEvent.RealEnd);

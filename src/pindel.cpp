@@ -74,7 +74,7 @@
 /* EW: update 0.2.4s: bugfix for -p option of Pindel0.2.4r */
 /* EW: update 0.2.4t, updates now shown in RELEASE document in trunk directory */
 
-const std::string Pindel_Version_str = "Pindel version 0.2.4w, Feb 25 2013.";
+const std::string Pindel_Version_str = "Pindel version 0.2.4x, May 7 2013.";
 
 const Chromosome g_dummyChromosome("","");
 Genome g_genome;
@@ -958,70 +958,68 @@ void init(int argc, char *argv[], ControlState& currentState )
 
 void SearchFarEnd( const std::string& chromosome, SPLIT_READ& read, const Chromosome& currentChromosome)
 {
+	//std::cout << "entering SearchFarEnd" << std::endl;
 	const int START_SEARCH_SPAN = 128;
 
-   // when using bins, some reads may already have been assigned far ends already if they were members of the previous bins; they
-   // can be skipped here
-   /*if (read.Investigated) {
-       return;
-   }*/
-
-//std::cout << "CurrentChromosome name /seq =" << currentChromosome.getName() << " = " << currentChromosome.getSeq() << "\n";
 	const std::vector< SearchWindow>& searchCluster =  g_bdData.getCorrespondingSearchWindowCluster( read );
-  	 //std::cout << read.Name << " - " << read.getLastAbsLocCloseEnd() << "\n"; 
-	if (searchCluster.size()!=0) {
-       //  std::cout << "Breakdancer input is not empty " << searchCluster.size() << std::endl;
-       SearchFarEndAtPos( chromosome, read, searchCluster); // SearchFarEndAtPos
-	   if (read.goodFarEndFound()) {
-			//read.Investigated = true;
-	      return;
-       }
-       else SearchFarEndAtPosPerfect( chromosome, read, searchCluster);
-    }
-
-   UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
-
-   // if breakdancer does not find the event, or not find an event we trust, we turn to regular pattern matching
-   unsigned int searchSpan=START_SEARCH_SPAN;
-   unsigned int centerOfSearch = read.getLastAbsLocCloseEnd();
+	//std::cout << read.Name << " - " << read.getLastAbsLocCloseEnd() << "\n"; 
+	//std::cout << "SearchFarEnd	1" << std::endl;
 	
-   for (int rangeIndex=1; rangeIndex<=userSettings->MaxRangeIndex; rangeIndex++ ) {
+	if (searchCluster.size()!=0) {
+	//  std::cout << "Breakdancer input is not empty " << searchCluster.size() << std::endl;
+	SearchFarEndAtPos( chromosome, read, searchCluster); // SearchFarEndAtPos
+		if (read.goodFarEndFound()) {
+		//read.Investigated = true;
+		return;
+		}
+		else SearchFarEndAtPosPerfect( chromosome, read, searchCluster);
+	}
+	//std::cout << "SearchFarEnd	2" << std::endl;
+	UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
+
+	// if breakdancer does not find the event, or not find an event we trust, we turn to regular pattern matching
+	unsigned int searchSpan=START_SEARCH_SPAN;
+	unsigned int centerOfSearch = read.getLastAbsLocCloseEnd();
+		//std::cout << "SearchFarEnd	3" << std::endl;
+	for (int rangeIndex=1; rangeIndex<=userSettings->MaxRangeIndex; rangeIndex++ ) {
 		// note: searching the central range again and again may seem overkill, but since Pindel at the moment wants an unique best point, you can't skip the middle part
 		// may be stuff for future changes/refactorings though
 		std::vector< SearchWindow > aroundCESearchCluster;
-      unsigned int Start, End;
-      if (centerOfSearch > searchSpan+g_SpacerBeforeAfter) {
+		unsigned int Start, End;
+		if (centerOfSearch > searchSpan+g_SpacerBeforeAfter) {
 			Start = centerOfSearch - searchSpan;
 		}
-      else {
+		else {
 			Start = g_SpacerBeforeAfter;
 		}
-       if (centerOfSearch + searchSpan + g_SpacerBeforeAfter < chromosome.size()) {
-           End = centerOfSearch + searchSpan;
-       }
-       else {
-           End = chromosome.size() - g_SpacerBeforeAfter;
-       }
+		if (centerOfSearch + searchSpan + g_SpacerBeforeAfter < chromosome.size()) {
+			End = centerOfSearch + searchSpan;
+		}
+		else {
+			End = chromosome.size() - g_SpacerBeforeAfter;
+		}
 		//std::cout << "Start is (abs) " << Start << " (rel): " << Start - g_SpacerBeforeAfter << "\n";
 		//std::cout << "End is (abs) " << End << " (rel): " << End - g_SpacerBeforeAfter << " Size chrom= " << chromosome.size() << "\n";
-      //std::cout << Start << "FirstStart " << centerOfSearch+searchSpan-10000000 << "<COS" << centerOfSearch-10000000 << " span " << searchSpan<< std::endl;
+		//std::cout << Start << "FirstStart " << centerOfSearch+searchSpan-10000000 << "<COS" << centerOfSearch-10000000 << " span " << searchSpan<< std::endl;
 		SearchWindow regularWindow( &currentChromosome, Start, End );
-      //std::cout << Start << " " << centerOfSearch+searchSpan-10000000 << std::endl;
+		//std::cout << Start << " " << centerOfSearch+searchSpan-10000000 << std::endl;
 		aroundCESearchCluster.push_back( regularWindow );
-       SearchFarEndAtPos( chromosome, read, aroundCESearchCluster ); // SearchFarEndAtPosPerfect
-       if (read.goodFarEndFound()) {
-           //read.Investigated = true;
-           return;
-       }
-       else SearchFarEndAtPosPerfect( chromosome, read, searchCluster);
-       if (read.goodFarEndFound()) {
-           //read.Investigated = true;
-           return;
-       }
-       searchSpan *= 4;
-
-   }
+		//std::cout << rangeIndex << "\tSearchFarEndAtPos" << std::endl;
+		SearchFarEndAtPos( chromosome, read, aroundCESearchCluster ); // SearchFarEndAtPosPerfect
+		//std::cout << "end\tSearchFarEndAtPos" << std::endl;
+		if (read.goodFarEndFound()) {
+			//read.Investigated = true;
+			return;
+		}
+		else SearchFarEndAtPosPerfect( chromosome, read, searchCluster);
+		if (read.goodFarEndFound()) {
+			//read.Investigated = true;
+			return;
+		}
+		searchSpan *= 4;
+	}
 	//read.Investigated = true;
+	//std::cout << "leaving SearchFarEnd" << std::endl;
 }
 
 void ReportCloseMappedReads( const std::vector<SPLIT_READ>& reads )
@@ -1063,18 +1061,17 @@ void ReportCloseAndFarEndCounts( const std::vector<SPLIT_READ>& reads )
    *logStream << "For LI and BP: " << Count_Unused << "\n\n";
 }
 
-void SearchFarEnds( const std::string chromosomeSeq, std::vector<SPLIT_READ>& reads, const Chromosome& currentChromosome)
-{
+void SearchFarEnds( const std::string chromosomeSeq, std::vector<SPLIT_READ>& reads, const Chromosome& currentChromosome) {
 	#pragma omp parallel default(shared)
-   {
-	   #pragma omp for
-      for (int readIndex= 0; readIndex < (int)reads.size(); readIndex++ ) {
-         SearchFarEnd( chromosomeSeq, reads[readIndex], currentChromosome );
-          
-      }
-   }
+	{
+		#pragma omp for
+		for (int readIndex= 0; readIndex < (int)reads.size(); readIndex++ ) {
+			//std::cout << "readIndex: " << readIndex << std::endl;
+			SearchFarEnd( chromosomeSeq, reads[readIndex], currentChromosome );
+		}
+	}
 
-   *logStream << "Far end searching completed for this window." << std::endl;
+	*logStream << "Far end searching completed for this window." << std::endl;
 }
 
 
@@ -1230,7 +1227,7 @@ short UpdateRefReadCoverage(ControlState& currentState, const SearchWindow& curr
     for (unsigned index = 0; index < Length; index++) {
         g_RefCoverageRegion.push_back(OnePos);
     }
-    std::cout << "declare g_RefCoverageRegion done" << std::endl;
+    //std::cout << "declare g_RefCoverageRegion done" << std::endl;
     
     #pragma omp parallel default(shared)
     {
@@ -1249,7 +1246,7 @@ short UpdateRefReadCoverage(ControlState& currentState, const SearchWindow& curr
             }
         }//RefSupportingReads
     }
-    std::cout << "update g_RefCoverageRegion done" << std::endl;
+    //std::cout << "update g_RefCoverageRegion done" << std::endl;
     /*
     for (unsigned PosIndex = 0; PosIndex < Length; PosIndex++) {
         std::cout << Start + PosIndex;
@@ -1288,84 +1285,91 @@ short CheckChrName(std::string ChrName) {
 int main(int argc, char *argv[])
 {
 	//TODO: These are counters that are only used in individual steps. They should be moved to separate functions later.
-   //Below are variables used for cpu time measurement
-   time_t Time_Load_S, Time_Load_E, Time_Mine_E, Time_Sort_E;
+	//Below are variables used for cpu time measurement
+	time_t Time_Load_S, Time_Load_E, Time_Mine_E, Time_Sort_E;
 	Timer timer;
 	timer.switchTo("Initializing pindel");
 	
-   Time_Load_S = time(NULL);
-   unsigned int AllLoadings = 0;
-   unsigned int AllSortReport = 0;
-   ControlState currentState;
+	Time_Load_S = time(NULL);
+	unsigned int AllLoadings = 0;
+	unsigned int AllSortReport = 0;
+
+	ControlState currentState;
 	UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
-   std::cout << "Initializing parameters..." << std::endl;
-   init(argc, argv, currentState );
-   std::cout << "Initializing parameters done." << std::endl;
- 
-    if (init_g_ChrNameAndSizeAndIndex(userSettings->getRefFilename() + ".fai") == 1) {
-        std::cout << "Please use samtools to index your reference file.\n .fai is missing.\n" << std::endl;
-        return 1;
-    }
-    
-    if (!userSettings->loopOverAllChromosomes()) {
-        if (CheckChrName(userSettings->getRegion()->getTargetChromosomeName()) == 0) {
-            std::cout << "Please check chromosome name in the reference file, BAM files and command line. \n Make sure that they are consistent.\n" << std::endl;
-            return 1;
-        }
-    }
+	std::cout << "Initializing parameters..." << std::endl;
+	init(argc, argv, currentState );
+	std::cout << "Initializing parameters done." << std::endl;
+
+	if (init_g_ChrNameAndSizeAndIndex(userSettings->getRefFilename() + ".fai") == 1) {
+		std::cout << "Please use samtools to index your reference file.\n .fai is missing.\n" << std::endl;
+		return 1;
+	}
+
+	if (!userSettings->loopOverAllChromosomes()) {
+		if (CheckChrName(userSettings->getRegion()->getTargetChromosomeName()) == 0) {
+			std::cout << "Please check chromosome name in the reference file, BAM files and command line. \n Make sure that they are consistent.\n" << std::endl;
+			return 1;
+		}
+	}
     
 
-    /* Start of shortcut to genotyping *///
-    currentState.inf_AssemblyInput.open(userSettings->inf_AssemblyInputFilename.c_str());
+	/* Start of shortcut to genotyping *///
+	currentState.inf_AssemblyInput.open(userSettings->inf_AssemblyInputFilename.c_str());
 	bool GenotypingInputDefined = parameters[findParameter("-g",parameters)]->isSet();
     
-    //std::ifstream FastaFile(userSettings->getRefFilename().c_str());
-   if (GenotypingInputDefined) {
-      //doGenotyping(currentState, userSettings );
-      exit(EXIT_SUCCESS);
-   }
+	//std::ifstream FastaFile(userSettings->getRefFilename().c_str());
+	if (GenotypingInputDefined) {
+		//doGenotyping(currentState, userSettings );
+		exit(EXIT_SUCCESS);
+	}
     
-   bool AssemblyInputDefined = parameters[findParameter("-z",parameters)]->isSet();
-   if (AssemblyInputDefined) {
-      doAssembly(currentState, userSettings );
-      exit(EXIT_SUCCESS);
-   }
+	bool AssemblyInputDefined = parameters[findParameter("-z",parameters)]->isSet();
+	if (AssemblyInputDefined) {
+		doAssembly(currentState, userSettings );
+		exit(EXIT_SUCCESS);
+	}
 
-    // If -q parameter given, search for mobile element insertions and quit.
-    if (parameters[findParameter("-q", parameters)]->isSet()) {
-        exit(searchMEImain(currentState, g_genome, userSettings));
-    }
+	// If -q parameter given, search for mobile element insertions and quit.
+	if (parameters[findParameter("-q", parameters)]->isSet()) {
+		exit(searchMEImain(currentState, g_genome, userSettings));
+	}
     
-    if (parameters[findParameter("-Y", parameters)]->isSet()) {
-        std::string ChrName, TempStr;
-        unsigned Ploidy;
-        std::ifstream PloidyFile( userSettings->PloidyFileName.c_str() );
-        std::map<std::string,unsigned>::iterator it;
-        while (PloidyFile >> ChrName >> Ploidy) {
-            std::cout << ChrName << "\t" << Ploidy << std::endl;
-            getline(PloidyFile, TempStr);
-            it = g_ChrName2Ploidy.find(ChrName);
-            if (it != g_ChrName2Ploidy.end()) {
-                std::cout << "This chromosome " << ChrName << " already seen. Please check " << userSettings->PloidyFileName << std::endl;
-                return 1;
-            }
-            else g_ChrName2Ploidy.insert(std::pair<std::string, unsigned>(ChrName, Ploidy) );
-        }
-    }
+	if (parameters[findParameter("-Y", parameters)]->isSet()) {
+		std::string ChrName, TempStr;
+		unsigned Ploidy;
+		std::ifstream PloidyFile( userSettings->PloidyFileName.c_str() );
+		std::map<std::string,unsigned>::iterator it;
+		while (PloidyFile >> ChrName >> Ploidy) {
+			std::cout << ChrName << "\t" << Ploidy << std::endl;
+			getline(PloidyFile, TempStr);
+			it = g_ChrName2Ploidy.find(ChrName);
+			if (it != g_ChrName2Ploidy.end()) {
+				std::cout << "This chromosome " << ChrName << " already seen. Please check " << userSettings->PloidyFileName << std::endl;
+				return 1;
+			}
+			else g_ChrName2Ploidy.insert(std::pair<std::string, unsigned>(ChrName, Ploidy) );
+		}
+	}
 
-   /* Normal pindel functioning: search SVs*/
+	/* Normal pindel functioning: search SVs*/
 
-   // Get a new chromosome again and again until you have visited the specified chromosome or the file ends
-   // CurrentChrName stores the name of the chromosome.
-    std::cout << "loading reference genome" << std::endl;
-   bool SpecifiedChrVisited = false;
+	// Get a new chromosome again and again until you have visited the specified chromosome or the file ends
+	// CurrentChrName stores the name of the chromosome.
+	std::cout << "loading reference genome" << std::endl;
+	bool SpecifiedChrVisited = false;
 
-   do {
+	std::string CurrentChrName;
+	std::string PreviousChrName = "";
+
+	do {
+		//std::cout << "here" << std::endl;
 		timer.switchTo("Loading chromosomes");
 		const Chromosome* currentChromosome = g_genome.getNextChromosome();
-		if ( (currentChromosome == NULL ) || ( SpecifiedChrVisited==true )) {
+		
+		if ( (currentChromosome == NULL ) || ( SpecifiedChrVisited == true )) {
 			break;
 		}
+		CurrentChrName = currentChromosome->getName();
 		if (!userSettings->loopOverAllChromosomes()) {
 			if (currentChromosome->getName() == userSettings->getRegion()->getTargetChromosomeName() ) {
 				SpecifiedChrVisited = true;
@@ -1376,152 +1380,183 @@ int main(int argc, char *argv[])
 			}
 		}
 
-      *logStream << "Processing chromosome: " << currentChromosome->getName() << std::endl;
+		*logStream << "Processing chromosome: " << currentChromosome->getName() << std::endl;
+		std::cout << "CurrentChrName: " << currentChromosome->getName() << std::endl;
 
-      g_maxPos = 0; // #################
-      *logStream << "Chromosome Size: " << currentChromosome->getBiolSize() << std::endl;
-      CurrentChrMask.resize(currentChromosome->getCompSize());
-      std::cout << "currentChromosome->getCompSize()" << currentChromosome->getCompSize() << std::endl;
-      for (unsigned int i = 0; i < currentChromosome->getCompSize(); i++) {
-         CurrentChrMask[i] = 'N';
-      }
-      BoxSize = currentChromosome->getCompSize()/ 30000;
-      if (BoxSize == 0) BoxSize = 1;
-      unsigned NumBoxes = (unsigned) (currentChromosome->getCompSize() * 2 / BoxSize) + 1; // box size
-      (*logStream << "NumBoxes: " << NumBoxes << "\tBoxSize: " << BoxSize << std::endl);
-      std::cout << "NumBoxes: " << NumBoxes << "\tBoxSize: " << BoxSize << std::endl;
+		g_maxPos = 0; // #################
+		*logStream << "Chromosome Size: " << currentChromosome->getBiolSize() << std::endl;
+		CurrentChrMask.resize(currentChromosome->getCompSize());
+		std::cout << "currentChromosome->getCompSize()" << currentChromosome->getCompSize() << std::endl;
+		for (unsigned int i = 0; i < currentChromosome->getCompSize(); i++) {
+		  CurrentChrMask[i] = 'N';
+		}
+		BoxSize = currentChromosome->getCompSize()/ 30000;
+		if (BoxSize == 0) BoxSize = 1;
+		unsigned NumBoxes = (unsigned) (currentChromosome->getCompSize() * 2 / BoxSize) + 1; // box size
+		(*logStream << "NumBoxes: " << NumBoxes << "\tBoxSize: " << BoxSize << std::endl);
+		//std::cout << "NumBoxes: " << NumBoxes << "\tBoxSize: " << BoxSize << std::endl;
 
-      g_binIndex = 0; // to start with 0... 
+		g_binIndex = 0; // to start with 0... 
     
-      LoopingSearchWindow currentWindow( userSettings->getRegion(), currentChromosome, WINDOW_SIZE ); 
+		LoopingSearchWindow currentWindow( userSettings->getRegion(), currentChromosome, WINDOW_SIZE ); 
 
-      // loop over one chromosome
-      do {
-      	/* 3.2.1 preparation starts */
+      		// loop over one chromosome
+      		do {
+			//std::cout << "test 1" << std::endl;
+			/* 3.2.1 preparation starts */
 			*logStream << currentWindow.display();
-         //currentState.CURRENT_WINDOW = currentWindow;
-         g_RegionStart = currentWindow.getStart();
-         g_RegionEnd = currentWindow.getEnd();
+         		//currentState.CURRENT_WINDOW = currentWindow;
+         		g_RegionStart = currentWindow.getStart();
+         		g_RegionEnd = currentWindow.getEnd();
+			//std::cout << "test 2" << std::endl;
 
-		 SearchWindow currentWindow_cs = currentWindow.makePindelCoordinateCopy(); // _cs means computer science coordinates
-	     	//g_bdData.loadRegion( currentWindow_cs );
-         if (Time_Load_S == 0) {
-            Time_Load_S = time(NULL);
-         }
+		 	SearchWindow currentWindow_cs = currentWindow.makePindelCoordinateCopy(); // _cs means computer science coordinates
+			//std::cout << "test 3" << std::endl;
+	     		//g_bdData.loadRegion( currentWindow_cs );
+         		if (Time_Load_S == 0) {
+            			Time_Load_S = time(NULL);
+         		}
+		
 			timer.switchTo("Reading in reads + matching close ends");//
-         if (userSettings->bamFilesAsInput() && userSettings->SearchDiscordantReadPair) {
-             //std::cout << "Before" << std::endl;
-             get_RP_Reads_Discovery(currentState, currentWindow );
-             //std::cout << "After" << std::endl;
-             g_bdData.UpdateBD(currentState);
-             std::cout << "Added BreakDancer-like events: " << g_bdData.GetBDSize() << std::endl;
+
+			//std::cout << "test 4" << std::endl;
+         		if (userSettings->bamFilesAsInput() && userSettings->SearchDiscordantReadPair) {
+				//std::cout << "test 4a" << std::endl;             	
+				//std::cout << "Before" << std::endl;
+             			get_RP_Reads_Discovery(currentState, currentWindow );
+				//std::cout << "test 4b" << std::endl;             	
+
+             			//std::cout << "After" << std::endl;
+             			g_bdData.UpdateBD(currentState);
+             			std::cout << "external BD events: " << g_bdData.GetBDSize_external() << " Added BreakDancer-like events: " << (g_bdData.GetBDSize_total() - g_bdData.GetBDSize_external()) / 2 << std::endl;
 				
-         }
-         
-         // std::cout << " 1 " << std::endl;
-          g_bdData.loadRegion( currentWindow_cs );
-         // std::cout << " 2 " << std::endl;
-          //std::cout << "g_bdData.size() " << g_bdData.GetBDSize() << std::endl;
-          //std::cout << "Before" << std::endl;
-         get_SR_Reads(currentState, currentWindow );
-         std::cout << "There are " << currentState.RefSupportingReads.size() << " reads supporting the reference allele." << std::endl;
-         //if (userSettings->bamFilesAsInput())
-             UpdateRefReadCoverage(currentState, currentWindow);
-          /*
-          for (unsigned index = 0; index < currentState.Reads_SR.size(); index++) {
-              if (currentState.Reads_SR[index].Name == "@@HWI-EAS138_4_FC30GP8:3:41:246:959/1")
-                  std::cout << "after get_SR_Reads @@HWI-EAS138_4_FC30GP8:3:41:246:959/1" << std::endl;
-          }*/
-         Time_Mine_E = time(NULL);
-         if (currentState.Reads_SR.size() ) {
-            *logStream << "There are " << currentState.Reads_SR.size() << " split-reads for this chromosome region.\n" << std::endl; // what region?
+         		}
 
-            if (userSettings->reportCloseMappedReads() ) {
-				 	ReportCloseMappedReads( currentState.Reads_SR );       
-            }
-            Time_Load_E = time(NULL);
-            if (!userSettings->reportOnlyCloseMappedReads) {
+			//std::cout << "test 5" << std::endl;
+         //
+         		// std::cout << " 1 " << std::endl;
+          		g_bdData.loadRegion( currentWindow_cs );
+         		// std::cout << " 2 " << std::endl;
+
+			//std::cout << "test 6" << std::endl;
+          		//std::cout << "g_bdData.size() " << g_bdData.GetBDSize() << std::endl;
+          		//std::cout << "Before" << std::endl;
+         		get_SR_Reads(currentState, currentWindow );
+         		std::cout << "There are " << currentState.RefSupportingReads.size() << " reads supporting the reference allele." << std::endl;
+         		//if (userSettings->bamFilesAsInput())
+             		UpdateRefReadCoverage(currentState, currentWindow);
+
+			//std::cout << "test 7" << std::endl;
+          		/*
+          		for (unsigned index = 0; index < currentState.Reads_SR.size(); index++) {
+              			if (currentState.Reads_SR[index].Name == "@@HWI-EAS138_4_FC30GP8:3:41:246:959/1")
+                  			std::cout << "after get_SR_Reads @@HWI-EAS138_4_FC30GP8:3:41:246:959/1" << std::endl;
+          		}*/
+         		Time_Mine_E = time(NULL);
+         		if (currentState.Reads_SR.size() ) {
+            			*logStream << "There are " << currentState.Reads_SR.size() << " split-reads for this chromosome region.\n" << std::endl; // what region?
+
+            			if (userSettings->reportCloseMappedReads() ) {
+			 		ReportCloseMappedReads( currentState.Reads_SR );       
+            			}
+            			Time_Load_E = time(NULL);
+            			if (!userSettings->reportOnlyCloseMappedReads) {
 					timer.switchTo("Searching far ends");
+					//std::cout << "here1" << std::endl;
 					SearchFarEnds( currentChromosome->getSeq(), currentState.Reads_SR, *currentChromosome );
-                    UpdateFarFragName(currentState.Reads_SR);
-                //for (unsigned index = 0; index < currentState.Reads_SR.size(); index++) {
-                //    if (currentState.Reads_SR[index].Name == "@DD7DT8Q1:4:1103:5972:92823#GTACCT/1") {
-                //        std::cout << "@DD7DT8Q1:4:1103:5972:92823#GTACCT/1" << std::endl;
-                //        std::cout << currentState.Reads_SR[index];
-                //    }
-                //}
-                    //std::cout << "before currentState.InterChromosome_SR size " << currentState.InterChromosome_SR.size() << std::endl;
-                    if (userSettings->reportInterchromosomalEvents) {
-                        for (unsigned index = 0; index < currentState.Reads_SR.size(); index++) {
-                            if (currentState.Reads_SR[index].UP_Far.size()) {
-                                //std::cout << currentState.Reads_SR[index].FragName << " " << currentState.Reads_SR[index].FarFragName << std::endl;
-                                if (currentState.Reads_SR[index].FragName != currentState.Reads_SR[index].FarFragName)
-                                    currentState.InterChromosome_SR.push_back(currentState.Reads_SR[index]);
-                            }
-                        }
-                        //std::cout << "currentState.InterChromosome_SR.size() = " << currentState.InterChromosome_SR.size() << std::endl;
-                    }
+					//std::cout << "here2" << std::endl;
+                    			UpdateFarFragName(currentState.Reads_SR);
+					//std::cout << "here3" << std::endl;
+                			//for (unsigned index = 0; index < currentState.Reads_SR.size(); index++) {
+                			//    if (currentState.Reads_SR[index].Name == "@DD7DT8Q1:4:1103:5972:92823#GTACCT/1") {
+                			//        std::cout << "@DD7DT8Q1:4:1103:5972:92823#GTACCT/1" << std::endl;
+                			//        std::cout << currentState.Reads_SR[index];
+                			//    }
+                			//}
+                    			//std::cout << "before currentState.InterChromosome_SR size " << currentState.InterChromosome_SR.size() << std::endl;
+                    			if (userSettings->reportInterchromosomalEvents) {
+						//std::cout << "here4" << std::endl;
+                        			for (unsigned index = 0; index < currentState.Reads_SR.size(); index++) {
+                            				if (currentState.Reads_SR[index].UP_Far.size()) {
+                                				//std::cout << currentState.Reads_SR[index].FragName << " " << currentState.Reads_SR[index].FarFragName << std::endl;
+                                				if (currentState.Reads_SR[index].FragName != currentState.Reads_SR[index].FarFragName)
+                                    					currentState.InterChromosome_SR.push_back(currentState.Reads_SR[index]);
+                            				}
+                        			}
+                        			//std::cout << "currentState.InterChromosome_SR.size() = " << currentState.InterChromosome_SR.size() << std::endl;
+						//std::cout << "currentState.Reads_RP_Discovery_InterChr.size() = " << currentState.Reads_RP_Discovery_InterChr.size() << std::endl;
+                			}
 
-                    
-					currentState.Reads_SR.insert( currentState.Reads_SR.end(), currentState.FutureReads_SR.begin(), currentState.FutureReads_SR.end() );
-					currentState.FutureReads_SR.clear();
+                    			if (PreviousChrName == CurrentChrName && currentState.FutureReads_SR.size())
+						currentState.Reads_SR.insert( currentState.Reads_SR.end(), currentState.FutureReads_SR.begin(), currentState.FutureReads_SR.end() );
+					//currentState.FutureReads_SR.clear();
 					timer.switchTo("Searching and reporting variations");
 					SearchSVs(currentState, NumBoxes, currentWindow );
-            }
-            Time_Sort_E = time(NULL);
+            			}
+            			Time_Sort_E = time(NULL);
 
-            AllLoadings += (unsigned int) difftime(Time_Load_E, Time_Load_S);
-            AllSortReport += (unsigned int) difftime(Time_Sort_E, Time_Load_E);
-            currentState.Reads_SR.clear();
-            currentState.OneEndMappedReads.clear();
-            *logStream << "There are " << currentState.FutureReads_SR. size()  << " split-reads saved for the next cycle.\n" << std::endl;
-            //currentState.Reads_SR.swap(currentState.FutureReads_SR);
-         }
-         else {
-             *logStream << "There are no reads for this bin.\n";
-         }
+            			AllLoadings += (unsigned int) difftime(Time_Load_E, Time_Load_S);
+            			AllSortReport += (unsigned int) difftime(Time_Sort_E, Time_Load_E);
+            			//currentState.Reads_SR.clear();
+            			//currentState.OneEndMappedReads.clear();
+            			*logStream << "There are " << currentState.FutureReads_SR. size()  << " split-reads saved for the next cycle.\n" << std::endl;
+            			//currentState.Reads_SR.swap(currentState.FutureReads_SR);
+         		}
+         		else {
+             			*logStream <<  "1 after " << std::endl;
+				//std::cout << " no reads here" << std::endl;
+         		}
+			//std::cout << "before 1" << std::endl;
+			currentState.InputReads_SR.clear();
+			currentState.Reads_SR.clear();
+			currentState.FutureReads_SR.clear();
+			currentState.OneEndMappedReads.clear();
+			currentState.Reads_RP.clear();
+			currentState.Reads_RP_Discovery.clear();
+			currentState.RefSupportingReads.clear();
+			currentState.Reads_RP_Discovery_InterChr.clear();
+			//std::cout << "after 1" << std::endl;
+/*
+			std::vector <SPLIT_READ> InputReads_SR, Reads_SR, FutureReads_SR, InterChromosome_SR, OneEndMappedReads;
+    			std::vector <RPVector> Reads_RP;
+    			std::vector <RP_READ> Reads_RP_Discovery, Reads_RP_Discovery_InterChr;
+    			std::vector <REF_READ> RefSupportingReads;
+*/
 
-         //std::cout << " 4 " << std::endl;
-         //std::cout << "before " << currentState.Reads_RP_Discovery.size() << std::endl;
-         if (currentState.Reads_RP_Discovery.size())
-             currentState.Reads_RP_Discovery.clear();
-         if (currentState.Reads_RP_Discovery_InterChr.size())
-             currentState.Reads_RP_Discovery_InterChr.clear();
-         if (currentState.RefSupportingReads.size()) // std::vector <REF_READ> RefSupportingReads
-             currentState.RefSupportingReads.clear();
-         //std::cout << "after " << currentState.Reads_RP_Discovery.size() << std::endl;
-          //std::cout << "data " << currentState.Reads_SR.size() << " " << currentState.Reads_RP_Discovery.size() << " " << currentState.OneEndMappedReads.size() << std::endl;
-         Time_Load_S = 0;
+			Time_Load_S = 0;
 			currentWindow.next();
-         g_binIndex++;
-      } while (!currentWindow.finished());
+         		g_binIndex++;
+			//std::cout << "after 2" << std::endl;
+      		} while (!currentWindow.finished());
+		// name of previous chromosome
+		PreviousChrName = CurrentChrName;
+		std::cout << "PreviousChrName: " << CurrentChrName << std::endl;
+	} while (true);
 
-   } while (true);
+	//std::cout << "before report int " << std::endl;
 
-    if (userSettings->reportInterchromosomalEvents)
-       SortAndReportInterChromosomalEvents(currentState, g_genome, userSettings);
+	if (userSettings->reportInterchromosomalEvents && currentState.Reads_SR.size())
+		SortAndReportInterChromosomalEvents(currentState, g_genome, userSettings);
     
-    if (g_sampleNames.size() == 1 && userSettings->IndelCorrection) 
-    {
-        GetConsensusBasedOnPloidy(currentState, g_genome, userSettings);
-    }
+	//std::cout << "before based on ploidy " << std::endl;
+	if (g_sampleNames.size() == 1 && userSettings->IndelCorrection && currentState.Reads_SR.size()) {
+		GetConsensusBasedOnPloidy(currentState, g_genome, userSettings);
+	}
     
 	timer.reportAll( *logStream );
-   //*logStream << "Loading genome sequences and reads: " << AllLoadings << " seconds." << std::endl;
-   //*logStream << "Mining, Sorting and output results: " << AllSortReport << " seconds." << std::endl;
+	//*logStream << "Loading genome sequences and reads: " << AllLoadings << " seconds." << std::endl;
+	//*logStream << "Mining, Sorting and output results: " << AllSortReport << " seconds." << std::endl;
 	exit( EXIT_SUCCESS) ;
 } //main
 
-std::vector<std::string> ReverseComplement(
-    const std::vector<std::string> &InputPatterns)
-{
-    std::vector < std::string > OutputPatterns; // = InputPatterns;
-    unsigned int NumPattern = InputPatterns.size();
-    OutputPatterns.resize(NumPattern);
-    for (unsigned int i = 0; i < NumPattern; i++) {
-        OutputPatterns[i] = ReverseComplement(InputPatterns[i]);
-    }
-    return OutputPatterns;
+std::vector<std::string> ReverseComplement(const std::vector<std::string> &InputPatterns) {
+	std::vector < std::string > OutputPatterns; // = InputPatterns;
+	unsigned int NumPattern = InputPatterns.size();
+	OutputPatterns.resize(NumPattern);
+	for (unsigned int i = 0; i < NumPattern; i++) {
+		OutputPatterns[i] = ReverseComplement(InputPatterns[i]);
+	}
+	return OutputPatterns;
 }
 
 std::string Reverse(const std::string & InputPattern)

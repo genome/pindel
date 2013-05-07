@@ -398,59 +398,61 @@ bool ReadInBamReads_RP (const char *bam_path, const std::string & FragName,
     return true;
 }
 
-bool ReadInBamReads_RP_Discovery (const char *bam_path, const std::string & FragName,
-                        const std::string * CurrentChrSeq, std::vector <RP_READ> &LeftReads, std::vector <RP_READ> &LeftReads_InterChr,
-                        int InsertSize, std::string Tag, const SearchWindow& currentWindow )
-{
-    //std::cout << "Entering ReadInBamReads_RP_Discovery" << std::endl;
-    bamFile fp;
-    fp = bam_open (bam_path, "r");
-    assert (fp);
-    bam_index_t *idx;
-    idx = bam_index_load (bam_path);	// load BAM index
-    assert (idx);
-    bam_header_t *header = bam_header_read (fp);
-    bam_init_header_hash (header);
-    assert (header);
-    //need thing that converts "tid" to "chromosome name"
-    int tid;
-    tid = bam_get_tid (header, FragName.c_str ());
+bool ReadInBamReads_RP_Discovery (const char *bam_path, 
+				const std::string & FragName, 
+				const std::string * CurrentChrSeq, 
+				std::vector <RP_READ> &LeftReads, 
+				std::vector <RP_READ> &LeftReads_InterChr, 
+				int InsertSize, std::string Tag, 
+				const SearchWindow& currentWindow ){
+
+	//std::cout << "Entering ReadInBamReads_RP_Discovery" << std::endl;
+	bamFile fp;
+	fp = bam_open (bam_path, "r");
+	assert (fp);
+	bam_index_t *idx;
+	idx = bam_index_load (bam_path);	// load BAM index
+	assert (idx);
+	bam_header_t *header = bam_header_read (fp);
+	bam_init_header_hash (header);
+	assert (header);
+	//need thing that converts "tid" to "chromosome name"
+	int tid;
+	tid = bam_get_tid (header, FragName.c_str ());
     
-    //kai does the below line in readinreads. dunno why yet
-    fetch_func_data_RP data( CurrentChrSeq );
-    data.header = header;
-    //data.CurrentChrSeq = CurrentChrSeq;
-    data.LeftReads = &LeftReads;
-    data.LeftReads_InterChr = &LeftReads_InterChr;
-    data.read_to_map_qual = NULL;
-    data.read_to_map_qual = kh_init (read_name);
-    flags_hit b1_flags;//, b2_flags;
-    data.b1_flags = &b1_flags;
-    //data.b2_flags = &b2_flags;
-    data.InsertSize = InsertSize;
-    data.Tag = Tag;
-    //std::cout << "Before bam_fetch" << std::endl;
-    bam_fetch (fp, idx, tid, currentWindow.getStart(), currentWindow.getEnd(), &data, fetch_func_RP_Discovery);
-    //std::cout << "After bam_fetch" << std::endl;
-    /*
-     khint_t key;
-     if (kh_size (data.read_to_map_qual) > 0) {
-     for (key = kh_begin (data.read_to_map_qual);
-     key != kh_end (data.read_to_map_qual); ++key) {
-     if (kh_exist (data.read_to_map_qual, key)) {
-     bam_destroy1 (kh_value (data.read_to_map_qual, key));
-     free ((char *) kh_key (data.read_to_map_qual, key));
-     }
-     }
-     }
-     kh_clear (read_name, data.read_to_map_qual);
-     kh_destroy (read_name, data.read_to_map_qual);
-     */
-    bam_header_destroy (header);
-    bam_index_destroy (idx);
-    bam_close (fp);
-    //std::cout << "Leaving ReadInBamReads_RP_Discovery" << std::endl;
-    return true;
+	fetch_func_data_RP data( CurrentChrSeq );
+	data.header = header;
+	//data.CurrentChrSeq = CurrentChrSeq;
+	data.LeftReads = &LeftReads;
+	data.LeftReads_InterChr = &LeftReads_InterChr;
+	data.read_to_map_qual = NULL;
+	data.read_to_map_qual = kh_init (read_name);
+	flags_hit b1_flags;//, b2_flags;
+	data.b1_flags = &b1_flags;
+	//data.b2_flags = &b2_flags;
+	data.InsertSize = InsertSize;
+	data.Tag = Tag;
+	//std::cout << "Before bam_fetch" << std::endl;
+	bam_fetch (fp, idx, tid, currentWindow.getStart(), currentWindow.getEnd(), &data, fetch_func_RP_Discovery);
+	//std::cout << "After bam_fetch" << std::endl;
+	/*
+	khint_t key;
+	if (kh_size (data.read_to_map_qual) > 0) {
+		for (key = kh_begin (data.read_to_map_qual); key != kh_end (data.read_to_map_qual); ++key) {
+			if (kh_exist (data.read_to_map_qual, key)) {
+				bam_destroy1 (kh_value (data.read_to_map_qual, key));
+				free ((char *) kh_key (data.read_to_map_qual, key));
+			}
+		}
+	}
+	kh_clear (read_name, data.read_to_map_qual);
+	kh_destroy (read_name, data.read_to_map_qual);
+	*/
+	bam_header_destroy (header);
+	bam_index_destroy (idx);
+	bam_close (fp);
+	//std::cout << "Leaving ReadInBamReads_RP_Discovery" << std::endl;
+	return true;
 }
 
 
@@ -552,29 +554,30 @@ bool isRefRead ( const flags_hit *read, const bam1_t * bamOfRead )
 
 bool isWeirdRead( const flags_hit *read, const bam1_t * bamOfRead )
 {
-   const bam1_core_t *b1_core;
-   b1_core = &bamOfRead->core; 
-   if ( (! (read->mapped))
-/*
-       || (b1_core->flag & BAM_CINS)
-       || (b1_core->flag & BAM_CDEL)
-       || (b1_core->flag & BAM_CREF_SKIP)
-       || (b1_core->flag & BAM_CSOFT_CLIP)
-       || (b1_core->flag & BAM_CHARD_CLIP)
-       || (b1_core->flag & BAM_CPAD)*/
-       ) {
-      return true;
-   }
+	if (!(read->mapped)) return true;
 
-   uint32_t *cigar_pointer = bam1_cigar (bamOfRead);
-   int cigarMismatchedBases = bam_cigar2mismatch (&bamOfRead->core, cigar_pointer);
+	const bam1_core_t *b1_core;
+	b1_core = &bamOfRead->core; 
 
-   if ( read->edits + cigarMismatchedBases > 0 ) {
-      return true;
-   }
-   else {
-      return false;
-   }
+	uint32_t *cigar_pointer = bam1_cigar (bamOfRead);
+	int cigarMismatchedBases = bam_cigar2mismatch (&bamOfRead->core, cigar_pointer);
+
+	if ( read->edits + cigarMismatchedBases > 0 ) {
+		return true;
+	}
+	else {
+		return false;
+	}
+
+	// check speed here!
+	if (b1_core->flag & BAM_CINS) return true;
+	if (b1_core->flag & BAM_CDEL) return true;
+	if (b1_core->flag & BAM_CREF_SKIP) return true;
+	if (b1_core->flag & BAM_CSOFT_CLIP) return true;
+	if (b1_core->flag & BAM_CHARD_CLIP) return true;
+	if (b1_core->flag & BAM_CPAD) return true;
+
+	return false;
 }
 
 
@@ -781,107 +784,111 @@ void build_record_RP (const bam1_t * r1, void *data)
     return;
 }
 
-void build_record_RP_Discovery (const bam1_t * r1, void *data)
-{   UserDefinedSettings *userSettings = UserDefinedSettings::Instance();
-    //std::cout << "entering build_record_RP_Discovery" << std::endl;
-    const bam1_core_t * r1_core;
-    //const bam1_core_t * r2_core;
-    r1_core = &r1->core;
-    //r2_core = &r2->core;
-    
-    
-    
-    RP_READ Temp_One_Read;
-    fetch_func_data_RP *data_for_bam = (fetch_func_data_RP *) data;
-    bam_header_t *header = (bam_header_t *) data_for_bam->header;
-    std::string CurrentChrSeq = *(std::string *) data_for_bam->CurrentChrSeq;
-    std::string Tag = (std::string) data_for_bam->Tag;
-    std::string read_name = bam1_qname (r1);
-    
-    //if ("read_10038" == read_name) {
-    //    std::cout << "print " << read_name << " is on line 840." << std::endl;
-    //}
-    if (!(r1_core->flag & BAM_FPAIRED)) return;
-    //if ("read_10038" == read_name) {
-    //    std::cout << "print " << read_name << " is on line 844." << std::endl;
-    //}
-    if (r1_core->qual < userSettings->minimalAnchorQuality) return;
-    //if ("read_10038" == read_name) {
-    //    std::cout << "print " << read_name << " is on line 848." << std::endl;
-    //}
-    
-    if (!(r1_core->flag & BAM_FUNMAP || r1_core->flag & BAM_FMUNMAP)) { // both reads are mapped.
-			/*std::cout << "Read Insertsize=" << abs(r1_core->isize) << ", qseq=" << r1_core->l_qseq << " BAM ISize=" << data_for_bam->InsertSize 
-				<< "Total is " << r1_core->l_qseq *2 + 2 * data_for_bam->InsertSize << "\n";*/
-        //if ("read_10038" == read_name || "read_100478" ==  read_name) {
-        //    std::cout << "########print " << read_name << " is on line 854." << std::endl;
-        //    std::cout << r1_core->tid << " " << r1_core->mtid << " " << abs(r1_core->isize) << " "
-        //    << (r1_core->flag & BAM_FREVERSE) << " "
-        //    << (r1_core->flag & BAM_FMREVERSE) << std::endl;
-        //}
-        if ((r1_core->tid != r1_core->mtid) || abs(r1_core->isize) > 3 * data_for_bam->InsertSize + 1000 || ((bool)(r1_core->flag & BAM_FREVERSE) == (bool)(r1_core->flag & BAM_FMREVERSE))) { // different chr or same strand or insert is too large
-            //std::cout << "passed the test\n";
-            //if ("read_10038" == read_name) {
-            //    std::cout << "print " << read_name << " is on line 859." << std::endl;
-            //}
-            if (r1_core->flag & BAM_FREVERSE) {
-                Temp_One_Read.DA = '-';
-            }
-            else Temp_One_Read.DA = '+';
-            if (r1_core->flag & BAM_FMREVERSE) {
-                Temp_One_Read.DB = '-';
-            }
-            else Temp_One_Read.DB = '+';
-            
-            Temp_One_Read.PosA = r1_core->pos;
-            //if (Temp_One_Read.DA == '+') Temp_One_Read.PosA = Temp_One_Read.PosA;// + r1_core->l_qseq;
-            //else Temp_One_Read.PosA = Temp_One_Read.PosA;
-            Temp_One_Read.PosB = r1_core->mpos;
-            Temp_One_Read.OriginalPosA = Temp_One_Read.PosA;
-            Temp_One_Read.OriginalPosB = Temp_One_Read.PosB;
-            //if (Temp_One_Read.DB == '+') Temp_One_Read.PosB = Temp_One_Read.PosB;// + r1_core->l_qseq;
-            
-            //if (r1_core->tid == r1_core->mtid && Temp_One_Read.PosA < Temp_One_Read.PosB) return;
-            
-            Temp_One_Read.Experimental_InsertSize = data_for_bam->InsertSize;
-            Temp_One_Read.ReadName = "";
-            Temp_One_Read.ReadName.append ((const char *) bam1_qname (r1));
-            //if ("read_10038" == Temp_One_Read.ReadName) {
-            //    std::cout << "print " << Temp_One_Read.ReadName << " is on line 881." << std::endl;
-            //}
-            //else Temp_One_Read.PosB = Temp_One_Read.PosB;
-            //std::cout << Temp_One_Read.ReadName << " " << Temp_One_Read.DA << " " << Temp_One_Read.PosA << " " << Temp_One_Read.DB << " " << Temp_One_Read.PosB << std::endl;
-            Temp_One_Read.MQA = r1_core->qual;
-            Temp_One_Read.MQB = r1_core->qual;
-            Temp_One_Read.ChrNameA = header->target_name[r1_core->tid];
-            Temp_One_Read.ChrNameB = header->target_name[r1_core->mtid];
-            Temp_One_Read.InsertSize = data_for_bam->InsertSize;
-            //FIXME pass these through from the command line with a struct
-            Temp_One_Read.Tag = Tag;
-            Temp_One_Read.ReadLength = r1_core->l_qseq;
-            //std::cout << Temp_One_Read.ReadName << " " << Temp_One_Read.DA << " " << Temp_One_Read.PosA << " " << Temp_One_Read.DB << " " << Temp_One_Read.PosB << std::endl;
-            if (r1_core->tid == r1_core->mtid) {
-                data_for_bam->LeftReads->push_back(Temp_One_Read);
-                /*
-                RP_READ Temp_One_Read_another = Temp_One_Read;
-                Temp_One_Read_another.DA = Temp_One_Read.DB;
-                Temp_One_Read_another.DB = Temp_One_Read.DA;
-                Temp_One_Read_another.PosA = Temp_One_Read.PosB;
-                Temp_One_Read_another.PosB = Temp_One_Read.PosA;
-                Temp_One_Read_another.OriginalPosA = Temp_One_Read.OriginalPosB;
-                Temp_One_Read_another.OriginalPosB = Temp_One_Read.OriginalPosA;
-                Temp_One_Read_another.ChrNameA = Temp_One_Read.ChrNameB;
-                Temp_One_Read_another.ChrNameB = Temp_One_Read.ChrNameA;
-                data_for_bam->LeftReads->push_back(Temp_One_Read_another);
-                 */
-            }
-            else    data_for_bam->LeftReads_InterChr->push_back(Temp_One_Read);
-			//	std::cout << "finished the procedure\n";
-        }
+void build_record_RP_Discovery (const bam1_t * r1, void *data) {
 
-    }
-    //std::cout << "leaving build_record_RP_Discovery" << std::endl;
-    return;
+	UserDefinedSettings *userSettings = UserDefinedSettings::Instance();
+	//std::cout << "entering build_record_RP_Discovery" << std::endl;
+	const bam1_core_t * r1_core;
+	//const bam1_core_t * r2_core;
+	r1_core = &r1->core;
+	//r2_core = &r2->core;
+    
+	RP_READ Temp_One_Read;
+	fetch_func_data_RP *data_for_bam = (fetch_func_data_RP *) data;
+	bam_header_t *header = (bam_header_t *) data_for_bam->header;
+	std::string CurrentChrSeq = *(std::string *) data_for_bam->CurrentChrSeq;
+	std::string Tag = (std::string) data_for_bam->Tag;
+	std::string read_name = bam1_qname (r1);
+    
+	if (!(r1_core->flag & BAM_FPAIRED)) return;
+
+	if (r1_core->qual < userSettings->minimalAnchorQuality) return;
+    
+	if (!(r1_core->flag & BAM_FUNMAP || r1_core->flag & BAM_FMUNMAP)) { // both reads are mapped.
+		/*std::cout << "Read Insertsize=" << abs(r1_core->isize) << ", qseq=" << r1_core->l_qseq << " BAM ISize=" << data_for_bam->InsertSize 
+			<< "Total is " << r1_core->l_qseq *2 + 2 * data_for_bam->InsertSize << "\n";*/
+		//if ("read_10038" == read_name || "read_100478" ==  read_name) {
+		//    std::cout << "########print " << read_name << " is on line 854." << std::endl;
+		//    std::cout << r1_core->tid << " " << r1_core->mtid << " " << abs(r1_core->isize) << " "
+		//    << (r1_core->flag & BAM_FREVERSE) << " "
+		//    << (r1_core->flag & BAM_FMREVERSE) << std::endl;
+		//}
+		if ((r1_core->tid != r1_core->mtid) || abs(r1_core->isize) > 3 * data_for_bam->InsertSize + 1000 || ((bool)(r1_core->flag & BAM_FREVERSE) == (bool)(r1_core->flag & BAM_FMREVERSE))) { // different chr or same strand or insert is too large
+			//std::cout << "passed the test\n";
+			//if ("read_10038" == read_name) {
+			//    std::cout << "print " << read_name << " is on line 859." << std::endl;
+			//}
+			if (r1_core->flag & BAM_FREVERSE) {
+				Temp_One_Read.DA = '-';
+			}
+			else Temp_One_Read.DA = '+';
+			if (r1_core->flag & BAM_FMREVERSE) {
+				Temp_One_Read.DB = '-';
+			}
+			else Temp_One_Read.DB = '+';
+	            
+			Temp_One_Read.PosA = r1_core->pos;
+			//if (Temp_One_Read.DA == '+') Temp_One_Read.PosA = Temp_One_Read.PosA;// + r1_core->l_qseq;
+			//else Temp_One_Read.PosA = Temp_One_Read.PosA;
+			Temp_One_Read.PosB = r1_core->mpos;
+			Temp_One_Read.OriginalPosA = Temp_One_Read.PosA;
+			Temp_One_Read.OriginalPosB = Temp_One_Read.PosB;
+			//if (Temp_One_Read.DB == '+') Temp_One_Read.PosB = Temp_One_Read.PosB;// + r1_core->l_qseq;
+	            
+			//if (r1_core->tid == r1_core->mtid && Temp_One_Read.PosA < Temp_One_Read.PosB) return;
+	            
+			Temp_One_Read.Experimental_InsertSize = data_for_bam->InsertSize;
+			Temp_One_Read.ReadName = "";
+			Temp_One_Read.ReadName.append ((const char *) bam1_qname (r1));
+			//if ("read_10038" == Temp_One_Read.ReadName) {
+			//    std::cout << "print " << Temp_One_Read.ReadName << " is on line 881." << std::endl;
+			//}
+			//else Temp_One_Read.PosB = Temp_One_Read.PosB;
+			//std::cout << Temp_One_Read.ReadName << " " << Temp_One_Read.DA << " " << Temp_One_Read.PosA << " " << Temp_One_Read.DB << " " << Temp_One_Read.PosB << std::endl;
+			Temp_One_Read.MQA = r1_core->qual;
+			Temp_One_Read.MQB = r1_core->qual;
+			Temp_One_Read.ChrNameA = header->target_name[r1_core->tid];
+			Temp_One_Read.ChrNameB = header->target_name[r1_core->mtid];
+			Temp_One_Read.InsertSize = data_for_bam->InsertSize;
+			//FIXME pass these through from the command line with a struct
+			Temp_One_Read.Tag = Tag;
+			Temp_One_Read.ReadLength = r1_core->l_qseq;
+			//std::cout << Temp_One_Read.ReadName << " " << Temp_One_Read.DA << " " << Temp_One_Read.PosA << " " << Temp_One_Read.DB << " " << Temp_One_Read.PosB << std::endl;
+			if (r1_core->tid == r1_core->mtid) {
+				if (Temp_One_Read.PosA < Temp_One_Read.PosB) 
+					data_for_bam->LeftReads->push_back(Temp_One_Read);
+				else {
+					RP_READ Temp_One_Read_another = Temp_One_Read;
+					Temp_One_Read_another.DA = Temp_One_Read.DB;
+					Temp_One_Read_another.DB = Temp_One_Read.DA;
+					Temp_One_Read_another.PosA = Temp_One_Read.PosB;
+					Temp_One_Read_another.PosB = Temp_One_Read.PosA;
+					Temp_One_Read_another.OriginalPosA = Temp_One_Read.OriginalPosB;
+					Temp_One_Read_another.OriginalPosB = Temp_One_Read.OriginalPosA;
+					Temp_One_Read_another.ChrNameA = Temp_One_Read.ChrNameB;
+					Temp_One_Read_another.ChrNameB = Temp_One_Read.ChrNameA;
+					data_for_bam->LeftReads->push_back(Temp_One_Read_another);
+				}	
+				/*
+				RP_READ Temp_One_Read_another = Temp_One_Read;
+				Temp_One_Read_another.DA = Temp_One_Read.DB;
+				Temp_One_Read_another.DB = Temp_One_Read.DA;
+				Temp_One_Read_another.PosA = Temp_One_Read.PosB;
+				Temp_One_Read_another.PosB = Temp_One_Read.PosA;
+				Temp_One_Read_another.OriginalPosA = Temp_One_Read.OriginalPosB;
+				Temp_One_Read_another.OriginalPosB = Temp_One_Read.OriginalPosA;
+				Temp_One_Read_another.ChrNameA = Temp_One_Read.ChrNameB;
+				Temp_One_Read_another.ChrNameB = Temp_One_Read.ChrNameA;
+				data_for_bam->LeftReads->push_back(Temp_One_Read_another);
+				*/
+			}
+			else    data_for_bam->LeftReads_InterChr->push_back(Temp_One_Read);
+			//	std::cout << "finished the procedure\n";
+		}
+
+	}
+	//std::cout << "leaving build_record_RP_Discovery" << std::endl;
+	return;
 }
 
 static int fetch_func_SR (const bam1_t * b1, void *data)
@@ -929,6 +936,7 @@ static int fetch_func_SR (const bam1_t * b1, void *data)
         }
         else if (isRefRead( b2_flags, b2 )) {
             build_record_RefRead (b1, b2, data);
+		//std::cout << "refread 1" << std::endl;
         }
     }
 
@@ -938,6 +946,7 @@ static int fetch_func_SR (const bam1_t * b1, void *data)
         }
         else if (isRefRead(b1_flags, b1 )) {
             build_record_RefRead(b2, b1, data);
+		//std::cout << "refread 2" << std::endl;
         }
     }
    bam_destroy1 (b2);
@@ -1131,17 +1140,16 @@ int32_t bam_cigar2len (const bam1_core_t * c, const uint32_t * cigar)
    return l;
 }
 
-int32_t bam_cigar2mismatch( const bam1_core_t *readCore, const uint32_t *cigar)
-{
-   uint32_t cigarIndex;
-   int32_t numberOfMismatches = 0;
-   for (cigarIndex = 0; cigarIndex < readCore->n_cigar; ++cigarIndex) {
-      int elementType = cigar[cigarIndex] & BAM_CIGAR_MASK;
-      if (elementType != BAM_CMATCH ) {
-         numberOfMismatches += cigar[cigarIndex] >> BAM_CIGAR_SHIFT;
-      }
-   }
-   return numberOfMismatches;
+int32_t bam_cigar2mismatch( const bam1_core_t *readCore, const uint32_t *cigar) {
+	uint32_t cigarIndex;
+	int32_t numberOfMismatches = 0;
+	for (cigarIndex = 0; cigarIndex < readCore->n_cigar; ++cigarIndex) {
+		int elementType = cigar[cigarIndex] & BAM_CIGAR_MASK;
+		if (elementType != BAM_CMATCH ) {
+			numberOfMismatches += cigar[cigarIndex] >> BAM_CIGAR_SHIFT;
+		}
+	}
+	return numberOfMismatches;
 }
 
 short get_RP_Reads(ControlState& currentState, const SearchWindow& currentWindow ) 
@@ -1177,14 +1185,14 @@ short get_RP_Reads(ControlState& currentState, const SearchWindow& currentWindow
 short get_RP_Reads_Discovery(ControlState& currentState, const SearchWindow& currentWindow )
 {
 	short ReturnFromReadingReads;
-    RPVector TempOneRPVector;
+	RPVector TempOneRPVector;
     
-    if (UserDefinedSettings::Instance()->bamFilesAsInput()) {
-        ReturnFromReadingReads = 0;
-        for (unsigned int i = 0; i < currentState.bams_to_parse.size(); i++) {
-            //currentState.Reads_RP.push_back(TempOneRPVector);
-            //std::cout << "Current BAM file: " << currentState.bams_to_parse[i].BamFile.c_str() << std::endl;
-            ReturnFromReadingReads = ReadInBamReads_RP_Discovery(
+	if (UserDefinedSettings::Instance()->bamFilesAsInput()) {
+		ReturnFromReadingReads = 0;
+		for (unsigned int i = 0; i < currentState.bams_to_parse.size(); i++) {
+			//currentState.Reads_RP.push_back(TempOneRPVector);
+			//std::cout << "Current BAM file: " << currentState.bams_to_parse[i].BamFile.c_str() << std::endl;
+			ReturnFromReadingReads = ReadInBamReads_RP_Discovery(
                                                        currentState.bams_to_parse[i].BamFile.c_str(),
                                                        currentWindow.getChromosome()->getName(),
                                                        &currentWindow.getChromosome()->getSeq(),
@@ -1194,19 +1202,19 @@ short get_RP_Reads_Discovery(ControlState& currentState, const SearchWindow& cur
                                                        currentState.bams_to_parse[i].InsertSize,
                                                        currentState.bams_to_parse[i].Tag,
                                                        currentWindow);
-            if (ReturnFromReadingReads == 0) {
-                *logStream << "Bamfile " << currentState.bams_to_parse[i].BamFile << " has some kind of error. Aborting Pindel\n";
-                return 1;
-            }
-            if (currentState.Reads_RP_Discovery.size() == 0) {
-					*logStream << "No discordant RP reads in Bamfile " << currentState.bams_to_parse[i].BamFile.c_str() << std::endl;
-            }
-            else {
-					std::cout << currentState.bams_to_parse[i].BamFile << " RP " << currentState.Reads_RP_Discovery.size() << std::endl;
-				}
-        }
-    }
-    return 0;
+			if (ReturnFromReadingReads == 0) {
+				*logStream << "Bamfile " << currentState.bams_to_parse[i].BamFile << " has some kind of error. Aborting Pindel\n";
+				return 1;
+			}
+			if (currentState.Reads_RP_Discovery.size() == 0) {
+				*logStream << "No discordant RP reads in Bamfile " << currentState.bams_to_parse[i].BamFile.c_str() << std::endl;
+			}
+			else {
+				std::cout << currentState.bams_to_parse[i].BamFile << " RP " << currentState.Reads_RP_Discovery.size() << std::endl;
+			}
+		}
+	}
+	return 0;
 }
 
 void readInPindelReads(PindelReadReader &reader, const std::string& pindelFilename, ControlState& currentState, const SearchWindow& currentWindow )
@@ -1256,7 +1264,7 @@ short get_SR_Reads(ControlState& currentState, const SearchWindow& currentWindow
                                                     currentState.bams_to_parse[i].InsertSize,
                                                     currentState.bams_to_parse[i].Tag,
                                                     currentWindow, readBuffer );
-       //  std::cout << "after ReadInBamReads_SR " << std::endl;
+         //std::cout << "after ReadInBamReads_SR " << ReturnFromReadingReads << std::endl;
          if (ReturnFromReadingReads == 0) { // perhaps 'false'? ReadInBamReads returns a boolean...
             LOG_ERROR(*logStream << "Bam read failed: " << currentState.bams_to_parse[i].BamFile << std::endl);
             return EXIT_FAILURE;
@@ -1283,7 +1291,7 @@ short get_SR_Reads(ControlState& currentState, const SearchWindow& currentWindow
 	if (userSettings->singlePindelFileAsInput()) {
 		readInPindelReads(*currentState.inf_Pindel_Reads, userSettings->pindelFilename, currentState, currentWindow );
 	}
- //  std::cout << "existing get_SR_Reads " << std::endl;
+   //std::cout << "existing get_SR_Reads " << std::endl;
    return 0;
 }
 

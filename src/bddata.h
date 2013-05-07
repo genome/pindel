@@ -23,16 +23,18 @@ public:
 	void createRegionCluster(const BDIterator& startOfEventList, const BDIterator& endOfEventList, SearchWindowCluster& newCluster);
 	void loadBDFile(const std::string& filename);
 	void loadRegion( const SearchWindow& searchWindow );
-    void UpdateBD(ControlState & currentState);
+	void UpdateBD(ControlState & currentState);
 	bool isBreakDancerEvent( const unsigned int leftPosition, const unsigned int rightPosition ) const;
 	// returns positions belonging to the the complementary breakdancer calls
 	const SearchWindowCluster& getCorrespondingSearchWindowCluster( const SPLIT_READ& read ) const;
+
+	unsigned GetBDSize_external();
     
-    unsigned GetBDSize();
+	unsigned GetBDSize_total();
 
 private: 
-   unsigned int *m_breakDancerMask;
-	std::vector<BreakDancerEvent> m_bdEvents; 
+	unsigned int *m_breakDancerMask;
+	std::vector<BreakDancerEvent> m_bdEvents, m_bdEvents_external; 
 
 	std::vector<SearchWindowCluster> m_regionsToScanCollection;
 	//std::string m_currentChrName;
