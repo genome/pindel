@@ -9,7 +9,7 @@ if [ "$#" != "1" ]; then
     echo "INSTALL"
     echo "    purpose:  builds the pindel executable "
     echo "    usage:    ./INSTALL [samtoolsdirectory]"
-    echo "    example:  ./INSTALL /home/user/tools/samtools-0.1.16"
+    echo "    example:  ./INSTALL /home/user/tools/samtools-0.1.18/"
     echo " "
     exit 1
 fi
