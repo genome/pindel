@@ -74,7 +74,7 @@
 /* EW: update 0.2.4s: bugfix for -p option of Pindel0.2.4r */
 /* EW: update 0.2.4t, updates now shown in RELEASE document in trunk directory */
 
-const std::string Pindel_Version_str = "Pindel version 0.2.4x, May 7 2013.";
+const std::string Pindel_Version_str = "Pindel version 0.2.4x, May 8 2013.";
 
 const Chromosome g_dummyChromosome("","");
 Genome g_genome;
@@ -1457,16 +1457,17 @@ int main(int argc, char *argv[])
             			*logStream << "There are " << currentState.Reads_SR.size() << " split-reads for this chromosome region.\n" << std::endl; // what region?
 
             			if (userSettings->reportCloseMappedReads() ) {
+					*logStream << "report closeMappedReads" << std::endl;
 			 		ReportCloseMappedReads( currentState.Reads_SR );       
             			}
             			Time_Load_E = time(NULL);
             			if (!userSettings->reportOnlyCloseMappedReads) {
 					timer.switchTo("Searching far ends");
-					//std::cout << "here1" << std::endl;
+					*logStream << "search far ends" << std::endl;
 					SearchFarEnds( currentChromosome->getSeq(), currentState.Reads_SR, *currentChromosome );
-					//std::cout << "here2" << std::endl;
+					*logStream << "update FarFragName" << std::endl;
                     			UpdateFarFragName(currentState.Reads_SR);
-					//std::cout << "here3" << std::endl;
+					*logStream << "update FarFragName done" << std::endl;
                 			//for (unsigned index = 0; index < currentState.Reads_SR.size(); index++) {
                 			//    if (currentState.Reads_SR[index].Name == "@DD7DT8Q1:4:1103:5972:92823#GTACCT/1") {
                 			//        std::cout << "@DD7DT8Q1:4:1103:5972:92823#GTACCT/1" << std::endl;
@@ -1475,7 +1476,7 @@ int main(int argc, char *argv[])
                 			//}
                     			//std::cout << "before currentState.InterChromosome_SR size " << currentState.InterChromosome_SR.size() << std::endl;
                     			if (userSettings->reportInterchromosomalEvents) {
-						//std::cout << "here4" << std::endl;
+						*logStream << "save interchromsome SR" << std::endl;
                         			for (unsigned index = 0; index < currentState.Reads_SR.size(); index++) {
                             				if (currentState.Reads_SR[index].UP_Far.size()) {
                                 				//std::cout << currentState.Reads_SR[index].FragName << " " << currentState.Reads_SR[index].FarFragName << std::endl;
@@ -1491,6 +1492,7 @@ int main(int argc, char *argv[])
 						currentState.Reads_SR.insert( currentState.Reads_SR.end(), currentState.FutureReads_SR.begin(), currentState.FutureReads_SR.end() );
 					//currentState.FutureReads_SR.clear();
 					timer.switchTo("Searching and reporting variations");
+					*logStream << "Searching and reporting variations" << std::endl;
 					SearchSVs(currentState, NumBoxes, currentWindow );
             			}
             			Time_Sort_E = time(NULL);
@@ -1506,7 +1508,11 @@ int main(int argc, char *argv[])
              			*logStream <<  "1 after " << std::endl;
 				//std::cout << " no reads here" << std::endl;
          		}
-			//std::cout << "before 1" << std::endl;
+			std::cout << "InterChromosome_SR.size(): " << currentState.InterChromosome_SR.size() << std::endl;
+			if (userSettings->reportInterchromosomalEvents && currentState.InterChromosome_SR.size()) {
+				SortAndReportInterChromosomalEvents(currentState, g_genome, userSettings);	
+			}
+			currentState.InterChromosome_SR.clear();
 			currentState.InputReads_SR.clear();
 			currentState.Reads_SR.clear();
 			currentState.FutureReads_SR.clear();
@@ -1535,13 +1541,12 @@ int main(int argc, char *argv[])
 
 	//std::cout << "before report int " << std::endl;
 
-	if (userSettings->reportInterchromosomalEvents && currentState.Reads_SR.size())
-		SortAndReportInterChromosomalEvents(currentState, g_genome, userSettings);
+
     
 	//std::cout << "before based on ploidy " << std::endl;
-	if (g_sampleNames.size() == 1 && userSettings->IndelCorrection && currentState.Reads_SR.size()) {
-		GetConsensusBasedOnPloidy(currentState, g_genome, userSettings);
-	}
+	//if (g_sampleNames.size() == 1 && userSettings->IndelCorrection && currentState.Reads_SR.size()) {
+	//	GetConsensusBasedOnPloidy(currentState, g_genome, userSettings);
+	//}
     
 	timer.reportAll( *logStream );
 	//*logStream << "Loading genome sequences and reads: " << AllLoadings << " seconds." << std::endl;

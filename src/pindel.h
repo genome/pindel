@@ -270,7 +270,7 @@ struct SPLIT_READ {
     unsigned Thickness;
 	SortedUniquePoints UP_Close; // partial alignment of the unmapped reads close to the mapped read
 	SortedUniquePoints UP_Far;
-   short getReadLength() const { return ReadLength; }
+	short getReadLength() const { return ReadLength; }
 	short getReadLengthMinus() const { return ReadLengthMinus; }
 	short getMAX_SNP_ERROR() const { return MAX_SNP_ERROR; } // the maximum amount of errors allowed when mapping the read
 	
@@ -286,18 +286,18 @@ struct SPLIT_READ {
 	unsigned int BPLeft;
 	unsigned int BPRight;
 	unsigned int IndelSize;
-   bool UniqueRead;
+	bool UniqueRead;
 	std::string InsertedStr;
 	std::string NT_str;
 	unsigned short NT_size;
 	bool Used;
 	//bool Investigated;
 	short CloseEndLength;
-    short CloseEndMismatch;
-    short FarEndMismatch;
+	short CloseEndMismatch;
+	short FarEndMismatch;
 	int LeftMostPos;
-    std::map <std::string, int> ReadCountPerSample;
-    std::string read_group;
+	std::map <std::string, int> ReadCountPerSample;
+	std::string read_group;
 
 	unsigned int getLastAbsLocCloseEnd() const;
 	bool goodFarEndFound() const;

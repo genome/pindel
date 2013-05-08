@@ -340,7 +340,7 @@ void printHelp(const std::vector<Parameter *>& parameters)
               << "Program:   pindel (detection of indels and structural variations)"
               << std::endl;
     *logStream << Pindel_Version_str << std::endl;
-    *logStream << "Contact:   Kai Ye <k.ye@lumc.nl>" << std::endl << std::endl;
+    *logStream << "Contact:   Kai Ye <kye@genome.wustl.edu>" << std::endl << std::endl;
 
     *logStream << "Usage:     pindel -f <reference.fa> -p <pindel_input>"
               << std::endl;
