@@ -787,9 +787,9 @@ void init(int argc, char *argv[], ControlState& currentState )
 	UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
 	logStream=&std::cout;
 //std::cout << "2" << std::endl;
-    if (userSettings->NumRead2ReportCutOff == 1) {
-        userSettings->BalanceCutoff = 300000000;
-    }
+    //if (userSettings->NumRead2ReportCutOff == 1) {
+    //    userSettings->BalanceCutoff = 300000000;
+    //}
 //std::cout << "2" << std::endl;
     // define all the parameters you have
     defineParameters( parameters );
