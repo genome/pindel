@@ -162,10 +162,10 @@ bool RecipicalOverlap(RP_READ & first, RP_READ & second) {
 	if (first.DA != second.DA || first.DB != second.DB) return false;
 	if (first.PosA < second.PosB || first.PosB > second.PosA) return false;
 	if (first.PosA < second.PosA && second.PosB < first.PosA) {
-		if ((double)(second.PosB - second.PosA)/(double)(first.PosB - first.PosB) > 0.8) return true;
+		if ((double)(second.PosB - second.PosA)/(double)(first.PosB - first.PosA) > 0.8) return true;
 	}
 	if (second.PosA < first.PosA && first.PosB < second.PosA) {
-		if ((double)(first.PosB - first.PosA)/(double)(second.PosB - second.PosB) > 0.8) return true;
+		if ((double)(first.PosB - first.PosA)/(double)(second.PosB - second.PosA) > 0.8) return true;
 	}
 	if (first.PosA < second.PosA && second.PosA < first.PosB && first.PosB < second.PosB) {
 		if ((double)(first.PosB - second.PosA) / (double)(first.PosB - first.PosA) > 0.8 && (double)(first.PosB - second.PosA) / (double)(second.PosB - second.PosA) > 0.8) return true;
