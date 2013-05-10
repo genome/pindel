@@ -325,7 +325,11 @@ void ModifyRP_InterChr(std::vector <RP_READ> & Reads_RP) {
 void Summarize(std::vector <RP_READ> & Reads_RP) {
 	unsigned Cutoff = 3;
 	std::vector <unsigned int> GoodIndex;
-	if (Reads_RP.size() < 3) return;
+	if (Reads_RP.size() < 3) {
+		for (unsigned int first = 0; first < Reads_RP.size(); first++)
+			Reads_RP[first].Report = false;
+		return;
+	}
 	else {
 		for (unsigned int first = 0; first < Reads_RP.size() - 1; first++) {
 			//std::cout << Reads_RP[first].DA << " " << Reads_RP[first].PosA << " " << Reads_RP[first].DB << " " << Reads_RP[first].PosB << std::endl;
@@ -351,23 +355,38 @@ void Summarize(std::vector <RP_READ> & Reads_RP) {
 			//else Reads_RP[first].Report = false;
 		}
 	 
-
-		for (unsigned index_a = 0;  index_a < GoodIndex.size() - 1; index_a++) {
-			if (Reads_RP[GoodIndex[index_a]].Visited) continue; 
-			for (unsigned index_b = index_a + 1;  index_b < GoodIndex.size(); index_b++) {
-				if (RecipicalOverlap(Reads_RP[GoodIndex[index_a]], Reads_RP[GoodIndex[index_b]])) {
-					Reads_RP[GoodIndex[index_a]].NumberOfIdentical = Reads_RP[GoodIndex[index_a]].NumberOfIdentical + Reads_RP[GoodIndex[index_b]].NumberOfIdentical;
-					Reads_RP[GoodIndex[index_b]].Visited = true;
-					if ((Reads_RP[GoodIndex[index_a]].DA == '+' && Reads_RP[GoodIndex[index_a]].PosA < Reads_RP[GoodIndex[index_b]].PosA) || (Reads_RP[GoodIndex[index_a]].DA == '-' && Reads_RP[GoodIndex[index_a]].PosA > Reads_RP[GoodIndex[index_b]].PosA)) 
-						Reads_RP[GoodIndex[index_a]].PosA = Reads_RP[GoodIndex[index_b]].PosA;
-					if ((Reads_RP[GoodIndex[index_a]].DB == '+' && Reads_RP[GoodIndex[index_a]].PosB < Reads_RP[GoodIndex[index_b]].PosB) || (Reads_RP[GoodIndex[index_a]].DB == '-' && Reads_RP[GoodIndex[index_a]].PosB > Reads_RP[GoodIndex[index_b]].PosB)) 
-						Reads_RP[GoodIndex[index_a]].PosB = Reads_RP[GoodIndex[index_b]].PosB;
-				} 
-			}
-			if (Reads_RP[GoodIndex[index_a]].NumberOfIdentical >= Cutoff) Reads_RP[GoodIndex[index_a]].Report = true;
-			else Reads_RP[GoodIndex[index_a]].Report = false;
+		//std::cout << "middle" << std::endl;
+		if (GoodIndex.size() == 0) return;
+		else if (GoodIndex.size() == 1) {
+			if (Reads_RP[GoodIndex[0]].NumberOfIdentical >= Cutoff) Reads_RP[GoodIndex[0]].Report = true;
+			else Reads_RP[GoodIndex[0]].Report = false;
 		}
+		else {
+			for (unsigned index_a = 0;  index_a < GoodIndex.size() - 1; index_a++) {
+				//std::cout << "index_a " << index_a << std::endl;
+				//std::cout << Reads_RP[index_a].DA << " " << Reads_RP[index_a].PosA << " " << Reads_RP[index_a].DB << " " << Reads_RP[index_a].PosB << std::endl;
+				if (Reads_RP[GoodIndex[index_a]].Visited) continue; 
+	
+				for (unsigned index_b = index_a + 1;  index_b < GoodIndex.size(); index_b++) {
+					//std::cout << "index_b " << index_b << std::endl;
+					if (RecipicalOverlap(Reads_RP[GoodIndex[index_a]], Reads_RP[GoodIndex[index_b]])) {
+						Reads_RP[GoodIndex[index_a]].NumberOfIdentical = Reads_RP[GoodIndex[index_a]].NumberOfIdentical + Reads_RP[GoodIndex[index_b]].NumberOfIdentical;
+						Reads_RP[GoodIndex[index_b]].Visited = true;
+						if ((Reads_RP[GoodIndex[index_a]].DA == '+' && Reads_RP[GoodIndex[index_a]].PosA < Reads_RP[GoodIndex[index_b]].PosA) 
+							|| (Reads_RP[GoodIndex[index_a]].DA == '-' && Reads_RP[GoodIndex[index_a]].PosA > Reads_RP[GoodIndex[index_b]].PosA)) 
+							Reads_RP[GoodIndex[index_a]].PosA = Reads_RP[GoodIndex[index_b]].PosA;
+						if ((Reads_RP[GoodIndex[index_a]].DB == '+' && Reads_RP[GoodIndex[index_a]].PosB < Reads_RP[GoodIndex[index_b]].PosB) 
+							|| (Reads_RP[GoodIndex[index_a]].DB == '-' && Reads_RP[GoodIndex[index_a]].PosB > Reads_RP[GoodIndex[index_b]].PosB)) 
+							Reads_RP[GoodIndex[index_a]].PosB = Reads_RP[GoodIndex[index_b]].PosB;
+					} 
+				}
+				if (Reads_RP[GoodIndex[index_a]].NumberOfIdentical >= Cutoff) Reads_RP[GoodIndex[index_a]].Report = true;
+				else Reads_RP[GoodIndex[index_a]].Report = false;
+			}
+		}
+
 	}
+	//std::cout << "leaving summarize" << std::endl;
 }
 
 void Summarize_InterChr(std::vector <RP_READ> & Reads_RP) {
@@ -412,14 +431,7 @@ void BDData::UpdateBD(ControlState & currentState) {
 	std::cout << "Modify RP complete." << std::endl;
 	Summarize(currentState.Reads_RP_Discovery);
 
-
-	std::cout << "before modify and summarize interchr RP." << std::endl;
-	if (userSettings->reportInterchromosomalEvents && currentState.Reads_RP_Discovery_InterChr.size()) {
-		ModifyRP_InterChr(currentState.Reads_RP_Discovery_InterChr);
-		Summarize_InterChr(currentState.Reads_RP_Discovery_InterChr);
-	}
-
-	std::cout << "before adding BD from RP." << std::endl;
+	std::cout << "adding BD from RP." << std::endl;
 	if (currentState.Reads_RP_Discovery.size()) {
 		#pragma omp parallel default(shared)
 		{
@@ -448,7 +460,13 @@ void BDData::UpdateBD(ControlState & currentState) {
 	}
 	currentState.Reads_RP_Discovery.clear();
 
-	std::cout << "before adding BD from interChr RP." << std::endl;
+	std::cout << "modify and summarize interchr RP." << std::endl;
+	if (userSettings->reportInterchromosomalEvents && currentState.Reads_RP_Discovery_InterChr.size()) {
+		ModifyRP_InterChr(currentState.Reads_RP_Discovery_InterChr);
+		Summarize_InterChr(currentState.Reads_RP_Discovery_InterChr);
+	}
+
+	std::cout << "adding BD from interChr RP." << std::endl;
 	if (currentState.Reads_RP_Discovery_InterChr.size() && userSettings->reportInterchromosomalEvents) {
 		#pragma omp parallel default(shared)
 		{
