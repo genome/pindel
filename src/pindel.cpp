@@ -370,9 +370,10 @@ SearchWindow::SearchWindow(const SearchWindow& other) :
 	m_chromosome(other.m_chromosome), m_currentStart( other.m_currentStart ), m_currentEnd( other.m_currentEnd) 
 {}
 
-LoopingSearchWindow::LoopingSearchWindow(const SearchRegion* region, const Chromosome* chromosome, const int binSize ) :
+LoopingSearchWindow::LoopingSearchWindow(const SearchRegion* region, const Chromosome* chromosome, const int binSize) :
 SearchWindow(chromosome,0,chromosome->getBiolSize()), m_BIN_SIZE( binSize )
 {
+
     bool noOverlapWithChromosome = false;
     if (region->isStartDefined()) {
         m_officialStart = region->getStart();
@@ -407,6 +408,57 @@ SearchWindow(chromosome,0,chromosome->getBiolSize()), m_BIN_SIZE( binSize )
     m_currentStart = m_globalStart;
     m_displayedStart = m_officialStart;
     updateEndPositions();
+
+}
+
+LoopingSearchWindow::LoopingSearchWindow(const SearchRegion* region, const Chromosome* chromosome, const int binSize, const unsigned Bed_start, const unsigned Bed_end ) :
+SearchWindow(chromosome,0,chromosome->getBiolSize()), m_BIN_SIZE( binSize )
+{
+	m_officialStart = Bed_start;
+	m_globalStart = ( Bed_start >= AROUND_REGION_BUFFER ? Bed_start - AROUND_REGION_BUFFER : 0);
+
+	m_officialEnd = Bed_end;
+	m_globalEnd = std::min( chromosome->getBiolSize() , Bed_end + AROUND_REGION_BUFFER );
+
+	m_currentStart = m_globalStart;
+	m_displayedStart = m_officialStart;
+	updateEndPositions();
+/*
+    bool noOverlapWithChromosome = false;
+    if (region->isStartDefined()) {
+        m_officialStart = region->getStart();
+        if (m_officialStart > chromosome->getBiolSize()) {
+            noOverlapWithChromosome = true;
+        }
+        // if the user defines a region, you need to start with reads before that, but not before the start of the chromosome
+        m_globalStart = ( region->getStart() >= AROUND_REGION_BUFFER ? region->getStart() - AROUND_REGION_BUFFER : 0);
+    }
+    else {
+        m_officialStart = m_globalStart = 0;
+    }
+    
+    if (region->isEndDefined()) {
+        m_officialEnd = region->getEnd();
+        if (m_officialEnd < 0 ) {
+            noOverlapWithChromosome = true;
+        }
+        // if the user defines a region, you need to end with reads after that, but not after the end of the chromosome
+        m_globalEnd = std::min( chromosome->getBiolSize() , region->getEnd() + AROUND_REGION_BUFFER );
+    }
+    else {
+        m_officialEnd = m_globalEnd = chromosome->getBiolSize();
+    }
+    
+    if (noOverlapWithChromosome) {
+        std::cout << "Error: the region to scan (" << m_officialStart << ", " << m_officialEnd << ") does not overlap with the "
+        << "chromosome (positions 0 to " << chromosome->getBiolSize() << std::endl;
+        exit( EXIT_FAILURE );
+    }
+    
+    m_currentStart = m_globalStart;
+    m_displayedStart = m_officialStart;
+    updateEndPositions();
+*/
 }
 
 
@@ -435,7 +487,7 @@ std::string LoopingSearchWindow::display() const
 {
 	std::stringstream ss;
 	if (m_displayedStart < m_displayedEnd) {
-      ss << "\nLooking at chromosome " << m_chromosome->getName() << " bases " << m_displayedStart << " to " << m_displayedEnd << ".\n";
+      ss << "\nLooking at chromosome " << m_chromosome->getName() << " bases " << m_displayedStart << " to " << m_displayedEnd << " of the bed region: chromosome " << m_chromosome->getName() << ":" << m_globalStart << "-" << m_globalEnd << " \n";
    }
    else {
       ss << "Checking out reads near the borders of the specified regions for extra evidence.\n";
@@ -817,16 +869,18 @@ void init(int argc, char *argv[], ControlState& currentState )
 	createProbTable(0.001+userSettings->Seq_Error_Rate, userSettings->sensitivity); 
 //std::cout << "7a" << std::endl;
 	std::string fastaFilename( userSettings->referenceFilename.c_str() );
-	if (userSettings->reportInterchromosomalEvents) {
+	std::cout << "Loading reference genome ..." << std::endl;
+	//if (userSettings->reportInterchromosomalEvents) {
                 //std::cout << "7b" << std::endl; 
 		g_genome.loadAll( fastaFilename );
                 //std::cout << "7c" << std::endl; 
-	}
-	else {
+	//}
+	//else {
                 //std::cout << "7d" << std::endl; 
-		g_genome.load( fastaFilename );
+	//	g_genome.load( fastaFilename );
                 //std::cout << "7e" << std::endl; 
-	}
+	//}
+	std::cout << "Loading reference genome done." << std::endl;
 //std::cout << "8" << std::endl;
    bool BreakDancerDefined = parameters[findParameter("-b",parameters)]->isSet();
    if (BreakDancerDefined) {
@@ -949,9 +1003,9 @@ void init(int argc, char *argv[], ControlState& currentState )
 		DSizeArray[ dIndex ] = DSizeArray[ dIndex-1 ] * 4;
 	}
 
-    if (!userSettings->getRegion()->isTargetChromosomeDefined() && AssemblyInputDefined == false && GenotypingInputDefined == false) {
-        *logStream << "Looping over all chromosomes." << std::endl;
-    }
+    //if (!userSettings->getRegion()->isTargetChromosomeDefined() && AssemblyInputDefined == false && GenotypingInputDefined == false) {
+    //    *logStream << "Looping over all chromosomes." << std::endl;
+    //}
 //std::cout << "20" << std::endl;
 }
 
@@ -1275,11 +1329,147 @@ short init_g_ChrNameAndSizeAndIndex(std::string RefIndexFileName) {
     return 0;
 }
 
+unsigned getChrIndex(std::string & ChrName) {
+	for (unsigned index = 0; index < g_ChrNameAndSizeAndIndex.size(); index++) {
+		if (g_ChrNameAndSizeAndIndex[index].ChrName == ChrName)
+			return index;
+	}
+	return g_ChrNameAndSizeAndIndex.size();
+}
+
+unsigned getChrSize(std::string & ChrName) {
+	for (unsigned index = 0; index < g_ChrNameAndSizeAndIndex.size(); index++) {
+		if (g_ChrNameAndSizeAndIndex[index].ChrName == ChrName)
+			return g_ChrNameAndSizeAndIndex[index].ChrSize;
+	}
+	return 0;
+}
+
 short CheckChrName(std::string ChrName) {
     for (unsigned index = 0; index < g_ChrNameAndSizeAndIndex.size(); index++) {
         if (g_ChrNameAndSizeAndIndex[index].ChrName == ChrName) return 1;
     }
     return 0;
+}
+
+void CleanUpBedRecord(std::vector <BED> & include, std::vector <BED> & exclude) {
+	if (exclude.size() == 0) return;
+	//std::cout << "before include.size() " << include.size() << std::endl;
+	for (unsigned include_index = 0; include_index < include.size(); include_index++) {
+		//std::cout << "include " << include[include_index].ChrName << "\t" << include[include_index].Start << "\t" << include[include_index].End << std::endl;
+		for (unsigned exclude_index = 0; exclude_index < exclude.size(); exclude_index++) {
+			//std::cout << "exclude " << include[include_index].ChrName << "\t" << include[include_index].Start << "\t" << include[include_index].End << std::endl;
+			if (include[include_index].Start == include[include_index].End) break;
+			if (include[include_index].ChrName != exclude[exclude_index].ChrName) {
+				continue;
+			}
+			else { // same chromosome
+				if (include[include_index].Start > exclude[exclude_index].End || exclude[exclude_index].Start > include[include_index].End) continue;
+				// "exclude" contains current "include", set start = end
+				if (exclude[exclude_index].Start <= include[include_index].Start && include[include_index].End <= exclude[exclude_index].End) { // "exclude" contains current "include", set start = end
+					include[include_index].End = include[include_index].Start;
+				}
+				// "include" contains current "exclude", break into two regions
+				else if (include[include_index].Start < exclude[exclude_index].Start && exclude[exclude_index].End < include[include_index].End) {
+					
+					BED NewOne;
+					NewOne.ChrName = include[include_index].ChrName;
+					NewOne.Start  = exclude[exclude_index].End;
+					NewOne.End = include[include_index].End;
+					include.push_back(NewOne);
+					include[include_index].End = exclude[exclude_index].Start;
+					//std::cout << include[include_index].ChrName << " " << include[include_index].Start << " " << include[include_index].End << "\t" << NewOne.ChrName << " " << NewOne.Start << " " << NewOne.End << std::endl;
+				}
+				// intersect I
+				else if (exclude[exclude_index].Start <= include[include_index].Start && include[include_index].Start < exclude[exclude_index].End && exclude[exclude_index].End < include[include_index].End) {
+					include[include_index].Start = exclude[exclude_index].End;
+				}
+				// intersect II
+				else if (include[include_index].Start < exclude[exclude_index].Start && exclude[exclude_index].Start < include[include_index].End && include[include_index].End < exclude[exclude_index].End) {
+					include[include_index].End = exclude[exclude_index].Start;
+				}
+			}
+		}
+	}
+	//std::cout << "after include.size() " << include.size() << std::endl;
+	//for (unsigned index = 0; index < include.size(); index++) {
+	//	std::cout << include[index].ChrName << " " << include[index].Start << " " << include[index].End << std::endl;
+	//}
+	std::vector <BED> result;
+	//std::cout << "a list of regions after excluding regions: " << std::endl;
+	for (unsigned include_index = 0; include_index < include.size(); include_index++) {
+		if (include[include_index].Start != include[include_index].End) {
+			result.push_back(include[include_index]);
+			//std::cout << include[include_index].ChrName << "\t" << include[include_index].Start << "\t" << include[include_index].End << std::endl;
+		}
+	}
+	//std::cout << "merging the list if there is overlap: " << std::endl;
+	for (unsigned first = 0; first < result.size() - 1; first++) { 
+		for (unsigned second = first + 1; second < result.size(); second++) { 
+			if (result[first].ChrName != result[second].ChrName) {
+				continue;
+			}
+			else { // same chromosome
+				
+				// non overlap
+				if (result[first].Start > result[second].End || result[second].Start > result[first].End) continue;
+				// "second" contains current "first", set start = end
+				if (result[second].Start <= result[first].Start && result[first].End <=result[second].End) { // "second" contains current "first", set start = end
+					result[first].End = result[first].Start;
+					break;
+				}
+				// "first" contains current "second", discard second
+				else if (result[first].Start <= result[second].Start && result[second].End <= result[first].End) {
+					result[second].Start = result[second].End;
+					break;
+				}
+				// intersect I
+				else if (result[second].Start <= result[first].Start && result[first].Start <= result[second].End && result[second].End <= result[first].End) {
+					result[first].Start = result[second].Start;
+					result[second].Start = result[second].End;
+				}
+				// intersect II
+				else if (result[first].Start <= result[second].Start && result[second].Start <= result[first].End && result[first].End <= result[second].End) {
+					result[first].End = result[second].End;
+					result[second].Start = result[second].End;
+				}
+			}
+		}
+	}	
+	std::vector <BED> final;
+	for (unsigned index = 0; index < result.size(); index++) 
+		if (result[index].Start != result[index].End) 
+			final.push_back(result[index]);
+	// sorting
+	std::cout << "final regions" << std::endl;
+	bool exchange;
+	for (unsigned first = 0; first < final.size() - 1; first++) { 
+		for (unsigned second = first + 1; second < final.size(); second++) {
+			exchange = false;
+			unsigned first_ChrIndex = getChrIndex(final[first].ChrName);
+			unsigned second_ChrIndex = getChrIndex(final[second].ChrName);
+			if (first_ChrIndex < second_ChrIndex) {
+				continue;
+			}
+			else if (first_ChrIndex > second_ChrIndex) {
+				exchange = true;
+			}
+			else { // same chr
+				if (final[first].Start > final[second].Start) 
+					exchange = true;
+			}
+			if (exchange) {
+				BED temp = final[first];
+				final[first] = final[second];
+				final[second] = temp;
+			}
+		}
+		unsigned CurrentSize = getChrSize(final[first].ChrName);
+		if (CurrentSize < final[first].End) final[first].End  = CurrentSize;
+		std::cout << final[first].ChrName << "\t" << final[first].Start << "\t" << final[first].End << std::endl;
+	}
+	exclude.clear();
+	include = final;
 }
 
 int main(int argc, char *argv[])
@@ -1305,6 +1495,99 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
+	if (userSettings->loopOverAllChromosomes()) { // WGS
+		if (parameters[findParameter("-j",parameters)]->isSet()) { // if a bed file is provided to processing
+			if (userSettings->inf_InclusiveBedFileName != "") {
+				BED OneBedRecord;
+				std::ifstream inf_IncludeBed( userSettings->inf_InclusiveBedFileName.c_str() );
+				while (inf_IncludeBed >> OneBedRecord.ChrName >> OneBedRecord.Start >> OneBedRecord.End) {
+					if (OneBedRecord.Start > OneBedRecord.End) {
+						unsigned tempint = OneBedRecord.Start;
+						OneBedRecord.Start = OneBedRecord.End;
+						OneBedRecord.End = tempint;
+					}
+					unsigned ChrSize = g_genome.getChr(OneBedRecord.ChrName)->getBiolSize();
+					if (OneBedRecord.End > ChrSize) OneBedRecord.End = ChrSize;
+					currentState.IncludeBed.push_back(OneBedRecord);
+					//std::cout << currentState.IncludeBed.size() << "\t" << OneBedRecord.ChrName << "\t" << OneBedRecord.Start << "\t" << OneBedRecord.End << std::endl;
+				}
+			}
+		}
+		else {
+			for (unsigned index = 0; index < g_ChrNameAndSizeAndIndex.size(); index++) {
+				BED OneBedRecord;
+				OneBedRecord.ChrName = g_ChrNameAndSizeAndIndex[index].ChrName;
+				OneBedRecord.Start = 1;
+				OneBedRecord.End = g_ChrNameAndSizeAndIndex[index].ChrSize;
+				currentState.IncludeBed.push_back(OneBedRecord);
+				//std::cout << currentState.IncludeBed.size() << "\t" << OneBedRecord.ChrName << "\t" << OneBedRecord.Start << "\t" << OneBedRecord.End << std::endl;
+			}
+		}
+	}
+	else { // one region
+		if (parameters[findParameter("-j",parameters)]->isSet()) { // if a bed file is provided to processing
+			if (userSettings->inf_InclusiveBedFileName != "") {
+
+				std::string ChrName = userSettings->getRegion()->getTargetChromosomeName();
+				unsigned Start = userSettings->getRegion()->getStart();
+				unsigned End = userSettings->getRegion()->getEnd();
+				unsigned ChrSize = g_genome.getChr(ChrName)->getBiolSize();
+				if (End > ChrSize) End = ChrSize;
+				BED OneBedRecord;
+				std::ifstream inf_IncludeBed( userSettings->inf_InclusiveBedFileName.c_str() );
+				while (inf_IncludeBed >> OneBedRecord.ChrName >> OneBedRecord.Start >> OneBedRecord.End) {
+					if (OneBedRecord.Start > OneBedRecord.End) {
+						unsigned tempint = OneBedRecord.Start;
+						OneBedRecord.Start = OneBedRecord.End;
+						OneBedRecord.End = tempint;
+					}
+					if (OneBedRecord.ChrName != ChrName) continue;
+					if (OneBedRecord.Start < Start) OneBedRecord.Start = Start;
+					if (OneBedRecord.End > End) OneBedRecord.End = End; 
+					currentState.IncludeBed.push_back(OneBedRecord);
+					//std::cout << currentState.IncludeBed.size() << "\t" << OneBedRecord.ChrName << "\t" << OneBedRecord.Start << "\t" << OneBedRecord.End << std::endl;
+				}
+			}
+		}
+		else {
+			BED OneBedRecord;
+			OneBedRecord.ChrName = userSettings->getRegion()->getTargetChromosomeName();
+			OneBedRecord.Start = userSettings->getRegion()->getStart();
+			OneBedRecord.End = userSettings->getRegion()->getEnd();
+
+			unsigned ChrSize = g_genome.getChr(OneBedRecord.ChrName)->getBiolSize();
+			if (OneBedRecord.End > ChrSize) OneBedRecord.End = ChrSize;
+			currentState.IncludeBed.push_back(OneBedRecord);
+		}
+	}
+
+
+	//std::cout << "currentState.IncludeBed.size() " << currentState.IncludeBed.size() << std::endl;
+	//for (unsigned index = 0; index < currentState.IncludeBed.size(); index++) {
+	//	std::cout << currentState.IncludeBed.size() << "\t" << currentState.IncludeBed[index].ChrName << "\t" << currentState.IncludeBed[index].Start << "\t" << currentState.IncludeBed[index].End << std::endl;
+	//}
+
+	//std::cout << "inf_ExclusiveBedFileName" << userSettings->inf_ExclusiveBedFileName << std::endl;
+	if (parameters[findParameter("-J",parameters)]->isSet()) { // if a bed file is provided to exclude regions for processing
+		if (userSettings->inf_ExclusiveBedFileName != "") {
+			BED OneBedRecord;
+			std::ifstream inf_ExcludeBed( userSettings->inf_ExclusiveBedFileName.c_str() );
+			while (inf_ExcludeBed >> OneBedRecord.ChrName >> OneBedRecord.Start >> OneBedRecord.End) {
+				if (OneBedRecord.Start > OneBedRecord.End) {
+					unsigned tempint = OneBedRecord.Start;
+					OneBedRecord.Start = OneBedRecord.End;
+					OneBedRecord.End = tempint;
+				}
+				currentState.ExcludeBed.push_back(OneBedRecord);
+				//std::cout << currentState.ExcludeBed.size() << "\t" << OneBedRecord.ChrName << "\t" << OneBedRecord.Start << "\t" << OneBedRecord.End << std::endl;
+			}
+		}
+	}
+
+	CleanUpBedRecord(currentState.IncludeBed, currentState.ExcludeBed);
+	
+	//return 0;
+
 	if (!userSettings->loopOverAllChromosomes()) {
 		if (CheckChrName(userSettings->getRegion()->getTargetChromosomeName()) == 0) {
 			std::cout << "Please check chromosome name in the reference file, BAM files and command line. \n Make sure that they are consistent.\n" << std::endl;
@@ -1325,7 +1608,7 @@ int main(int argc, char *argv[])
     
 	bool AssemblyInputDefined = parameters[findParameter("-z",parameters)]->isSet();
 	if (AssemblyInputDefined) {
-		doAssembly(currentState, userSettings );
+		//doAssembly(currentState, userSettings );
 		exit(EXIT_SUCCESS);
 	}
 
@@ -1355,38 +1638,33 @@ int main(int argc, char *argv[])
 
 	// Get a new chromosome again and again until you have visited the specified chromosome or the file ends
 	// CurrentChrName stores the name of the chromosome.
-	std::cout << "loading reference genome" << std::endl;
-	bool SpecifiedChrVisited = false;
+	//std::cout << "loading reference genome" << std::endl;
 
 	std::string CurrentChrName;
 	std::string PreviousChrName = "";
 
-	do {
+	for (unsigned bed_index = 0; bed_index < currentState.IncludeBed.size(); bed_index++) {
 		//std::cout << "here" << std::endl;
 		timer.switchTo("Loading chromosomes");
-		const Chromosome* currentChromosome = g_genome.getNextChromosome();
-		
-		if ( (currentChromosome == NULL ) || ( SpecifiedChrVisited == true )) {
-			break;
-		}
-		CurrentChrName = currentChromosome->getName();
-		if (!userSettings->loopOverAllChromosomes()) {
-			if (currentChromosome->getName() == userSettings->getRegion()->getTargetChromosomeName() ) {
-				SpecifiedChrVisited = true;
-			}
-			else {
-         			*logStream << "Skipping chromosome: " << currentChromosome->getName() << std::endl;
-				continue;
-			}
+		//const Chromosome* currentChromosome = g_genome.getNextChromosome();
+		std::string Bed_ChrName = currentState.IncludeBed[bed_index].ChrName;
+		unsigned Bed_start = currentState.IncludeBed[bed_index].Start;
+		unsigned Bed_end = currentState.IncludeBed[bed_index].End;
+
+		const Chromosome* currentChromosome = g_genome.getChr(Bed_ChrName);
+
+		if (currentChromosome == NULL) {
+			std::cout << "There is no " << CurrentChrName << " in the reference file." << std::endl;
+			return 1;
 		}
 
-		*logStream << "Processing chromosome: " << currentChromosome->getName() << std::endl;
-		std::cout << "CurrentChrName: " << currentChromosome->getName() << std::endl;
+		*logStream << "Processing region: " << Bed_ChrName << "\t" << Bed_start << "\t" << Bed_end << std::endl;
+		//std::cout << "CurrentChrName: " << currentChromosome->getName() << std::endl;
 
 		g_maxPos = 0; // #################
 		*logStream << "Chromosome Size: " << currentChromosome->getBiolSize() << std::endl;
 		CurrentChrMask.resize(currentChromosome->getCompSize());
-		std::cout << "currentChromosome->getCompSize()" << currentChromosome->getCompSize() << std::endl;
+		//std::cout << "currentChromosome->getCompSize()" << currentChromosome->getCompSize() << std::endl;
 		for (unsigned int i = 0; i < currentChromosome->getCompSize(); i++) {
 		  CurrentChrMask[i] = 'N';
 		}
@@ -1398,10 +1676,11 @@ int main(int argc, char *argv[])
 
 		g_binIndex = 0; // to start with 0... 
     
-		LoopingSearchWindow currentWindow( userSettings->getRegion(), currentChromosome, WINDOW_SIZE ); 
+		LoopingSearchWindow currentWindow( userSettings->getRegion(), currentChromosome, WINDOW_SIZE, Bed_start, Bed_end ); 
 
-      		// loop over one chromosome
-      		do {
+      		// loop over one bed region
+      		do 
+		{
 			//std::cout << "test 1" << std::endl;
 			/* 3.2.1 preparation starts */
 			*logStream << currentWindow.display();
@@ -1537,7 +1816,7 @@ int main(int argc, char *argv[])
 		// name of previous chromosome
 		PreviousChrName = CurrentChrName;
 		std::cout << "PreviousChrName: " << CurrentChrName << std::endl;
-	} while (true);
+	} 
 
 	//std::cout << "before report int " << std::endl;
 

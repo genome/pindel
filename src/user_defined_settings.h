@@ -12,6 +12,7 @@ class SearchRegion {
 
 public:
 	SearchRegion(const std::string& regionString);
+	void SetRegion(const std::string& ChrName, const unsigned int start, const unsigned int end);
 	bool isStartDefined() const; 
 	bool isEndDefined() const;
 	bool isTargetChromosomeDefined() const;
@@ -38,14 +39,18 @@ public:
 	bool Analyze_INV; 
 	bool Analyze_LI; 
 	bool Analyze_TD; 
-    bool Analyze_MEI;
+	bool Analyze_MEI;
 	unsigned int BalanceCutoff;
 	std::string bamConfigFilename;
 	std::string breakdancerFilename;
 	std::string breakdancerOutputFilename;
-    std::string PloidyFileName;
+	
+	std::string inf_InclusiveBedFileName;
+	std::string inf_ExclusiveBedFileName;
+
+	std::string PloidyFileName;
 	double FLOAT_WINDOW_SIZE;
-   std::string inf_AssemblyInputFilename; 
+	std::string inf_AssemblyInputFilename; 
 	std::string inf_GenotypingInputFilename;
 	std::string logFilename;	
 	double MaximumAllowedMismatchRate;
@@ -62,12 +67,12 @@ public:
 	std::string pindelConfigFilename;
 	std::string pindelFilename;
 	std::string referenceFilename;
-    bool SearchDiscordantReadPair;
+	bool SearchDiscordantReadPair;
 	bool ReportCloseMappedRead;
 	bool reportOnlyCloseMappedReads;
 	bool reportInterchromosomalEvents;
-    bool IndelCorrection;
-    bool NormalSamples;
+	bool IndelCorrection;
+	bool NormalSamples;
 	std::string userDefinedRegion;
 	double Seq_Error_Rate;
 	bool showHelp;
@@ -78,7 +83,9 @@ public:
 	bool bamFilesAsInput() const { return bamConfigFilename != ""; };
 	bool pindelFilesAsInput() const { return ( singlePindelFileAsInput() || pindelConfigFileAsInput() ); };
 
-    std::string getRefFilename() const { return referenceFilename; };
+	std::string getRefFilename() const { return referenceFilename; };
+	std::string getInclusiveBedFileName() const { return inf_InclusiveBedFileName; };
+	std::string getExclusiveBedFileName() const { return inf_ExclusiveBedFileName; };
     
 	std::string getSIOutputFilename() const { return outputFilename + "_SI"; };
 	std::string getDOutputFilename() const { return outputFilename + "_D"; };
@@ -89,10 +96,10 @@ public:
 	std::string getCloseEndOutputFilename() const { return outputFilename + "_CloseEndMapped"; };
 	std::string getASMOutputFilename() const { return outputFilename + "_ASM"; };
 	std::string getGTOutputFilename() const { return outputFilename + "_GT"; };
-    std::string getMEIOutputFilename() const { return outputFilename + "_MEI"; };
-    std::string getINTOutputFilename() const { return outputFilename + "_INT"; };
-    std::string getContigOutputFilename() const { return outputFilename + "_contig"; };
-    std::string getIndelConsensusOutputFilename() const { return outputFilename + "_CINDEL"; };
+	std::string getMEIOutputFilename() const { return outputFilename + "_MEI"; };
+	std::string getINTOutputFilename() const { return outputFilename + "_INT"; };
+	std::string getContigOutputFilename() const { return outputFilename + "_contig"; };
+	std::string getIndelConsensusOutputFilename() const { return outputFilename + "_CINDEL"; };
 
 	bool loopOverAllChromosomes() { return ! getRegion()->isTargetChromosomeDefined(); };
 

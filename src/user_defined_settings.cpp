@@ -87,10 +87,18 @@ void eliminate(const char ch, // in: character to be eliminated from the string
     }
 }
 
+void SearchRegion::SetRegion(const std::string& ChrName, const unsigned int start, const unsigned int end) {
+	m_targetChromosomeName = ChrName;
+	m_startDefined = true;
+	m_endDefined = true;
+	m_start = start;
+	m_end = end;
+}
+
 SearchRegion::SearchRegion(const std::string& regionString )
 {
 	size_t separatorPos = regionString.find(":");
-   bool correctParse = false;
+	bool correctParse = false;
 	m_startDefined = false;
 	m_endDefined = false;
 	m_start = -1;

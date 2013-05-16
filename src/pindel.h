@@ -591,7 +591,8 @@ protected:
 class LoopingSearchWindow: public SearchWindow {
 
 public:
-	LoopingSearchWindow(const SearchRegion* region, const Chromosome* chromosome, const int binSize  );
+	LoopingSearchWindow(const SearchRegion* region, const Chromosome* chromosome, const int binSize, const unsigned int start, const unsigned int end);
+	LoopingSearchWindow(const SearchRegion* region, const Chromosome* chromosome, const int binSize);
 	void next();
 	std::string display() const;
 	bool finished() const;

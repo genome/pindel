@@ -31,6 +31,12 @@
 //#include "bddata.h"
 
 
+struct BED {
+	std::string ChrName;
+	unsigned Start;
+	unsigned End;
+};
+
 struct BreakDancerCoordinate {
 
 private:
@@ -72,8 +78,8 @@ public:
 	ControlState();
 	virtual ~ControlState();
 
-    std::ifstream inf_AssemblyInput;
-    std::ifstream inf_GenotypingInput;
+	std::ifstream inf_AssemblyInput;
+	std::ifstream inf_GenotypingInput;
 	LineReader *lineReader;
 	PindelReadReader *inf_Pindel_Reads;
 	std::vector<bam_info> bams_to_parse;
@@ -83,15 +89,17 @@ public:
 	std::string CurrentChrName;
 
 	std::vector <SPLIT_READ> InputReads_SR, Reads_SR, FutureReads_SR, InterChromosome_SR, OneEndMappedReads;
-    std::vector <RPVector> Reads_RP;
-    std::vector <RP_READ> Reads_RP_Discovery, Reads_RP_Discovery_InterChr;
-    std::vector <REF_READ> RefSupportingReads;
-    //SearchWindow::SearchWindow CURRENT_WINDOW;
-    unsigned RegionStart, RegionEnd;
+	std::vector <RPVector> Reads_RP;
+	std::vector <RP_READ> Reads_RP_Discovery, Reads_RP_Discovery_InterChr;
+	std::vector <REF_READ> RefSupportingReads;
+	//SearchWindow::SearchWindow CURRENT_WINDOW;
+	unsigned RegionStart, RegionEnd;
 	int CountFarEnd, CountFarEndPlus, CountFarEndMinus;
 
 	//TODO: explain what are stored in these two vectors.
 	std::vector<BreakDancerEvent> External_BD, All_BD_events_WG, All_BD_events;
+
+	std::vector<BED> IncludeBed, ExcludeBed;
 };
 
 #endif /* CONTROLSTATE_H_ */

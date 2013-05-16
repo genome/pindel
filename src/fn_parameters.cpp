@@ -11,8 +11,8 @@
 
 /* 'defineParameters' defines the parameters to be used by Pindel. Takes the variables from the calling function as argument for those variables which
  do not need to be stored in the par structure. */
-// _________j___n____________
-// ___D_FGH_JK___O_____UVWX_Z
+// ____________n____________
+// ___D_FGH_K___O_____UVWX_Z
 void defineParameters(std::vector<Parameter *>& parameters)
 {
 	UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
@@ -165,6 +165,22 @@ void defineParameters(std::vector<Parameter *>& parameters)
             "-b",
             "--breakdancer",
             "Pindel is able to use calls from other SV methods such as BreakDancer to further increase sensitivity and specificity.                    BreakDancer result or calls from any methods must in the format:   ChrA LocA stringA ChrB LocB stringB other",
+            false, ""));
+
+    parameters.push_back(
+        new StringParameter(
+            &userSettings->inf_InclusiveBedFileName,
+            "-j",
+            "--include",
+            "If you want Pindel to process a set of regions, please provide a bed file here: chr start end",
+            false, ""));
+
+    parameters.push_back(
+        new StringParameter(
+            &userSettings->inf_ExclusiveBedFileName,
+            "-J",
+            "--exclude",
+            "If you want Pindel to skip a set of regions, please provide a bed file here: chr start end",
             false, ""));
 
     parameters.push_back(
