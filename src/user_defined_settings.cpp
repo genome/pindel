@@ -6,6 +6,8 @@
 #include "logstream.h"
 #include "user_defined_settings.h"
 
+#include "pindel.h"
+
 UserDefinedSettings* UserDefinedSettings::m_instance = NULL;
 
 UserDefinedSettings::UserDefinedSettings()
@@ -97,6 +99,8 @@ void SearchRegion::SetRegion(const std::string& ChrName, const unsigned int star
 
 SearchRegion::SearchRegion(const std::string& regionString )
 {
+
+	std::cout << "SearchRegion::SearchRegion" << std::endl;
 	size_t separatorPos = regionString.find(":");
 	bool correctParse = false;
 	m_startDefined = false;
@@ -131,6 +135,15 @@ SearchRegion::SearchRegion(const std::string& regionString )
    // no separator found
    else {
       m_targetChromosomeName = regionString;
+	m_start = 1;
+	m_end = 1;
+	for (unsigned index = 0; index < g_ChrNameAndSizeAndIndex.size(); index++) {
+		if (g_ChrNameAndSizeAndIndex[index].ChrName == m_targetChromosomeName)
+			m_end = g_ChrNameAndSizeAndIndex[index].ChrSize;
+	}
+	//getChrSize(m_targetChromosomeName);
+	m_startDefined = true;
+	m_endDefined = true;
       correctParse = true;
    }
 

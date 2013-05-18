@@ -74,7 +74,7 @@
 /* EW: update 0.2.4s: bugfix for -p option of Pindel0.2.4r */
 /* EW: update 0.2.4t, updates now shown in RELEASE document in trunk directory */
 
-const std::string Pindel_Version_str = "Pindel version 0.2.4x, May 8 2013.";
+const std::string Pindel_Version_str = "Pindel version 0.2.4y, May 17 2013.";
 
 const Chromosome g_dummyChromosome("","");
 Genome g_genome;
@@ -487,7 +487,7 @@ std::string LoopingSearchWindow::display() const
 {
 	std::stringstream ss;
 	if (m_displayedStart < m_displayedEnd) {
-      ss << "\nLooking at chromosome " << m_chromosome->getName() << " bases " << m_displayedStart << " to " << m_displayedEnd << " of the bed region: chromosome " << m_chromosome->getName() << ":" << m_globalStart << "-" << m_globalEnd << " \n";
+      ss << "\nLooking at chromosome " << m_chromosome->getName() << " bases " << m_displayedStart << " to " << m_displayedEnd << " of the bed region: chromosome " << m_chromosome->getName() << ":" << m_officialStart << "-" << m_officialEnd << " \n";
    }
    else {
       ss << "Checking out reads near the borders of the specified regions for extra evidence.\n";
@@ -1441,7 +1441,7 @@ void CleanUpBedRecord(std::vector <BED> & include, std::vector <BED> & exclude) 
 		if (result[index].Start != result[index].End) 
 			final.push_back(result[index]);
 	// sorting
-	std::cout << "final regions" << std::endl;
+	//std::cout << "final regions" << std::endl;
 	bool exchange;
 	for (unsigned first = 0; first < final.size() - 1; first++) { 
 		for (unsigned second = first + 1; second < final.size(); second++) {
@@ -1466,9 +1466,13 @@ void CleanUpBedRecord(std::vector <BED> & include, std::vector <BED> & exclude) 
 		}
 		unsigned CurrentSize = getChrSize(final[first].ChrName);
 		if (CurrentSize < final[first].End) final[first].End  = CurrentSize;
-		std::cout << final[first].ChrName << "\t" << final[first].Start << "\t" << final[first].End << std::endl;
+		//std::cout << final[first].ChrName << "\t" << final[first].Start << "\t" << final[first].End << std::endl;
 	}
 	exclude.clear();
+	std::cout << "\nfinal list of regions:" << std::endl;
+	for (unsigned first = 0; first < final.size(); first++)
+		std::cout << "\t" << final[first].ChrName << "\t" << final[first].Start << "\t" << final[first].End << std::endl;
+	std::cout << std::endl;
 	include = final;
 }
 
