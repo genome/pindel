@@ -1679,7 +1679,7 @@ int main(int argc, char *argv[])
 		//std::cout << "NumBoxes: " << NumBoxes << "\tBoxSize: " << BoxSize << std::endl;
 
 		g_binIndex = 0; // to start with 0... 
-    
+		userSettings->getRegion()->SetRegion(Bed_ChrName, Bed_start, Bed_end);
 		LoopingSearchWindow currentWindow( userSettings->getRegion(), currentChromosome, WINDOW_SIZE, Bed_start, Bed_end ); 
 
       		// loop over one bed region

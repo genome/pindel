@@ -145,7 +145,7 @@ short GenotypingOneDEL(std::map<std::string,int> &ChrName2Index, ControlState & 
     std::cout << "\nGenotyping " << OneSV.Type << " " << OneSV.ChrA << " " << OneSV.PosA << " " 
     << OneSV.CI_A << " " << OneSV.ChrB << " " << OneSV.PosB << " " << OneSV.CI_B << std::endl;
     const Chromosome* currentChromosome = g_genome.getChr(OneSV.ChrA);
-    std::string CurrentChrSeq = currentChromosome->getSeq();
+    std::string & CurrentChrSeq = currentChromosome->getSeq();
     // get RD signals
     //const std::string & CurrentChrSeq = AllChromosomes[ ChrName2Index[ OneSV.ChrA ]].ChrSeq;
     CurrentState.CurrentChrName = OneSV.ChrA;

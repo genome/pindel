@@ -121,8 +121,8 @@ short AssembleOneSV(std::map<std::string,int> &ChrName2Index, ControlState & Cur
     //std::cout << "AssembleOneSV 2" << std::endl;
     const Chromosome* currentChromosomeFirst = g_genome.getChr(OneSV.ChrA);
     const Chromosome* currentChromosomeSecond = g_genome.getChr(OneSV.ChrB);
-    std::string FirstChrSeq = currentChromosomeFirst->getSeq();
-    std::string SecondChrSeq = currentChromosomeSecond->getSeq();
+    std::string & FirstChrSeq = currentChromosomeFirst->getSeq();
+    std::string & SecondChrSeq = currentChromosomeSecond->getSeq();
     
     if (CurrentState.CurrentChrName != OneSV.ChrA) {
         CurrentState.CurrentChrName = OneSV.ChrA;
