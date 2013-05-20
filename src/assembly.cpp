@@ -482,7 +482,7 @@ void CombineReads(const std::string & CurrentChrSeq, const char & Strand, const 
 }
 
 void OutputCurrentRead(std::map<std::string,int> & ChrName2Index, ControlState & CurrentState, const Assembly & OneSV, SPLIT_READ & OneRead, std::ofstream & ASM_Output) {
-    //int CountSupportingSamples;
+
     //std::cout << "start of OutputCurrentRead" << std::endl;
     //if (OneRead.UP_Far_backup.size())
     //std::cout << "OutputCurrentRead start " << OneRead.UP_Close[OneRead.UP_Close.size() - 1].LengthStr << std::endl;
@@ -500,10 +500,10 @@ void OutputCurrentRead(std::map<std::string,int> & ChrName2Index, ControlState &
         << " " << OneRead.UP_Far[OneRead.UP_Far.size() - 1].LengthStr 
         << " " << OneRead.UP_Far[OneRead.UP_Far.size() - 1].AbsLoc - g_SpacerBeforeAfter + 1;
         int CountSupportingSamples = 0;
-        for (std::map<std::string,int>::iterator it = OneRead.ReadCountPerSample.begin(); it != OneRead.ReadCountPerSample.end(); it++ )
+        for (std::map<std::string,int>::iterator it = OneRead.ReadCountPerSample.begin(); it != OneRead.ReadCountPerSample.end(); ++it )
             CountSupportingSamples++;
         ASM_Output << "\t#samples " << CountSupportingSamples << " "; 
-        for (std::map<std::string,int>::iterator it = OneRead.ReadCountPerSample.begin(); it != OneRead.ReadCountPerSample.end(); it++ ) {
+        for (std::map<std::string,int>::iterator it = OneRead.ReadCountPerSample.begin(); it != OneRead.ReadCountPerSample.end(); ++it ) {
             ASM_Output << "\t" << (*it).first << " " << (*it).second;
         }
         ASM_Output << "\t NT_Size: 0\tNT_Str: \"\"" << std::endl;

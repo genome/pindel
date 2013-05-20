@@ -539,7 +539,13 @@ private:
 extern const Chromosome g_dummyChromosome;
 
 class Genome {
-public:
+ public:
+	Genome() {
+		//m_referenceFile = NULL;
+		m_fullMode = false;
+		m_currentChromosomeIndex = 0;
+	}
+
 	//unsigned int chrNameToChrIndex( const std::string chromosomeName );
 	const Chromosome* getChr( unsigned int index ) const;
 	const Chromosome* getChr( const std::string& chromosomeName ) const;
