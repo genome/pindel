@@ -100,10 +100,7 @@ public:
 	std::string getINTOutputFilename() const { return outputFilename + "_INT"; };
 	std::string getContigOutputFilename() const { return outputFilename + "_contig"; };
 	std::string getIndelConsensusOutputFilename() const { return outputFilename + "_CINDEL"; };
-
-
 	bool loopOverAllChromosomes() { return ! getRegion()->isTargetChromosomeDefined(); };
-
 	SearchRegion* getRegion();
 
 private:

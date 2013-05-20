@@ -370,8 +370,8 @@ bool ReadInBamReads_RP (const char *bam_path, const std::string & FragName,
     data.header = header;
     //data.CurrentChrSeq = CurrentChrSeq;
     data.LeftReads = &LeftReads;
-    data.read_to_map_qual = NULL;
-    data.read_to_map_qual = kh_init (read_name);
+    //data.read_to_map_qual = NULL;
+    //data.read_to_map_qual = kh_init (read_name);
     flags_hit b1_flags;//, b2_flags;
     data.b1_flags = &b1_flags;
     //data.b2_flags = &b2_flags;
@@ -425,8 +425,8 @@ bool ReadInBamReads_RP_Discovery (const char *bam_path,
 	//data.CurrentChrSeq = CurrentChrSeq;
 	data.LeftReads = &LeftReads;
 	data.LeftReads_InterChr = &LeftReads_InterChr;
-	data.read_to_map_qual = NULL;
-	data.read_to_map_qual = kh_init (read_name);
+	//data.read_to_map_qual = NULL;
+	//data.read_to_map_qual = kh_init (read_name);
 	flags_hit b1_flags;//, b2_flags;
 	data.b1_flags = &b1_flags;
 	//data.b2_flags = &b2_flags;
