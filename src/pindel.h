@@ -140,7 +140,7 @@ struct UniquePoint {
 	UniquePoint( const Chromosome* chromosome_ptr, const short lengthStr, const unsigned int absLoc, const char direction, const char strand, const short mismatches );
 
 	friend std::ostream& operator<<(std::ostream& os, const UniquePoint& up );
-		UniquePoint() { UniquePoint(NULL,0,0,'N','N', 0); };
+	UniquePoint() { UniquePoint(NULL,0,0,'N','N', 0); };
 };
 
 class SortedUniquePoints { 
@@ -257,7 +257,7 @@ struct SPLIT_READ {
    std::string FarFragName;
 	std::string Name;
 
-	void setUnmatchedSeq( const std::string unmatchedSeq );
+	void setUnmatchedSeq( const std::string & unmatchedSeq );
 	const std::string& getUnmatchedSeq() const { return UnmatchedSeq; }	
 
 
@@ -610,6 +610,6 @@ private:
 
 void safeGetline(std::istream& is, std::string& t);
 
-void SearchFarEnds( const std::string chromosomeSeq, std::vector<SPLIT_READ>& reads, const Chromosome& currentChromosome);
+void SearchFarEnds( const std::string & chromosomeSeq, std::vector<SPLIT_READ>& reads, const Chromosome& currentChromosome);
 
 #endif /* PINDEL_H */

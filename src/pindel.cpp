@@ -170,7 +170,7 @@ void safeGetline(std::istream& is, std::string& t)
 }
 
 
-void SPLIT_READ::setUnmatchedSeq( const std::string unmatchedSeq ) 
+void SPLIT_READ::setUnmatchedSeq( const std::string & unmatchedSeq ) 
 { 
 	//const double EPSILON = 0.00001; // to compensate for downrounding off errors (0.04 = 0.03999999 on some computers)
 	
@@ -1115,7 +1115,7 @@ void ReportCloseAndFarEndCounts( const std::vector<SPLIT_READ>& reads )
    *logStream << "For LI and BP: " << Count_Unused << "\n\n";
 }
 
-void SearchFarEnds( const std::string chromosomeSeq, std::vector<SPLIT_READ>& reads, const Chromosome& currentChromosome) {
+void SearchFarEnds( const std::string & chromosomeSeq, std::vector<SPLIT_READ>& reads, const Chromosome& currentChromosome) {
 	#pragma omp parallel default(shared)
 	{
 		#pragma omp for
