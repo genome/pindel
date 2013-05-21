@@ -1795,15 +1795,36 @@ int main(int argc, char *argv[])
 			if (userSettings->reportInterchromosomalEvents && currentState.InterChromosome_SR.size()) {
 				SortAndReportInterChromosomalEvents(currentState, g_genome, userSettings);	
 			}
-			currentState.InterChromosome_SR.clear();
-			currentState.InputReads_SR.clear();
-			currentState.Reads_SR.clear();
-			currentState.FutureReads_SR.clear();
-			currentState.OneEndMappedReads.clear();
-			currentState.Reads_RP.clear();
-			currentState.Reads_RP_Discovery.clear();
-			currentState.RefSupportingReads.clear();
-			currentState.Reads_RP_Discovery_InterChr.clear();
+			{
+				/*
+				std::vector <SPLIT_READ> InputReads_SR, Reads_SR, FutureReads_SR, InterChromosome_SR, OneEndMappedReads;
+				std::vector <RPVector> Reads_RP;
+				std::vector <RP_READ> Reads_RP_Discovery, Reads_RP_Discovery_InterChr;
+				std::vector <REF_READ> RefSupportingReads;
+
+				currentState.InterChromosome_SR.swap(InterChromosome_SR);
+				currentState.InputReads_SR.swap(InputReads_SR);
+				currentState.Reads_SR.swap(Reads_SR);
+				currentState.FutureReads_SR.swap(FutureReads_SR);
+				currentState.OneEndMappedReads.swap(OneEndMappedReads);
+				currentState.Reads_RP.swap(Reads_RP);
+				currentState.Reads_RP_Discovery.swap(Reads_RP_Discovery);
+				currentState.RefSupportingReads.swap(RefSupportingReads);
+				currentState.Reads_RP_Discovery_InterChr.swap(Reads_RP_Discovery_InterChr);
+				*/
+				
+				currentState.InterChromosome_SR.clear();
+				currentState.InputReads_SR.clear();
+				currentState.Reads_SR.clear();
+				currentState.FutureReads_SR.clear();
+				currentState.OneEndMappedReads.clear();
+				currentState.Reads_RP.clear();
+				currentState.Reads_RP_Discovery.clear();
+				currentState.RefSupportingReads.clear();
+				currentState.Reads_RP_Discovery_InterChr.clear();
+				
+			}
+
 			//std::cout << "after 1" << std::endl;
 /*
 			std::vector <SPLIT_READ> InputReads_SR, Reads_SR, FutureReads_SR, InterChromosome_SR, OneEndMappedReads;

@@ -389,9 +389,10 @@ bool ReadInBamReads_RP (const char *bam_path, const std::string & FragName,
             }
         }
     }
+	*/
     kh_clear (read_name, data.read_to_map_qual);
     kh_destroy (read_name, data.read_to_map_qual);
-    */
+    
     bam_header_destroy (header);
     bam_index_destroy (idx);
     bam_close (fp);
@@ -445,9 +446,10 @@ bool ReadInBamReads_RP_Discovery (const char *bam_path,
 			}
 		}
 	}
+	*/
 	kh_clear (read_name, data.read_to_map_qual);
 	kh_destroy (read_name, data.read_to_map_qual);
-	*/
+	
 	bam_header_destroy (header);
 	bam_index_destroy (idx);
 	bam_close (fp);
@@ -968,7 +970,7 @@ static int fetch_func_RP (const bam1_t * b1, void *data)
     //bam1_t *b2;
     //bam1_core_t *b2_core;
     b1_core = &b1->core;
-    std::string read_name = bam1_qname (b1);
+    //std::string read_name = bam1_qname (b1);
     /*
     khint_t key = kh_get (read_name, read_to_map_qual, bam1_qname (b1));
     if (key == kh_end (read_to_map_qual)) {
