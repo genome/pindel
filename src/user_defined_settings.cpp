@@ -10,10 +10,12 @@
 
 UserDefinedSettings* UserDefinedSettings::m_instance = NULL;
 
+/*
 UserDefinedSettings::UserDefinedSettings()
 {
 	m_region = NULL;
 }
+*/
 
 UserDefinedSettings* UserDefinedSettings::Instance() {
 	if (m_instance == NULL ) {

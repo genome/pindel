@@ -32,7 +32,58 @@ private:
 class UserDefinedSettings {
 
 public:
+
+	UserDefinedSettings() {
+		m_instance = NULL;
+		m_region = NULL; 
+
+		ADDITIONAL_MISMATCH = 2; // user
+		Analyze_BP = true; 
+		Analyze_INV = true; 
+		Analyze_LI = true; 
+		Analyze_TD = true; 
+		Analyze_MEI = true;
+		BalanceCutoff = 0;
+		bamConfigFilename = "";
+		breakdancerFilename = "";
+		breakdancerOutputFilename = "";
+	
+		inf_InclusiveBedFileName = "";
+		inf_ExclusiveBedFileName = "";
+
+		PloidyFileName = "";
+		FLOAT_WINDOW_SIZE = 0.0;
+		inf_AssemblyInputFilename = ""; 
+		inf_GenotypingInputFilename = "";
+		logFilename = "";	
+		MaximumAllowedMismatchRate = 0.0;
+		sensitivity = 0.0; // -E
+
+		MaxRangeIndex = 5;
+		minimalAnchorQuality = 30;
+		MIN_IndelSize_Inversion = 30;
+		Min_Num_Matched_Bases = 30;
+		Min_Perfect_Match_Around_BP = 3;
+		NumRead2ReportCutOff = 3;
+		numThreads = 1;
+		outputFilename = "";
+		pindelConfigFilename = "";
+		pindelFilename = "";
+		referenceFilename = "";
+		SearchDiscordantReadPair = true;
+		ReportCloseMappedRead = false;
+		reportOnlyCloseMappedReads = false;
+		reportInterchromosomalEvents = true;
+		IndelCorrection = false;
+		NormalSamples = false;
+		userDefinedRegion = "";
+		Seq_Error_Rate = 0.0;
+		showHelp = false;
+	}
+
    static UserDefinedSettings* Instance();
+
+
 
 	int ADDITIONAL_MISMATCH; // user
 	bool Analyze_BP; 
@@ -104,7 +155,7 @@ public:
 	SearchRegion* getRegion();
 
 private:
-   UserDefinedSettings();
+   //UserDefinedSettings();
 	static UserDefinedSettings* m_instance;
 	SearchRegion* m_region; 
 };
