@@ -589,7 +589,7 @@ void build_record_SR (const bam1_t * mapped_read, const bam1_t * unmapped_read, 
     SPLIT_READ Temp_One_Read;
     fetch_func_data_SR *data_for_bam = (fetch_func_data_SR *) data;
     bam_header_t *header = (bam_header_t *) data_for_bam->header;
-    std::string CurrentChrSeq = *(std::string *) data_for_bam->CurrentChrSeq;
+    //std::string & CurrentChrSeq = *(std::string *) data_for_bam->CurrentChrSeq; //
     std::string Tag = (std::string) data_for_bam->Tag;
     int InsertSize = (int) data_for_bam->InsertSize;
     
@@ -749,7 +749,7 @@ void build_record_RP (const bam1_t * r1, void *data)
     RP_READ Temp_One_Read;
     fetch_func_data_RP *data_for_bam = (fetch_func_data_RP *) data;
     bam_header_t *header = (bam_header_t *) data_for_bam->header;
-    std::string CurrentChrSeq = *(std::string *) data_for_bam->CurrentChrSeq;
+    //std::string CurrentChrSeq = *(std::string *) data_for_bam->CurrentChrSeq;
     std::string Tag = (std::string) data_for_bam->Tag;
     
     if (!(r1_core->flag & BAM_FUNMAP || r1_core->flag & BAM_FMUNMAP)) { // both reads are mapped.
@@ -798,7 +798,7 @@ void build_record_RP_Discovery (const bam1_t * r1, void *data) {
 	RP_READ Temp_One_Read;
 	fetch_func_data_RP *data_for_bam = (fetch_func_data_RP *) data;
 	bam_header_t *header = (bam_header_t *) data_for_bam->header;
-	std::string CurrentChrSeq = *(std::string *) data_for_bam->CurrentChrSeq;
+	//std::string CurrentChrSeq = *(std::string *) data_for_bam->CurrentChrSeq;
 	std::string Tag = (std::string) data_for_bam->Tag;
 	std::string read_name = bam1_qname (r1);
     
@@ -903,7 +903,7 @@ static int fetch_func_SR (const bam1_t * b1, void *data)
       (khash_t (read_name) *) data_for_bam->read_to_map_qual;
    flags_hit *b1_flags = data_for_bam->b1_flags;
    flags_hit *b2_flags = data_for_bam->b2_flags;
-   const std::string CurrentChrSeq = *(std::string *) data_for_bam->CurrentChrSeq;
+   //const std::string CurrentChrSeq = *(std::string *) data_for_bam->CurrentChrSeq;
    //SPLIT_READ Temp_One_Read;
    const bam1_core_t *b1_core;
    bam1_t *b2;
@@ -963,7 +963,7 @@ static int fetch_func_RP (const bam1_t * b1, void *data)
     //(khash_t (read_name) *) data_for_bam->read_to_map_qual;
     flags_hit *b1_flags = data_for_bam->b1_flags;
     //flags_hit *b2_flags = data_for_bam->b2_flags;
-    const std::string CurrentChrSeq = *(std::string *) data_for_bam->CurrentChrSeq;
+    //const std::string CurrentChrSeq = *(std::string *) data_for_bam->CurrentChrSeq;
 
     RP_READ Temp_One_Read;
     const bam1_core_t *b1_core;
@@ -1007,7 +1007,7 @@ static int fetch_func_RP_Discovery (const bam1_t * b1, void *data)
     //(khash_t (read_name) *) data_for_bam->read_to_map_qual;
     flags_hit *b1_flags = data_for_bam->b1_flags;
     //flags_hit *b2_flags = data_for_bam->b2_flags;
-    const std::string CurrentChrSeq = *(std::string *) data_for_bam->CurrentChrSeq;
+    //const std::string CurrentChrSeq = *(std::string *) data_for_bam->CurrentChrSeq;
     
     RP_READ Temp_One_Read;
     const bam1_core_t *b1_core;

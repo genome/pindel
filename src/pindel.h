@@ -140,7 +140,15 @@ struct UniquePoint {
 	UniquePoint( const Chromosome* chromosome_ptr, const short lengthStr, const unsigned int absLoc, const char direction, const char strand, const short mismatches );
 
 	friend std::ostream& operator<<(std::ostream& os, const UniquePoint& up );
-	UniquePoint() { UniquePoint(NULL,0,0,'N','N', 0); };
+	//UniquePoint() { UniquePoint(NULL,0,0,'N','N', 0); };
+	UniquePoint() {
+		chromosome_p = NULL;
+		LengthStr = 0;
+		AbsLoc = 0;
+		Direction = 'N';
+		Strand = 'N';
+		Mismatches = 0;
+	}
 };
 
 class SortedUniquePoints { 

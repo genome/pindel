@@ -252,7 +252,7 @@ int OutputSorter::DoSortAndOutputInversions (ControlState& currentState, std::ve
           //*logStream << "in8" << std::endl;
          LOG_DEBUG (*logStream << "IndelEvent: " << IndelEvents.size () << std::endl);
 
-         if (IndelEvents.size ()) {
+         if (!IndelEvents.empty ()) {
             ReportedEventCount += ReportIndelEvents (currentState, IndelEvents, GoodIndels);
          }
           //*logStream << "in9" << std::endl;

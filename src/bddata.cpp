@@ -356,7 +356,7 @@ void Summarize(std::vector <RP_READ> & Reads_RP) {
 		}
 	 
 		//std::cout << "middle" << std::endl;
-		if (GoodIndex.size() == 0) return;
+		if (GoodIndex.empty()) return;
 		else if (GoodIndex.size() == 1) {
 			if (Reads_RP[GoodIndex[0]].NumberOfIdentical >= Cutoff) Reads_RP[GoodIndex[0]].Report = true;
 			else Reads_RP[GoodIndex[0]].Report = false;
@@ -519,7 +519,7 @@ void BDData::createRegionCluster(const BDIterator& startOfEventList, const BDIte
 	sort( relevantSubcluster.begin(), relevantSubcluster.end(), sortOnSecondBDCoordinate );
 		//std::cout << "Making cluster" << "\n";
 	newCluster.clear();
-	for (BDIterator eventIter=relevantSubcluster.begin(); eventIter!=relevantSubcluster.end(); eventIter++ ) {
+	for (BDIterator eventIter=relevantSubcluster.begin(); eventIter!=relevantSubcluster.end(); ++eventIter ) {
 		//std::cout << "FC: " << eventIter->first.getChromosomeName() << "FS: " << eventIter->first.startOfWindow() << "FE: " << eventIter->first.endOfWindow() << 
 		//	"SC: " << eventIter->second.getChromosomeName() << "SS: " << eventIter->second.startOfWindow()<< "SE: " << eventIter->second.endOfWindow() << "\n";
 		// NOTE: below code will be removed once we start working on interchromosomal translocations
@@ -600,7 +600,7 @@ void BDData::loadRegion( const SearchWindow& searchWindow  )
 	////std::cout << "At position " << position << "\n";	
 
 		// remove events that have been passed already
-		for ( BDIterator eventIter=startOfEventList; eventIter<endOfEventList; eventIter++ ) {
+		for ( BDIterator eventIter=startOfEventList; eventIter<endOfEventList; ++eventIter ) {
 			if ( position > eventIter->first.endOfWindow() ) {
 				startOfEventList++;
 				changed = true;
@@ -611,7 +611,7 @@ void BDData::loadRegion( const SearchWindow& searchWindow  )
 		}
 	
 		// add new events
-		for (BDIterator eventIter=endOfEventList; eventIter<endRegionInBDEvents; eventIter++ ) {
+		for (BDIterator eventIter=endOfEventList; eventIter<endRegionInBDEvents; ++eventIter ) {
 			if ( position < eventIter->first.startOfWindow() ) {
 				break;
 			}
