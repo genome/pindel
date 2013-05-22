@@ -800,7 +800,7 @@ void build_record_RP_Discovery (const bam1_t * r1, void *data) {
 	bam_header_t *header = (bam_header_t *) data_for_bam->header;
 	//std::string CurrentChrSeq = *(std::string *) data_for_bam->CurrentChrSeq;
 	std::string Tag = (std::string) data_for_bam->Tag;
-	std::string read_name = bam1_qname (r1);
+	//std::string read_name = bam1_qname (r1);
     
 	if (!(r1_core->flag & BAM_FPAIRED)) return;
 
@@ -909,7 +909,7 @@ static int fetch_func_SR (const bam1_t * b1, void *data)
    bam1_t *b2;
    bam1_core_t *b2_core;
    b1_core = &b1->core;
-   std::string read_name = bam1_qname (b1);
+   //std::string read_name = bam1_qname (b1);
    // if (read_name == "DD7DT8Q1:4:1106:17724:13906#GTACCT") std::cout << " +++++++ here ++++++++ " << std::endl;
    khint_t key = kh_get (read_name, read_to_map_qual, bam1_qname (b1));
 
@@ -926,7 +926,7 @@ static int fetch_func_SR (const bam1_t * b1, void *data)
       //this seems stupid, but in order to manage the read names, necessary
       free ((char *) kh_key (read_to_map_qual, key));
       kh_del (read_name, read_to_map_qual, key);
-      std::string c_sequence;
+      //std::string c_sequence;
    }
 
    parse_flags_and_tags (b1, b1_flags);

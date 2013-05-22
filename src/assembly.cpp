@@ -274,7 +274,7 @@ void CombineAndSort(std::map<std::string,int> &ChrName2Index, ControlState & Cur
     //std::cout << Plus_Read_Index.size() << " " << Minus_Read_Index.size() << std::endl;
 }
 
-void CombineReads(const std::string & CurrentChrSeq, const char & Strand, const std::vector <SPLIT_READ> & input_reads, const std::vector <unsigned int> Index_Of_Useful_Reads, std::vector <SPLIT_READ> & output_reads) {
+void CombineReads(const std::string & CurrentChrSeq, const char & Strand, const std::vector <SPLIT_READ> & input_reads, const std::vector <unsigned int> & Index_Of_Useful_Reads, std::vector <SPLIT_READ> & output_reads) {
     //std::cout << "start of CombineReads" << std::endl;
     std::string Spacer = "";
     unsigned Max_ReadLength = 0;
@@ -656,7 +656,7 @@ void ReportLI(ControlState & CurrentState, const Assembly & OneSV,  SPLIT_READ &
 }
  */
 
-void GetReadCountPerSample(const std::vector <SPLIT_READ> & input_reads, const std::vector <unsigned int> Index_Of_Useful_Reads, SPLIT_READ & output_one_read) {
+void GetReadCountPerSample(const std::vector <SPLIT_READ> & input_reads, const std::vector <unsigned int> & Index_Of_Useful_Reads, SPLIT_READ & output_one_read) {
     //std::map <std::string, int> ReadCountPerSample;
     std::map<std::string,int>::iterator it;
     for (unsigned ReadIndex = 0; ReadIndex < Index_Of_Useful_Reads.size(); ReadIndex++) {
