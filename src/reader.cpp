@@ -514,6 +514,14 @@ bool ReadInBamReads_SR (const char *bam_path, const std::string & FragName,
          }
       }
    }
+
+	khiter_t k;
+
+	for (k = kh_begin(data.read_to_map_qual); k != kh_end(data.read_to_map_qual); ++k) {
+		free ((char *) kh_key (data.read_to_map_qual, key));
+		kh_del (read_name, data.read_to_map_qual, key);
+	}
+
    kh_clear (read_name, data.read_to_map_qual);
    kh_destroy (read_name, data.read_to_map_qual);
 
@@ -915,7 +923,8 @@ static int fetch_func_SR (const bam1_t * b1, void *data)
 
    if (key == kh_end (read_to_map_qual)) {
       int ret=0;
-      key = kh_put (read_name, read_to_map_qual, strdup (bam1_qname (b1)), &ret);
+      //key = kh_put (read_name, read_to_map_qual, strdup (bam1_qname (b1)), &ret);
+	key = kh_put (read_name, read_to_map_qual, bam1_qname (b1), &ret);
       kh_value (read_to_map_qual, key) = bam_dup1 (b1);
       return 0;
    }
