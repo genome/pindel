@@ -1797,7 +1797,7 @@ int main(int argc, char *argv[])
 			}
 			{
 				
-				std::vector <SPLIT_READ> InputReads_SR, Reads_SR, FutureReads_SR, InterChromosome_SR, OneEndMappedReads;
+	/*			std::vector <SPLIT_READ> InputReads_SR, Reads_SR, FutureReads_SR, InterChromosome_SR, OneEndMappedReads;
 				std::vector <RPVector> Reads_RP;
 				std::vector <RP_READ> Reads_RP_Discovery, Reads_RP_Discovery_InterChr;
 				std::vector <REF_READ> RefSupportingReads;
@@ -1811,8 +1811,8 @@ int main(int argc, char *argv[])
 				currentState.Reads_RP_Discovery.swap(Reads_RP_Discovery);
 				currentState.RefSupportingReads.swap(RefSupportingReads);
 				currentState.Reads_RP_Discovery_InterChr.swap(Reads_RP_Discovery_InterChr);
+	*/			
 				
-				/*
 				currentState.InterChromosome_SR.clear();
 				currentState.InputReads_SR.clear();
 				currentState.Reads_SR.clear();
@@ -1822,7 +1822,7 @@ int main(int argc, char *argv[])
 				currentState.Reads_RP_Discovery.clear();
 				currentState.RefSupportingReads.clear();
 				currentState.Reads_RP_Discovery_InterChr.clear();
-				*/
+				
 			}
 
 			//std::cout << "after 1" << std::endl;
