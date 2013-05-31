@@ -1,5 +1,5 @@
 ####################################################################################################
-0	TD 200	NT 10 "CAAAACAGTA"	ChrID 1	BP 40000	40201	BP_range 40000	40201	Supports 292	146	+ 146	73	- 146	73	S1 21609	SUM_MS 10804	1	NumSupSamples 1	1	SIM1CHRVS2 396 392 146 73 146 73
+0	TD 200	NT 10 "CAAAACAGTA"	ChrID 1	BP 40000	40201	BP_range 40000	40201	Supports 292	146	+ 146	73	- 146	73	S1 21609	SUM_MS 10804	1	NumSupSamples 1	1	SIM1CHRVS2 416 404 146 73 146 73
 GCCTCTAGGACATACGCCAGTGGAAAGCTATCCCCGACCGGGGCGTATAACTTTATTGATTAAACCTCTATCGGGACGTGTACGACCTACGTCTTGAGTT          gttcggagtgggtaaattaatcccttgtccctacattactttcgtcgtcgtatagttagagttgaacaagttcaccctagcttctcagcggtccggctgg
                                                                                             CTTGAGTTCAAAACAGTAGTTCGGAGTGGGTAAATTAATCCCTTGTCCCTACATTACTTTCGTCGTCGTATAGTTAGAGTTGAACAAGTTCACCCTAGCT
 	+	39242	37	SIM1CHRVS2	@39852/1
