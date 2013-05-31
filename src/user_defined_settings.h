@@ -79,6 +79,8 @@ public:
 		userDefinedRegion = "";
 		Seq_Error_Rate = 0.0;
 		showHelp = false;
+
+		NM = 2;
 	}
 
    static UserDefinedSettings* Instance();
@@ -127,6 +129,8 @@ public:
 	std::string userDefinedRegion;
 	double Seq_Error_Rate;
 	bool showHelp;
+
+	int NM;
 
 	bool reportCloseMappedReads() const { return ( ReportCloseMappedRead || reportOnlyCloseMappedReads ); };
 	bool singlePindelFileAsInput() const { return pindelFilename!=""; };

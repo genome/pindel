@@ -11,7 +11,7 @@
 
 /* 'defineParameters' defines the parameters to be used by Pindel. Takes the variables from the calling function as argument for those variables which
  do not need to be stored in the par structure. */
-// ____________n____________
+// _________________________
 // ___D_FGH_K___O_____UVWX_Z
 void defineParameters(std::vector<Parameter *>& parameters)
 {
@@ -105,6 +105,11 @@ void defineParameters(std::vector<Parameter *>& parameters)
             "--maximum_allowed_mismatch_rate",
             "Only reads with more than this fraction of mismatches than the reference genome will be considered as harboring potential SVs. "
             "(default 0.02)", false, 0.02));
+
+    parameters.push_back(
+        new IntParameter(&userSettings->NM, "-n", "--NM",
+                         "the minimum number of edit distance between reads and reference genome (default 2). reads at least NM edit distance (>= NM) will be realigned",
+                         false, 2));
 
     parameters.push_back(
         new BoolParameter(&userSettings->Analyze_INV, "-r", "--report_inversions",

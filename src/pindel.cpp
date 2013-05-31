@@ -1013,7 +1013,7 @@ void init(int argc, char *argv[], ControlState& currentState )
 void SearchFarEnd( const std::string& chromosome, SPLIT_READ& read, const Chromosome& currentChromosome)
 {
 	//std::cout << "entering SearchFarEnd" << std::endl;
-	const int START_SEARCH_SPAN = 128;
+	const int START_SEARCH_SPAN = 32;
 
 	const std::vector< SearchWindow>& searchCluster =  g_bdData.getCorrespondingSearchWindowCluster( read );
 	//std::cout << read.Name << " - " << read.getLastAbsLocCloseEnd() << "\n"; 
@@ -1035,7 +1035,7 @@ void SearchFarEnd( const std::string& chromosome, SPLIT_READ& read, const Chromo
 	unsigned int searchSpan=START_SEARCH_SPAN;
 	unsigned int centerOfSearch = read.getLastAbsLocCloseEnd();
 		//std::cout << "SearchFarEnd	3" << std::endl;
-	for (int rangeIndex=1; rangeIndex<=userSettings->MaxRangeIndex; rangeIndex++ ) {
+	for (int rangeIndex=1; rangeIndex<=userSettings->MaxRangeIndex + 1; rangeIndex++ ) {
 		// note: searching the central range again and again may seem overkill, but since Pindel at the moment wants an unique best point, you can't skip the middle part
 		// may be stuff for future changes/refactorings though
 		std::vector< SearchWindow > aroundCESearchCluster;
@@ -1751,12 +1751,15 @@ int main(int argc, char *argv[])
 					*logStream << "update FarFragName" << std::endl;
                     			UpdateFarFragName(currentState.Reads_SR);
 					*logStream << "update FarFragName done" << std::endl;
-                			//for (unsigned index = 0; index < currentState.Reads_SR.size(); index++) {
-                			//    if (currentState.Reads_SR[index].Name == "@DD7DT8Q1:4:1103:5972:92823#GTACCT/1") {
-                			//        std::cout << "@DD7DT8Q1:4:1103:5972:92823#GTACCT/1" << std::endl;
-                			//        std::cout << currentState.Reads_SR[index];
-                			//    }
-                			//}
+/*
+                			for (unsigned index = 0; index < currentState.Reads_SR.size(); index++) {
+				
+                			    if (currentState.Reads_SR[index].Name == "@HWI-ST568:267:C1BD9ACXX:4:2101:18037:80445/1" || currentState.Reads_SR[index].Name == "@HWI-ST568:267:C1BD9ACXX:4:2101:18037:80445/2") {
+                			        std::cout << currentState.Reads_SR[index].Name << std::endl;
+                			        std::cout << currentState.Reads_SR[index];
+                			    }
+                			}
+*/
                     			//std::cout << "before currentState.InterChromosome_SR size " << currentState.InterChromosome_SR.size() << std::endl;
                     			if (userSettings->reportInterchromosomalEvents) {
 						*logStream << "save interchromsome SR" << std::endl;
@@ -1788,7 +1791,7 @@ int main(int argc, char *argv[])
             			//currentState.Reads_SR.swap(currentState.FutureReads_SR);
          		}
          		else {
-             			*logStream <<  "1 after " << std::endl;
+             			*logStream <<  "no reads " << std::endl;
 				//std::cout << " no reads here" << std::endl;
          		}
 			std::cout << "InterChromosome_SR.size(): " << currentState.InterChromosome_SR.size() << std::endl;
@@ -2168,7 +2171,7 @@ void GetCloseEndInnerPerfectMatch(const std::string & CurrentChrSeq, SPLIT_READ 
         g_maxInsertSize = Temp_One_Read.InsertSize;
     }
     for (int CheckIndex = 0; CheckIndex < Temp_One_Read.getTOTAL_SNP_ERROR_CHECKED(); CheckIndex++) {
-        PD[CheckIndex].reserve(3 * Temp_One_Read.InsertSize);
+        PD[CheckIndex].reserve(2 * Temp_One_Read.InsertSize);
     }
     SortedUniquePoints UP;
     int Start, End;
@@ -2181,7 +2184,7 @@ void GetCloseEndInnerPerfectMatch(const std::string & CurrentChrSeq, SPLIT_READ 
     if (Temp_One_Read.MatchedD == Plus) {
         CurrentReadSeq = ReverseComplement(Temp_One_Read.getUnmatchedSeq());
         Start = Temp_One_Read.MatchedRelPos + g_SpacerBeforeAfter;
-        End = Start + 3 * Temp_One_Read.InsertSize;
+        End = Start + 2 * Temp_One_Read.InsertSize;
         char LeftChar;
         LeftChar = CurrentReadSeq[0];
         if (LeftChar != 'N') {
@@ -2208,7 +2211,7 @@ void GetCloseEndInnerPerfectMatch(const std::string & CurrentChrSeq, SPLIT_READ 
         
         CurrentReadSeq = Temp_One_Read.getUnmatchedSeq();
         End = Temp_One_Read.MatchedRelPos + g_SpacerBeforeAfter;
-        Start = End - 3 * Temp_One_Read.InsertSize;
+        Start = End - 2 * Temp_One_Read.InsertSize;
         char RightChar;
         RightChar = CurrentReadSeq[Temp_One_Read.getReadLengthMinus()];
 		//std::cout << "Starting to fit the close end with character" << RightChar << "\n";
@@ -2237,21 +2240,52 @@ void GetCloseEndInnerPerfectMatch(const std::string & CurrentChrSeq, SPLIT_READ 
 
 void GetCloseEnd(const std::string & CurrentChrSeq, SPLIT_READ & Temp_One_Read)
 {
-    GetCloseEndInner( CurrentChrSeq, Temp_One_Read );
 
+    GetCloseEndInner( CurrentChrSeq, Temp_One_Read );
+	//std::cout << "\nfirst: " << Temp_One_Read.Name << " " << Temp_One_Read.UP_Close.size() << std::endl;
     if (Temp_One_Read.UP_Close.size()==0) { // no good close ends found
+	//std::cout << Temp_One_Read.Name << " " << Temp_One_Read.UP_Close.size() << std::endl;
         Temp_One_Read.setUnmatchedSeq( ReverseComplement( Temp_One_Read.getUnmatchedSeq() ) );
         GetCloseEndInner( CurrentChrSeq, Temp_One_Read );
+	//std::cout << "second: " << Temp_One_Read.Name << " " << Temp_One_Read.UP_Close.size() << std::endl;
     }
-    if (Temp_One_Read.UP_Close.size()==0)
+    if (Temp_One_Read.UP_Close.size()==0) {
        GetCloseEndInnerPerfectMatch( CurrentChrSeq, Temp_One_Read );
+	//std::cout << "third: " << Temp_One_Read.Name << " " << Temp_One_Read.UP_Close.size() << std::endl;
+	}
     
     if (Temp_One_Read.UP_Close.size()==0) { // no good close ends found
         Temp_One_Read.setUnmatchedSeq( ReverseComplement( Temp_One_Read.getUnmatchedSeq() ) );
         
         GetCloseEndInnerPerfectMatch( CurrentChrSeq, Temp_One_Read );
-        
+        //std::cout << "fourth: " << Temp_One_Read.Name << " " << Temp_One_Read.UP_Close.size() << "\n" <<  std::endl;
     }
+
+/*
+	GetCloseEndInnerPerfectMatch( CurrentChrSeq, Temp_One_Read );
+
+	SortedUniquePoints First_UP = Temp_One_Read.UP_Close; // backup
+
+	Temp_One_Read.setUnmatchedSeq( ReverseComplement( Temp_One_Read.getUnmatchedSeq() ) );
+
+	GetCloseEndInnerPerfectMatch( CurrentChrSeq, Temp_One_Read );
+
+
+
+	if (First_UP.size() + Temp_One_Read.UP_Close.size()) {
+		std::cout << First_UP.size() << " " << Temp_One_Read.UP_Close.size() << std::endl;
+		if (First_UP.size() > Temp_One_Read.UP_Close.size())
+			Temp_One_Read.UP_Close = First_UP;
+	}
+	else {
+		GetCloseEndInner( CurrentChrSeq, Temp_One_Read );
+		First_UP = Temp_One_Read.UP_Close;
+		Temp_One_Read.setUnmatchedSeq( ReverseComplement( Temp_One_Read.getUnmatchedSeq() ) );
+		GetCloseEndInner( CurrentChrSeq, Temp_One_Read );
+		if (First_UP.size() > Temp_One_Read.UP_Close.size())
+			Temp_One_Read.UP_Close = First_UP;
+	}
+*/
 }
 
 

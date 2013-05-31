@@ -64,6 +64,16 @@ unsigned int g_CloseMappedMinus = 0; // #################
 
 //init hash/maps for read pairing on the fly
 KSORT_INIT_GENERIC (uint32_t) KHASH_MAP_INIT_STR (read_name, bam1_t *)
+
+void GetReadSeq (const bam1_t* bamOfRead, std::string & c_sequence) {
+	//std::string c_sequence;
+	const bam1_core_t *bamCore = &bamOfRead->core;
+	uint8_t *s = bam1_seq (bamOfRead);
+	for (int i = 0; i < bamCore -> l_qseq; ++i) {
+		c_sequence.append (1, bam_nt16_rev_table[bam1_seqi (s, i)]);
+    	}	
+}
+
 struct fetch_func_data_SR {
    fetch_func_data_SR () : CurrentChrSeq( NULL ){
       LeftReads = NULL;
@@ -468,7 +478,7 @@ bool ReadInBamReads_SR (const char *bam_path, const std::string & FragName,
                 const SearchWindow& window,
                 ReadBuffer& readBuffer)
 {
-    //std:: cout << " in ReadInBamReads_SR " << std::endl;
+   //std:: cout << " in ReadInBamReads_SR " << std::endl;
    bamFile fp;
    fp = bam_open (bam_path, "r");
    assert (fp);
@@ -503,7 +513,7 @@ bool ReadInBamReads_SR (const char *bam_path, const std::string & FragName,
    readBuffer.flush();
    // std:: cout << " after flush " << std::endl;
    showReadStats(LeftReads, OneEndMappedReads);
-
+	//std:: cout << "1 " << std::endl;
    khint_t key;
    if (kh_size (data.read_to_map_qual) > 0) {
       for (key = kh_begin (data.read_to_map_qual);
@@ -514,58 +524,131 @@ bool ReadInBamReads_SR (const char *bam_path, const std::string & FragName,
          }
       }
    }
-
+//std:: cout << "2 " << std::endl;
    kh_clear (read_name, data.read_to_map_qual);
    kh_destroy (read_name, data.read_to_map_qual);
 
    bam_header_destroy (header);
    bam_index_destroy (idx);
    bam_close (fp);
-   // std:: cout << " existing ReadInBamReads_SR " << std::endl;
+   //std:: cout << " existing ReadInBamReads_SR " << std::endl;
    return true;
 }
 
-bool isGoodAnchor( const flags_hit *read, const bam1_core_t *bamCore )
+bool isGoodAnchor( const flags_hit *read, const bam1_t * bamOfRead ) //bam1_qname
 {
-    UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
-    if (userSettings->minimalAnchorQuality == 0) return true;	
-    if (bamCore->flag & BAM_FSECONDARY || bamCore->flag & BAM_FQCFAIL) return false;
-	
-   int maxEdits = int (bamCore->l_qseq * userSettings->MaximumAllowedMismatchRate) + 1;
-   unsigned int mappingQuality = bamCore->qual;
+//return true;
+	const bam1_core_t *bamCore = &bamOfRead->core;
+		
+	if (bamCore->flag & BAM_FSECONDARY || bamCore->flag & BAM_FQCFAIL) return false;
 
-   return ( read->mapped &&
-            ( mappingQuality >= userSettings->minimalAnchorQuality ) &&
-            ( read->unique || read->sw ) &&
-            ( ! read->suboptimal ) &&
-            ( read->edits <= maxEdits )
-          );
+	UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
+	if (userSettings->minimalAnchorQuality == 0) return true;
+
+		std::string NR = bam1_qname(bamOfRead);
+		std::string seq;
+		GetReadSeq(bamOfRead, seq);
+		//if (NR == "HWI-ST568:267:C1BD9ACXX:4:2101:18037:80445")
+		//	std::cout << "isGoodAnchor HWI-ST568:267:C1BD9ACXX:4:2101:18037:80445 " << seq << std::endl;
+
+//return true;
+	
+	
+	//int maxEdits = int (bamCore->l_qseq * userSettings->MaximumAllowedMismatchRate) + 1;
+/*      
+	const uint8_t *nm = bam_aux_get(bamOfRead, "NM");
+	if (nm) {
+		int32_t nm_value = bam_aux2i(nm);
+		//std::cout << bam1_qname(bamOfRead) << std::endl;
+		std::string NR = bam1_qname(bamOfRead);
+		std::string seq;
+		GetReadSeq(bamOfRead, seq);
+		if (NR == "HWI-ST568:267:C1BD9ACXX:4:2101:18037:80445")
+			std::cout << "isGoodAnchor " << nm_value << " " << userSettings->NM << " " << seq << std::endl;
+		//std::cout << "isGoodAnchor " << (*nm) << " " << userSettings->NM << std::endl;
+		if ((nm_value > maxEdits) || (nm_value > userSettings->NM)) {
+			return false;
+		}
+	}
+
+*/
+	//unsigned int mappingQuality = bamCore->qual;
+
+	if (!read->mapped) return false;
+
+	if (bamCore->qual < userSettings->minimalAnchorQuality) return false;
+	return true;
+/*
+	if (read->unique || read->sw) return false;
+
+	
+
+	if (read->edits > maxEdits) return false;
+	if (read->suboptimal) return false;
+*/
 }
 
 bool isRefRead ( const flags_hit *read, const bam1_t * bamOfRead )
 {
-    uint32_t *cigar_pointer = bam1_cigar (bamOfRead);
-    int cigarMismatchedBases = bam_cigar2mismatch (&bamOfRead->core, cigar_pointer);
-    
-    if ( read->mapped && read->edits <= 1 && cigarMismatchedBases <= 1) {
-        return true;
-    }
-    else {
-        return false;
-    }
+	//std::cout << "isRefRead 1" << std::endl;
+	UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
+	//std::cout << "isRefRead 2" << std::endl;
+	const uint8_t *nm = bam_aux_get(bamOfRead, "NM");
+	//std::cout << "isRefRead 3" << std::endl;
+	const bam1_core_t *bamCore = &bamOfRead->core;
+	int maxEdits = int (bamCore->l_qseq * userSettings->MaximumAllowedMismatchRate) + 1;
+	//std::cout << "isRefRead 4" << std::endl;
+	uint32_t *cigar_pointer = bam1_cigar (bamOfRead);
+	int cigarMismatchedBases = bam_cigar2mismatch (bamCore, cigar_pointer);
+    	//std::cout << "isRefRead 5" << std::endl;
+
+	if (nm) {
+		int32_t nm_value = bam_aux2i(nm);
+		std::string NR = bam1_qname(bamOfRead);
+		std::string seq;
+		GetReadSeq(bamOfRead, seq);
+		//if (NR == "HWI-ST568:267:C1BD9ACXX:4:2101:18037:80445")
+		//	std::cout << "isRefRead " << nm_value << " " << userSettings->NM << " " << seq << std::endl;
+		if ((nm_value > userSettings->NM) || (nm_value > maxEdits)) {
+			return false;
+		}
+	}
+
+	if (read->mapped && read->edits <= 2 && cigarMismatchedBases <= 2) {
+		return true;
+	}
+	else {
+		return false;
+	}
 }
 
 bool isWeirdRead( const flags_hit *read, const bam1_t * bamOfRead )
 {
 	if (!(read->mapped)) return true;
 
-	const bam1_core_t *b1_core;
-	b1_core = &bamOfRead->core; 
+	const uint8_t *nm = bam_aux_get(bamOfRead, "NM");
+	UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
+
+	if (nm) {
+		int32_t nm_value = bam_aux2i(nm);
+		std::string NR = bam1_qname(bamOfRead);
+		std::string seq;
+		GetReadSeq(bamOfRead, seq);
+		//if (NR == "HWI-ST568:267:C1BD9ACXX:4:2101:18037:80445")
+		//	std::cout << "isWeirdRead " << nm_value << " " << userSettings->NM << " " << seq << std::endl;
+		if (nm_value >= userSettings->NM) return true;
+	}
+	
+	
+	const bam1_core_t *bamCore;
+	bamCore = &bamOfRead->core; 
+
+	//int maxEdits = int (bamCore->l_qseq * userSettings->MaximumAllowedMismatchRate) + 1;
 
 	uint32_t *cigar_pointer = bam1_cigar (bamOfRead);
 	int cigarMismatchedBases = bam_cigar2mismatch (&bamOfRead->core, cigar_pointer);
 
-	if ( read->edits + cigarMismatchedBases > 0 ) {
+	if ( read->edits + cigarMismatchedBases > 0) {
 		return true;
 	}
 	else {
@@ -573,12 +656,12 @@ bool isWeirdRead( const flags_hit *read, const bam1_t * bamOfRead )
 	}
 
 	// check speed here!
-	if (b1_core->flag & BAM_CINS) return true;
-	if (b1_core->flag & BAM_CDEL) return true;
-	if (b1_core->flag & BAM_CREF_SKIP) return true;
-	if (b1_core->flag & BAM_CSOFT_CLIP) return true;
-	if (b1_core->flag & BAM_CHARD_CLIP) return true;
-	if (b1_core->flag & BAM_CPAD) return true;
+	if (bamCore->flag & BAM_CINS) return true;
+	if (bamCore->flag & BAM_CDEL) return true;
+	if (bamCore->flag & BAM_CREF_SKIP) return true;
+	if (bamCore->flag & BAM_CSOFT_CLIP) return true;
+	if (bamCore->flag & BAM_CHARD_CLIP) return true;
+	if (bamCore->flag & BAM_CPAD) return true;
 
 	return false;
 }
@@ -896,7 +979,7 @@ void build_record_RP_Discovery (const bam1_t * r1, void *data) {
 
 static int fetch_func_SR (const bam1_t * b1, void *data)
 {
-
+//	std::cout << "in fetch_func_SR " << std::endl;
    g_NumReadScanned++;
 
    fetch_func_data_SR *data_for_bam = (fetch_func_data_SR *) data;
@@ -930,31 +1013,79 @@ static int fetch_func_SR (const bam1_t * b1, void *data)
       kh_del (read_name, read_to_map_qual, key);
       //std::string c_sequence;
    }
+	
+	//std::string RN = bam1_qname(b1);
+	//std::cout << "|" << RN << "|" << std::endl;
+
+	//if (RN == "HWI-ST568:267:C1BD9ACXX:4:2101:18037:80445")
+	//		std::cout << "################################################## found HWI-ST568:267:C1BD9ACXX:4:2101:18037:80445" << std::endl;
 
    parse_flags_and_tags (b1, b1_flags);
    parse_flags_and_tags (b2, b2_flags);
 
-    if (isGoodAnchor( b1_flags, b1_core )) {
-        if (isWeirdRead( b2_flags, b2 )) {
-            build_record_SR (b1, b2, data);
-        }
-        else if (isRefRead( b2_flags, b2 )) {
-            build_record_RefRead (b1, b2, data);
-		//std::cout << "refread 1" << std::endl;
-        }
-    }
+//std::cout << "isGoodAnchor( b1_flags, b1)" << std::endl;
 
-    if (isGoodAnchor( b2_flags, b2_core ) ) {
-        if (isWeirdRead( b1_flags, b1 )) {
-            build_record_SR (b2, b1, data);
-        }
-        else if (isRefRead(b1_flags, b1 )) {
-            build_record_RefRead(b2, b1, data);
+	if (isGoodAnchor( b1_flags, b1)) {
+		if (isWeirdRead( b2_flags, b2 )) {
+/*
+			if (RN == "HWI-ST568:267:C1BD9ACXX:4:2101:18037:80445") {
+				
+				std::string c_sequence;
+				GetReadSeq(b2, c_sequence);
+	
+				std::cout << "################################################## building b2 HWI-ST568:267:C1BD9ACXX:4:2101:18037:80445 " << c_sequence << std::endl;
+				
+			}
+*/
+			build_record_SR (b1, b2, data);
+		}
+	}
+//std::cout << "isRefRead( b2_flags, b2 )" << std::endl;
+	if (isRefRead( b2_flags, b2 )) {
+/*
+			if (RN == "HWI-ST568:267:C1BD9ACXX:4:2101:18037:80445") {
+				std::string c_sequence;
+				GetReadSeq(b2, c_sequence);
+				std::cout << "################################################## building r2 HWI-ST568:267:C1BD9ACXX:4:2101:18037:80445 " << c_sequence << std::endl;
+			}
+*/
+	        build_record_RefRead (b1, b2, data);
+		//std::cout << "refread 1" << std::endl;
+	}
+
+//std::cout << "isGoodAnchor( b2_flags, b2)" << std::endl;
+	if (isGoodAnchor( b2_flags, b2) ) {
+		if (isWeirdRead( b1_flags, b1 )) {
+/*
+			if (RN == "HWI-ST568:267:C1BD9ACXX:4:2101:18037:80445") {
+				
+				std::string c_sequence;
+				GetReadSeq(b2, c_sequence);
+				std::cout << "################################################## building b1 HWI-ST568:267:C1BD9ACXX:4:2101:18037:80445 " << c_sequence << std::endl;
+
+			}
+*/
+			build_record_SR (b2, b1, data);
+		}
+	}
+//std::cout << "isRefRead( b1_flags, b1 )" << std::endl;
+	if (isRefRead(b1_flags, b1 )) {
+		build_record_RefRead(b2, b1, data);
+/*
+			if (RN == "HWI-ST568:267:C1BD9ACXX:4:2101:18037:80445") {
+				
+				std::string c_sequence;
+				GetReadSeq(b2, c_sequence);
+				std::cout << "################################################## building b1 HWI-ST568:267:C1BD9ACXX:4:2101:18037:80445 " << c_sequence << std::endl;
+
+			}
+*/
 		//std::cout << "refread 2" << std::endl;
-        }
-    }
-   bam_destroy1 (b2);
-   return 0;
+	}
+//std::cout << "before bam_destroy" << std::endl;
+	bam_destroy1 (b2);
+	//std::cout << "existing fetch_func_SR " << std::endl;
+	return 0;
 }
 
 static int fetch_func_RP (const bam1_t * b1, void *data)
@@ -1256,7 +1387,7 @@ short get_SR_Reads(ControlState& currentState, const SearchWindow& currentWindow
       ReturnFromReadingReads = 0;
       for (unsigned int i = 0; i < currentState.bams_to_parse.size(); i++) {
          *logStream << "\nInsertsize in config: " << currentState.bams_to_parse[i].InsertSize << std::endl;
-        // std::cout << "before ReadInBamReads_SR " << std::endl;
+         //std::cout << "before ReadInBamReads_SR " << std::endl;
          ReturnFromReadingReads = ReadInBamReads_SR(
                                                     currentState.bams_to_parse[i].BamFile.c_str(),
                                                     currentWindow.getChromosome()->getName(), 
