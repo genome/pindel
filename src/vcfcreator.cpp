@@ -82,7 +82,7 @@ const int FIRST_SAMPLE_INDEX = 32; // index of first sample name
 
 using namespace std;
 
-string g_versionString = "0.5.7";
+string g_versionString = "0.5.8";
 string g_programName = "pindel2vcf";
 
 bool g_normalBaseArray[256];
@@ -97,6 +97,10 @@ struct ParameterSettings {
    string vcffile;
    string chromosome;
 	int windowSize;
+	int MinCoverage;
+
+	double HetCutoff;
+	double HomCutoff;
    int minsize;
    int maxsize;
    bool bothstrands;
@@ -670,7 +674,7 @@ private:
 
 ostream& operator<<(ostream& os, const Pair& pair)
 {
-   os << pair.d_first << ":" << pair.d_second;
+   os << pair.d_first << "," << pair.d_second;
 }
 
 
@@ -760,6 +764,13 @@ string deriveGenotype( const Genotype& rawGenotype )
 	int totalEventReads = rawGenotype.getTotalReads();
 	int totalReferenceReads = rawGenotype.getAverageRefSupport();
 
+	if (totalEventReads + totalReferenceReads < g_par.MinCoverage) return "0/0";
+	float AF = (float)totalEventReads / (totalEventReads + totalReferenceReads);
+	if (AF < g_par.HetCutoff) return "0/0";
+	else if (AF >= g_par.HetCutoff && AF < g_par.HomCutoff) return "0/1";
+	else if (AF >= g_par.HomCutoff) return "1/1";
+
+	/*
 	if (totalEventReads == 0 ) {
 		if (totalReferenceReads == 0) {
 			return ".";
@@ -789,6 +800,7 @@ string deriveGenotype( const Genotype& rawGenotype )
 			return "0/1";
 		}
 	}
+	*/
 }
 
 
@@ -822,7 +834,7 @@ const string Genotype::getGTnew() const
 const string Genotype::getGTRDAD() const
 {
 	stringstream ss;
-	ss << getGTnew() << ":" << getTotalRefSupport() << ":" << getTotalReads();
+	ss << getGTnew() << ":" << getTotalRefSupport() << "," << getTotalReads();
 	return ss.str();
 }
 
@@ -1709,6 +1721,13 @@ void createParameters()
       new StringParameter( &g_par.chromosome, "-c", "--chromosome", "The name of the chromosome (default: SVs on all chromosomes are processed)", false, "" ) );
    parameters.push_back(
       new IntParameter( &g_par.windowSize, "-w", "--window_size", "Memory saving option: the size of the genomic region in a chromosome of which structural variants are calculated separately, in millions of bases (default 300, for memory saving 100 or 50 recommended)", false, 300 ) );
+	parameters.push_back(
+      new IntParameter( &g_par.MinCoverage, "-mc", "--min_coverage", "The minimum number of reads to provide a genotype (default 10)", false, 10 ) );
+	parameters.push_back(
+      new FloatParameter( &g_par.HetCutoff, "-he", "--het_cutoff", "The propertion of reads to call het (default 0.2)", false, 0.2 ) );
+	parameters.push_back(
+	new FloatParameter( &g_par.HomCutoff, "-ho", "--hom_cutoff", "The propertion of reads to call het (default 0.8)", false, 0.8 ) );
+
    parameters.push_back(
       new IntParameter( &g_par.minsize, "-is", "--min_size", "The minimum size of events to be reported (default 1)", false, 1 ) );
    parameters.push_back(
