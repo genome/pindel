@@ -276,9 +276,6 @@ void defineParameters(std::vector<Parameter *>& parameters)
 			"--name_of_logfile",
 			"Specifies a file to write Pindel's log to (default: no logfile, log is written to the screen/stdout)", 
 			false, ""));
-    parameters.push_back(new BoolParameter(&userSettings->Analyze_MEI, "-q", "--detect_MEI", 
-                                           "Flag indicating whether to search for mobile element insertions. (default false)", false,
-                                           false));
     parameters.push_back(
                          new StringParameter(
                                              &userSettings->PloidyFileName,
@@ -288,7 +285,54 @@ void defineParameters(std::vector<Parameter *>& parameters)
                                              " per line: ChrName Ploidy."
                                              " For example, chr1 2",
                                              false, ""));
-
+    
+    // Dispersed duplication detection
+    parameters.push_back(new BoolParameter(&userSettings->Analyze_DD, "-q", "--detect_DD",
+                                           "Flag indicating whether to detect dispersed duplications."
+                                           " (default: false)",
+                                           false, false));
+    
+    // Dispersed duplication detection: maximum distance between breakpoints estimated
+    // from opposite strands to assume that they refer to the same event.
+    parameters.push_back(new IntParameter(&userSettings->MAX_DD_BREAKPOINT_DISTANCE,
+                                          "", "--MAX_DD_BREAKPOINT_DISTANCE",
+                                          "Maximum distance between dispersed duplication breakpoints to assume"
+                                          " they refer to the same event. (default: 350)",
+                                          false, 350));
+    
+    // Dispersed duplication detection: maximum distance between reads for them to
+    // provide evidence for a single breakpoint.
+    parameters.push_back(new IntParameter(&userSettings->MAX_DISTANCE_CLUSTER_READS,
+                                          "", "--MAX_DISTANCE_CLUSTER_READS",
+                                          "Maximum distance between reads for them to provide evidence for a single"
+                                          " breakpoint for dispersed duplications. (default: 100)",
+                                          false, 100));
+    // Dispersed duplication detection: minimum number of reads needed for calling
+    // a breakpoint.
+    parameters.push_back(new IntParameter(&userSettings->MIN_DD_CLUSTER_SIZE,
+                                          "", "--MIN_DD_CLUSTER_SIZE",
+                                          "Minimum number of reads needed for calling a breakpoint for dispersed"
+                                          " duplications. (default: 3)",
+                                          false, 3));
+    // Dispersed duplication detection: minimum number of split reads for calling
+    // exact breakpoint location.
+    parameters.push_back(new IntParameter(&userSettings->MIN_DD_BREAKPOINT_SUPPORT,
+                                          "", "--MIN_DD_BREAKPOINT_SUPPORT",
+                                          "Minimum number of split reads for calling an exact breakpoint for"
+                                          " dispersed duplications. (default: 3)",
+                                          false, 3));
+    // Dispersed duplication detection: minimum distance dispersed duplication events.
+    parameters.push_back(new IntParameter(&userSettings->MIN_DD_MAP_DISTANCE,
+                                          "", "--MIN_DD_MAP_DISTANCE",
+                                          "Minimum mapping distance of read pairs for them to be considered"
+                                          " discordant. (default: 8000)",
+                                          false, 8000));
+    // Dispersed duplication detection: whether or not to report discordant mates.
+    parameters.push_back(new BoolParameter(&userSettings->DD_REPORT_DUPLICATION_READS,
+                                           "", "--DD_REPORT_DUPLICATION_READS",
+                                           "Report discordant sequences and positions for mates of reads mapping"
+                                           " inside dispersed duplications. (default: false)",
+                                           false, false));
 }
 
 /* 'findParameter' returns the index of the parameter with name 'name'; -1 if not found.*/

@@ -42,7 +42,7 @@ public:
 		Analyze_INV = true; 
 		Analyze_LI = true; 
 		Analyze_TD = true; 
-		Analyze_MEI = true;
+		Analyze_TD = false;
 		BalanceCutoff = 0;
 		bamConfigFilename = "";
 		breakdancerFilename = "";
@@ -92,7 +92,7 @@ public:
 	bool Analyze_INV; 
 	bool Analyze_LI; 
 	bool Analyze_TD; 
-	bool Analyze_MEI;
+    bool Analyze_DD;
 	unsigned int BalanceCutoff;
 	std::string bamConfigFilename;
 	std::string breakdancerFilename;
@@ -129,6 +129,24 @@ public:
 	std::string userDefinedRegion;
 	double Seq_Error_Rate;
 	bool showHelp;
+    
+    // DD detection: max distance of breakpoints for same event.
+    int MAX_DD_BREAKPOINT_DISTANCE;
+    
+    // DD detection: max distance reads for assigning to same cluster.
+    int MAX_DISTANCE_CLUSTER_READS;
+    
+    // DD detection: minimal cluster size needed to estimate breakpoint.
+    int MIN_DD_CLUSTER_SIZE;
+    
+    // DD detection: minimal n/o split reads to call exact breakpoint.
+    int MIN_DD_BREAKPOINT_SUPPORT;
+    
+    // DD detection: minimal mapping distance for reads to be discordant.
+    int MIN_DD_MAP_DISTANCE;
+    
+    // DD detection: report discordant mates.
+    bool DD_REPORT_DUPLICATION_READS;
 
 	int NM;
 
@@ -151,7 +169,7 @@ public:
 	std::string getCloseEndOutputFilename() const { return outputFilename + "_CloseEndMapped"; };
 	std::string getASMOutputFilename() const { return outputFilename + "_ASM"; };
 	std::string getGTOutputFilename() const { return outputFilename + "_GT"; };
-	std::string getMEIOutputFilename() const { return outputFilename + "_MEI"; };
+	std::string getMEIOutputFilename() const { return outputFilename + "_DD"; };
 	std::string getINTOutputFilename() const { return outputFilename + "_INT"; };
 	std::string getContigOutputFilename() const { return outputFilename + "_contig"; };
 	std::string getIndelConsensusOutputFilename() const { return outputFilename + "_CINDEL"; };

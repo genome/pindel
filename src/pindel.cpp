@@ -1844,7 +1844,15 @@ int main(int argc, char *argv[])
 		// name of previous chromosome
 		PreviousChrName = CurrentChrName;
 		std::cout << "PreviousChrName: " << CurrentChrName << std::endl;
-	} 
+	}
+    
+    // If -q parameter given, search for dispersed duplications.
+    if (parameters[findParameter("-q", parameters)]->isSet()) {
+        int DDresult = searchMEImain(currentState, g_genome, userSettings);
+        if (DDresult != 0) {
+            exit(DDresult);
+        }
+    }
 
 	//std::cout << "before report int " << std::endl;
 

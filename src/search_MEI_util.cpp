@@ -218,11 +218,9 @@ bool contains_subseq(const std::string& query, const std::string& db, int min_le
         *current_mc = 0;
         *current_al = 0;
         if (db[0] == query[i]) {
-//            std::cout << "m";
             *current_mc = 0;
             *current_al = 1;
         } else {
-//            std::cout << "g";
         }
         
         // Loop over db.
@@ -232,8 +230,6 @@ bool contains_subseq(const std::string& query, const std::string& db, int min_le
             action = 'n';
             
             // Get score for alignment with match of current base on query and db.
-//            int val1 = (*(prev_al + (j - 1)) + 1);
-//            int val2 = *(prev_mc + (j - 1));
             score = (*(prev_al + (j - 1)) + 1) * MATCH_SCORE + *(prev_mc + (j - 1)) * MISMATCH_SCORE;
             if (query[i] == db[j] && max_score < score) {
                 max_score = score;
@@ -295,9 +291,6 @@ bool contains_subseq(const std::string& query, const std::string& db, int min_le
                     break;
             }
             
-//            std::cout << action;
-//            std::cout.flush();
-            
             if (*(current_al + j) >= min_length && *(current_mc + j) <= (int) g_maxMismatch[*(current_al + j)]) {
                 // Valid alignment found! No need to look further.
                 return true;
@@ -319,8 +312,6 @@ bool contains_subseq(const std::string& query, const std::string& db, int min_le
             // (min_match_length).
             return false;
         }
-        
-//        std::cout << std::endl;
         
         // Swap arrays, such that current becomes prev for next iteration.
         temp = prev_al;
@@ -387,6 +378,11 @@ void get_sample_name(std::string& read_group, std::map<std::string, std::string>
     } catch (std::exception& e) {
         // Read group id not found in mapping. todo: increase severity of warning?
         LOG_DEBUG(*logStream << "Could not find sample name for read group: " << read_group << std::endl);
+        if (g_sampleNames.size() == 1) {
+            // Only one sample name known in pindel's input.  Assume current read group is
+            // from this sample.
+            sample_name = *(g_sampleNames.begin());
+        }
     }
 }
 

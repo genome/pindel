@@ -36,7 +36,8 @@ bool ReadInBamReads_SR (const char *bam_path,
 						int InsertSize,
                         std::string Tag,
                         const SearchWindow& currentWindow,
-                        ReadBuffer& readBuffer);
+                        ReadBuffer& readBuffer,
+                        bool verbose=true);
 /*bool ReadInBamReads_RP (const char *bam_path, const std::string & FragName,
                         std::string * CurrentChr, std::vector <RP_READ> &LeftReads, 
                         int InsertSize, std::string Tag, const SearchWindow& currentWindow, ReadBuffer& readBuffer);

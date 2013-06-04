@@ -41,6 +41,9 @@ public:
     // Mapped strand.
     char strand;
     
+    // Evidence strand (what side of DD event is this read evidence for, used for reporting)
+    char evidence_strand;
+    
     // Name of sample.
     std::string sample_name;
     

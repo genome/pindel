@@ -476,7 +476,8 @@ bool ReadInBamReads_SR (const char *bam_path, const std::string & FragName,
                 int InsertSize,
                 std::string Tag,
                 const SearchWindow& window,
-                ReadBuffer& readBuffer)
+                ReadBuffer& readBuffer,
+                bool verbose)
 {
    //std:: cout << " in ReadInBamReads_SR " << std::endl;
    bamFile fp;
@@ -512,7 +513,9 @@ bool ReadInBamReads_SR (const char *bam_path, const std::string & FragName,
    // std:: cout << " after bam_fetch " << std::endl;
    readBuffer.flush();
    // std:: cout << " after flush " << std::endl;
-   showReadStats(LeftReads, OneEndMappedReads);
+   if (verbose) {
+       showReadStats(LeftReads, OneEndMappedReads);
+   }
 	//std:: cout << "1 " << std::endl;
    khint_t key;
    if (kh_size (data.read_to_map_qual) > 0) {
