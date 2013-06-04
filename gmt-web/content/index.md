@@ -24,6 +24,7 @@ The following documentation is available:
 * [Background](background.html)
 * [Install](install.html)
 * [User Manual](user-manual.html)
+* [dispersed duplication](dd.html)
 * [FAQ](faq.html)
 
 
