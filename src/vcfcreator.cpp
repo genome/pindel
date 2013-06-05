@@ -1348,7 +1348,7 @@ ostream& operator<<(ostream& os, const SVData& svd)
    }
 
 	if (pindel024uOrLater && svd.getAlternative()!="<INS>") {
-   	os << "\tGT:RD:AD";
+   	os << "\tGT:AD";
 	}
 	else {
 		os << "\tGT:AD";
