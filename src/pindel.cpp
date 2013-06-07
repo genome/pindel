@@ -822,7 +822,7 @@ void createProbTable(const double seqErrorRate, const double sensitivity)
 		for (unsigned int numberOfErrors=0; numberOfErrors<=length; numberOfErrors++ ) {
 			totalErrorProb += probOfReadWithTheseErrors( length, numberOfErrors, seqErrorRate );
 			if (totalErrorProb > sensitivity ) {
-				g_maxMismatch[ length ] = numberOfErrors;
+				g_maxMismatch[ length ] = numberOfErrors + 2;
 				//g_maxMisMatch.push_back( numberOfErrors );
 				//std::cout << length << " bases has max errors" << numberOfErrors << "\n";
 				break; // break out of this length, up to the next
