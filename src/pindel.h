@@ -281,7 +281,7 @@ struct SPLIT_READ {
 	short getReadLength() const { return ReadLength; }
 	short getReadLengthMinus() const { return ReadLengthMinus; }
 	short getMAX_SNP_ERROR() const { return MAX_SNP_ERROR; } // the maximum amount of errors allowed when mapping the read
-
+	
 	// since you want to be sure that even if you find the maximum allowed number of errors (say 5) the read is sufficiently 
 	// unique (so no mappings with 6 or 7 errors possible), the CloseEnd and Far end search arrays should allow for additional rows housing the positions with 6 and 7-mismatches 
 	short getTOTAL_SNP_ERROR_CHECKED() const { return TOTAL_SNP_ERROR_CHECKED; } 

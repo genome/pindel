@@ -117,7 +117,7 @@ void BDData::loadBDFile(const std::string& filename) {
 			if ( firstChrName!="" && secondChrName!="" ) {
 				BreakDancerCoordinate firstBDCoordinate( firstChrName, firstPos );
 				BreakDancerCoordinate secondBDCoordinate( secondChrName, secondPos ); 
-
+	
 				m_bdEvents_external.push_back(BreakDancerEvent( firstBDCoordinate, secondBDCoordinate ));
 				m_bdEvents_external.push_back(BreakDancerEvent( secondBDCoordinate, firstBDCoordinate ));			
 			}
@@ -181,7 +181,7 @@ void ModifyRP(std::vector <RP_READ> & Reads_RP) {
 	std::cout << "Reads_RP.size(): " << Reads_RP.size() << std::endl;    
 
 	if (Reads_RP.size() == 0) return;
-
+	
 	int DistanceCutoff = 1000;
 	#pragma omp parallel default(shared)
 	{
@@ -203,7 +203,7 @@ void ModifyRP(std::vector <RP_READ> & Reads_RP) {
 			Stop_Pos = PosA_end + DistanceCutoff;
 			if (Stop_Pos < PosB_end + DistanceCutoff)
 				Stop_Pos = PosB_end + DistanceCutoff;
-
+	
 			int Start_Index_Second = (int)first - 1000;
 			if (Start_Index_Second < 0) Start_Index_Second = 0;
 			for (unsigned second = 0; second < Reads_RP.size(); second++) {
@@ -354,7 +354,7 @@ void Summarize(std::vector <RP_READ> & Reads_RP) {
 			//}
 			//else Reads_RP[first].Report = false;
 		}
-
+	 
 		//std::cout << "middle" << std::endl;
 		if (GoodIndex.empty()) return;
 		else if (GoodIndex.size() == 1) {
@@ -366,7 +366,7 @@ void Summarize(std::vector <RP_READ> & Reads_RP) {
 				//std::cout << "index_a " << index_a << std::endl;
 				//std::cout << Reads_RP[index_a].DA << " " << Reads_RP[index_a].PosA << " " << Reads_RP[index_a].DB << " " << Reads_RP[index_a].PosB << std::endl;
 				if (Reads_RP[GoodIndex[index_a]].Visited) continue; 
-
+	
 				for (unsigned index_b = index_a + 1;  index_b < GoodIndex.size(); index_b++) {
 					//std::cout << "index_b " << index_b << std::endl;
 					if (RecipicalOverlap(Reads_RP[GoodIndex[index_a]], Reads_RP[GoodIndex[index_b]])) {
@@ -594,7 +594,7 @@ void BDData::loadRegion( const SearchWindow& searchWindow  )
 	BDIterator startOfEventList = startRegionInBDEvents;
 	BDIterator endOfEventList = startRegionInBDEvents;
 	int index = 0;
-
+	
 	for ( unsigned int position=m_currentWindow.getStart(); position< m_currentWindow.getEnd(); position++ ) {
 		bool changed = false;
 	////std::cout << "At position " << position << "\n";	
@@ -609,7 +609,7 @@ void BDData::loadRegion( const SearchWindow& searchWindow  )
 				break;
 			}
 		}
-
+	
 		// add new events
 		for (BDIterator eventIter=endOfEventList; eventIter<endRegionInBDEvents; ++eventIter ) {
 			if ( position < eventIter->first.startOfWindow() ) {
@@ -654,7 +654,7 @@ const SearchWindowCluster& BDData::getCorrespondingSearchWindowCluster( const SP
 	//std::cout << read.getLastAbsLocCloseEnd() << "\t" << m_currentWindow.getStart() << std::endl;
 	if (read.getLastAbsLocCloseEnd() > m_currentWindow.getStart()) 
 		clusterIndex = m_breakDancerMask[ read.getLastAbsLocCloseEnd() - m_currentWindow.getStart() ];
-
+	
 	//std::cout << "leaving getCorrespondingSearchWindowCluster " << std::endl;
 	return m_regionsToScanCollection[ clusterIndex ];
 }
@@ -691,3 +691,4 @@ bool BDData::isBreakDancerEvent( const unsigned int leftPosition, const unsigned
 unsigned BDData::GetBDSize_external(){return m_bdEvents_external.size();}
 
 unsigned BDData::GetBDSize_total(){return m_bdEvents.size();}
+

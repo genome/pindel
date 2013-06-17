@@ -62,7 +62,7 @@ struct BreakDancerEvent {
 	BreakDancerCoordinate first, second;
 	BreakDancerEvent( const BreakDancerEvent& other );
 	BreakDancerEvent( const BreakDancerCoordinate& bd1, const BreakDancerCoordinate& bd2 ) : first( bd1 ), second (bd2 ) {};
-
+	
 	friend bool sortOnFirstBDCoordinate( const BreakDancerEvent& event1, const BreakDancerEvent& event2 );
 	friend bool sortOnSecondBDCoordinate( const BreakDancerEvent& event1, const BreakDancerEvent& event2 );
 };
