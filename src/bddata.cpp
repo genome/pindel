@@ -182,6 +182,11 @@ void ModifyRP(std::vector <RP_READ> & Reads_RP) {
 
 	if (Reads_RP.size() == 0) return;
 	
+	for (int first = 0; first < (int)Reads_RP.size(); first++) {	//Han(2013.06.17)
+		Reads_RP[first].PosA1 = Reads_RP[first].PosA;	//Han(2013.06.17)
+		Reads_RP[first].PosB1 = Reads_RP[first].PosB;	//Han(2013.06.17)
+	}	//Han(2013.06.17)
+	
 	int DistanceCutoff = 1000;
 	#pragma omp parallel default(shared)
 	{
@@ -228,6 +233,8 @@ void ModifyRP(std::vector <RP_READ> & Reads_RP) {
 								Current_first.PosB = Current_second.OriginalPosB;
 								//std::cout << "PosB " << Current_first.PosB << std::endl;
 							}
+							if (Current_first.PosA > Current_second.OriginalPosA) Current_first.PosA1 = Current_second.OriginalPosA;	//Han(2013.06.17)
+							if (Current_first.PosB < Current_second.OriginalPosB) Current_first.PosB1 = Current_second.OriginalPosB;	//Han(2013.06.17)
 						}
 					}
 				}
@@ -442,16 +449,18 @@ void BDData::UpdateBD(ControlState & currentState) {
 				std::string firstChrName = currentState.Reads_RP_Discovery[read_index].ChrNameA;
 				std::string secondChrName = currentState.Reads_RP_Discovery[read_index].ChrNameB;
 				unsigned int firstPos = currentState.Reads_RP_Discovery[read_index].PosA + g_SpacerBeforeAfter;
+				unsigned int firstPos2 = currentState.Reads_RP_Discovery[read_index].PosA1 + g_SpacerBeforeAfter;	//Han(2013.06.17)
 				unsigned int secondPos  = currentState.Reads_RP_Discovery[read_index].PosB + g_SpacerBeforeAfter;
+				unsigned int secondPos2  = currentState.Reads_RP_Discovery[read_index].PosB1 + g_SpacerBeforeAfter;	//Han(2013.06.17)
 				if ( firstChrName!="" && secondChrName!="" ) {
-					BreakDancerCoordinate firstBDCoordinate( firstChrName, firstPos );
-					BreakDancerCoordinate secondBDCoordinate( secondChrName, secondPos );
+					BreakDancerCoordinate firstBDCoordinate( firstChrName, firstPos, firstPos2 );	//Han(2013.06.17)
+					BreakDancerCoordinate secondBDCoordinate( secondChrName, secondPos, secondPos2 );	//Han(2013.06.17)
 					#pragma omp critical
 					{
 						m_bdEvents.push_back(BreakDancerEvent( firstBDCoordinate, secondBDCoordinate ));
 						m_bdEvents.push_back(BreakDancerEvent( secondBDCoordinate, firstBDCoordinate ));
                
-						std::cout << "adding " << firstChrName << " " << firstPos - g_SpacerBeforeAfter << "\t" << currentState.Reads_RP_Discovery[read_index].DA << "\t" << secondChrName << " " << secondPos - 								g_SpacerBeforeAfter << "\t" << currentState.Reads_RP_Discovery[read_index].DB << " to breakdancer events. " << abs((int)secondPos - (int)firstPos) << " Support: " << 								currentState.Reads_RP_Discovery[read_index].NumberOfIdentical << std::endl;
+						std::cout << "adding " << firstChrName << " " << firstPos - g_SpacerBeforeAfter << "/" << firstPos2 - g_SpacerBeforeAfter << "\t" << currentState.Reads_RP_Discovery[read_index].DA << "\t" << secondChrName << " " << secondPos - g_SpacerBeforeAfter << "/" << secondPos2 - g_SpacerBeforeAfter << "\t" << currentState.Reads_RP_Discovery[read_index].DB << " to breakdancer events. " << abs((int)secondPos - (int)firstPos) << " Support: " << 								currentState.Reads_RP_Discovery[read_index].NumberOfIdentical << std::endl;
 					}
 				}
         
@@ -519,6 +528,10 @@ void BDData::createRegionCluster(const BDIterator& startOfEventList, const BDIte
 	sort( relevantSubcluster.begin(), relevantSubcluster.end(), sortOnSecondBDCoordinate );
 		//std::cout << "Making cluster" << "\n";
 	newCluster.clear();
+	for (BDIterator eventIter=relevantSubcluster.begin(); eventIter!=relevantSubcluster.end(); eventIter++ ) {	//Han(2013.06.17)
+		std::cout << "Han : " << eventIter->first.startOfWindow() << "\t" << eventIter->first.position << "/" << eventIter->first.position2 << "\t" << eventIter->first.endOfWindow() << "\t" << eventIter->second.startOfWindow() << "\t" << eventIter->second.position << "/" << eventIter->second.position2 << "\t" << eventIter->second.endOfWindow() << "\n";	//Han(2013.06.17)
+	}	//Han(2013.06.17)
+	
 	for (BDIterator eventIter=relevantSubcluster.begin(); eventIter!=relevantSubcluster.end(); ++eventIter ) {
 		//std::cout << "FC: " << eventIter->first.getChromosomeName() << "FS: " << eventIter->first.startOfWindow() << "FE: " << eventIter->first.endOfWindow() << 
 		//	"SC: " << eventIter->second.getChromosomeName() << "SS: " << eventIter->second.startOfWindow()<< "SE: " << eventIter->second.endOfWindow() << "\n";

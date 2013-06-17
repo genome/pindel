@@ -47,7 +47,9 @@ public:
 	BreakDancerCoordinate& operator=( const BreakDancerCoordinate& other );
 
 	unsigned int position;
+	unsigned int position2;	//Han(2013.06.17)
 	BreakDancerCoordinate( const BreakDancerCoordinate& other );
+	BreakDancerCoordinate( const std::string& chromosomeName, const unsigned int pos, const unsigned int pos2 );	//Han(2013.06.17)
 	BreakDancerCoordinate( const std::string& chromosomeName, const unsigned int pos );
 	BreakDancerCoordinate( const Chromosome* const chromosome, const unsigned int pos );
 	unsigned int startOfWindow() const;

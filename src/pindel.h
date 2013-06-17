@@ -194,6 +194,8 @@ struct RP_READ {
         PosB = 0;
         OriginalPosA = 0;
         OriginalPosB = 0;
+		PosA1 = 0;	//Han(2013.06.17)
+		PosB1 = 0;	//Han(2013.06.17)
         Distance = 0;
         MQA = 0;
         MQB = 0;
@@ -214,6 +216,8 @@ struct RP_READ {
     unsigned PosB;
     unsigned OriginalPosA;
     unsigned OriginalPosB;
+	unsigned PosA1;	//Han(2013.06.17)
+	unsigned PosB1;	//Han(2013.06.17)
     short Distance;
     short MQA;
     short MQB;
