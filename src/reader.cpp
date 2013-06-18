@@ -548,9 +548,9 @@ bool isGoodAnchor( const flags_hit *read, const bam1_t * bamOfRead ) //bam1_qnam
 	UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
 	if (userSettings->minimalAnchorQuality == 0) return true;
 
-		std::string NR = bam1_qname(bamOfRead);
-		std::string seq;
-		GetReadSeq(bamOfRead, seq);
+		//std::string NR = bam1_qname(bamOfRead);
+		//std::string seq;
+		//GetReadSeq(bamOfRead, seq);
 		//if (NR == "HWI-ST568:267:C1BD9ACXX:4:2101:18037:80445")
 		//	std::cout << "isGoodAnchor HWI-ST568:267:C1BD9ACXX:4:2101:18037:80445 " << seq << std::endl;
 
@@ -607,9 +607,9 @@ bool isRefRead ( const flags_hit *read, const bam1_t * bamOfRead )
 
 	if (nm) {
 		int32_t nm_value = bam_aux2i(nm);
-		std::string NR = bam1_qname(bamOfRead);
-		std::string seq;
-		GetReadSeq(bamOfRead, seq);
+		//std::string NR = bam1_qname(bamOfRead);
+		//std::string seq;
+		//GetReadSeq(bamOfRead, seq);
 		//if (NR == "HWI-ST568:267:C1BD9ACXX:4:2101:18037:80445")
 		//	std::cout << "isRefRead " << nm_value << " " << userSettings->NM << " " << seq << std::endl;
 		if ((nm_value > userSettings->NM) || (nm_value > maxEdits)) {
