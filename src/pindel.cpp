@@ -74,7 +74,7 @@
 /* EW: update 0.2.4s: bugfix for -p option of Pindel0.2.4r */
 /* EW: update 0.2.4t, updates now shown in RELEASE document in trunk directory */
 
-const std::string Pindel_Version_str = "Pindel version 0.2.5, June 4 2013.";
+const std::string Pindel_Version_str = "Pindel version 0.2.5, June 22 2013.";
 
 const Chromosome g_dummyChromosome("","");
 Genome g_genome;
@@ -822,9 +822,9 @@ void createProbTable(const double seqErrorRate, const double sensitivity)
 		for (unsigned int numberOfErrors=0; numberOfErrors<=length; numberOfErrors++ ) {
 			totalErrorProb += probOfReadWithTheseErrors( length, numberOfErrors, seqErrorRate );
 			if (totalErrorProb > sensitivity ) {
-				g_maxMismatch[ length ] = numberOfErrors + 2;
+				g_maxMismatch[ length ] = numberOfErrors + 1;
 				//g_maxMisMatch.push_back( numberOfErrors );
-				//std::cout << length << " bases has max errors" << numberOfErrors << "\n";
+				//std::cout << length << " bases has max errors \t" << g_maxMismatch[length] << "\n";
 				break; // break out of this length, up to the next
 			}
 		}
