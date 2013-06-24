@@ -21,17 +21,32 @@
 // Pindel header files
 #include "control_state.h"
 
+//Han(2013.06.17)
+BreakDancerCoordinate::BreakDancerCoordinate( const std::string& chromosomeName, const unsigned int pos, const unsigned int pos2 ) : m_chromosomeName ( chromosomeName )
+{
+    if (pos <= pos2) {
+        position = pos;
+        position2 = pos2; //Han(2013.06.17)
+    }
+    else {
+        position = pos2;
+        position2 = pos;
+    }
+}
+
 BreakDancerCoordinate::BreakDancerCoordinate( const std::string& chromosomeName, const unsigned int pos ) : m_chromosomeName ( chromosomeName )
 {
 	position = pos;
+    position2 = pos; //Han(2013.06.17)
 }
 
 BreakDancerCoordinate::BreakDancerCoordinate( const Chromosome* const chromosome, const unsigned int pos ): m_chromosomeName( chromosome->getName() )
 {
 	position = pos;
+    position2 = pos; //Han(2013.06.17)
 }
 
-BreakDancerCoordinate::BreakDancerCoordinate( const BreakDancerCoordinate& other ) : m_chromosomeName ( other.m_chromosomeName ), position (other.position )
+BreakDancerCoordinate::BreakDancerCoordinate( const BreakDancerCoordinate& other ) : m_chromosomeName ( other.m_chromosomeName ), position (other.position ), position2 (other.position2 )	//Han(2013.06.17)
 {}
 
 
@@ -55,9 +70,12 @@ const Chromosome* BreakDancerCoordinate::getChromosome() const
 }
 
 unsigned int BreakDancerCoordinate::startOfWindow() const
-{
-	if ( position>=BREAKDANCER_WINDOWSPAN) { return position - BREAKDANCER_WINDOWSPAN; }
+{	//Han(2013.06.17)
+	unsigned int tmp_position = position;
+	if ( position2 < position && position2 > 0 )  tmp_position = position2;
+	if ( tmp_position>=BREAKDANCER_WINDOWSPAN) {return tmp_position - BREAKDANCER_WINDOWSPAN; }
 	else { return 0; }
+    
 }
 
 BreakDancerEvent::BreakDancerEvent( const BreakDancerEvent& other ) : first (other.first), second( other.second)
@@ -65,8 +83,10 @@ BreakDancerEvent::BreakDancerEvent( const BreakDancerEvent& other ) : first (oth
 }
 
 unsigned int BreakDancerCoordinate::endOfWindow() const // NOTE: this is dangerous unless we also save the chromosome size somewhere...
-{
-	return position + BREAKDANCER_WINDOWSPAN;
+{	//Han(2013.06.17)
+	unsigned int tmp_position = position;
+	if ( position2 > position && position2 > 0 )  tmp_position = position2;
+	return tmp_position + BREAKDANCER_WINDOWSPAN;
 }
 
 bool BreakDancerCoordinate::operator<(const BreakDancerCoordinate& other ) const

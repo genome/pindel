@@ -114,7 +114,9 @@ void BDData::loadBDFile(const std::string& filename) {
 
 			firstPos += g_SpacerBeforeAfter; // ??? ask Kai
 			secondPos += g_SpacerBeforeAfter;
-			if ( firstChrName!="" && secondChrName!="" ) {
+            if (firstChrName == secondChrName && secondChrName != "" && abs(firstPos - secondPos) < 500)
+                continue;
+			if ( firstChrName!="" && secondChrName!="") {
 				BreakDancerCoordinate firstBDCoordinate( firstChrName, firstPos );
 				BreakDancerCoordinate secondBDCoordinate( secondChrName, secondPos ); 
 	
@@ -159,21 +161,46 @@ void SortRPByChrPos(std::vector <RP_READ> & Reads_RP) { // no interchromosome RP
     sort(Reads_RP.begin(), Reads_RP.end(), SortByFirstAndThenSecondCoordinate);
 }*/
 bool RecipicalOverlap(RP_READ & first, RP_READ & second) {
+    float cutoff = 0.7;
+    
+    unsigned FirstPosA = (first.PosA + first.PosA1)/2;
+    unsigned FirstPosB = (first.PosB + first.PosB1)/2;
+    if (FirstPosA > FirstPosB) std::swap(FirstPosA, FirstPosB);
+    
+    unsigned SecondPosA = (second.PosA + second.PosA1)/2;
+    unsigned SecondPosB = (second.PosB + second.PosB1)/2;
+    if (SecondPosA > SecondPosB) std::swap(SecondPosA, SecondPosB);
+    
 	if (first.DA != second.DA || first.DB != second.DB) return false;
-	if (first.PosA < second.PosB || first.PosB > second.PosA) return false;
-	if (first.PosA < second.PosA && second.PosB < first.PosA) {
-		if ((double)(second.PosB - second.PosA)/(double)(first.PosB - first.PosA) > 0.8) return true;
+	if (FirstPosA > SecondPosB + 200 || FirstPosB + 200 < SecondPosA) return false;
+	if (FirstPosA <= SecondPosA && SecondPosB <= FirstPosB) {
+		if ((double)(SecondPosB - SecondPosA)/(double)(FirstPosB - FirstPosA) >= cutoff) return true;
 	}
-	if (second.PosA < first.PosA && first.PosB < second.PosA) {
-		if ((double)(first.PosB - first.PosA)/(double)(second.PosB - second.PosA) > 0.8) return true;
+	if (SecondPosA <= FirstPosA && FirstPosB <= SecondPosB) {
+		if ((double)(FirstPosB - FirstPosA)/(double)(SecondPosB - SecondPosA) >= cutoff) return true;
 	}
-	if (first.PosA < second.PosA && second.PosA < first.PosB && first.PosB < second.PosB) {
-		if ((double)(first.PosB - second.PosA) / (double)(first.PosB - first.PosA) > 0.8 && (double)(first.PosB - second.PosA) / (double)(second.PosB - second.PosA) > 0.8) return true;
+	if (FirstPosA <= SecondPosA && SecondPosA <= FirstPosB && FirstPosB <= SecondPosB) {
+		if ((double)(FirstPosB - SecondPosA) / (double)(FirstPosB - FirstPosA) >= cutoff && (double)(FirstPosB - SecondPosA) / (double)(SecondPosB - SecondPosA) >= cutoff) return true;
 	}
-	if (second.PosA < first.PosA && first.PosA < second.PosB && second.PosB < first.PosB) {
-		if ((double)(second.PosB - first.PosA) / (double)(first.PosB - first.PosA) > 0.8 && (double)(second.PosB - first.PosA) / (double)(second.PosB - second.PosA) > 0.8) return true;
+	if (SecondPosA <= FirstPosA && FirstPosA <= SecondPosB && SecondPosB <= FirstPosB) {
+		if ((double)(SecondPosB - FirstPosA) / (double)(FirstPosB - FirstPosA) >= cutoff && (double)(SecondPosB - FirstPosA) / (double)(SecondPosB - SecondPosA) >= cutoff) return true;
 	}
 	return false;
+    
+}
+
+bool Compare2RP (const RP_READ & first, const RP_READ & second) {
+    if (first.OriginalPosA > second.OriginalPosA) {
+        return true;
+    }
+    else if (first.OriginalPosA == second.OriginalPosA) {
+        if (first.OriginalPosB > second.OriginalPosB) {
+            return true;
+        }
+        else return false;
+    }
+    else return false;
+    
 }
 
 
@@ -181,53 +208,87 @@ void ModifyRP(std::vector <RP_READ> & Reads_RP) {
 	std::cout << "Reads_RP.size(): " << Reads_RP.size() << std::endl;    
 
 	if (Reads_RP.size() == 0) return;
+    std::cout << "sorting read-pair" << std::endl;
+    sort(Reads_RP.begin(), Reads_RP.end(), Compare2RP);
+    std::cout << "sorting read-pair finished." << std::endl;
+    
+    for (int first = 0; first < (int)Reads_RP.size(); first++) {	//Han(2013.06.17)
+		Reads_RP[first].PosA1 = Reads_RP[first].PosA;	//Han(2013.06.17)
+		Reads_RP[first].PosB1 = Reads_RP[first].PosB;	//Han(2013.06.17)
+	}	//Han(2013.06.17)
 	
 	int DistanceCutoff = 1000;
 	#pragma omp parallel default(shared)
 	{
 		#pragma omp for
-		for (int first = 0; first < (int)Reads_RP.size() - 1; first++) {
-			unsigned Range, PosA_start, PosA_end, PosB_start, PosB_end, Stop_Pos;
+		for (int first = 0; first < (int)Reads_RP.size(); first++) {
+			//unsigned Range, PosA_start, PosA_end, PosB_start, PosB_end;
+            unsigned Stop_Pos;
 			RP_READ & Current_first = Reads_RP[first];
-			Range = (unsigned)(Current_first.InsertSize * 1.5);
-			if (Current_first.PosA > Range)
-				PosA_start = Current_first.PosA - Range;
-			else PosA_start = 1;
+			//Range = (unsigned)(Current_first.InsertSize);
+			//if (Current_first.PosA > Range)
+			//	PosA_start = Current_first.PosA - Range;
+			//else PosA_start = 1;
 
-			PosA_end = Current_first.PosA + Range;
-			if (Current_first.PosB > Range)
-				PosB_start = Current_first.PosB - Range;
-			else PosB_start = 1;
+			//PosA_end = Current_first.PosA + Range;
+			//if (Current_first.PosB > Range)
+			//	PosB_start = Current_first.PosB - Range;
+			//else PosB_start = 1;
 
-			PosB_end = Current_first.PosB + Range;
-			Stop_Pos = PosA_end + DistanceCutoff;
-			if (Stop_Pos < PosB_end + DistanceCutoff)
-				Stop_Pos = PosB_end + DistanceCutoff;
+			//PosB_end = Current_first.PosB + Range;
+			//Stop_Pos = PosA_end + DistanceCutoff;
+			//if (Stop_Pos < PosB_end + DistanceCutoff)
+            unsigned BP_end = Current_first.PosA;
+            if (BP_end < Current_first.PosB)
+                BP_end = Current_first.PosB;
+            Stop_Pos = BP_end + DistanceCutoff;
 	
-			int Start_Index_Second = (int)first - 1000;
+			int Start_Index_Second = (int)first - 100;
 			if (Start_Index_Second < 0) Start_Index_Second = 0;
 			for (unsigned second = 0; second < Reads_RP.size(); second++) {
-				if (first == (int)second) continue;
+				//if (first == (int)second) continue;
 				RP_READ & Current_second = Reads_RP[second];
-				if (RecipicalOverlap(Current_first, Current_second)) continue;
+                //if (Current_second.PosA > Stop_Pos && Current_second.PosB > Stop_Pos)
+                //    break;
+				if (RecipicalOverlap(Current_first, Current_second) == false) continue;
 				//if (Current_first.ChrNameA == Current_second.ChrNameA && Current_first.ChrNameB == Current_second.ChrNameB)
 				{
 					//if (Current_second.PosA > Stop_Pos && Current_second.PosB > Stop_Pos) break;
-					if (Current_first.DA == Current_second.DA && Current_first.DB == Current_second.DB) {
-						if (Current_second.OriginalPosA > PosA_start
-							&& Current_second.OriginalPosA < PosA_end
-							&& Current_second.OriginalPosB > PosB_start
-							&& Current_second.OriginalPosB < PosB_end) { // same cluster
-							if ((Current_first.DA == '+' && Current_first.PosA < Current_second.OriginalPosA)
-								|| (Current_first.DA == '-' && Current_first.PosA > Current_second.OriginalPosA)) {
-								Current_first.PosA = Current_second.OriginalPosA;
-								//std::cout << "PosA " << Current_first.PosA << std::endl;
+					//if (Current_first.DA == Current_second.DA && Current_first.DB == Current_second.DB)
+                    {
+						//if (Current_second.OriginalPosA > PosA_start
+						//	&& Current_second.OriginalPosA < PosA_end
+						//	&& Current_second.OriginalPosB > PosB_start
+						//	&& Current_second.OriginalPosB < PosB_end)
+                        { // same cluster
+							if (Current_first.DA == '+' && Current_first.PosA < Current_second.OriginalPosA) {
+                                Current_first.PosA = Current_second.OriginalPosA;
 							}
-							if ((Current_first.DB == '+' && Current_first.PosB < Current_second.OriginalPosB)
-								|| (Current_first.DB == '-' && Current_first.PosB > Current_second.OriginalPosB)) {
+                            if (Current_first.DA == '-' && Current_first.PosA > Current_second.OriginalPosA) {
+                                Current_first.PosA = Current_second.OriginalPosA;
+                            }
+							if (Current_first.DB == '+' && Current_first.PosB < Current_second.OriginalPosB) {
 								Current_first.PosB = Current_second.OriginalPosB;
 								//std::cout << "PosB " << Current_first.PosB << std::endl;
 							}
+                            if (Current_first.DB == '-' && Current_first.PosB > Current_second.OriginalPosB) {
+                                Current_first.PosB = Current_second.OriginalPosB;
+                            }
+                            // A1 and B1
+							if (Current_first.DA == '+' && Current_first.PosA1 > Current_second.OriginalPosA) {
+                                Current_first.PosA1 = Current_second.OriginalPosA;
+							}
+                            if (Current_first.DA == '-' && Current_first.PosA1 < Current_second.OriginalPosA) {
+                                Current_first.PosA1 = Current_second.OriginalPosA;
+                            }
+                            
+							if (Current_first.DB == '+' && Current_first.PosB1 > Current_second.OriginalPosB) {
+								Current_first.PosB1 = Current_second.OriginalPosB;
+								//std::cout << "PosB " << Current_first.PosB << std::endl;
+							}
+                            if (Current_first.DB == '-' && Current_first.PosB1 < Current_second.OriginalPosB) {
+                                Current_first.PosB1 = Current_second.OriginalPosB;
+                            }
 						}
 					}
 				}
@@ -235,8 +296,15 @@ void ModifyRP(std::vector <RP_READ> & Reads_RP) {
 		}
 	}// #pragma omp parallel default(shared)
 	for (unsigned first = 0; first < Reads_RP.size(); first++) {
-		if (Reads_RP[first].DA == '+') Reads_RP[first].PosA = Reads_RP[first].PosA + Reads_RP[first].ReadLength;
-		if (Reads_RP[first].DB == '+') Reads_RP[first].PosB = Reads_RP[first].PosB + Reads_RP[first].ReadLength;
+		if (Reads_RP[first].DA == '+') {
+            Reads_RP[first].PosA = Reads_RP[first].PosA + Reads_RP[first].ReadLength;
+            Reads_RP[first].PosA1 = Reads_RP[first].PosA1 + Reads_RP[first].ReadLength;
+            
+        }
+		if (Reads_RP[first].DB == '+') {
+                Reads_RP[first].PosB = Reads_RP[first].PosB + Reads_RP[first].ReadLength;
+            Reads_RP[first].PosB1 = Reads_RP[first].PosB1 + Reads_RP[first].ReadLength;
+        }
 		if (Reads_RP[first].ChrNameA == Reads_RP[first].ChrNameB && abs(Reads_RP[first].PosA - Reads_RP[first].PosB) < 500) Reads_RP[first].Visited = true;
 		//std::cout << "Final: " << Reads_RP[first].ChrNameA << " " << Reads_RP[first].DA << " " << Reads_RP[first].PosA << "\t" << Reads_RP[first].ChrNameB << " " << Reads_RP[first].DB << " " << Reads_RP[first].PosB << std::endl;
 	}
@@ -253,7 +321,7 @@ void ModifyRP_InterChr(std::vector <RP_READ> & Reads_RP) {
 
 			unsigned Range, PosA_start, PosA_end, PosB_start, PosB_end;//, Stop_Pos;
 			RP_READ & Current_first = Reads_RP[first];
-			Range = (unsigned)(Current_first.InsertSize * 1.2);
+			Range = (unsigned)(Current_first.InsertSize);
 			if (Current_first.PosA > Range)
 				PosA_start = Current_first.PosA - Range;
 			else PosA_start = 1;
@@ -323,9 +391,9 @@ void ModifyRP_InterChr(std::vector <RP_READ> & Reads_RP) {
 }
 
 void Summarize(std::vector <RP_READ> & Reads_RP) {
-	unsigned Cutoff = 3;
+	unsigned Cutoff = 5;
 	std::vector <unsigned int> GoodIndex;
-	if (Reads_RP.size() < 3) {
+	if (Reads_RP.size() < 5) {
 		for (unsigned int first = 0; first < Reads_RP.size(); first++)
 			Reads_RP[first].Report = false;
 		return;
@@ -334,27 +402,35 @@ void Summarize(std::vector <RP_READ> & Reads_RP) {
 		for (unsigned int first = 0; first < Reads_RP.size() - 1; first++) {
 			//std::cout << Reads_RP[first].DA << " " << Reads_RP[first].PosA << " " << Reads_RP[first].DB << " " << Reads_RP[first].PosB << std::endl;
 			if (Reads_RP[first].Visited == true) continue;
-			Reads_RP[first].NumberOfIdentical = 0;
+			Reads_RP[first].NumberOfIdentical = 1;
 			for (unsigned second = first + 1; second < Reads_RP.size(); second++) {
 				if (Reads_RP[second].Visited == true) continue;
 				if (//Reads_RP[first].ChrNameA == Reads_RP[second].ChrNameA
 					//&& Reads_RP[first].ChrNameB == Reads_RP[second].ChrNameB
 					Reads_RP[first].PosA == Reads_RP[second].PosA
 					&& Reads_RP[first].PosB == Reads_RP[second].PosB
+					&& Reads_RP[first].PosA1 == Reads_RP[second].PosA1
+					&& Reads_RP[first].PosB1 == Reads_RP[second].PosB1
 					&& Reads_RP[first].DA == Reads_RP[second].DA
 					&& Reads_RP[first].DB == Reads_RP[second].DB) {
 						Reads_RP[first].NumberOfIdentical++;
 						Reads_RP[second].Visited = true;
 				}
 			}
-			GoodIndex.push_back(first);
+            //if (Reads_RP[first].NumberOfIdentical >= Cutoff)
+            {
+                //std::cout << Reads_RP[first].PosA << "\t" << Reads_RP[first].PosA1 << "\t" << Reads_RP[first].PosB << "\t" << Reads_RP[first].PosB1 << "\t" << Reads_RP[first].NumberOfIdentical << std::endl;
+                //Reads_RP[first].Report = true;
+                GoodIndex.push_back(first);
+                
+            }
 			//if (Reads_RP[first].NumberOfIdentical >= Cutoff) {
 			//	Reads_RP[first].Report = true;
 			//	//std::cout << Reads_RP[first].ChrNameA << " " << Reads_RP[first].PosA << " " << Reads_RP[first].ChrNameB << " " << Reads_RP[first].PosB << std::endl;
 			//}
 			//else Reads_RP[first].Report = false;
 		}
-	 
+        
 		//std::cout << "middle" << std::endl;
 		if (GoodIndex.empty()) return;
 		else if (GoodIndex.size() == 1) {
@@ -378,19 +454,27 @@ void Summarize(std::vector <RP_READ> & Reads_RP) {
 						if ((Reads_RP[GoodIndex[index_a]].DB == '+' && Reads_RP[GoodIndex[index_a]].PosB < Reads_RP[GoodIndex[index_b]].PosB) 
 							|| (Reads_RP[GoodIndex[index_a]].DB == '-' && Reads_RP[GoodIndex[index_a]].PosB > Reads_RP[GoodIndex[index_b]].PosB)) 
 							Reads_RP[GoodIndex[index_a]].PosB = Reads_RP[GoodIndex[index_b]].PosB;
+                        
+                        if ((Reads_RP[GoodIndex[index_a]].DA == '+' && Reads_RP[GoodIndex[index_a]].PosA1 > Reads_RP[GoodIndex[index_b]].PosA1)
+							|| (Reads_RP[GoodIndex[index_a]].DA == '-' && Reads_RP[GoodIndex[index_a]].PosA1 < Reads_RP[GoodIndex[index_b]].PosA1))
+							Reads_RP[GoodIndex[index_a]].PosA1 = Reads_RP[GoodIndex[index_b]].PosA1;
+						if ((Reads_RP[GoodIndex[index_a]].DB == '+' && Reads_RP[GoodIndex[index_a]].PosB1 > Reads_RP[GoodIndex[index_b]].PosB1)
+							|| (Reads_RP[GoodIndex[index_a]].DB == '-' && Reads_RP[GoodIndex[index_a]].PosB1 < Reads_RP[GoodIndex[index_b]].PosB1))
+							Reads_RP[GoodIndex[index_a]].PosB1 = Reads_RP[GoodIndex[index_b]].PosB1;
+                        
 					} 
 				}
 				if (Reads_RP[GoodIndex[index_a]].NumberOfIdentical >= Cutoff) Reads_RP[GoodIndex[index_a]].Report = true;
 				else Reads_RP[GoodIndex[index_a]].Report = false;
 			}
 		}
-
+        
 	}
 	//std::cout << "leaving summarize" << std::endl;
 }
 
 void Summarize_InterChr(std::vector <RP_READ> & Reads_RP) {
-    unsigned Cutoff = 3;
+    unsigned Cutoff = 5;
 	if (Reads_RP.size()==0) return;
     for (unsigned int first = 0; first < Reads_RP.size() - 1; first++) {
         //std::cout << Reads_RP[first].DA << " " << Reads_RP[first].PosA << " " << Reads_RP[first].DB << " " << Reads_RP[first].PosB << std::endl;
@@ -442,16 +526,24 @@ void BDData::UpdateBD(ControlState & currentState) {
 				std::string firstChrName = currentState.Reads_RP_Discovery[read_index].ChrNameA;
 				std::string secondChrName = currentState.Reads_RP_Discovery[read_index].ChrNameB;
 				unsigned int firstPos = currentState.Reads_RP_Discovery[read_index].PosA + g_SpacerBeforeAfter;
+                unsigned int firstPos2 = currentState.Reads_RP_Discovery[read_index].PosA1 + g_SpacerBeforeAfter;	//Han(2013.06.17)
+                if (firstPos > firstPos2) std::swap(firstPos, firstPos2);
+                if (currentState.Reads_RP_Discovery[read_index].DA == '+') firstPos2 += 200;
+                else firstPos -= 200;
 				unsigned int secondPos  = currentState.Reads_RP_Discovery[read_index].PosB + g_SpacerBeforeAfter;
+				unsigned int secondPos2  = currentState.Reads_RP_Discovery[read_index].PosB1 + g_SpacerBeforeAfter;	//Han(2013.06.17)
+                if (secondPos > secondPos2) std::swap(secondPos, secondPos2);
+                if (currentState.Reads_RP_Discovery[read_index].DB == '+') secondPos2 += 200;
+                else secondPos -= 200;
 				if ( firstChrName!="" && secondChrName!="" ) {
-					BreakDancerCoordinate firstBDCoordinate( firstChrName, firstPos );
-					BreakDancerCoordinate secondBDCoordinate( secondChrName, secondPos );
+					BreakDancerCoordinate firstBDCoordinate( firstChrName, firstPos, firstPos2 );
+					BreakDancerCoordinate secondBDCoordinate( secondChrName, secondPos, secondPos2 );
 					#pragma omp critical
 					{
 						m_bdEvents.push_back(BreakDancerEvent( firstBDCoordinate, secondBDCoordinate ));
 						m_bdEvents.push_back(BreakDancerEvent( secondBDCoordinate, firstBDCoordinate ));
                
-						std::cout << "adding " << firstChrName << " " << firstPos - g_SpacerBeforeAfter << "\t" << currentState.Reads_RP_Discovery[read_index].DA << "\t" << secondChrName << " " << secondPos - 								g_SpacerBeforeAfter << "\t" << currentState.Reads_RP_Discovery[read_index].DB << " to breakdancer events. " << abs((int)secondPos - (int)firstPos) << " Support: " << 								currentState.Reads_RP_Discovery[read_index].NumberOfIdentical << std::endl;
+						std::cout << "adding " << firstChrName << " " << firstPos - g_SpacerBeforeAfter << "\t" << firstPos2 - g_SpacerBeforeAfter << "\t" << currentState.Reads_RP_Discovery[read_index].DA << "\t" << secondChrName << " " << secondPos - g_SpacerBeforeAfter << "\t" << secondPos2 - g_SpacerBeforeAfter << "\t" << currentState.Reads_RP_Discovery[read_index].DB << " to breakdancer events. " << abs((int)secondPos - (int)firstPos) << " Support: " << 								currentState.Reads_RP_Discovery[read_index].NumberOfIdentical << std::endl;
 					}
 				}
         
@@ -519,6 +611,11 @@ void BDData::createRegionCluster(const BDIterator& startOfEventList, const BDIte
 	sort( relevantSubcluster.begin(), relevantSubcluster.end(), sortOnSecondBDCoordinate );
 		//std::cout << "Making cluster" << "\n";
 	newCluster.clear();
+    
+    //for (BDIterator eventIter=relevantSubcluster.begin(); eventIter!=relevantSubcluster.end(); eventIter++ ) {	//Han(2013.06.17)
+	//	std::cout << "Han : start " << eventIter->first.startOfWindow() - g_SpacerBeforeAfter << "\tpos:" << eventIter->first.position - g_SpacerBeforeAfter << "/pos2:" << eventIter->first.position2 - g_SpacerBeforeAfter << "\tend " << eventIter->first.endOfWindow() - g_SpacerBeforeAfter << "\t" << eventIter->second.startOfWindow() - g_SpacerBeforeAfter << "\tpos: " << eventIter->second.position - g_SpacerBeforeAfter << "/pos2" << eventIter->second.position2 - g_SpacerBeforeAfter << "\t" << eventIter->second.endOfWindow() - g_SpacerBeforeAfter << "\n";	//Han(2013.06.17)
+	//}	//Han(2013.06.17)
+    
 	for (BDIterator eventIter=relevantSubcluster.begin(); eventIter!=relevantSubcluster.end(); ++eventIter ) {
 		//std::cout << "FC: " << eventIter->first.getChromosomeName() << "FS: " << eventIter->first.startOfWindow() << "FE: " << eventIter->first.endOfWindow() << 
 		//	"SC: " << eventIter->second.getChromosomeName() << "SS: " << eventIter->second.startOfWindow()<< "SE: " << eventIter->second.endOfWindow() << "\n";
