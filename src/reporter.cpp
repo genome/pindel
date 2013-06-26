@@ -181,7 +181,7 @@ void OutputTDs (std::vector < SPLIT_READ > &TDs,
       Num_U_Reads += NumSupportPerTag[i].NumUPlus + NumSupportPerTag[i].NumUMinus;
    }
 
-   unsigned int EasyScore = LeftS * RightS;
+   unsigned int EasyScore = (LeftS + 1) * (RightS + 1 );
 
    CurrentChrMask[TDs[C_S].BPLeft + g_SpacerBeforeAfter] = 'B';
    CurrentChrMask[TDs[C_S].BPRight + g_SpacerBeforeAfter] = 'B';
@@ -312,7 +312,7 @@ void OutputDeletions (std::vector < SPLIT_READ > &Deletions,
          NumSupportPerTag[i].NumUPlus + NumSupportPerTag[i].NumUMinus;
    }
    LOG_DEBUG(*logStream << "d_5" << std::endl);
-   unsigned int EasyScore = LeftS * RightS;
+   unsigned int EasyScore = (LeftS + 1) * (RightS + 1 );
    short GapSize = 0;
    if (Deletions[C_S].IndelSize < 14) {
       GapSize = Deletions[C_S].IndelSize;
@@ -490,7 +490,7 @@ void OutputInversions (std::vector < SPLIT_READ > &Inv,
          NumSupportPerTag[i].NumUPlus + NumSupportPerTag[i].NumUMinus;
    }
    //*logStream << "+" << std::endl;
-   unsigned int EasyScore = LeftS * RightS;
+   unsigned int EasyScore = (LeftS + 1) * (RightS + 1 );
    CurrentChrMask[Inv[C_S].BPLeft + g_SpacerBeforeAfter] = 'B';
    CurrentChrMask[Inv[C_S].BPRight + g_SpacerBeforeAfter] = 'B';
    reportBreakDancerEvent(Inv[C_S].FragName, Inv[C_S].BPLeft, Inv[C_S].BPRight+2, Inv[C_S].IndelSize, "INV", g_numberOfInvInstances);
@@ -651,7 +651,7 @@ void OutputSIs (std::vector < SPLIT_READ > &SIs,
          NumSupportPerTag[i].NumUPlus + NumSupportPerTag[i].NumUMinus;
    }
 
-   unsigned int EasyScore = LeftS * RightS;
+   unsigned int EasyScore = (LeftS + 1) * (RightS + 1 );
    std::string CurrentReadSeq;
 
    CurrentChrMask[SIs[C_S].BPLeft + g_SpacerBeforeAfter] = 'B';
@@ -782,7 +782,7 @@ void OutputDI (std::vector < SPLIT_READ > &DI,
          NumSupportPerTag[i].NumUPlus + NumSupportPerTag[i].NumUMinus;
    }
 
-   unsigned int EasyScore = LeftS * RightS;
+   unsigned int EasyScore = (LeftS + 1) * (RightS + 1 );
    CurrentChrMask[DI[C_S].BPLeft + g_SpacerBeforeAfter] = 'B';
    CurrentChrMask[DI[C_S].BPRight + g_SpacerBeforeAfter] = 'B';
    reportBreakDancerEvent(DI[C_S].FragName, DI[C_S].BPLeft+1, DI[C_S].BPRight+1, DI[C_S].IndelSize, "D", deletionFileData.getSvIndex());
@@ -1558,7 +1558,7 @@ void OutputShortInversion (std::vector < SPLIT_READ > &supportingReads,
       Num_U_Reads += NumSupportPerTag[i].NumUPlus + NumSupportPerTag[i].NumUMinus;
    }
 
-   unsigned int EasyScore = LeftS * RightS;
+   unsigned int EasyScore = (LeftS + 1) * (RightS + 1 );
    const SPLIT_READ& firstSupportingRead = supportingReads[indexOfFirstRead];
    CurrentChrMask[supportingReads[ indexOfFirstRead ].BPLeft + g_SpacerBeforeAfter] = 'B';
    CurrentChrMask[supportingReads[ indexOfFirstRead ].BPRight + g_SpacerBeforeAfter] = 'B';
