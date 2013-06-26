@@ -45,6 +45,7 @@ extern std::set<std::string> g_sampleNames; // EWL: could make this a singleton 
 extern std::map<std::string,unsigned> g_SameName2Index;
 extern std::map<std::string,unsigned> g_ChrName2Ploidy;
 
+extern std::map <std::string, unsigned> g_ReadSeq2Index;
 
 /*
  * Global variables defined in pindel.cpp
@@ -232,41 +233,41 @@ struct RP_READ {
 
 struct SPLIT_READ {
 	SPLIT_READ() {
-		FragName = "";
+	FragName = "";
         FarFragName = "";
-		Name = "";
-		UnmatchedSeq = "";
-		MatchedD = 0;
+	Name = "";
+	UnmatchedSeq = "";
+	MatchedD = 0;
         MatchedFarD = 0;
-		MatchedRelPos = 0;
-		MS = 0;
-		InsertSize = 0;
-		Tag = "";
+	MatchedRelPos = 0;
+	MS = 0;
+	InsertSize = 0;
+	Tag = "";
         Thickness = 0;
-		ReadLength = 0;
-		ReadLengthMinus = 0;
-		MAX_SNP_ERROR = 0;
-		TOTAL_SNP_ERROR_CHECKED = 0;
-		TOTAL_SNP_ERROR_CHECKED_Minus = 0;
-		BP = 0;
-		Left = 0;
-		Right = 0;
-		BPLeft = 0;
-		BPRight = 0; 
-		IndelSize = 0;
-		//Investigated = false; // whether far end has been searched for
+	ReadLength = 0;
+	ReadLengthMinus = 0;
+	MAX_SNP_ERROR = 0;
+	TOTAL_SNP_ERROR_CHECKED = 0;
+	TOTAL_SNP_ERROR_CHECKED_Minus = 0;
+	BP = 0;
+	Left = 0;
+	Right = 0;
+	BPLeft = 0;
+	BPRight = 0; 
+	IndelSize = 0;
+	//Investigated = false; // whether far end has been searched for
         UniqueRead = false;
-		NT_str = "";
-		NT_size = 0;
-		Used = false;
-		CloseEndLength = 0;
-		LeftMostPos = 0;
+	NT_str = "";
+	NT_size = 0;
+	Used = false;
+	CloseEndLength = 0;
+	LeftMostPos = 0;
         CloseEndMismatch = 0;
         FarEndMismatch = 0;
         read_group = "";
 	}
 	std::string FragName;
-   std::string FarFragName;
+   	std::string FarFragName;
 	std::string Name;
 
 	void setUnmatchedSeq( const std::string & unmatchedSeq );
@@ -274,12 +275,13 @@ struct SPLIT_READ {
 
 
 	char MatchedD; // rename AnchorStrand?
-    char MatchedFarD;
+    	char MatchedFarD;
 	unsigned int MatchedRelPos;
 	short MS; // rename MappingQuality ?
 	short InsertSize;
 	std::string Tag; // rename SampleName ?
-    unsigned Thickness;
+	std::map <std::string, unsigned> SampleName2Number;
+    	unsigned Thickness;
 	SortedUniquePoints UP_Close; // partial alignment of the unmapped reads close to the mapped read
 	SortedUniquePoints UP_Far;
 	short getReadLength() const { return ReadLength; }
@@ -316,15 +318,16 @@ struct SPLIT_READ {
 	bool hasCloseEnd() const;
 	unsigned int MaxLenCloseEnd() const;
 	unsigned int MaxLenFarEnd() const;
+    std::string UnmatchedSeq;
 	friend std::ostream& operator<<(std::ostream& os, const SPLIT_READ& splitRead);
-
+    
 private:
 	short ReadLength;
 	short ReadLengthMinus;
 	short MAX_SNP_ERROR; // = (short)(Temp_One_Read.UnmatchedSeq.size() * Seq_Error_Rate);
 	short TOTAL_SNP_ERROR_CHECKED; // = MAX_SNP_ERROR + ADDITIONAL_MISMATCH + 1;
 	short TOTAL_SNP_ERROR_CHECKED_Minus; // = MAX_SNP_ERROR + ADDITIONAL_MISMATCH;
-	std::string UnmatchedSeq;
+	
 };
 
 

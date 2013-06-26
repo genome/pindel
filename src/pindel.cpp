@@ -95,6 +95,10 @@ std::map<std::string,unsigned> g_ChrName2Ploidy;
 std::vector <RefCoveragePerPosition> g_RefCoverageRegion;
 short Before, After;
 BDData g_bdData;
+
+std::map <std::string, unsigned> g_ReadSeq2Index;
+
+
 //extern BDData g_bdData;
 
 const int alphs = 4;

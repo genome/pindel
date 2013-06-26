@@ -39,23 +39,55 @@ void ReadBuffer::flush()
    #pragma omp parallel for
    for (int i=0; i<m_currentsize ; i++ ) {
       // std::cout << "before GetCloseEnd " << std::endl;
-      GetCloseEnd(m_CHROMOSOME, m_rawreads[i]);
+       std::map<std::string, unsigned>::iterator it = g_ReadSeq2Index.find(m_rawreads[i].UnmatchedSeq);
+       
+       if (it == g_ReadSeq2Index.end()) {
+           GetCloseEnd(m_CHROMOSOME, m_rawreads[i]);
+           if (m_rawreads[i].hasCloseEnd()) {
+               updateReadAfterCloseEndMapping(m_rawreads[i]);
+               
+                #pragma omp critical 
+               {
+                   g_ReadSeq2Index.insert(std::pair<std::string, unsigned> (m_rawreads[i].UnmatchedSeq, m_filteredReads.size()));
+                   m_filteredReads.push_back(m_rawreads[i]);
+               }
+               
+           }
+           else {
+               //if (m_rawreads[i].Name == "@DD7DT8Q1:4:1106:17724:13906#GTACCT/1") {
+               //    std::cout << "m_rawreads[i] no close end" << std::endl;
+               //}
+               //#pragma omp critical
+               //m_OneEndMappedReads.push_back(m_rawreads[i]);
+           }
+       }
+       else { // SampleName2Number std::map <std::string, unsigned> SampleName2Number;
+           GetCloseEnd(m_CHROMOSOME, m_rawreads[i]);
+           if (m_rawreads[i].hasCloseEnd()) {
+               updateReadAfterCloseEndMapping(m_rawreads[i]);
+               
+                #pragma omp critical
+               {
+                   g_ReadSeq2Index.insert(std::pair<std::string, unsigned> (m_rawreads[i].UnmatchedSeq, m_filteredReads.size()));
+                   m_filteredReads.push_back(m_rawreads[i]);
+               }
+               
+           }
+           
+           /*
+           #pragma omp critical 
+           {
+               std::map <std::string, unsigned>::iterator it = m_rawreads[i].SampleName2Number.find(m_rawreads[i].Tag);
+               if (it == m_rawreads[i].SampleName2Number.end()) {
+                   m_rawreads[i].SampleName2Number.insert(std::pair <std::string, unsigned> (m_rawreads[i].Tag, 1));
+               }
+               else it -> second++;
+           }
+           */
+       }
+
       // std::cout << "after GetCloseEnd " << std::endl;
-      if (m_rawreads[i].hasCloseEnd()) {
-          //if (m_rawreads[i].Name == "@DD7DT8Q1:4:1106:17724:13906#GTACCT/1") {
-          //    std::cout << "m_rawreads[i].hasCloseEnd()" << std::endl;
-          //}
-         updateReadAfterCloseEndMapping(m_rawreads[i]);
-         #pragma omp critical
-         m_filteredReads.push_back(m_rawreads[i]);
-      }
-      else {
-          //if (m_rawreads[i].Name == "@DD7DT8Q1:4:1106:17724:13906#GTACCT/1") {
-          //    std::cout << "m_rawreads[i] no close end" << std::endl;
-          //}
-         #pragma omp critical
-         m_OneEndMappedReads.push_back(m_rawreads[i]);   
-      }
+
    }
     //std::cout << "end of flush " << std::endl;
    m_rawreads.clear();

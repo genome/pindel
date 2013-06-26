@@ -790,6 +790,7 @@ void build_record_SR (const bam1_t * mapped_read, const bam1_t * unmapped_read, 
     //if (Temp_One_Read.Name == "@DD7DT8Q1:4:1106:17724:13906#GTACCT/1") {
     //    std::cout << "I am there." << std::endl;
     //}
+
     data_for_bam->readBuffer->addRead(Temp_One_Read);
     return;
 }
