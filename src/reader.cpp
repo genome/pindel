@@ -509,9 +509,12 @@ bool ReadInBamReads_SR (const char *bam_path, const std::string & FragName,
    data.Tag = Tag;
    data.readBuffer=&readBuffer;
    // std:: cout << " before bam_fetch " << std::endl;
+	g_ReadSeq2Index.clear();
    bam_fetch (fp, idx, tid, window.getStart(), window.getEnd(), &data, fetch_func_SR);
    // std:: cout << " after bam_fetch " << std::endl;
    readBuffer.flush();
+	g_ReadSeq2Index.clear();
+	
    // std:: cout << " after flush " << std::endl;
    if (verbose) {
        showReadStats(LeftReads, OneEndMappedReads);
