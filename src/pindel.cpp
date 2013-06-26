@@ -1728,7 +1728,9 @@ int main(int argc, char *argv[])
 			//std::cout << "test 6" << std::endl;
           		//std::cout << "g_bdData.size() " << g_bdData.GetBDSize() << std::endl;
           		//std::cout << "Before" << std::endl;
+			g_ReadSeq2Index.clear();
          		get_SR_Reads(currentState, currentWindow );
+			g_ReadSeq2Index.clear();
          		std::cout << "There are " << currentState.RefSupportingReads.size() << " reads supporting the reference allele." << std::endl;
          		//if (userSettings->bamFilesAsInput())
              		UpdateRefReadCoverage(currentState, currentWindow);

@@ -469,22 +469,22 @@ void GetFarEnd_SingleStrandDownStream(const std::string & CurrentChr, SPLIT_READ
 void GetFarEnd_SingleStrandUpStream(const std::string & CurrentChr, SPLIT_READ & Temp_One_Read, const short &RangeIndex);
 void GetFarEnd_SingleStrandDownStreamInsertions(const std::string & CurrentChr, SPLIT_READ & Temp_One_Read, const short &RangeIndex);
 void GetFarEnd(const std::string & CurrentChr, SPLIT_READ & Temp_One_Read,	const int &start, const int &end);
-void OutputDeletions(const std::vector<SPLIT_READ> &Deletions,
+void OutputDeletions(std::vector<SPLIT_READ> &Deletions,
 		const std::string & TheInput, const unsigned int &C_S,
 		const unsigned int &C_E, const unsigned int &RealStart,
 		const unsigned int &RealEnd, std::ofstream & DeletionOutf);
 
-void OutputTDs(const std::vector<SPLIT_READ> &TDs,
+void OutputTDs(std::vector<SPLIT_READ> &TDs,
 		const std::string & TheInput, const unsigned int &C_S,
 		const unsigned int &C_E, const unsigned int &RealStart,
 		const unsigned int &RealEnd, std::ofstream & TDOutf);
 
-void OutputInversions(const std::vector<SPLIT_READ> &Inv,
+void OutputInversions(std::vector<SPLIT_READ> &Inv,
 		const std::string & TheInput, const unsigned int &C_S,
 		const unsigned int &C_E, const unsigned int &RealStart,
 		const unsigned int &RealEnd, std::ofstream & InvOutf);
 
-void OutputSIs(const std::vector<SPLIT_READ> &SIs,
+void OutputSIs(std::vector<SPLIT_READ> &SIs,
 		const std::string & TheInput, const unsigned int &C_S,
 		const unsigned int &C_E, const unsigned int &RealStart,
 		const unsigned int &RealEnd, std::ofstream & SIsOutf);

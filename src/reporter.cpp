@@ -57,30 +57,60 @@ void createMaps( 	std::map<std::string,int>& sampleToIndexMap, std::map<int,std:
 }
 
 /* 'calculateSupportPerTag (EWL, Aug31st2011) calculates the number of reads per tag (sample) supporting the event. */
-void calculateSupportPerTag( const std::vector< SPLIT_READ >& reads, const unsigned int firstReadIndex, const unsigned int lastReadIndex,
+void calculateSupportPerTag( std::vector< SPLIT_READ >& reads, const unsigned int firstReadIndex, const unsigned int lastReadIndex,
                              std::map<std::string,int>& sampleToIndexMap, SupportPerSample* NumSupportPerTag )
 {
-   for (unsigned int readIndex = firstReadIndex; readIndex <= lastReadIndex; readIndex++) {
-      std::string currentTag = reads[readIndex].Tag;
-      int tagIndex = sampleToIndexMap[ currentTag ];
 
-      if (reads[readIndex].MatchedD == Plus)	{
-         NumSupportPerTag[tagIndex].NumPlus++;
-         if (reads[readIndex].UniqueRead) {
-            NumSupportPerTag[tagIndex].NumUPlus++;
-         }
-      }
-      else {
-         NumSupportPerTag[tagIndex].NumMinus++;
-         if (reads[readIndex].UniqueRead) {
-            NumSupportPerTag[tagIndex].NumUMinus++;
-         }
-      }
-   }
+	std::map <std::string, unsigned>::iterator it;
+	int tagIndex;
+	for (unsigned int readIndex = firstReadIndex; readIndex <= lastReadIndex; readIndex++) {
+	      //std::string currentTag = reads[readIndex].Tag;
+      		//int tagIndex = sampleToIndexMap[ currentTag ];
+		std::map <std::string, unsigned> * SampleName2Number = &(reads[readIndex].SampleName2Number);
+		if (reads[readIndex].MatchedD == Plus)	{
+		// = reads[readIndex].SampleName2Number.find(m_rawreads[i].Tag);
+			for (it = SampleName2Number -> begin(); it != SampleName2Number -> end() ; ++it) {
+				tagIndex = sampleToIndexMap[ it -> first ];
+				//std::cout << "plus\t" << it -> first << "\t" << it -> second << std::endl;
+				NumSupportPerTag[tagIndex].NumPlus += it -> second;
+				if (reads[readIndex].UniqueRead) {
+					NumSupportPerTag[tagIndex].NumUPlus += it -> second;
+				}
+			}
+		}
+		else {
+			for (it = SampleName2Number -> begin(); it != SampleName2Number -> end() ; ++it) {
+				tagIndex = sampleToIndexMap[ it -> first ];
+				//std::cout << "minus\t" << it -> first << "\t" << it -> second << std::endl;
+				NumSupportPerTag[tagIndex].NumMinus += it -> second;
+				if (reads[readIndex].UniqueRead) {
+					NumSupportPerTag[tagIndex].NumUMinus += it -> second;
+				}
+			}
+		}
+	}
 }
 
 /* 'calculateSupportPerStrand (EWL, Aug31st2011) calculates the number of reads per strand (sample) supporting the event. */
-void calculateSupportPerStrand( const std::vector< SPLIT_READ >& reads, const unsigned int firstReadIndex, const unsigned int lastReadIndex,
+void calculateSupportPerStrand( SupportPerSample* NumSupportPerTag, unsigned int& LeftS, unsigned int& LeftUNum, unsigned int& RightS, unsigned int& RightUNum )
+{
+	LeftS = 0;
+	LeftUNum = 0;
+	RightS = 0;
+	RightUNum = 0;
+	//std::cout << "g_sampleNames.size(): " << g_sampleNames.size() << std::endl;
+	for (unsigned index = 0; index < g_sampleNames.size(); index++) {
+		
+		LeftS += NumSupportPerTag[index].NumPlus;
+		LeftUNum += NumSupportPerTag[index].NumUPlus;
+		RightS += NumSupportPerTag[index].NumMinus;
+		RightUNum += NumSupportPerTag[index].NumUMinus;
+		//std::cout << LeftS << "\t" << LeftUNum << "\t" << RightS << "\t" << RightUNum << std::endl;
+	}
+}
+
+/*
+void calculateSupportPerStrand( std::vector< SPLIT_READ >& reads, const unsigned int firstReadIndex, const unsigned int lastReadIndex,
                                 unsigned int& LeftS, unsigned int& LeftUNum, unsigned int& RightS, unsigned int& RightUNum )
 {
    for (unsigned int readIndex = firstReadIndex; readIndex <= lastReadIndex; readIndex++) {
@@ -98,6 +128,7 @@ void calculateSupportPerStrand( const std::vector< SPLIT_READ >& reads, const un
       }
    }
 }
+*/
 
 void UpdateSampleID(ControlState& currentState, std::vector < SPLIT_READ > & GoodIndels, Indel4output & OneIndelEvent, std::vector <unsigned> & SampleIDs) {
     std::set<std::string> SampleNames;
@@ -115,7 +146,7 @@ void UpdateSampleID(ControlState& currentState, std::vector < SPLIT_READ > & Goo
     }
 }
 
-void OutputTDs (const std::vector < SPLIT_READ > &TDs,
+void OutputTDs (std::vector < SPLIT_READ > &TDs,
            const std::string & TheInput,
            const unsigned int &C_S,
            const unsigned int &C_E,
@@ -123,7 +154,7 @@ void OutputTDs (const std::vector < SPLIT_READ > &TDs,
            const unsigned int &RealEnd, std::ofstream & TDOutf)
 {
     
-   unsigned int NumberOfReads = C_E - C_S + 1;
+   unsigned int NumberOfReads = 0;// = C_E - C_S + 1;
    unsigned int LeftS = 1;
    unsigned int RightS = 1;
    unsigned int LeftUNum = 0;
@@ -134,7 +165,7 @@ void OutputTDs (const std::vector < SPLIT_READ > &TDs,
    std::map<int,std::string> indexToSampleMap;
    createMaps( sampleToIndexMap, indexToSampleMap) ;
    calculateSupportPerTag( TDs, C_S, C_E, sampleToIndexMap, NumSupportPerTag );
-   calculateSupportPerStrand( TDs, C_S, C_E, LeftS, LeftUNum, RightS, RightUNum );
+   calculateSupportPerStrand( NumSupportPerTag, LeftS, LeftUNum, RightS, RightUNum );
 
    short NumberSupSamples = 0;
    short NumU_SupSamples = 0;
@@ -146,6 +177,7 @@ void OutputTDs (const std::vector < SPLIT_READ > &TDs,
       if (NumSupportPerTag[i].NumUPlus + NumSupportPerTag[i].NumUMinus) {
          ++NumU_SupSamples;
       }
+	NumberOfReads += NumSupportPerTag[i].NumPlus + NumSupportPerTag[i].NumMinus;
       Num_U_Reads += NumSupportPerTag[i].NumUPlus + NumSupportPerTag[i].NumUMinus;
    }
 
@@ -160,7 +192,7 @@ void OutputTDs (const std::vector < SPLIT_READ > &TDs,
           "####################################################################################################"
           << std::endl;
    TDOutf << NumberOfTDInstances << "\tTD " << TDs[C_S].IndelSize	// << " bases "
-          << "\tNT " << TDs[C_S].NT_size << " \"" << TDs[C_S].NT_str << "\"" << "\tChrID " << TDs[C_S].FragName << "\tBP " << TDs[C_S].BPLeft << "\t" << TDs[C_S].BPRight + 2 << "\tBP_range " << TDs[C_S].BPLeft << "\t" << TDs[C_S].BPRight + 2 << "\tSupports " << NumberOfReads << "\t" << Num_U_Reads << "\t+ " << LeftS - 1 << "\t" << LeftUNum << "\t- " << RightS - 1 << "\t" << RightUNum << "\tS1 " << EasyScore;	//EWL070111 << "\tS2 " << PreciseScore;
+          << "\tNT " << TDs[C_S].NT_size << " \"" << TDs[C_S].NT_str << "\"" << "\tChrID " << TDs[C_S].FragName << "\tBP " << TDs[C_S].BPLeft << "\t" << TDs[C_S].BPRight + 2 << "\tBP_range " << TDs[C_S].BPLeft << "\t" << TDs[C_S].BPRight + 2 << "\tSupports " << NumberOfReads << "\t" << Num_U_Reads << "\t+ " << LeftS << "\t" << LeftUNum << "\t- " << RightS << "\t" << RightUNum << "\tS1 " << EasyScore;	//EWL070111 << "\tS2 " << PreciseScore;
 
    int SUM_MS = 0;
    for (unsigned int i = C_S; i <= C_E; i++) {
@@ -231,7 +263,7 @@ void OutputTDs (const std::vector < SPLIT_READ > &TDs,
    }
 }
 
-void OutputDeletions (const std::vector < SPLIT_READ > &Deletions,
+void OutputDeletions (std::vector < SPLIT_READ > &Deletions,
                  const std::string & TheInput,
                  const unsigned int &C_S,
                  const unsigned int &C_E,
@@ -240,7 +272,7 @@ void OutputDeletions (const std::vector < SPLIT_READ > &Deletions,
 {  //if (!(Deletions[C_S].BPLeft + 2 >= g_RegionStart &&  Deletions[C_S].BPRight + 2 < g_RegionEnd)) return;
    //std::cout << "Start " << g_RegionStart << "\tEnd " << g_RegionEnd << std::endl;
    LOG_DEBUG(*logStream << "d_1" << std::endl);
-   unsigned int NumberOfReads = C_E - C_S + 1;
+   unsigned int NumberOfReads = 0;//C_E - C_S + 1;
    unsigned int LeftS = 1;
    unsigned int RightS = 1;
    unsigned int LeftUNum = 0;
@@ -261,7 +293,7 @@ void OutputDeletions (const std::vector < SPLIT_READ > &Deletions,
    std::map<int,std::string> indexToSampleMap;
    createMaps( sampleToIndexMap, indexToSampleMap) ;
    calculateSupportPerTag( Deletions, C_S, C_E, sampleToIndexMap, NumSupportPerTag );
-   calculateSupportPerStrand( Deletions, C_S, C_E, LeftS, LeftUNum, RightS, RightUNum );
+   calculateSupportPerStrand( NumSupportPerTag, LeftS, LeftUNum, RightS, RightUNum );
 
 
    LOG_DEBUG(*logStream << "d_4" << std::endl);
@@ -275,6 +307,7 @@ void OutputDeletions (const std::vector < SPLIT_READ > &Deletions,
       if (NumSupportPerTag[i].NumUPlus + NumSupportPerTag[i].NumUMinus) {
          ++NumU_SupSamples;
       }
+		NumberOfReads += NumSupportPerTag[i].NumPlus + NumSupportPerTag[i].NumMinus;
       Num_U_Reads +=
          NumSupportPerTag[i].NumUPlus + NumSupportPerTag[i].NumUMinus;
    }
@@ -301,7 +334,7 @@ void OutputDeletions (const std::vector < SPLIT_READ > &Deletions,
                 "####################################################################################################"
                 << std::endl;
    DeletionOutf << deletionFileData.getSvIndex() << "\tD " << Deletions[C_S].IndelSize	// << " bases "
-                << "\tNT " << Deletions[C_S].NT_size << " \"" << Deletions[C_S].NT_str << "\"" << "\tChrID " << Deletions[C_S].FragName << "\tBP " << Deletions[C_S].BPLeft + 1 << "\t" << Deletions[C_S].BPRight + 1 << "\tBP_range " << RealStart + 1 << "\t" << RealEnd + 1 << "\tSupports " << NumberOfReads << "\t" << Num_U_Reads << "\t+ " << LeftS - 1 << "\t" << LeftUNum << "\t- " << RightS - 1 << "\t" << RightUNum << "\tS1 " << EasyScore;	//EWL070111  << "\tS2 " << PreciseScore;
+                << "\tNT " << Deletions[C_S].NT_size << " \"" << Deletions[C_S].NT_str << "\"" << "\tChrID " << Deletions[C_S].FragName << "\tBP " << Deletions[C_S].BPLeft + 1 << "\t" << Deletions[C_S].BPRight + 1 << "\tBP_range " << RealStart + 1 << "\t" << RealEnd + 1 << "\tSupports " << NumberOfReads << "\t" << Num_U_Reads << "\t+ " << LeftS << "\t" << LeftUNum << "\t- " << RightS << "\t" << RightUNum << "\tS1 " << EasyScore;	//EWL070111  << "\tS2 " << PreciseScore;
    LOG_DEBUG(*logStream << "d_6" << std::endl);
    int SUM_MS = 0;
    for (unsigned int i = C_S; i <= C_E; i++) {
@@ -387,7 +420,7 @@ void OutputDeletions (const std::vector < SPLIT_READ > &Deletions,
    }
 }
 
-void OutputInversions (const std::vector < SPLIT_READ > &Inv,
+void OutputInversions (std::vector < SPLIT_READ > &Inv,
                   const std::string & TheInput,
                   const unsigned int &C_S,
                   const unsigned int &C_E,
@@ -421,7 +454,7 @@ void OutputInversions (const std::vector < SPLIT_READ > &Inv,
       RightNT_size = Inv[RightNT_index].NT_size;
       RightNT_str = Inv[RightNT_index].NT_str;
    }
-   unsigned int NumberOfReads = C_E - C_S + 1;
+   unsigned int NumberOfReads = 0;//C_E - C_S + 1;
    unsigned int LeftS = 1;
    unsigned int RightS = 1;
    unsigned int LeftUNum = 0;
@@ -440,7 +473,7 @@ void OutputInversions (const std::vector < SPLIT_READ > &Inv,
    std::map<int,std::string> indexToSampleMap;
    createMaps( sampleToIndexMap, indexToSampleMap) ;
    calculateSupportPerTag( Inv, C_S, C_E, sampleToIndexMap, NumSupportPerTag );
-   calculateSupportPerStrand( Inv, C_S, C_E, LeftS, LeftUNum, RightS, RightUNum );
+   calculateSupportPerStrand( NumSupportPerTag, LeftS, LeftUNum, RightS, RightUNum );
 
    short NumberSupSamples = 0;
    short NumU_SupSamples = 0;
@@ -452,6 +485,7 @@ void OutputInversions (const std::vector < SPLIT_READ > &Inv,
       if (NumSupportPerTag[i].NumUPlus + NumSupportPerTag[i].NumUMinus) {
          ++NumU_SupSamples;
       }
+		NumberOfReads += NumSupportPerTag[i].NumPlus + NumSupportPerTag[i].NumMinus;
       Num_U_Reads +=
          NumSupportPerTag[i].NumUPlus + NumSupportPerTag[i].NumUMinus;
    }
@@ -464,7 +498,7 @@ void OutputInversions (const std::vector < SPLIT_READ > &Inv,
            "####################################################################################################"
            << std::endl;
    InvOutf << g_numberOfInvInstances++ << "\tINV " << Inv[C_S].IndelSize	// << " bases "
-           << "\tNT " << LeftNT_size << ":" << RightNT_size << " \"" << LeftNT_str << "\":\"" << RightNT_str << "\"" << "\tChrID " << Inv[C_S].FragName << "\tBP " << Inv[C_S].BPLeft + 1 - 1 << "\t" << Inv[C_S].BPRight + 1 + 1 << "\tBP_range " << Inv[C_S].BPLeft + 1 - 1 << "\t" << Inv[C_S].BPRight + 1 + 1 << "\tSupports " << NumberOfReads << "\t" << Num_U_Reads << "\t+ " << LeftS - 1 << "\t" << LeftUNum << "\t- " << RightS - 1 << "\t" << RightUNum << "\tS1 " << EasyScore;	//EWL070111  << "\tS2 " << PreciseScore;
+           << "\tNT " << LeftNT_size << ":" << RightNT_size << " \"" << LeftNT_str << "\":\"" << RightNT_str << "\"" << "\tChrID " << Inv[C_S].FragName << "\tBP " << Inv[C_S].BPLeft + 1 - 1 << "\t" << Inv[C_S].BPRight + 1 + 1 << "\tBP_range " << Inv[C_S].BPLeft + 1 - 1 << "\t" << Inv[C_S].BPRight + 1 + 1 << "\tSupports " << NumberOfReads << "\t" << Num_U_Reads << "\t+ " << LeftS << "\t" << LeftUNum << "\t- " << RightS << "\t" << RightUNum << "\tS1 " << EasyScore;	//EWL070111  << "\tS2 " << PreciseScore;
 
    int SUM_MS = 0;
    for (unsigned int i = C_S; i <= C_E; i++) {
@@ -574,7 +608,7 @@ void OutputInversions (const std::vector < SPLIT_READ > &Inv,
    }
 }
 
-void OutputSIs (const std::vector < SPLIT_READ > &SIs,
+void OutputSIs (std::vector < SPLIT_READ > &SIs,
            const std::string & TheInput,
            const unsigned int &C_S,
            const unsigned int &C_E,
@@ -582,7 +616,7 @@ void OutputSIs (const std::vector < SPLIT_READ > &SIs,
            const unsigned int &RealEnd, std::ofstream & SIsOutf)
 {
    //if (!(SIs[C_S].BPLeft + 2 >= g_RegionStart &&  SIs[C_S].BPRight + 2 < g_RegionEnd)) return;
-   unsigned int NumberOfReads = C_E - C_S + 1;
+   unsigned int NumberOfReads = 0;//C_E - C_S + 1;
    unsigned int LeftS = 1;
    unsigned int RightS = 1;
    unsigned int LeftUNum = 0;
@@ -600,7 +634,7 @@ void OutputSIs (const std::vector < SPLIT_READ > &SIs,
    std::map<int,std::string> indexToSampleMap;
    createMaps( sampleToIndexMap, indexToSampleMap) ;
    calculateSupportPerTag( SIs, C_S, C_E, sampleToIndexMap, NumSupportPerTag );
-   calculateSupportPerStrand( SIs, C_S, C_E, LeftS, LeftUNum, RightS, RightUNum );
+   calculateSupportPerStrand( NumSupportPerTag, LeftS, LeftUNum, RightS, RightUNum );
 
    short NumberSupSamples = 0;
    short NumU_SupSamples = 0;
@@ -612,6 +646,7 @@ void OutputSIs (const std::vector < SPLIT_READ > &SIs,
       if (NumSupportPerTag[i].NumUPlus + NumSupportPerTag[i].NumUMinus) {
          ++NumU_SupSamples;
       }
+	NumberOfReads += NumSupportPerTag[i].NumPlus + NumSupportPerTag[i].NumMinus;
       Num_U_Reads +=
          NumSupportPerTag[i].NumUPlus + NumSupportPerTag[i].NumUMinus;
    }
@@ -629,7 +664,7 @@ void OutputSIs (const std::vector < SPLIT_READ > &SIs,
    SIsOutf <<
            "####################################################################################################"
            << std::endl;
-   SIsOutf << NumberOfSIsInstances << "\tI " << SIs[C_S].IndelSize << "\tNT " << SIs[C_S].IndelSize << " \"" << GetConsensusInsertedStr(SIs, C_S, C_E) << "\"" << "\tChrID " << SIs[C_S].FragName << "\tBP " << SIs[C_S].BPLeft + 1 << "\t" << SIs[C_S].BPRight + 1 << "\tBP_range " << RealStart + 1 << "\t" << RealEnd + 1 << "\tSupports " << NumberOfReads << "\t" << Num_U_Reads << "\t+ " << LeftS - 1 << "\t" << LeftUNum << "\t- " << RightS - 1 << "\t" << RightUNum << "\tS1 " << EasyScore;	//EWL070111  << "\tS2 " << PreciseScore;
+   SIsOutf << NumberOfSIsInstances << "\tI " << SIs[C_S].IndelSize << "\tNT " << SIs[C_S].IndelSize << " \"" << GetConsensusInsertedStr(SIs, C_S, C_E) << "\"" << "\tChrID " << SIs[C_S].FragName << "\tBP " << SIs[C_S].BPLeft + 1 << "\t" << SIs[C_S].BPRight + 1 << "\tBP_range " << RealStart + 1 << "\t" << RealEnd + 1 << "\tSupports " << NumberOfReads << "\t" << Num_U_Reads << "\t+ " << LeftS << "\t" << LeftUNum << "\t- " << RightS << "\t" << RightUNum << "\tS1 " << EasyScore;	//EWL070111  << "\tS2 " << PreciseScore;
 
    int SUM_MS = 0;
    for (unsigned int i = C_S; i <= C_E; i++) {
@@ -703,7 +738,7 @@ void OutputSIs (const std::vector < SPLIT_READ > &SIs,
    NumberOfSIsInstances++;
 }
 
-void OutputDI (const std::vector < SPLIT_READ > &DI,
+void OutputDI (std::vector < SPLIT_READ > &DI,
           const std::string & TheInput,
           const unsigned int &C_S,
           const unsigned int &C_E,
@@ -711,7 +746,7 @@ void OutputDI (const std::vector < SPLIT_READ > &DI,
           const unsigned int &RealEnd, std::ofstream & DeletionOutf)
 {
    //if (!(DI[C_S].BPLeft + 2 >= g_RegionStart &&  DI[C_S].BPRight + 2 < g_RegionEnd)) return;
-   unsigned int NumberOfReads = C_E - C_S + 1;
+   unsigned int NumberOfReads = 0;//C_E - C_S + 1;
    unsigned int LeftS = 1;
    unsigned int RightS = 1;
    unsigned int LeftUNum = 0;
@@ -730,7 +765,7 @@ void OutputDI (const std::vector < SPLIT_READ > &DI,
    std::map<int,std::string> indexToSampleMap;
    createMaps( sampleToIndexMap, indexToSampleMap) ;
    calculateSupportPerTag( DI, C_S, C_E, sampleToIndexMap, NumSupportPerTag );
-   calculateSupportPerStrand( DI, C_S, C_E, LeftS, LeftUNum, RightS, RightUNum );
+   calculateSupportPerStrand( NumSupportPerTag, LeftS, LeftUNum, RightS, RightUNum );
 
    short NumberSupSamples = 0;
    short NumU_SupSamples = 0;
@@ -742,6 +777,7 @@ void OutputDI (const std::vector < SPLIT_READ > &DI,
       if (NumSupportPerTag[i].NumUPlus + NumSupportPerTag[i].NumUMinus) {
          ++NumU_SupSamples;
       }
+	NumberOfReads += NumSupportPerTag[i].NumPlus + NumSupportPerTag[i].NumMinus;
       Num_U_Reads +=
          NumSupportPerTag[i].NumUPlus + NumSupportPerTag[i].NumUMinus;
    }
@@ -754,7 +790,7 @@ void OutputDI (const std::vector < SPLIT_READ > &DI,
                 "####################################################################################################"
                 << std::endl;
    DeletionOutf << deletionFileData.getSvIndex() << "\tD " << DI[C_S].IndelSize << "\tNT " << DI[C_S].NT_size << " \"" << DI[C_S].NT_str
-<< "\"" << "\tChrID " << DI[C_S].FragName << "\tBP " << DI[C_S].BPLeft + 1 << "\t" << DI[C_S].BPRight + 1 << "\tBP_range " << DI[C_S].BPLeft + 1 << "\t" << DI[C_S].BPRight + 1 << "\tSupports " << NumberOfReads << "\t" << Num_U_Reads << "\t+ " << LeftS - 1 << "\t" << LeftUNum << "\t- " << RightS - 1 << "\t" << RightUNum << "\tS1 " << EasyScore;
+<< "\"" << "\tChrID " << DI[C_S].FragName << "\tBP " << DI[C_S].BPLeft + 1 << "\t" << DI[C_S].BPRight + 1 << "\tBP_range " << DI[C_S].BPLeft + 1 << "\t" << DI[C_S].BPRight + 1 << "\tSupports " << NumberOfReads << "\t" << Num_U_Reads << "\t+ " << LeftS << "\t" << LeftUNum << "\t- " << RightS << "\t" << RightUNum << "\tS1 " << EasyScore;
 
    int SUM_MS = 0;
    for (unsigned int i = C_S; i <= C_E; i++) {
@@ -1487,7 +1523,7 @@ void SortOutputInv_NT (ControlState& currentState, const unsigned &NumBoxes, con
    os.SortAndOutputNonTemplateInversions(currentState, Reads, Inv);
 }
 
-void OutputShortInversion (const std::vector < SPLIT_READ > &supportingReads,
+void OutputShortInversion (std::vector < SPLIT_READ > &supportingReads,
                            const std::string &chromosome,
                            const unsigned int &indexOfFirstRead,
                            const unsigned int &indexOfLastRead,
@@ -1495,7 +1531,7 @@ void OutputShortInversion (const std::vector < SPLIT_READ > &supportingReads,
                            const unsigned int &RealEnd, std::ofstream & InversionOutF)
 {
    //if (!(supportingReads[indexOfFirstRead].BPLeft + 2 >= g_RegionStart &&  supportingReads[indexOfFirstRead].BPRight + 2 < g_RegionEnd)) return;
-   unsigned int NumberOfReads = indexOfLastRead - indexOfFirstRead + 1;
+   unsigned int NumberOfReads = 0;//indexOfLastRead - indexOfFirstRead + 1;
    unsigned int LeftS = 1;
    unsigned int RightS = 1;
    unsigned int LeftUNum = 0;
@@ -1506,7 +1542,7 @@ void OutputShortInversion (const std::vector < SPLIT_READ > &supportingReads,
    std::map<int,std::string> indexToSampleMap;
    createMaps( sampleToIndexMap, indexToSampleMap) ;
    calculateSupportPerTag( supportingReads, indexOfFirstRead, indexOfLastRead, sampleToIndexMap, NumSupportPerTag );
-   calculateSupportPerStrand( supportingReads, indexOfFirstRead, indexOfLastRead, LeftS, LeftUNum, RightS, RightUNum );
+   calculateSupportPerStrand( NumSupportPerTag, LeftS, LeftUNum, RightS, RightUNum );
 
    short NumberSupSamples = 0;
    short NumU_SupSamples = 0;
@@ -1518,6 +1554,7 @@ void OutputShortInversion (const std::vector < SPLIT_READ > &supportingReads,
       if (NumSupportPerTag[i].NumUPlus + NumSupportPerTag[i].NumUMinus) {
          ++NumU_SupSamples;
       }
+		NumberOfReads += NumSupportPerTag[i].NumPlus + NumSupportPerTag[i].NumMinus;
       Num_U_Reads += NumSupportPerTag[i].NumUPlus + NumSupportPerTag[i].NumUMinus;
    }
 
@@ -1533,7 +1570,7 @@ void OutputShortInversion (const std::vector < SPLIT_READ > &supportingReads,
    InversionOutF << g_numberOfInvInstances++ << "\tINV " << supportingReads[indexOfFirstRead].IndelSize << "\tNT " << supportingReads[indexOfFirstRead].NT_size << " \"" <<
                  supportingReads[indexOfFirstRead].NT_str << "\"" << "\tChrID " << supportingReads[indexOfFirstRead].FragName << "\tBP " << supportingReads[indexOfFirstRead].BPLeft + 1 <<
                  "\t" << supportingReads[indexOfFirstRead].BPRight + 1 << "\tBP_range " << supportingReads[indexOfFirstRead].BPLeft + 1 << "\t" <<
-                 supportingReads[indexOfFirstRead].BPRight + 1 << "\tSupports " << NumberOfReads << "\t" << Num_U_Reads << "\t+ " << LeftS - 1 << "\t" << LeftUNum << "\t- " << RightS - 1 <<
+                 supportingReads[indexOfFirstRead].BPRight + 1 << "\tSupports " << NumberOfReads << "\t" << Num_U_Reads << "\t+ " << LeftS << "\t" << LeftUNum << "\t- " << RightS <<
                  "\t" << RightUNum << "\tS1 " << EasyScore;
 
    int SUM_MS = 0;
