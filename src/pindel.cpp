@@ -833,6 +833,10 @@ void createProbTable(const double seqErrorRate, const double sensitivity)
 			}
 		}
 	}
+	g_maxMismatch[ 0 ] = 0;
+	g_maxMismatch[ 1 ] = 0;
+	g_maxMismatch[ 2 ] = 0; 
+	g_maxMismatch[ 3 ] = 0; 
 }
 
 
@@ -1124,7 +1128,8 @@ void SearchFarEnds( const std::string & chromosomeSeq, std::vector<SPLIT_READ>& 
 	{
 		#pragma omp for
 		for (int readIndex= 0; readIndex < (int)reads.size(); readIndex++ ) {
-			//std::cout << "readIndex: " << readIndex << std::endl;
+			//if (readIndex % 1000 == 0)
+			//	std::cout << "readIndex: " << readIndex << std::endl;
 			SearchFarEnd( chromosomeSeq, reads[readIndex], currentChromosome );
 		}
 	}
