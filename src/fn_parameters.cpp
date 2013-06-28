@@ -15,7 +15,7 @@
 // ___D_FGH_K___O_____UVWX_Z
 void defineParameters(std::vector<Parameter *>& parameters)
 {
-	UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
+	//UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
    parameters.push_back(
         new StringParameter(&userSettings->referenceFilename, "-f", "--fasta",
                             "the reference genome sequences in fasta format", true, ""));
@@ -433,7 +433,7 @@ void printHelp(const std::vector<Parameter *>& parameters)
 /* 'checkParameters' checks whether all required parameters have been set. */
 bool checkParameters(const std::vector<Parameter *>& parameters)
 {
-    if (UserDefinedSettings::Instance()->showHelp) {
+    if (userSettings->showHelp) {
         printHelp( parameters );
         return false;
     }

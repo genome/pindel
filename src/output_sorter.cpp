@@ -68,7 +68,7 @@ int OutputSorter::DoSortAndOutputInversions (ControlState& currentState, std::ve
    std::vector<SPLIT_READ> GoodIndels;
    std::vector<Indel4output> IndelEvents;
    int ReportedEventCount = 0;
-	UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
+	//UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
 
    for (unsigned Box_index = 0; Box_index < NumBoxes; Box_index++) {
       if (Inv[Box_index].size () >= userSettings->NumRead2ReportCutOff) {
@@ -270,7 +270,7 @@ bool IsGoodINV(std::vector < SPLIT_READ > & GoodIndels, Indel4output & OneIndelE
     }
     
     
-    UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
+    //UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
     
     //if (userSettings->pindelConfigFileAsInput() ||userSettings->singlePindelFileAsInput()) return true;
     //std::cout << "three " << userSettings->pindelConfigFileAsInput() << " || " << userSettings->singlePindelFileAsInput() << " || " << userSettings->NormalSamples << std::endl;
@@ -364,7 +364,7 @@ int OutputSorter::ReportIndelEvents (ControlState& currentState, std::vector<Ind
                                  std::vector<SPLIT_READ> &GoodIndels)
 {  
    int ReportedEventCount = 0;
-	UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
+	//UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
 
    for (unsigned EventIndex = 0; EventIndex < IndelEvents.size (); EventIndex++) {
       LOG_DEBUG (*logStream << IndelEvents[EventIndex].Start << "\t" << IndelEvents[EventIndex].End << "\t" << IndelEvents[EventIndex].Support << std::endl);
@@ -374,7 +374,7 @@ int OutputSorter::ReportIndelEvents (ControlState& currentState, std::vector<Ind
          continue;
       }
       if (IsGoodINV(GoodIndels, IndelEvents[EventIndex], RealStart, RealEnd, currentState) == false) continue;
-      if (GoodIndels[IndelEvents[EventIndex].Start].IndelSize < UserDefinedSettings::Instance()->BalanceCutoff) {
+      if (GoodIndels[IndelEvents[EventIndex].Start].IndelSize < userSettings->BalanceCutoff) {
          OutputInversions (GoodIndels, *CurrentChr, IndelEvents[EventIndex].Start, IndelEvents[EventIndex].End, RealStart, RealEnd, *InvOutf);
          ReportedEventCount++;
       }

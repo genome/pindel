@@ -87,6 +87,8 @@ extern std::vector<unsigned int> g_maxMismatch;
 extern unsigned g_RegionStart;
 extern unsigned g_RegionEnd;
 
+extern UserDefinedSettings* userSettings;
+
 struct ChrNameAndSizeAndIndex {
     std::string ChrName;
     unsigned ChrSize;
@@ -602,6 +604,7 @@ public:
 	bool encompasses( const std::string& chromosomeName, const unsigned int position ) const;
 	SearchWindow makePindelCoordinateCopy() const { SearchWindow temp( m_chromosome, m_currentStart + g_SpacerBeforeAfter, m_currentEnd + g_SpacerBeforeAfter ); return temp; }; 
 	SearchWindow& operator=(const SearchWindow& other );
+	void display() const {std::cout << m_chromosome -> getName() << "\t" << m_currentStart << "\t" << m_currentEnd << "\t" << m_currentEnd - m_currentStart << std::endl;}
 
 protected:
 	const Chromosome* m_chromosome;

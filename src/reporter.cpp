@@ -955,7 +955,7 @@ void SortOutputSI (ControlState& currentState, const unsigned &NumBoxes, const s
    std::vector < SPLIT_READ > GoodIndels;
    unsigned int GoodNum;
    std::vector < Indel4output > IndelEvents;
-	UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
+	//UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
 
 	// loop over all boxes
    for (unsigned Box_index = 0; Box_index < NumBoxes; Box_index++) {
@@ -1067,7 +1067,7 @@ bool IsGoodTD(std::vector < SPLIT_READ > & GoodIndels, Indel4output & OneIndelEv
     //<< " " << RP_support_D(currentState, OneIndelEvent, RealStart, RealEnd)
     if (RealEnd < RealStart) return false;
     if (RealStart == 0) return false;
-    UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
+    //UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
     
     //if (userSettings->pindelConfigFileAsInput() ||userSettings->singlePindelFileAsInput()) return true;
     if (userSettings->pindelConfigFileAsInput() || userSettings->singlePindelFileAsInput() || userSettings->NormalSamples == false) return true;
@@ -1133,7 +1133,7 @@ void SortAndOutputTandemDuplications (ControlState& currentState, const unsigned
    unsigned int GoodNum;
    std::vector < SPLIT_READ > GoodIndels;
    std::vector < Indel4output > IndelEvents;
-	UserDefinedSettings *userSettings = UserDefinedSettings::Instance();
+	//UserDefinedSettings *userSettings = UserDefinedSettings::Instance();
 
    for (unsigned Box_index = 0; Box_index < NumBoxes; Box_index++) {
       if (TDs[Box_index].size () >= userSettings->NumRead2ReportCutOff) {
@@ -1278,7 +1278,7 @@ bool IsGoodDeletion(std::vector < SPLIT_READ > & GoodIndels, Indel4output & OneI
     //<< " " << RP_support_D(currentState, OneIndelEvent, RealStart, RealEnd)
     //<< std::endl;
     
-    UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
+    //UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
     
     if (RealEnd < RealStart) return false;
     if (RealStart == 0) return false;
@@ -1354,7 +1354,7 @@ void SortOutputD (ControlState& currentState, const unsigned &NumBoxes, const st
    unsigned int GoodNum;
    std::vector < SPLIT_READ > GoodIndels;
    std::vector < Indel4output > IndelEvents;
-	UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
+	//UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
     //std::cout << "S1" << std::endl;
     //std::cout << "here" << std::endl;
    for (unsigned Box_index = 0; Box_index < NumBoxes; Box_index++) {
@@ -1661,7 +1661,7 @@ void SortOutputDI (ControlState& currentState, const unsigned &NumBoxes, const s
    unsigned int GoodNum;
    std::vector < SPLIT_READ > GoodIndels;
    std::vector < Indel4output > IndelEvents;
-	UserDefinedSettings *userSettings = UserDefinedSettings::Instance();
+	//UserDefinedSettings *userSettings = UserDefinedSettings::Instance();
 
    for (unsigned Box_index = 0; Box_index < NumBoxes; Box_index++) {
       LOG_DEBUG(*logStream << "Box_index: "   << Box_index << std::endl);
@@ -1799,7 +1799,7 @@ void SortOutputLI (ControlState& currentState, const std::string & CurrentChr, s
    unsigned UP_Close_index;
    unsigned temp_AbsLoc;
    unsigned int LI_BORDER_BUFFER = 4 * g_maxInsertSize;
-	UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
+	//UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
 	time_t Time_LI_S, Time_LI_E;
    Time_LI_S = time(NULL);
 

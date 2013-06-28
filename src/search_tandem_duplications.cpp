@@ -33,7 +33,7 @@ int searchTandemDuplications(ControlState& currentState, unsigned NumBoxes, cons
    static int Count_TD_Minus = 0;
 
    std::vector<unsigned> TD[NumBoxes];
-	UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
+	//UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
 
 
    LOG_INFO(*logStream << "Searching tandem duplication events ... " << std::endl);

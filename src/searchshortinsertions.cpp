@@ -65,7 +65,7 @@ std::string SearchShortInsertions::getInsertedStr2(const SPLIT_READ& read)
 void SearchShortInsertions::outputResults(BDData & g_bdData, ControlState& currentState,
       std::vector<unsigned> Vars[], const unsigned NumBoxes, const SearchWindow& currentWindow)
 {
-   std::ofstream SIoutputfile(UserDefinedSettings::Instance()->getSIOutputFilename().c_str(), std::ios::app);
+   std::ofstream SIoutputfile(userSettings->getSIOutputFilename().c_str(), std::ios::app);
    SortOutputSI(currentState, NumBoxes, currentWindow.getChromosome()->getSeq(), currentState.Reads_SR, Vars, SIoutputfile);
    SIoutputfile.close();
 }

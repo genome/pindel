@@ -102,7 +102,7 @@ void ExtendMatchClosePerfect( SPLIT_READ & read, const std::string & chromosomeS
 {   //std::cout << "in ExtendMatchClosePerfect " << std::endl;
     if (InputPositions[0].size() == 0) return;
     
-    UserDefinedSettings *userSettings = UserDefinedSettings::Instance();
+    //UserDefinedSettings *userSettings = UserDefinedSettings::Instance();
     
 	std::vector<PosVector> OutputPositions;
 	PosVector emptyPosVector;
@@ -153,7 +153,7 @@ void CheckLeft_Close (SPLIT_READ & read,
                  const short &BP_Left_End,
                  const short &CurrentLength, SortedUniquePoints &LeftUP)
 {
-	UserDefinedSettings *userSettings = UserDefinedSettings::Instance();
+	//UserDefinedSettings *userSettings = UserDefinedSettings::Instance();
     
     //if (read.Name == "@DD7DT8Q1:4:1103:5972:92823#GTACCT/1") {
     //    std::cout << CurrentLength << " " << Left_PD[0].size() << " " << Left_PD[1].size() << " " << Left_PD[2].size() << " " << LeftUP.size() << std::endl;
@@ -199,7 +199,7 @@ void CheckLeft_Close_Perfect (SPLIT_READ & read,
                       const short &BP_Left_End,
                       const short &CurrentLength, SortedUniquePoints &LeftUP)
 {   //std::cout << "in CheckLeft_Close_Perfect " << std::endl;
-	UserDefinedSettings *userSettings = UserDefinedSettings::Instance();
+	//UserDefinedSettings *userSettings = UserDefinedSettings::Instance();
     
     //if (read.Name == "@DD7DT8Q1:4:1103:5972:92823#GTACCT/1") {
     //    std::cout << CurrentLength << " " << Left_PD[0].size() << " " << Left_PD[1].size() << " " << Left_PD[2].size() << " " << LeftUP.size() << std::endl;
@@ -246,7 +246,7 @@ void CheckRight_Close (SPLIT_READ & read,
                   const short &BP_Right_End,
                   const short &CurrentLength, SortedUniquePoints &RightUP)
 {
-	UserDefinedSettings *userSettings = UserDefinedSettings::Instance();
+	//UserDefinedSettings *userSettings = UserDefinedSettings::Instance();
     //if (read.Name == "@DD7DT8Q1:4:1103:5972:92823#GTACCT/1") {
     //    std::cout << CurrentLength << " " << Right_PD[0].size() << " " << Right_PD[1].size() << " " << Right_PD[2].size() << " " << RightUP.size() << std::endl;
     //}
@@ -287,7 +287,7 @@ void CheckRight_Close_Perfect (SPLIT_READ & read,
                        const short &BP_Right_End,
                        const short &CurrentLength, SortedUniquePoints &RightUP)
 {   //std::cout << "in CheckRight_Close_Perfect " << std::endl;
-	UserDefinedSettings *userSettings = UserDefinedSettings::Instance();
+	//UserDefinedSettings *userSettings = UserDefinedSettings::Instance();
     //if (read.Name == "@DD7DT8Q1:4:1103:5972:92823#GTACCT/1") {
     //    std::cout << CurrentLength << " " << Right_PD[0].size() << " " << Right_PD[1].size() << " " << Right_PD[2].size() << " " << RightUP.size() << std::endl;
     //}
@@ -323,7 +323,7 @@ void CheckRight_Close_Perfect (SPLIT_READ & read,
 
 bool CheckMismatches (const std::string & TheInput, const std::string & InputReadSeq, const UniquePoint & UP, short & numberOfMismatch)
 {
-	int Min_Perfect_Match_Around_BP = UserDefinedSettings::Instance()->Min_Perfect_Match_Around_BP;
+	int Min_Perfect_Match_Around_BP = userSettings->Min_Perfect_Match_Around_BP;
    std::string CurrentReadSeq;
    if (UP.Strand == SENSE) {
       CurrentReadSeq = InputReadSeq;
@@ -358,7 +358,7 @@ bool CheckMismatches (const std::string & TheInput, const std::string & InputRea
          return false; //#################################
       }
    }
-   float MAX_ALLOWED_MISMATCHES = CurrentReadSeq.size () * UserDefinedSettings::Instance()->MaximumAllowedMismatchRate;	//
+   float MAX_ALLOWED_MISMATCHES = CurrentReadSeq.size () * userSettings->MaximumAllowedMismatchRate;	//
 
    short NumMismatches = 0;			// Match2N[(short)'A'] = 'N';
 

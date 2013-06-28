@@ -36,7 +36,7 @@ int searchTandemDuplicationsNT(ControlState& currentState, unsigned NumBoxes, co
    int CloseIndex = 0;
    int FarIndex = 0;
 
-	UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
+	//UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
 
    LOG_INFO(*logStream << "Searching tandem duplication events with non-template sequence ... " << std::endl);
    for (unsigned ReadIndex = 0; ReadIndex < currentState.Reads_SR.size(); ReadIndex++) {

@@ -548,7 +548,7 @@ bool isGoodAnchor( const flags_hit *read, const bam1_t * bamOfRead ) //bam1_qnam
 		
 	if (bamCore->flag & BAM_FSECONDARY || bamCore->flag & BAM_FQCFAIL) return false;
 
-	UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
+	//UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
 	if (userSettings->minimalAnchorQuality == 0) return true;
 
 		//std::string NR = bam1_qname(bamOfRead);
@@ -597,7 +597,7 @@ bool isGoodAnchor( const flags_hit *read, const bam1_t * bamOfRead ) //bam1_qnam
 bool isRefRead ( const flags_hit *read, const bam1_t * bamOfRead )
 {
 	//std::cout << "isRefRead 1" << std::endl;
-	UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
+	//UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
 	//std::cout << "isRefRead 2" << std::endl;
 	const uint8_t *nm = bam_aux_get(bamOfRead, "NM");
 	//std::cout << "isRefRead 3" << std::endl;
@@ -633,7 +633,7 @@ bool isWeirdRead( const flags_hit *read, const bam1_t * bamOfRead )
 	if (!(read->mapped)) return true;
 
 	const uint8_t *nm = bam_aux_get(bamOfRead, "NM");
-	UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
+	//UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
 
 	if (nm) {
 		int32_t nm_value = bam_aux2i(nm);
@@ -675,7 +675,7 @@ bool isWeirdRead( const flags_hit *read, const bam1_t * bamOfRead )
 
 void build_record_SR (const bam1_t * mapped_read, const bam1_t * unmapped_read, void *data)
 {   // userSettings->minimalAnchorQuality
-    UserDefinedSettings *userSettings = UserDefinedSettings::Instance();
+    //UserDefinedSettings *userSettings = UserDefinedSettings::Instance();
     SPLIT_READ Temp_One_Read;
     fetch_func_data_SR *data_for_bam = (fetch_func_data_SR *) data;
     bam_header_t *header = (bam_header_t *) data_for_bam->header;
@@ -801,7 +801,7 @@ void build_record_SR (const bam1_t * mapped_read, const bam1_t * unmapped_read, 
 
 void build_record_RefRead (const bam1_t * mapped_read, const bam1_t * ref_read, void *data)
 {   // std::vector <REF_READ> *RefSupportingReads;
-    UserDefinedSettings *userSettings = UserDefinedSettings::Instance();
+   // UserDefinedSettings *userSettings = UserDefinedSettings::Instance();
     REF_READ One_RefRead;
     fetch_func_data_SR *data_for_bam = (fetch_func_data_SR *) data;
     bam_header_t *header = (bam_header_t *) data_for_bam->header;
@@ -879,7 +879,7 @@ void build_record_RP (const bam1_t * r1, void *data)
 
 void build_record_RP_Discovery (const bam1_t * r1, void *data) {
 
-	UserDefinedSettings *userSettings = UserDefinedSettings::Instance();
+	//UserDefinedSettings *userSettings = UserDefinedSettings::Instance();
 	//std::cout << "entering build_record_RP_Discovery" << std::endl;
 	const bam1_core_t * r1_core;
 	//const bam1_core_t * r2_core;
@@ -1299,7 +1299,7 @@ short get_RP_Reads(ControlState& currentState, const SearchWindow& currentWindow
 	short ReturnFromReadingReads;
    RPVector TempOneRPVector;
 
-   if (UserDefinedSettings::Instance()->bamFilesAsInput()) {
+   if (userSettings->bamFilesAsInput()) {
        ReturnFromReadingReads = 0;
        for (unsigned int i = 0; i < currentState.bams_to_parse.size(); i++) {
           currentState.Reads_RP.push_back(TempOneRPVector);
@@ -1329,7 +1329,7 @@ short get_RP_Reads_Discovery(ControlState& currentState, const SearchWindow& cur
 	short ReturnFromReadingReads;
 	RPVector TempOneRPVector;
     
-	if (UserDefinedSettings::Instance()->bamFilesAsInput()) {
+	if (userSettings->bamFilesAsInput()) {
 		ReturnFromReadingReads = 0;
 		for (unsigned int i = 0; i < currentState.bams_to_parse.size(); i++) {
 			//currentState.Reads_RP.push_back(TempOneRPVector);
@@ -1389,7 +1389,7 @@ short get_SR_Reads(ControlState& currentState, const SearchWindow& currentWindow
   // std::cout << "getReads " << currentWindow.getChromosome()->getName() << " " << currentWindow.getChromosome()->getSeq().size() << std::endl;
    short ReturnFromReadingReads;
    ReadBuffer readBuffer(BUFFER_SIZE, currentState.Reads_SR, currentState.OneEndMappedReads, currentWindow.getChromosome()->getSeq());
-	UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
+	//UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
    if (userSettings->bamFilesAsInput()) {
       ReturnFromReadingReads = 0;
       for (unsigned int i = 0; i < currentState.bams_to_parse.size(); i++) {

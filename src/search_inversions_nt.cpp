@@ -35,7 +35,7 @@ int searchInversionsNT(ControlState& currentState, unsigned NumBoxes, const Sear
    int CloseIndex = 0;
    int FarIndex = 0;
 
-	UserDefinedSettings *userSettings = UserDefinedSettings::Instance();
+	//UserDefinedSettings *userSettings = UserDefinedSettings::Instance();
     
    LOG_INFO(*logStream << "Searching inversions with non-template sequence ... "
             << std::endl);

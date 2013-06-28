@@ -81,9 +81,6 @@ Genome g_genome;
 std::ofstream g_logFile;
 
 
-
-
-
 std::vector <ChrNameAndSizeAndIndex> g_ChrNameAndSizeAndIndex;
 
 int g_binIndex = -1; // global variable for the bin index, as I cannot easily pass an extra parameter to the diverse functions
@@ -123,6 +120,7 @@ int g_maxInsertSize=0;
 std::string CurrentChrMask;
 std::vector<Parameter *> parameters;
 
+UserDefinedSettings* userSettings;
 
 
 // #########################################################
@@ -196,7 +194,7 @@ void SPLIT_READ::setUnmatchedSeq( const std::string & unmatchedSeq )
 	ReadLength = UnmatchedSeq.size();
 	ReadLengthMinus = ReadLength - 1;
 
-	UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
+	//UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
 
 	MAX_SNP_ERROR = g_maxMismatch[ ReadLength ];
 	TOTAL_SNP_ERROR_CHECKED_Minus = MAX_SNP_ERROR + userSettings->ADDITIONAL_MISMATCH;
@@ -370,6 +368,7 @@ SearchWindow::SearchWindow( const Chromosome* chromosome, const unsigned int reg
 	m_currentEnd = regionEnd;
 }
 
+
 SearchWindow::SearchWindow(const SearchWindow& other) : 
 	m_chromosome(other.m_chromosome), m_currentStart( other.m_currentStart ), m_currentEnd( other.m_currentEnd) 
 {}
@@ -502,7 +501,7 @@ std::string LoopingSearchWindow::display() const
 bool LoopingSearchWindow::finished() const
 {
 	// ugly hack for speed purposes when using Pindel-formatted input
-	if (UserDefinedSettings::Instance()->pindelFilesAsInput() &&  m_currentStart >= g_maxPos ) { return true; }
+	if (userSettings->pindelFilesAsInput() &&  m_currentStart >= g_maxPos ) { return true; }
 	return ( m_currentStart > m_globalEnd );
 }
 
@@ -556,13 +555,13 @@ unsigned int SPLIT_READ::MaxLenCloseEnd() const
 
 bool doOutputBreakdancerEvents()
 {
-    return ( UserDefinedSettings::Instance()->breakdancerOutputFilename != "" && parameters[findParameter("-b",parameters)]->isSet());
+    return ( userSettings->breakdancerOutputFilename != "" && parameters[findParameter("-b",parameters)]->isSet());
 }
 
 void outputBreakDancerEvent( const std::string& chromosomeName, const int leftPosition, const int rightPosition,
                              const int svSize, const std::string& svType, const int svCounter)
 {
-    std::ofstream breakDancerOutputFile(UserDefinedSettings::Instance()->breakdancerOutputFilename.c_str(), std::ios::app);
+    std::ofstream breakDancerOutputFile(userSettings->breakdancerOutputFilename.c_str(), std::ios::app);
     breakDancerOutputFile << chromosomeName << "\t" << leftPosition << "\t" << rightPosition << "\t" <<
                           svSize << "\t" << svType << "\t" << svCounter << "\n";
 }
@@ -844,7 +843,7 @@ void createProbTable(const double seqErrorRate, const double sensitivity)
 void init(int argc, char *argv[], ControlState& currentState )
 {
 	//std::cout << "1" << std::endl;
-	UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
+	//UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
 	logStream=&std::cout;
 //std::cout << "2" << std::endl;
     //if (userSettings->NumRead2ReportCutOff == 1) {
@@ -1022,28 +1021,31 @@ void SearchFarEnd( const std::string& chromosome, SPLIT_READ& read, const Chromo
 {
 	//std::cout << "entering SearchFarEnd" << std::endl;
 	const int START_SEARCH_SPAN = 32;
-
+	//std::cout << "getting searchCluster" << std::endl;
 	const std::vector< SearchWindow>& searchCluster =  g_bdData.getCorrespondingSearchWindowCluster( read );
-	//std::cout << read.Name << " - " << read.getLastAbsLocCloseEnd() << "\n"; 
-	//std::cout << "SearchFarEnd	1" << std::endl;
-	
+	//std::cout << "searchCluster size: " << searchCluster.size() << std::endl;
 	if (searchCluster.size()!=0) {
-	//  std::cout << "Breakdancer input is not empty " << searchCluster.size() << std::endl;
-	SearchFarEndAtPos( chromosome, read, searchCluster); // SearchFarEndAtPos
+		//std::cout << "Breakdancer input is not empty " << searchCluster.size() << std::endl;
+		//for (unsigned index = 0; index < searchCluster.size(); index++)
+		//	searchCluster[index].display();
+		SearchFarEndAtPos( chromosome, read, searchCluster); // SearchFarEndAtPos
+		//std::cout << "finished" << std::endl;
 		if (read.goodFarEndFound()) {
-		//read.Investigated = true;
-		return;
+			//read.Investigated = true;
+			//std::cout << "return" << std::endl;
+			return;
 		}
 		else SearchFarEndAtPosPerfect( chromosome, read, searchCluster);
 	}
 	//std::cout << "SearchFarEnd	2" << std::endl;
-	UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
+	//UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
 
 	// if breakdancer does not find the event, or not find an event we trust, we turn to regular pattern matching
 	unsigned int searchSpan=START_SEARCH_SPAN;
 	unsigned int centerOfSearch = read.getLastAbsLocCloseEnd();
 		//std::cout << "SearchFarEnd	3" << std::endl;
 	for (int rangeIndex=1; rangeIndex<=userSettings->MaxRangeIndex + 1; rangeIndex++ ) {
+		//std::cout << "rangeIndex " << rangeIndex << "\t";
 		// note: searching the central range again and again may seem overkill, but since Pindel at the moment wants an unique best point, you can't skip the middle part
 		// may be stuff for future changes/refactorings though
 		std::vector< SearchWindow > aroundCESearchCluster;
@@ -1064,7 +1066,13 @@ void SearchFarEnd( const std::string& chromosome, SPLIT_READ& read, const Chromo
 		//std::cout << "End is (abs) " << End << " (rel): " << End - g_SpacerBeforeAfter << " Size chrom= " << chromosome.size() << "\n";
 		//std::cout << Start << "FirstStart " << centerOfSearch+searchSpan-10000000 << "<COS" << centerOfSearch-10000000 << " span " << searchSpan<< std::endl;
 		SearchWindow regularWindow( &currentChromosome, Start, End );
+		//if (rangeIndex == 1 && searchCluster.size()) {
+		//	std::cout << rangeIndex << "\t";
+			//regularWindow.display();
+		//}		
+
 		//std::cout << Start << " " << centerOfSearch+searchSpan-10000000 << std::endl;
+		aroundCESearchCluster.clear();
 		aroundCESearchCluster.push_back( regularWindow );
 		//std::cout << rangeIndex << "\tSearchFarEndAtPos" << std::endl;
 		SearchFarEndAtPos( chromosome, read, aroundCESearchCluster ); // SearchFarEndAtPosPerfect
@@ -1076,17 +1084,19 @@ void SearchFarEnd( const std::string& chromosome, SPLIT_READ& read, const Chromo
 		else SearchFarEndAtPosPerfect( chromosome, read, searchCluster);
 		if (read.goodFarEndFound()) {
 			//read.Investigated = true;
+			//std::cout << "SearchFarEnd	found ###################3" << std::endl;
 			return;
 		}
 		searchSpan *= 4;
 	}
+	//std::cout << std::endl;
 	//read.Investigated = true;
 	//std::cout << "leaving SearchFarEnd" << std::endl;
 }
 
 void ReportCloseMappedReads( const std::vector<SPLIT_READ>& reads )
 {
-	std::ofstream CloseEndMappedOutput( UserDefinedSettings::Instance()->getCloseEndOutputFilename().c_str(), std::ios::app);
+	std::ofstream CloseEndMappedOutput( userSettings->getCloseEndOutputFilename().c_str(), std::ios::app);
 	int TotalNumReads = reads.size();
    for (int Index = 0; Index < TotalNumReads; Index++) {
 		const SPLIT_READ& currentRead = reads[ Index ];
@@ -1124,13 +1134,19 @@ void ReportCloseAndFarEndCounts( const std::vector<SPLIT_READ>& reads )
 }
 
 void SearchFarEnds( const std::string & chromosomeSeq, std::vector<SPLIT_READ>& reads, const Chromosome& currentChromosome) {
+	std::cout << "report per 1k reads, not sequential due to openmp" << std::endl;
 	#pragma omp parallel default(shared)
 	{
 		#pragma omp for
 		for (int readIndex= 0; readIndex < (int)reads.size(); readIndex++ ) {
-			//if (readIndex % 1000 == 0)
+			//if (readIndex % 1000 == 0) 
 			//	std::cout << "readIndex: " << readIndex << std::endl;
+			//	std::cout << "readIndex: " << readIndex << "\t" << reads[readIndex].Name << "\t" 
+			//		<< reads[readIndex].FragName << "\t" <<  reads[readIndex].MatchedD << "\t" 
+			//		<< reads[readIndex].MatchedRelPos << "\t" << reads[readIndex].MS << "\t" 
+			//		<< reads[readIndex].UnmatchedSeq << std::endl;
 			SearchFarEnd( chromosomeSeq, reads[readIndex], currentChromosome );
+			//std::cout << reads[readIndex] << std::endl;
 		}
 	}
 
@@ -1141,7 +1157,7 @@ void SearchFarEnds( const std::string & chromosomeSeq, std::vector<SPLIT_READ>& 
 void SearchSVs(ControlState& currentState, const int NumBoxes, const SearchWindow& currentWindow )
 {
     //std::cout << "1" << std::endl;
-	UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
+	//UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
 
    SearchDeletions searchD;
    searchD.Search(g_bdData, currentState, NumBoxes, currentWindow);
@@ -1498,7 +1514,7 @@ int main(int argc, char *argv[])
 	unsigned int AllSortReport = 0;
 
 	ControlState currentState;
-	UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
+	userSettings = UserDefinedSettings::Instance();
 	std::cout << "Initializing parameters..." << std::endl;
 	init(argc, argv, currentState );
 	std::cout << "Initializing parameters done." << std::endl;
@@ -1735,6 +1751,7 @@ int main(int argc, char *argv[])
           		//std::cout << "Before" << std::endl;
 			g_ReadSeq2Index.clear();
          		get_SR_Reads(currentState, currentWindow );
+			std::cout << "g_ReadSeq2Index.size(): " << g_ReadSeq2Index.size() << std::endl;
 			g_ReadSeq2Index.clear();
          		std::cout << "There are " << currentState.RefSupportingReads.size() << " reads supporting the reference allele." << std::endl;
          		//if (userSettings->bamFilesAsInput())
@@ -2323,7 +2340,8 @@ void ExtendMatchPerfect(SPLIT_READ & read,
                  const short minimumLengthToReportMatch,
                  const short BP_End, const short CurrentLength,
                  SortedUniquePoints &UP )
-{UserDefinedSettings *userSettings = UserDefinedSettings::Instance();
+{
+//UserDefinedSettings *userSettings = UserDefinedSettings::Instance();
 	const char CurrentChar = readSeq[CurrentLength];
     const char CurrentCharRC = Convert2RC4N[(short) CurrentChar];
     bool AllEmpty = true;
@@ -2436,7 +2454,7 @@ void CheckBothPerfect(SPLIT_READ & read,
                const short CurrentLength,
                SortedUniquePoints &UP)
 {
-	UserDefinedSettings *userSettings = UserDefinedSettings::Instance();
+	//UserDefinedSettings *userSettings = UserDefinedSettings::Instance();
     unsigned NumberOfMatchPositionsWithLessMismatches = 0;
     int Sum = 0;
 	
@@ -2516,7 +2534,7 @@ void CheckBoth(SPLIT_READ & read,
                const short CurrentLength,
                SortedUniquePoints &UP)
 {
-	UserDefinedSettings *userSettings = UserDefinedSettings::Instance();
+	//UserDefinedSettings *userSettings = UserDefinedSettings::Instance();
    unsigned NumberOfMatchPositionsWithLessMismatches = 0;
    int Sum = 0;
 	

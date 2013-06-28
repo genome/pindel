@@ -37,7 +37,7 @@ int searchIndels(ControlState& currentState, unsigned NumBoxes, const SearchWind
 
    LOG_INFO(*logStream << "Searching deletion-insertions ... " << std::endl);
 
-	UserDefinedSettings *userSettings = UserDefinedSettings::Instance();
+	//UserDefinedSettings *userSettings = UserDefinedSettings::Instance();
 
    for (unsigned ReadIndex = 0; ReadIndex < currentState.Reads_SR.size(); ReadIndex++) {
 		SPLIT_READ& currentRead = currentState.Reads_SR[ReadIndex];

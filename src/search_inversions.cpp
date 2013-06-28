@@ -35,7 +35,7 @@ int searchInversions(ControlState& currentState, unsigned NumBoxes, const Search
 
    std::vector<unsigned> Inv[NumBoxes];
 
-	UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
+	//UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
 	int MIN_IndelSize_Inversion = userSettings->MIN_IndelSize_Inversion;
 
    int CloseIndex = 0;

@@ -94,7 +94,7 @@ void doAssembly (ControlState & CurrentState, UserDefinedSettings* userSettings)
     // step 3. per SV, find BP, sort and output
     // step 3.1 define output
     //std::string ASM_OutputFileName = userSettings->getAOutputFolder + "_ASM";
-    std::ofstream ASM_Output(UserDefinedSettings::Instance()->getASMOutputFilename().c_str());
+    std::ofstream ASM_Output(userSettings->getASMOutputFilename().c_str());
     // step 3.2 per SV, collect reads around BP, sort, combine and output.
     for (unsigned SV_index = 0; SV_index < AllSV4Assembly.size(); SV_index++) {
         std::cout << AllSV4Assembly[SV_index].Type << "\t" << AllSV4Assembly[SV_index].ChrA << "\t" << AllSV4Assembly[SV_index].PosA << "\t" << AllSV4Assembly[SV_index].CI_A << "\t" << AllSV4Assembly[SV_index].ChrB << "\t" << AllSV4Assembly[SV_index].PosB << "\t" << AllSV4Assembly[SV_index].CI_B << std::endl;

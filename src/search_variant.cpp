@@ -68,7 +68,7 @@ int SearchVariant::Search(BDData & g_bdData, ControlState& currentState, const u
    *logStream << "Far ends already mapped " << farEndExists << std::endl;
    *logStream << "Checksum of far ends: " << bpSum << std::endl;
 
-	UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
+	//UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
    LOG_INFO(*logStream << "Searching " << typeOfVariant << " ... " << std::endl);
    for (unsigned ReadIndex = 0; ReadIndex < currentState.Reads_SR.size(); ReadIndex++) {
 		SPLIT_READ& currentRead = currentState.Reads_SR[ReadIndex];

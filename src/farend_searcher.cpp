@@ -24,15 +24,8 @@
 #include "searcher.h"
 #include "farend_searcher.h"
 
-FarEndSearchPerRegion::FarEndSearchPerRegion( const Chromosome* Chromosome, unsigned short NumberOfErrors, unsigned size)
-: CurrentChromosome ( Chromosome )
-{
-    PosVector emptyPosVector;
-    emptyPosVector.reserve(size);
-    PD_Plus.assign( NumberOfErrors, emptyPosVector);
-    PD_Minus.assign( NumberOfErrors, emptyPosVector);
-    
-}
+
+
 
 bool NewUPFarIsBetter(const SortedUniquePoints & UP, const SPLIT_READ& Read) {
 
@@ -81,6 +74,7 @@ void SearchFarEndAtPos( const std::string& chromosome, SPLIT_READ& Temp_One_Read
        }
        NumberOfHits += CurrentRegion->PD_Plus[0].size() + CurrentRegion->PD_Minus[0].size();
        WholeGenomeSearchResult.push_back(CurrentRegion);
+	 
    }
 
 	if (NumberOfHits>0) {
