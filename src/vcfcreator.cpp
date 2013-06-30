@@ -7,6 +7,7 @@
 	e.m.w.lameijer@gmail.com
 	+31(0)71-5 125 831
 
+    Version 0.5.9 -ho -he for cutoffs
 	Version 0.5.8 [April 28th, 2013] Added "-co" option for compact output; -co followed by an integer indicates
  		the longest variation displayed with full base sequence. If, for example, the user gives as command line parameter 
 		"-co 10", then if either the reference or the alternative allele exceeds 10 bases, the output will be transformed
@@ -704,7 +705,7 @@ public:
    }
 
 	int getAverageRefSupport() const {
-		return d_totalRefSupport / 2;
+		return d_totalRefSupport;
 	}
 
 	int getTotalRefSupport() const {
@@ -1517,7 +1518,7 @@ void convertIndelToSVdata( InputReader& pindelInput, map< string, int>& sampleMa
 			refSupportAtStartOfEvent = atoi( fetchElement( lineStream, 1 ).c_str());
 			refSupportAtEndOfEvent = atoi( fetchElement( lineStream, 1 ).c_str());
 		}*/
-		int totalRefSupport = refSupportAtStartOfEvent + refSupportAtEndOfEvent;
+       int totalRefSupport = max(refSupportAtStartOfEvent, refSupportAtEndOfEvent);
 		int numberItemsUntilNextSupport = ( pindel024uOrLater ? 2 : 2 );
    	int samplePlusSupport = atoi( fetchElement( lineStream, numberItemsUntilNextSupport ).c_str());
 	   int sampleMinSupport = atoi( fetchElement( lineStream, numberItemsUntilNextSupport ).c_str()); // now at position 35, total +supports sample 1
@@ -1534,7 +1535,7 @@ void convertIndelToSVdata( InputReader& pindelInput, map< string, int>& sampleMa
 				refSupportAtStartOfEvent = atoi( fetchElement( lineStream, 1 ).c_str() );
 				refSupportAtEndOfEvent = atoi( fetchElement( lineStream, 1 ).c_str());
 			}*/
-			int totalRefSupport = refSupportAtStartOfEvent + refSupportAtEndOfEvent;
+			int totalRefSupport = max(refSupportAtStartOfEvent, refSupportAtEndOfEvent);
       	sampleName = fetchElement( lineStream, 1); // for unique support, 2->1,
 	      samplePlusSupport = atoi( fetchElement( lineStream, numberItemsUntilNextSupport ).c_str()); // for unique support, 2->1
    	   sampleMinSupport = atoi( fetchElement( lineStream, numberItemsUntilNextSupport ).c_str()); // now at position 33, total +supports sample 1
@@ -1642,7 +1643,7 @@ void convertIndelToSVdata( InputReader& pindelInput, map< string, int>& sampleMa
 		refSupportAtStartOfEvent = atoi( fetchElement( lineStream, 1 ).c_str() );
 		refSupportAtEndOfEvent = atoi( fetchElement( lineStream, 1 ).c_str() );
 	}
-	int totalRefSupport = refSupportAtStartOfEvent + refSupportAtEndOfEvent;
+	int totalRefSupport = max(refSupportAtStartOfEvent, refSupportAtEndOfEvent);
 	int numberOfItemsUntilNextSupport = ( pindel024uOrLater ? 2 : 2 );
    int plusSupport = atoi( fetchElement( lineStream, numberOfItemsUntilNextSupport - 1 ).c_str()); // now at position 33, total +supports sample 1; for unique support 1->2
    int minSupport = atoi( fetchElement( lineStream, numberOfItemsUntilNextSupport ).c_str()); // now at position 35, total +supports sample 1
@@ -1660,7 +1661,7 @@ void convertIndelToSVdata( InputReader& pindelInput, map< string, int>& sampleMa
 			refSupportAtStartOfEvent = atoi( fetchElement( lineStream, 1 ).c_str() );
 			refSupportAtEndOfEvent = atoi( fetchElement( lineStream, 1 ).c_str() );
 		}
-		totalRefSupport = refSupportAtStartOfEvent + refSupportAtEndOfEvent;
+		int totalRefSupport = max(refSupportAtStartOfEvent, refSupportAtEndOfEvent);
       plusSupport = atoi( fetchElement( lineStream, numberOfItemsUntilNextSupport - 1 ).c_str()); // for unique support, 2->1
       minSupport = atoi( fetchElement( lineStream, numberOfItemsUntilNextSupport ).c_str()); // now at position 33, total +supports sample 1
    }
