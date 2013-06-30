@@ -1134,7 +1134,7 @@ void ReportCloseAndFarEndCounts( const std::vector<SPLIT_READ>& reads )
 }
 
 void SearchFarEnds( const std::string & chromosomeSeq, std::vector<SPLIT_READ>& reads, const Chromosome& currentChromosome) {
-	std::cout << "report per 1k reads, not sequential due to openmp" << std::endl;
+	//std::cout << "report per 1k reads, not sequential due to openmp" << std::endl;
 	#pragma omp parallel default(shared)
 	{
 		#pragma omp for
