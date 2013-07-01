@@ -249,9 +249,12 @@ void ModifyRP(std::vector <RP_READ> & Reads_RP) {
 	
 			int Start_Index_Second = (int)first - 100;
 			if (Start_Index_Second < 0) Start_Index_Second = 0;
+			//if (Current_first.PosA < 160000)
+			//std::cout << Current_first.ChrNameA << "\t" << Current_first.PosA << "\t" << Current_first.PosB << std::endl; 
 			for (unsigned second = 0; second < Reads_RP.size(); second++) {
 				//if (first == (int)second) continue;
 				RP_READ & Current_second = Reads_RP[second];
+				//std::cout << Current_second.ChrNameA << "\t" << Current_second.PosA << "\t" << Current_second.PosB << std::endl; 
 				//if (Current_second.PosA > Stop_Pos && Current_second.PosB > Stop_Pos)
 				//    break;
 				if (RecipicalOverlap(Current_first, Current_second) == false) continue;
@@ -404,9 +407,11 @@ void Summarize(std::vector <RP_READ> & Reads_RP) {
 	}
 	else {
 		for (unsigned int first = 0; first < Reads_RP.size() - 1; first++) {
-			//std::cout << Reads_RP[first].DA << " " << Reads_RP[first].PosA << " " << Reads_RP[first].DB << " " << Reads_RP[first].PosB << std::endl;
+			//if (Reads_RP[first].PosA < 160000)
+			//std::cout << Reads_RP[first].ChrNameA << "\t" << Reads_RP[first].DA << " " << Reads_RP[first].PosA << " " << Reads_RP[first].DB << " " << Reads_RP[first].PosB << std::endl;
 			if (Reads_RP[first].Visited == true) continue;
 			Reads_RP[first].NumberOfIdentical = 1;
+			Reads_RP[first].Visited = false;
 			for (unsigned second = first + 1; second < Reads_RP.size(); second++) {
 				if (Reads_RP[second].Visited == true) continue;
 				if (//Reads_RP[first].ChrNameA == Reads_RP[second].ChrNameA
@@ -421,63 +426,51 @@ void Summarize(std::vector <RP_READ> & Reads_RP) {
 						Reads_RP[second].Visited = true;
 				}
 			}
-            //if (Reads_RP[first].NumberOfIdentical >= Cutoff)
-            {
-                //std::cout << Reads_RP[first].PosA << "\t" << Reads_RP[first].PosA1 << "\t" << Reads_RP[first].PosB << "\t" << Reads_RP[first].PosB1 << "\t" << Reads_RP[first].NumberOfIdentical << std::endl;
-                //Reads_RP[first].Report = true;
-                GoodIndex.push_back(first);
-                
-            }
-			//if (Reads_RP[first].NumberOfIdentical >= Cutoff) {
-			//	Reads_RP[first].Report = true;
-			//	//std::cout << Reads_RP[first].ChrNameA << " " << Reads_RP[first].PosA << " " << Reads_RP[first].ChrNameB << " " << Reads_RP[first].PosB << std::endl;
-			//}
-			//else Reads_RP[first].Report = false;
+
 		}
         
-		//std::cout << "middle" << std::endl;
-		if (GoodIndex.empty()) return;
-		else if (GoodIndex.size() == 1) {
-			if (Reads_RP[GoodIndex[0]].NumberOfIdentical >= Cutoff) Reads_RP[GoodIndex[0]].Report = true;
-			else Reads_RP[GoodIndex[0]].Report = false;
-		}
-		else {
-			for (unsigned index_a = 0;  index_a < GoodIndex.size() - 1; index_a++) {
+		{
+			for (unsigned index_a = 0;  index_a < Reads_RP.size() - 1; index_a++) {
 				//std::cout << "index_a " << index_a << std::endl;
 				//std::cout << Reads_RP[index_a].DA << " " << Reads_RP[index_a].PosA << " " << Reads_RP[index_a].DB << " " << Reads_RP[index_a].PosB << std::endl;
-				if (Reads_RP[GoodIndex[index_a]].Visited) continue; 
+				if (Reads_RP[index_a].Visited) continue; 
 				//if (Reads_RP[GoodIndex[index_a]].PosB - Reads_RP[GoodIndex[index_a]].PosA > 1000000) {
 				//	std::cout << Reads_RP[GoodIndex[index_a]].PosA << "\t" << Reads_RP[GoodIndex[index_a]].PosA1 << "\t" 
 				//		<< Reads_RP[GoodIndex[index_a]].PosB << "\t" << Reads_RP[GoodIndex[index_a]].PosB1 << std::endl;
 				//}
-				for (unsigned index_b = index_a + 1;  index_b < GoodIndex.size(); index_b++) {
+				for (unsigned index_b = index_a + 1;  index_b < Reads_RP.size(); index_b++) {
 					//std::cout << "index_b " << index_b << std::endl;
-					if (RecipicalOverlap(Reads_RP[GoodIndex[index_a]], Reads_RP[GoodIndex[index_b]])) {
+					if (RecipicalOverlap(Reads_RP[index_a], Reads_RP[index_b])) {
 						//if ()
 						//if (Reads_RP[GoodIndex[index_b]].PosB - Reads_RP[GoodIndex[index_b]].PosA > 1000000) {
 						//	std::cout << Reads_RP[GoodIndex[index_b]].PosA << "\t" << Reads_RP[GoodIndex[index_b]].PosA1 << "\t" 
 						//		<< Reads_RP[GoodIndex[index_b]].PosB << "\t" << Reads_RP[GoodIndex[index_b]].PosB1 << std::endl;
 						//}
-						Reads_RP[GoodIndex[index_a]].NumberOfIdentical = Reads_RP[GoodIndex[index_a]].NumberOfIdentical + Reads_RP[GoodIndex[index_b]].NumberOfIdentical;
-						Reads_RP[GoodIndex[index_b]].Visited = true;
-						if ((Reads_RP[GoodIndex[index_a]].DA == '+' && Reads_RP[GoodIndex[index_a]].PosA < Reads_RP[GoodIndex[index_b]].PosA) 
-							|| (Reads_RP[GoodIndex[index_a]].DA == '-' && Reads_RP[GoodIndex[index_a]].PosA > Reads_RP[GoodIndex[index_b]].PosA)) 
-							Reads_RP[GoodIndex[index_a]].PosA = Reads_RP[GoodIndex[index_b]].PosA;
-						if ((Reads_RP[GoodIndex[index_a]].DB == '+' && Reads_RP[GoodIndex[index_a]].PosB < Reads_RP[GoodIndex[index_b]].PosB) 
-							|| (Reads_RP[GoodIndex[index_a]].DB == '-' && Reads_RP[GoodIndex[index_a]].PosB > Reads_RP[GoodIndex[index_b]].PosB)) 
-							Reads_RP[GoodIndex[index_a]].PosB = Reads_RP[GoodIndex[index_b]].PosB;
+						Reads_RP[index_a].NumberOfIdentical = Reads_RP[index_a].NumberOfIdentical + Reads_RP[index_b].NumberOfIdentical;
+						Reads_RP[index_b].Visited = true;
+						if ((Reads_RP[index_a].DA == '+' && Reads_RP[index_a].PosA < Reads_RP[index_b].PosA) 
+							|| (Reads_RP[index_a].DA == '-' && Reads_RP[index_a].PosA > Reads_RP[index_b].PosA)) 
+							Reads_RP[index_a].PosA = Reads_RP[index_b].PosA;
+						if ((Reads_RP[index_a].DB == '+' && Reads_RP[index_a].PosB < Reads_RP[index_b].PosB) 
+							|| (Reads_RP[index_a].DB == '-' && Reads_RP[index_a].PosB > Reads_RP[index_b].PosB)) 
+							Reads_RP[index_a].PosB = Reads_RP[index_b].PosB;
                         
-                        if ((Reads_RP[GoodIndex[index_a]].DA == '+' && Reads_RP[GoodIndex[index_a]].PosA1 > Reads_RP[GoodIndex[index_b]].PosA1)
-							|| (Reads_RP[GoodIndex[index_a]].DA == '-' && Reads_RP[GoodIndex[index_a]].PosA1 < Reads_RP[GoodIndex[index_b]].PosA1))
-							Reads_RP[GoodIndex[index_a]].PosA1 = Reads_RP[GoodIndex[index_b]].PosA1;
-						if ((Reads_RP[GoodIndex[index_a]].DB == '+' && Reads_RP[GoodIndex[index_a]].PosB1 > Reads_RP[GoodIndex[index_b]].PosB1)
-							|| (Reads_RP[GoodIndex[index_a]].DB == '-' && Reads_RP[GoodIndex[index_a]].PosB1 < Reads_RP[GoodIndex[index_b]].PosB1))
-							Reads_RP[GoodIndex[index_a]].PosB1 = Reads_RP[GoodIndex[index_b]].PosB1;
+                        if ((Reads_RP[index_a].DA == '+' && Reads_RP[index_a].PosA1 > Reads_RP[index_b].PosA1)
+							|| (Reads_RP[index_a].DA == '-' && Reads_RP[index_a].PosA1 < Reads_RP[index_b].PosA1))
+							Reads_RP[index_a].PosA1 = Reads_RP[index_b].PosA1;
+						if ((Reads_RP[index_a].DB == '+' && Reads_RP[index_a].PosB1 > Reads_RP[index_b].PosB1)
+							|| (Reads_RP[index_a].DB == '-' && Reads_RP[index_a].PosB1 < Reads_RP[index_b].PosB1))
+							Reads_RP[index_a].PosB1 = Reads_RP[index_b].PosB1;
                         
 					} 
 				}
-				if (Reads_RP[GoodIndex[index_a]].NumberOfIdentical >= Cutoff) Reads_RP[GoodIndex[index_a]].Report = true;
-				else Reads_RP[GoodIndex[index_a]].Report = false;
+				if (Reads_RP[index_a].NumberOfIdentical >= Cutoff) {
+					//if (Reads_RP[index_a].PosA < 160000)
+					//	std::cout << Reads_RP[index_a].ChrNameA << "\t" << Reads_RP[index_a].DA << " " << Reads_RP[index_a].PosA 
+					//		<< " " << Reads_RP[index_a].DB << " " << Reads_RP[index_a].PosB << "\t" << Reads_RP[index_a].NumberOfIdentical << std::endl;
+					Reads_RP[index_a].Report = true;
+				}
+				else Reads_RP[index_a].Report = false;
 			}
 		}
         

@@ -2356,6 +2356,8 @@ void SortAndReportInterChromosomalEvents(ControlState& current_state, Genome& ge
     std::map<std::string,int> CallAndSupport;
     std::string tempResult;
     std::set<std::string> ChrNames;
+	std::set<std::string> ReadNames;
+	 std::set<std::string>::iterator it;
     std::set<std::string>::iterator first, second;
     std::cout << "reporting interchromosome variants" << std::endl;
     for (unsigned index = 0; index < current_state.InterChromosome_SR.size(); index++) {
@@ -2374,6 +2376,13 @@ void SortAndReportInterChromosomalEvents(ControlState& current_state, Genome& ge
             }
             for (unsigned index = 0; index < current_state.InterChromosome_SR.size(); index++) {
                 SPLIT_READ & currentRead = current_state.InterChromosome_SR[index];
+		it = ReadNames.find(currentRead.Name);
+		if (it != ReadNames.end()) {
+			// this reads is already seen. skip it
+			std::cout << "skip one interchr read" << std::endl;
+			continue;
+		}
+		else ReadNames.insert(currentRead.Name);
                 if (currentRead.FragName == *first && currentRead.FarFragName == *second) {
                     //std::cout << *first << " " << *second << std::endl;
                     if (currentRead.MatchedD == '+') { // close smaller
