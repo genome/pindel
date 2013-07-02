@@ -2352,6 +2352,11 @@ void SortAndReportInterChromosomalEvents(ControlState& current_state, Genome& ge
 {
     
     std::ofstream INToutputfile(user_settings->getINTOutputFilename().c_str(), std::ios::app);
+
+	bool GoodRead;
+
+	std::string InsertedSequence;
+
     //std::map Result;
     std::map<std::string,int> CallAndSupport;
     std::string tempResult;
@@ -2361,6 +2366,7 @@ void SortAndReportInterChromosomalEvents(ControlState& current_state, Genome& ge
     std::set<std::string>::iterator first, second;
     std::cout << "reporting interchromosome variants" << std::endl;
     for (unsigned index = 0; index < current_state.InterChromosome_SR.size(); index++) {
+	
         //std::cout << current_state.InterChromosome_SR[index];//.FragName << " " << current_state.InterChromosome_SR[index].FarFragName << std::endl;
         ChrNames.insert(current_state.InterChromosome_SR[index].FragName);
         ChrNames.insert(current_state.InterChromosome_SR[index].FarFragName);
@@ -2375,11 +2381,13 @@ void SortAndReportInterChromosomalEvents(ControlState& current_state, Genome& ge
                 continue;
             }
             for (unsigned index = 0; index < current_state.InterChromosome_SR.size(); index++) {
+		GoodRead = false;
+
                 SPLIT_READ & currentRead = current_state.InterChromosome_SR[index];
 		it = ReadNames.find(currentRead.Name);
 		if (it != ReadNames.end()) {
 			// this reads is already seen. skip it
-			std::cout << "skip one interchr read" << std::endl;
+			//std::cout << "skip one interchr read" << std::endl;
 			continue;
 		}
 		else ReadNames.insert(currentRead.Name);
@@ -2387,90 +2395,171 @@ void SortAndReportInterChromosomalEvents(ControlState& current_state, Genome& ge
                     //std::cout << *first << " " << *second << std::endl;
                     if (currentRead.MatchedD == '+') { // close smaller
                         for (unsigned CloseIndex = 0; CloseIndex < currentRead.UP_Close.size(); CloseIndex++) {
+				if (currentRead.Used) break;
                             for (int FarIndex = currentRead.UP_Far.size() - 1; FarIndex >= 0; FarIndex--) {
+				if (currentRead.Used) break;
                                 if (currentRead.UP_Close[CloseIndex].LengthStr + currentRead.UP_Far[FarIndex].LengthStr == currentRead.getReadLength()) {
                                     currentRead.Used = true;
                                     currentRead.Left = currentRead. UP_Close[CloseIndex].AbsLoc - currentRead. UP_Close[CloseIndex].LengthStr + 1;
                                     if (currentRead.MatchedFarD == '+') 
                                         currentRead.Right = currentRead.UP_Far[FarIndex]. AbsLoc - currentRead.UP_Far[FarIndex]. LengthStr - 1;
                                     else currentRead.Right = currentRead.UP_Far[FarIndex]. AbsLoc + currentRead.UP_Far[FarIndex]. LengthStr - 1;
-                                    currentRead.BP = currentRead. UP_Close[CloseIndex].LengthStr - 1;
-                                    currentRead.BPLeft = currentRead. UP_Close[CloseIndex].AbsLoc - g_SpacerBeforeAfter;
+                                    currentRead.BP = currentRead.UP_Close[CloseIndex].LengthStr - 1;
+                                    currentRead.BPLeft = currentRead.UP_Close[CloseIndex].AbsLoc - g_SpacerBeforeAfter;
                                     currentRead.BPRight = currentRead.UP_Far[FarIndex]. AbsLoc - g_SpacerBeforeAfter;//0;//
+					GoodRead = true;
+					InsertedSequence = "\"\"";
+					if (currentRead.BPLeft == 0 || currentRead.BPRight == 0) {
+						std::cout << currentRead;
+                    				//std::cout << tempResult << " " << currentRead.FragName << " " << currentRead.MatchedRelPos << " " << currentRead.BPLeft << " " << currentRead.MatchedD << " " 
+						//	<< currentRead.FarFragName << " " << currentRead.BPRight << " " << currentRead.MatchedFarD << " " << currentRead.Left << " " << currentRead.Right << std::endl;
+					}
                                 }
                             }
                         }
                     }
                     else { //close bigger
                         for (int CloseIndex = currentRead.UP_Close.size() - 1; CloseIndex >= 0; CloseIndex--) {
+				if (currentRead.Used) break;
                             for (unsigned FarIndex = 0; FarIndex < currentRead.UP_Far.size(); FarIndex++) {
+				if (currentRead.Used) break;
                                 if (currentRead.UP_Close[CloseIndex].LengthStr + currentRead.UP_Far[FarIndex].LengthStr == currentRead.getReadLength()) {
                                     currentRead.Used = true;
                                     currentRead.Left = currentRead. UP_Close[CloseIndex].AbsLoc + currentRead. UP_Close[CloseIndex].LengthStr - 1;
                                     if (currentRead.MatchedFarD == '+')
                                         currentRead.Right = currentRead.UP_Far[FarIndex]. AbsLoc - currentRead.UP_Far[FarIndex]. LengthStr - 1;
                                     else currentRead.Right = currentRead.UP_Far[FarIndex]. AbsLoc + currentRead.UP_Far[FarIndex]. LengthStr - 1;
-                                    currentRead.BP = currentRead. UP_Close[CloseIndex].LengthStr - 1;
-                                    currentRead.BPLeft = currentRead. UP_Close[CloseIndex].AbsLoc - g_SpacerBeforeAfter;
+                                    currentRead.BP = currentRead.UP_Close[CloseIndex].LengthStr - 1;
+                                    currentRead.BPLeft = currentRead.UP_Close[CloseIndex].AbsLoc - g_SpacerBeforeAfter;
                                     currentRead.BPRight = currentRead.UP_Far[FarIndex]. AbsLoc - g_SpacerBeforeAfter;//0;//
+					GoodRead = true;
+					InsertedSequence = "\"\"";
+					if (currentRead.BPLeft == 0 || currentRead.BPRight == 0) {
+						std::cout << currentRead;
+                    				//std::cout << tempResult << " " << currentRead.FragName << " " << currentRead.MatchedRelPos << " " << currentRead.BPLeft << " " << currentRead.MatchedD << " " 
+						//	<< currentRead.FarFragName << " " << currentRead.BPRight << " " << currentRead.MatchedFarD << " " << currentRead.Left << " " << currentRead.Right << std::endl;
+					}
                                 }
                             }
                         }
                     }
-                    tempResult = "Anchor " + SameStrand(currentRead.MatchedD) + " " +
+			if (GoodRead == false) {
+				unsigned EffectiveLength = currentRead.UP_Close[currentRead.UP_Close.size() - 1].LengthStr + currentRead.UP_Far[currentRead.UP_Far.size() - 1].LengthStr;
+				if (EffectiveLength >= 30 && 
+					currentRead.UP_Close[currentRead.UP_Close.size() - 1].LengthStr >= 10 && currentRead.UP_Far[currentRead.UP_Far.size() - 1].LengthStr >= 10) {
+					//if (currentRead.MatchedD == '+') {
+					InsertedSequence = currentRead.UnmatchedSeq.substr(currentRead.UP_Far[currentRead.UP_Far.size() - 1].LengthStr, currentRead.getReadLength() - EffectiveLength);
+					//}
+					InsertedSequence = "\"" + InsertedSequence + "\"";
+                              	      currentRead.BPLeft = currentRead.UP_Close[currentRead.UP_Close.size() - 1].AbsLoc - g_SpacerBeforeAfter;
+                              	      currentRead.BPRight = currentRead.UP_Far[currentRead.UP_Far.size() - 1]. AbsLoc - g_SpacerBeforeAfter;//0;//
+					GoodRead = true;
+				}
+			}
+
+			if (GoodRead == true) {
+                    		tempResult = "Anchor " + SameStrand(currentRead.MatchedD) + " " +
                                  currentRead.FragName + " " + IntToString(currentRead.BPLeft) + " " + OtherStrand(currentRead.MatchedD) + " " +
-                                 currentRead.FarFragName + " " + IntToString(currentRead.BPRight)  + " " + SameStrand(currentRead.MatchedFarD);
-                    //std::cout << tempResult << " " << currentRead.FragName << " " << currentRead.BPLeft << " " << currentRead.MatchedD << " " << currentRead.FarFragName << " " << currentRead.BPRight << " " << currentRead.MatchedFarD << " " << currentRead.Left << " " << currentRead.Right << std::endl;
-                    UpdateInterChromosomeCallAndSupport(CallAndSupport, tempResult);
+                                 currentRead.FarFragName + " " + IntToString(currentRead.BPRight)  + " " + SameStrand(currentRead.MatchedFarD) + " " + InsertedSequence;
+				if (currentRead.BPLeft == 0 || currentRead.BPRight == 0) {
+					//std::cout << currentRead;
+                    			std::cout << tempResult << " " << currentRead.FragName << " " << currentRead.MatchedRelPos << " " << currentRead.BPLeft << " " << currentRead.MatchedD << " " 
+						<< currentRead.FarFragName << " " << currentRead.BPRight << " " << currentRead.MatchedFarD << " " << currentRead.Left << " " << currentRead.Right << std::endl;
+				}
+                    		UpdateInterChromosomeCallAndSupport(CallAndSupport, tempResult);
+			}
+			//else std::cout << "non-template in read " << currentRead.FragName << " " << currentRead.MatchedRelPos << " " << currentRead.BPLeft << " " << currentRead.MatchedD << " " 
+			//			<< currentRead.FarFragName << " " << currentRead.BPRight << " " << currentRead.MatchedFarD << " " << currentRead.Left << " " << currentRead.Right << std::endl;
 
                 }
                 else if (currentRead.FragName == *second && currentRead.FarFragName == *first) {
                     //std::cout << *second << " " << *first << std::endl;
                     if (currentRead.MatchedFarD == '-') { // close smaller
                         for (unsigned CloseIndex = 0; CloseIndex < currentRead.UP_Close.size(); CloseIndex++) {
+				if (currentRead.Used) break;
                             for (int FarIndex = currentRead.UP_Far.size() - 1; FarIndex >= 0; FarIndex--) {
+				if (currentRead.Used) break;
                                 if (currentRead.UP_Close[CloseIndex].LengthStr + currentRead.UP_Far[FarIndex].LengthStr == currentRead.getReadLength()) {
                                     currentRead.Used = true;
                                     currentRead.Left = currentRead. UP_Far[FarIndex].AbsLoc - currentRead. UP_Close[CloseIndex].LengthStr + 1;
                                     if (currentRead.MatchedD == '+')
                                         currentRead.Right = currentRead.UP_Far[FarIndex]. AbsLoc - currentRead.UP_Far[FarIndex]. LengthStr - 1;
                                     else currentRead.Right = currentRead.UP_Far[FarIndex]. AbsLoc + currentRead.UP_Far[FarIndex]. LengthStr - 1;
-                                    currentRead.BP = currentRead. UP_Close[CloseIndex].LengthStr - 1;
-                                    currentRead.BPLeft = currentRead. UP_Close[CloseIndex].AbsLoc - g_SpacerBeforeAfter;
+                                    currentRead.BP = currentRead.UP_Close[CloseIndex].LengthStr - 1;
+                                    currentRead.BPLeft = currentRead.UP_Close[CloseIndex].AbsLoc - g_SpacerBeforeAfter;
                                     currentRead.BPRight = currentRead.UP_Far[FarIndex]. AbsLoc - g_SpacerBeforeAfter;//0;//
+					GoodRead = true;
+					InsertedSequence = "\"\"";
+					if (currentRead.BPLeft == 0 || currentRead.BPRight == 0) {
+						std::cout << currentRead;
+                    				//std::cout << tempResult << " " << currentRead.FragName << " " << currentRead.MatchedRelPos << " " << currentRead.BPLeft << " " << currentRead.MatchedD << " " 
+						//	<< currentRead.FarFragName << " " << currentRead.BPRight << " " << currentRead.MatchedFarD << " " << currentRead.Left << " " << currentRead.Right << std::endl;
+					}
                                 }
                             }
                         }
                     }
                     else { //close bigger
                         for (int CloseIndex = currentRead.UP_Close.size() - 1; CloseIndex >= 0; CloseIndex--) {
+				if (currentRead.Used) break;
                             for (unsigned FarIndex = 0; FarIndex < currentRead.UP_Far.size(); FarIndex++) {
+				if (currentRead.Used) break;
                                 if (currentRead.UP_Close[CloseIndex].LengthStr + currentRead.UP_Far[FarIndex].LengthStr == currentRead.getReadLength()) {
                                     currentRead.Used = true;
                                     currentRead.Left = currentRead. UP_Close[CloseIndex].AbsLoc + currentRead. UP_Close[CloseIndex].LengthStr - 1;
                                     if (currentRead.MatchedFarD == '+')
                                         currentRead.Right = currentRead.UP_Far[FarIndex]. AbsLoc - currentRead.UP_Far[FarIndex]. LengthStr - 1;
                                     else currentRead.Right = currentRead.UP_Far[FarIndex]. AbsLoc + currentRead.UP_Far[FarIndex]. LengthStr - 1;
-                                    currentRead.BP = currentRead. UP_Close[CloseIndex].LengthStr - 1;
-                                    currentRead.BPLeft = currentRead. UP_Close[CloseIndex].AbsLoc - g_SpacerBeforeAfter;
+                                    currentRead.BP = currentRead.UP_Close[CloseIndex].LengthStr - 1;
+                                    currentRead.BPLeft = currentRead.UP_Close[CloseIndex].AbsLoc - g_SpacerBeforeAfter;
                                     currentRead.BPRight = currentRead.UP_Far[FarIndex]. AbsLoc - g_SpacerBeforeAfter;//0;//
+					GoodRead = true;
+					InsertedSequence = "\"\"";
+					if (currentRead.BPLeft == 0 || currentRead.BPRight == 0) {
+						std::cout << currentRead;
+                    				//std::cout << tempResult << " " << currentRead.FragName << " " << currentRead.MatchedRelPos << " " << currentRead.BPLeft << " " << currentRead.MatchedD << " " 
+						//	<< currentRead.FarFragName << " " << currentRead.BPRight << " " << currentRead.MatchedFarD << " " << currentRead.Left << " " << currentRead.Right << std::endl;
+					}
                                 }
                             }
                         }
                     }
-                    tempResult = "Anchor " + SameStrand(currentRead.MatchedD) + " " +
-                                 currentRead.FarFragName + " " + IntToString(currentRead.BPRight) + " " + SameStrand(currentRead.MatchedFarD) + " " +
-                                 currentRead.FragName + " " + IntToString(currentRead.BPLeft)  + " " + OtherStrand(currentRead.MatchedD);
-                    //std::cout << tempResult << " " << currentRead.FarFragName << " " << currentRead.BPRight << " " << currentRead.MatchedFarD << " " << currentRead.FragName << " " << currentRead.MatchedD << " " << currentRead.BPLeft << " " << currentRead.Right << " " << currentRead.Left << std::endl;
-                    UpdateInterChromosomeCallAndSupport(CallAndSupport, tempResult);
+			if (GoodRead == false) {
+				unsigned EffectiveLength = currentRead.UP_Close[currentRead.UP_Close.size() - 1].LengthStr + currentRead.UP_Far[currentRead.UP_Far.size() - 1].LengthStr;
+				if (EffectiveLength >= 30 && 
+					currentRead.UP_Close[currentRead.UP_Close.size() - 1].LengthStr >= 10 && currentRead.UP_Far[currentRead.UP_Far.size() - 1].LengthStr >= 10) {
+					//if (currentRead.MatchedD == '+') {
+					InsertedSequence = currentRead.UnmatchedSeq.substr(currentRead.UP_Far[currentRead.UP_Far.size() - 1].LengthStr, currentRead.getReadLength() - EffectiveLength);
+					//}
+					InsertedSequence = "\"" + InsertedSequence + "\"";
+                              	      currentRead.BPLeft = currentRead.UP_Close[currentRead.UP_Close.size() - 1].AbsLoc - g_SpacerBeforeAfter;
+                              	      currentRead.BPRight = currentRead.UP_Far[currentRead.UP_Far.size() - 1]. AbsLoc - g_SpacerBeforeAfter;//0;//
+					GoodRead = true;
+				}
+			}
+			if (GoodRead == true) {
+                    		tempResult = "Anchor " + SameStrand(currentRead.MatchedD) + " " +
+                                 currentRead.FragName + " " + IntToString(currentRead.BPLeft) + " " + OtherStrand(currentRead.MatchedD) + " " +
+                                 currentRead.FarFragName + " " + IntToString(currentRead.BPRight)  + " " + SameStrand(currentRead.MatchedFarD) + " " + InsertedSequence;
+				if (currentRead.BPLeft == 0 || currentRead.BPRight == 0) {
+					//std::cout << currentRead;
+                    			std::cout << tempResult << " " << currentRead.FragName << " " << currentRead.MatchedRelPos << " " << currentRead.BPLeft << " " << currentRead.MatchedD << " " 
+						<< currentRead.FarFragName << " " << currentRead.BPRight << " " << currentRead.MatchedFarD << " " << currentRead.Left << " " << currentRead.Right << std::endl;
+				}
+                    		UpdateInterChromosomeCallAndSupport(CallAndSupport, tempResult);
+			}
+			//else std::cout << "non-template in read " << currentRead.FragName << " " << currentRead.MatchedRelPos << " " << currentRead.BPLeft << " " << currentRead.MatchedD << " " 
+			//			<< currentRead.FarFragName << " " << currentRead.BPRight << " " << currentRead.MatchedFarD << " " << currentRead.Left << " " << currentRead.Right << std::endl;
                 }
             }
         }
     }
     
     for ( std::map<std::string,int> ::iterator it = CallAndSupport.begin() ; it != CallAndSupport.end(); it++ ) {
-        if ((*it).second >=3)
+        if ((*it).second >= 2) {
             INToutputfile << (*it).first << "\tsupport: " << (*it).second << std::endl;
+		//std::cout << (*it).first << "\tsupport: " << (*it).second << std::endl;
+	}
     }
         
     

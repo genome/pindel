@@ -1510,31 +1510,56 @@ struct InterChrCall {
 	std::string SecondChrName;
 	unsigned SecondPos;
 	unsigned NumSupport;
+	std::string InsertedSequence;
 };
 
 void MergeInterChr(ControlState& currentState, UserDefinedSettings *usersettings) {
-	unsigned cutoff = 4;
+	unsigned cutoff = 2;
 	std::ifstream INT_input(usersettings->getINTOutputFilename().c_str());
 	InterChrCall one;
 	std::vector <InterChrCall> All;
 	std::string tempstr;
-	while (INT_input >> tempstr >> one.AnchorD >> one.FirstChrName >> one.FirstPos >> one.FirstD >> one.SecondChrName >> one.SecondPos >> one.SecondD >> tempstr >> one.NumSupport) {
+	while (INT_input >> tempstr >> one.AnchorD >> one.FirstChrName >> one.FirstPos >> one.FirstD >> one.SecondChrName >> one.SecondPos >> one.SecondD >> one.InsertedSequence >> tempstr >> one.NumSupport) {
+		//if (one.FirstPos != 0 && one.SecondPos != 0)
 		All.push_back(one);
+		std::cout << "getting " << one.FirstChrName << "\t" << one.FirstPos << "\t" << one.SecondChrName << "\t" << one.SecondPos << "\t" << one.NumSupport << std::endl;
 	}
-	std::ofstream INToutputfile(usersettings->getINTOutputFilename().c_str());
-	if (All.size() < 2) return;
-	//bool reported;
-	for (unsigned index_a = 0; index_a < All.size() - 1; index_a++) {
-		
-		for (unsigned index_b = index_a + 1; index_b < All.size(); index_b++) {
+	std::ofstream INToutputfile((usersettings->getINTOutputFilename() + "_final").c_str());
+	if (All.size() == 0) return;
+	else if (All.size() < 2) {
+			if (All[0].NumSupport >= cutoff * 2) {
+				INToutputfile << All[0].FirstChrName << "\t" << All[0].FirstPos << "\t" << All[0].SecondChrName << "\t" 
+						<< All[0].SecondPos << "\t" << All[0].InsertedSequence << "\t" << All[0].NumSupport << "\t" 
+						<< All[0].AnchorD << "\t" << All[0].FirstChrName << "\t" << All[0].FirstPos << "\t" << All[0].FirstD << "\t" << All[0].SecondChrName << "\t" 
+						<< All[0].SecondPos << "\t" << All[0].SecondD << "\t" << All[0].InsertedSequence << "\t" << All[0].NumSupport << std::endl;
+			}
+	}
+	bool reported;
+	for (unsigned index_a = 0; index_a < All.size(); index_a++) {
+		reported = false;
+		for (unsigned index_b = index_a; index_b < All.size(); index_b++) {
+			if (index_a == index_b) continue;
 			if (All[index_a].FirstChrName == All[index_b].FirstChrName && All[index_a].SecondChrName == All[index_b].SecondChrName) {
 				if (abs(All[index_a].FirstPos - All[index_b].FirstPos) < 10 && abs(All[index_a].SecondPos - All[index_b].SecondPos) < 10 && All[index_a].NumSupport + All[index_b].NumSupport >= cutoff) {
 					
-					INToutputfile << All[index_a].FirstChrName << "\t" << unsigned((All[index_a].FirstPos + All[index_b].FirstPos) / 2) << "\t" << All[index_a].SecondChrName << "\t" << unsigned((All[index_a].SecondPos + All[index_b].SecondPos) / 2) << "\t" << All[index_a].NumSupport + All[index_b].NumSupport << "\t" 
-					<< All[index_a].AnchorD << "\t" << All[index_a].FirstChrName << "\t" << All[index_a].FirstPos << "\t" << All[index_a].FirstD << "\t" << All[index_a].SecondChrName << "\t" << All[index_a].SecondPos << "\t" << All[index_a].SecondD << "\t" << All[index_a].NumSupport << "\t" << All[index_b].AnchorD << "\t" << All[index_b].FirstChrName << "\t" << All[index_b].FirstPos << "\t" << All[index_b].FirstD << "\t" << All[index_b].SecondChrName << "\t" << All[index_b].SecondPos << "\t" << All[index_b].SecondD << "\t" << All[index_b].NumSupport << std::endl;
+					INToutputfile << "chr\t" << All[index_a].FirstChrName << "\tpos\t" << unsigned((All[index_a].FirstPos + All[index_b].FirstPos) / 2) << "\tchr\t" << All[index_a].SecondChrName << "\tpos\t" 
+							<< unsigned((All[index_a].SecondPos + All[index_b].SecondPos) / 2) << "\tseq\t" << All[index_a].InsertedSequence << "\tsupport\t" << All[index_a].NumSupport + All[index_b].NumSupport << "\tINFOR\t" 
+							<< All[index_a].AnchorD << "\t" << All[index_a].FirstChrName << "\t" << All[index_a].FirstPos << "\t" << All[index_a].FirstD << "\t" << All[index_a].SecondChrName << "\t" 
+							<< All[index_a].SecondPos << "\t" << All[index_a].SecondD << "\t" << All[index_a].InsertedSequence << "\t" << All[index_a].NumSupport << "\t" << All[index_b].AnchorD << "\t" 
+							<< All[index_b].FirstChrName << "\t" << All[index_b].FirstPos << "\t" << All[index_b].FirstD << "\t" << All[index_b].SecondChrName << "\t" << All[index_b].SecondPos << "\t" 
+							<< All[index_b].SecondD << "\t" << All[index_b].InsertedSequence << "\t" << All[index_b].NumSupport << std::endl;
+					reported = true;
 					break;
 				}
 			}			
+		}
+		if (reported == false) {
+			if (All[index_a].NumSupport >= cutoff * 2) {
+				INToutputfile << "chr\t" << All[index_a].FirstChrName << "\tpos\t" << All[index_a].FirstPos << "\tchr\t" << All[index_a].SecondChrName << "\tpos\t" 
+						<< All[index_a].SecondPos << "\tseq\t" << All[index_a].InsertedSequence << "\tsupport\t" << All[index_a].NumSupport << "\tINFOR\t" 
+						<< All[index_a].AnchorD << "\t" << All[index_a].FirstChrName << "\t" << All[index_a].FirstPos << "\t" << All[index_a].FirstD << "\t" << All[index_a].SecondChrName << "\t" 
+						<< All[index_a].SecondPos << "\t" << All[index_a].SecondD << "\t" << All[index_a].InsertedSequence << "\t" << All[index_a].NumSupport << std::endl;
+			}
 		}
 	}
 }
