@@ -172,6 +172,7 @@ public:
 	std::string getMEIOutputFilename() const { return outputFilename + "_DD"; };
 	std::string getINTOutputFilename() const { return outputFilename + "_INT"; };
 	std::string getContigOutputFilename() const { return outputFilename + "_contig"; };
+	std::string getRPOutputFilename() const { return outputFilename + "_RP"; };
 	std::string getIndelConsensusOutputFilename() const { return outputFilename + "_CINDEL"; };
 	bool loopOverAllChromosomes() { return ! getRegion()->isTargetChromosomeDefined(); };
 	SearchRegion* getRegion();

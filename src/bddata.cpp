@@ -507,7 +507,8 @@ void Summarize_InterChr(std::vector <RP_READ> & Reads_RP) {
 }
 
 void BDData::UpdateBD(ControlState & currentState) {
-
+	
+	std::ofstream RPoutputfile(userSettings->getRPOutputFilename().c_str(), std::ios::app);
 	m_bdEvents = m_bdEvents_external;
 
 	//UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
@@ -547,8 +548,12 @@ void BDData::UpdateBD(ControlState & currentState) {
 					{
 						m_bdEvents.push_back(BreakDancerEvent( firstBDCoordinate, secondBDCoordinate ));
 						m_bdEvents.push_back(BreakDancerEvent( secondBDCoordinate, firstBDCoordinate ));
-               
-						std::cout << "adding " << firstChrName << " " << firstPos - g_SpacerBeforeAfter << "\t" << firstPos2 - g_SpacerBeforeAfter << "\t" << currentState.Reads_RP_Discovery[read_index].DA << "\t" << secondChrName << " " << secondPos - g_SpacerBeforeAfter << "\t" << secondPos2 - g_SpacerBeforeAfter << "\t" << currentState.Reads_RP_Discovery[read_index].DB << " to breakdancer events. " << abs((int)secondPos - (int)firstPos) << " Support: " << 								currentState.Reads_RP_Discovery[read_index].NumberOfIdentical << std::endl;
+               					RPoutputfile << firstChrName  << "\t" << firstPos - g_SpacerBeforeAfter  << "\t" << firstPos2 - g_SpacerBeforeAfter << "\t"  << currentState.Reads_RP_Discovery[read_index].DA << "\t" 
+							     << secondChrName << "\t" << secondPos - g_SpacerBeforeAfter << "\t" << secondPos2 - g_SpacerBeforeAfter << "\t" << currentState.Reads_RP_Discovery[read_index].DB << "\t" 
+							     << abs((int)secondPos - (int)firstPos) << "\tSupport: " << currentState.Reads_RP_Discovery[read_index].NumberOfIdentical << std::endl;
+						std::cout << "adding " << firstChrName << " " << firstPos - g_SpacerBeforeAfter << "\t" << firstPos2 - g_SpacerBeforeAfter << "\t" << currentState.Reads_RP_Discovery[read_index].DA 
+							<< "\t" << secondChrName << " " << secondPos - g_SpacerBeforeAfter << "\t" << secondPos2 - g_SpacerBeforeAfter << "\t" << currentState.Reads_RP_Discovery[read_index].DB 
+							<< " to breakdancer events. " << abs((int)secondPos - (int)firstPos) << " Support: " << currentState.Reads_RP_Discovery[read_index].NumberOfIdentical << std::endl;
 					}
 				}
         
@@ -587,7 +592,9 @@ void BDData::UpdateBD(ControlState & currentState) {
 						m_bdEvents.push_back(BreakDancerEvent( firstBDCoordinate, secondBDCoordinate ));
 
 						m_bdEvents.push_back(BreakDancerEvent( secondBDCoordinate, firstBDCoordinate ));
-
+						RPoutputfile << firstChrName << "\t" << firstPos - g_SpacerBeforeAfter  << "\t" << firstPos - g_SpacerBeforeAfter  << "\t"  << currentState.Reads_RP_Discovery_InterChr[read_index].DA << "\t" 
+							    << secondChrName << "\t" << secondPos - g_SpacerBeforeAfter << "\t" << secondPos - g_SpacerBeforeAfter << "\t"  << currentState.Reads_RP_Discovery_InterChr[read_index].DB << "\t0\t" 
+							    << "\tSupport: " << currentState.Reads_RP_Discovery_InterChr[read_index].NumberOfIdentical << std::endl;
 						std::cout << "adding interchr " << firstChrName << " " << firstPos - g_SpacerBeforeAfter << "\t" << secondChrName << " " << secondPos - g_SpacerBeforeAfter <<  " to breakdancer events. " 								<< " Support: " << currentState.Reads_RP_Discovery_InterChr[read_index].NumberOfIdentical << std::endl;
 					}
 

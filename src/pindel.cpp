@@ -74,7 +74,7 @@
 /* EW: update 0.2.4s: bugfix for -p option of Pindel0.2.4r */
 /* EW: update 0.2.4t, updates now shown in RELEASE document in trunk directory */
 
-const std::string Pindel_Version_str = "Pindel version 0.2.5, June 22 2013.";
+const std::string Pindel_Version_str = "Pindel version 0.2.5a, July 2 2013.";
 
 const Chromosome g_dummyChromosome("","");
 Genome g_genome;
@@ -1725,6 +1725,8 @@ int main(int argc, char *argv[])
 			else g_ChrName2Ploidy.insert(std::pair<std::string, unsigned>(ChrName, Ploidy) );
 		}
 	}
+
+	std::ofstream RPoutputfile(userSettings->getRPOutputFilename().c_str());
 
 	/* Normal pindel functioning: search SVs*/
 
