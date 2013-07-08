@@ -707,6 +707,14 @@ static int load_discordant_reads(MEI_data& mei_data, std::vector<bam_info>& bam_
         // Setup link to bamfile, its index and header.
         bamFile fp = bam_open(source.BamFile.c_str(), "r");
         bam_index_t *idx = bam_index_load(source.BamFile.c_str());
+        
+        if (idx == NULL) {
+            LOG_WARN(*logStream << time_log() << "Failed to load index for " << source.BamFile.c_str() << std::endl);
+            LOG_WARN(*logStream << "Skipping window: " << chr_name << ", " << window.getStart() << "--" <<
+                     window.getEnd() << " for BAM-file: " << source.BamFile.c_str() << std::endl);
+            continue;
+        }
+        
         bam_header_t *header = bam_header_read(fp);
         bam_init_header_hash(header);
         int tid = bam_get_tid(header, chr_name.c_str());
@@ -714,6 +722,8 @@ static int load_discordant_reads(MEI_data& mei_data, std::vector<bam_info>& bam_
         if (tid < 0) {
             LOG_WARN(*logStream << time_log() << "Could not find sequence in alignment file: '" << chr_name <<
                      "'" << std::endl);
+            LOG_WARN(*logStream << "Skipping window: " << chr_name << ", " << window.getStart() << "--" <<
+                     window.getEnd() << " for BAM-file: " << source.BamFile.c_str() << std::endl);
             continue;
         }
         
@@ -764,34 +774,50 @@ static int append_cluster_connections(std::vector<MEI_event>& insertion_events, 
     // Loop over whole genome to find mates of discordant reads near DD breakpoints.
     g_genome.reset();
     MEI_data mei_data;
-    SearchRegion region = SearchRegion("ALL");
-    do {
-        const Chromosome* currentChromosome = g_genome.getNextChromosome();
-        if (currentChromosome == NULL) {
-            break;
-        }
+    int result;
+    
+    // Make dummy BED-records spanning the whole genome.
+    std::vector<BED> dummy_beds;
+    for (unsigned index = 0; index < g_ChrNameAndSizeAndIndex.size(); index++) {
+        BED OneBedRecord;
+        OneBedRecord.ChrName = g_ChrNameAndSizeAndIndex[index].ChrName;
+        OneBedRecord.Start = 1;
+        OneBedRecord.End = g_ChrNameAndSizeAndIndex[index].ChrSize;
+        dummy_beds.push_back(OneBedRecord);
+    }
+    
+    // Loop over BED-regions.
+	for (unsigned bed_index = 0; bed_index < dummy_beds.size(); bed_index++) {
+		std::string Bed_ChrName = dummy_beds[bed_index].ChrName;
+		unsigned Bed_start = dummy_beds[bed_index].Start;
+		unsigned Bed_end = dummy_beds[bed_index].End;
         
-        g_maxPos = 0;
-        CurrentChrMask.resize(currentChromosome->getCompSize());
-        for (unsigned int i = 0; i < currentChromosome->getCompSize(); i++) {
+		const Chromosome* currentChromosome = g_genome.getChr(Bed_ChrName);
+        
+		if (currentChromosome == NULL) {
+			return 1;
+		}
+        
+		LOG_INFO(*logStream << time_log() << "Discordant read collection for current window: " << Bed_ChrName <<
+                 ", " << Bed_start << "--" << Bed_end << std::endl);
+        
+		CurrentChrMask.resize(currentChromosome->getCompSize());
+		for (unsigned int i = 0; i < currentChromosome->getCompSize(); i++) {
             CurrentChrMask[i] = 'N';
-        }
+		}
         
-        LoopingSearchWindow currentWindow(&region, currentChromosome, WINDOW_SIZE);
-        // loop over one chromosome
+		userSettings->getRegion()->SetRegion(Bed_ChrName, Bed_start, Bed_end);
+		LoopingSearchWindow currentWindow( userSettings->getRegion(), currentChromosome, WINDOW_SIZE, Bed_start, Bed_end );
+        
+        // loop over one bed region
         do {
-            LOG_DEBUG(*logStream << time_log() << "Dispersed Duplication detection current window: " <<
-                     currentWindow.getChromosomeName() << " " << currentWindow.getStart() << "--" <<
-                     currentWindow.getEnd() << std::endl);
-            // Load discordant reads.
-            int result = load_discordant_reads(mei_data, current_state.bams_to_parse, currentChromosome->getName(),
-                                               currentWindow, userSettings);
+            result = load_discordant_reads(mei_data, current_state.bams_to_parse, currentChromosome->getName(),
+                                           currentWindow, userSettings);
             if (result) {
                 // something went wrong loading the reads, return error code.
                 return result;
             }
             
-            // todo: store reads here!!!
             std::map<std::string, size_t>::iterator name_match;
             size_t disc_read_count = mei_data.discordant_reads.size();
             for (size_t i = 0; i < disc_read_count; i++) {
@@ -822,7 +848,7 @@ static int append_cluster_connections(std::vector<MEI_event>& insertion_events, 
                     // the breakpoint, skip it!
                     continue;
                 }
-
+                
                 if (strand == Plus) {
                     insertion_events.at(event_idx).fwd_mapping_reads.push_back(*(mei_data.discordant_reads.at(i)));
                 } else {
@@ -831,10 +857,11 @@ static int append_cluster_connections(std::vector<MEI_event>& insertion_events, 
             }
             
             cleanup_reads(mei_data.discordant_reads);
+			
             currentWindow.next();
-            
         } while (!currentWindow.finished());
-    } while (true);
+	}
+    
     return 0;
 }
 
@@ -870,6 +897,9 @@ void searchMEI(MEI_data& finalState, Genome& genome, std::map<int, std::string>&
         insertion_events.push_back(event);
     }
     
+    LOG_INFO(*logStream << time_log() << "Found " << insertion_events.size() << " dispersed duplication events."
+             << std::endl);
+    
     if (userSettings->DD_REPORT_DUPLICATION_READS) {
         // Append information about reads mapping inside DDs.
         LOG_INFO(*logStream << time_log() << "Collecting discordant read information for dispersed duplication "
@@ -884,9 +914,6 @@ void searchMEI(MEI_data& finalState, Genome& genome, std::map<int, std::string>&
     for (size_t i = 0; i < insertion_events.size(); i++) {
         reportMEIevent(finalState, insertion_events.at(i), i + 1, genome, seq_name_dict, out);
     }
-    
-    LOG_INFO(*logStream << time_log() << "Found " << insertion_events.size() << " dispersed duplication events."
-             << std::endl);
 }
 
 
@@ -919,29 +946,35 @@ int searchMEImain(ControlState& current_state, Genome& genome, UserDefinedSettin
     MEI_data mei_data;
     int result;
     
-    do {
-        const Chromosome* currentChromosome = g_genome.getNextChromosome();
-        if (currentChromosome == NULL) {
-            break;
-        }
-        // Skip current chromosome if another one is specifically targeted.
-        if (!userSettings->loopOverAllChromosomes() && 
-            currentChromosome->getName() != userSettings->getRegion()->getTargetChromosomeName()) {
-            continue;
-        }
+    std::string CurrentChrName;
+	std::string PreviousChrName = "";
+    
+    // Loop over BED-regions defined in control state.
+	for (unsigned bed_index = 0; bed_index < current_state.IncludeBed.size(); bed_index++) {
+		std::string Bed_ChrName = current_state.IncludeBed[bed_index].ChrName;
+		unsigned Bed_start = current_state.IncludeBed[bed_index].Start;
+		unsigned Bed_end = current_state.IncludeBed[bed_index].End;
         
-        g_maxPos = 0;
-        CurrentChrMask.resize(currentChromosome->getCompSize());
-        for (unsigned int i = 0; i < currentChromosome->getCompSize(); i++) {
+		const Chromosome* currentChromosome = g_genome.getChr(Bed_ChrName);
+        
+		if (currentChromosome == NULL) {
+			std::cout << "There is no " << CurrentChrName << " in the reference file." << std::endl;
+			return 1;
+		}
+        
+		LOG_INFO(*logStream << time_log() << "Dispersed Duplication detection current window: " << Bed_ChrName <<
+                 ", " << Bed_start << "--" << Bed_end << std::endl);
+        
+		CurrentChrMask.resize(currentChromosome->getCompSize());
+		for (unsigned int i = 0; i < currentChromosome->getCompSize(); i++) {
             CurrentChrMask[i] = 'N';
-        }
+		}
         
-        LoopingSearchWindow currentWindow(userSettings->getRegion(), currentChromosome, WINDOW_SIZE);
-        // loop over one chromosome
+		userSettings->getRegion()->SetRegion(Bed_ChrName, Bed_start, Bed_end);
+		LoopingSearchWindow currentWindow( userSettings->getRegion(), currentChromosome, WINDOW_SIZE, Bed_start, Bed_end );
+        
+        // loop over one bed region
         do {
-            LOG_INFO(*logStream << time_log() << "Dispersed Duplication detection current window: " <<
-                     currentWindow.getChromosomeName() << " " << currentWindow.getStart() << "--" <<
-                     currentWindow.getEnd() << std::endl);
             result = load_discordant_reads(mei_data, current_state.bams_to_parse, currentChromosome->getName(),
                                            currentWindow, userSettings);
             if (result) {
@@ -951,10 +984,10 @@ int searchMEImain(ControlState& current_state, Genome& genome, UserDefinedSettin
             
             searchMEIBreakpoints(mei_data, current_state.bams_to_parse, currentChromosome, userSettings);
             cleanup_reads(mei_data.discordant_reads);
-            currentWindow.next();
             
+			currentWindow.next();
         } while (!currentWindow.finished());
-    } while (true);
+	}
     
     // Reset genome for subsequent traversals.
     g_genome.reset();
