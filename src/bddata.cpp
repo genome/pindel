@@ -161,10 +161,11 @@ void SortRPByChrPos(std::vector <RP_READ> & Reads_RP) { // no interchromosome RP
     sort(Reads_RP.begin(), Reads_RP.end(), SortByFirstAndThenSecondCoordinate);
 }*/
 bool RecipicalOverlap(RP_READ & first, RP_READ & second) {
-	if (abs(first.PosA - first.PosA1) > 1000) return false;
-	if (abs(first.PosB - first.PosB1) > 1000) return false;
-	if (abs(second.PosA - second.PosA1) > 1000) return false;
-	if (abs(second.PosB - second.PosB1) > 1000) return false;
+	unsigned distance = 500;
+	if (abs(first.PosA - first.PosA1) > distance) return false;
+	if (abs(first.PosB - first.PosB1) > distance) return false;
+	if (abs(second.PosA - second.PosA1) > distance) return false;
+	if (abs(second.PosB - second.PosB1) > distance) return false;
     float cutoff = 0.9;
     
     unsigned FirstPosA = (first.PosA + first.PosA1)/2;
