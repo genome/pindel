@@ -619,7 +619,7 @@ void createHeader(ofstream &outFile, const string& sourceProgram, const string& 
 	if (pindel024uOrLater) {
 	   outFile << "##FORMAT=<ID=RD,Number=1,Type=Integer,Description=\"Reference depth, how many reads support the reference\">" << endl;
 	}
-   outFile << "##FORMAT=<ID=AD,Number=1,Type=Integer,Description=\"Allele depth, how many reads support this allele\">" << endl;
+   outFile << "##FORMAT=<ID=AD,Number=2,Type=Integer,Description=\"Allele depth, how many reads support this allele\">" << endl;
 
    // headers of columns
    outFile << "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO";
