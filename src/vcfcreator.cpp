@@ -1480,198 +1480,203 @@ template<class T> void showVector( vector<T> vect )
 /* 'convertIndelToSVdata' converts insertions and deletions to nicely formatted SV-data. */
 void convertIndelToSVdata( InputReader& pindelInput, map< string, int>& sampleMap, Genome& genome, SVData& svd, const string& targetChromosomeID)
 {
-   string line;
+	string line;
 	svd.setGenome( genome );
-   do {
-      line = pindelInput.getLine();
-   }
-   while (!pindelInput.eof() && !isdigit(line[0]));
+	do {
+		line = pindelInput.getLine();
+	}
+	while (!pindelInput.eof() && !isdigit(line[0]));
 
-   if (pindelInput.eof()) {
-      return;
-   }
+	if (pindelInput.eof()) {
+		 return;
+	}
 
-   stringstream lineStream;
-   lineStream << line;
-   string svType = fetchElement( lineStream, 2 ); // to 2
-   if ( svType.compare("LI") == 0 ) {
-      svd.setSVtype("INS");
-      svd.setSVlen( 0 );
-      string chromosomeID = fetchElement( lineStream, 2);
-      const string* reference = genome.getChromosome( chromosomeID );
-      if ( reference== NULL ) {
-         cout << "Error! Reference chromosome \"" << chromosomeID << "\" not found!" << endl;
-         exit(EXIT_FAILURE);
-      }
-      svd.setChromosome( chromosomeID );
-      if (chromosomeID!=targetChromosomeID) {
-         return;
-      }
-      int beforeStartPos = atoi( fetchElement( lineStream, 1 ).c_str() );
-      svd.setPosition( beforeStartPos );
-      int totalPlusSupport = atoi( fetchElement( lineStream, 2 ).c_str());
-      int rightmostEndPos = atoi (fetchElement( lineStream, 1 ).c_str()); // now at position 14
-//cout << "plusSupport, righmostEndPos is " << plusSupport << ", " << rightmostEndPos << endl;
-      svd.setEnd( rightmostEndPos );
-      svd.setBPrange( beforeStartPos, rightmostEndPos );
-      int totalMinSupport = atoi( fetchElement( lineStream, 2 ).c_str());
-
+	stringstream lineStream;
+	lineStream << line;
+	string svType = fetchElement( lineStream, 2 ); // to 2
+	if ( svType.compare("LI") == 0 ) {
+		svd.setSVtype("INS");
+		svd.setSVlen( 0 );
+		string chromosomeID = fetchElement( lineStream, 2);
+		const string* reference = genome.getChromosome( chromosomeID );
+		if ( reference== NULL ) {
+			cout << "Error! Reference chromosome \"" << chromosomeID << "\" not found!" << endl;
+			exit(EXIT_FAILURE);
+		}
+		svd.setChromosome( chromosomeID );
+		if (chromosomeID!=targetChromosomeID) {
+			return;
+		}
+		int beforeStartPos = atoi( fetchElement( lineStream, 1 ).c_str() );
+		svd.setPosition( beforeStartPos );
+		int totalPlusSupport = atoi( fetchElement( lineStream, 2 ).c_str());
+		int rightmostEndPos = atoi (fetchElement( lineStream, 1 ).c_str()); // now at position 14
+		//cout << "plusSupport, righmostEndPos is " << plusSupport << ", " << rightmostEndPos << endl;
+		svd.setEnd( rightmostEndPos );
+		svd.setBPrange( beforeStartPos, rightmostEndPos );
+		int totalMinSupport = atoi( fetchElement( lineStream, 2 ).c_str());
 		// if the file has been created by a recent version of pindel, read in the extra elements
- 		string sampleName = fetchElement( lineStream, 1);
-      int refSupportAtStartOfEvent = 0;
+		string sampleName = fetchElement( lineStream, 1);
+		int refSupportAtStartOfEvent = 0;
 		int refSupportAtEndOfEvent = 0;
 
 		/*if ( pindel024uOrLater ) {
-			refSupportAtStartOfEvent = atoi( fetchElement( lineStream, 1 ).c_str());
-			refSupportAtEndOfEvent = atoi( fetchElement( lineStream, 1 ).c_str());
+		refSupportAtStartOfEvent = atoi( fetchElement( lineStream, 1 ).c_str());
+		refSupportAtEndOfEvent = atoi( fetchElement( lineStream, 1 ).c_str());
 		}*/
-       int totalRefSupport = max(refSupportAtStartOfEvent, refSupportAtEndOfEvent);
-		int numberItemsUntilNextSupport = ( pindel024uOrLater ? 2 : 2 );
-   	int samplePlusSupport = atoi( fetchElement( lineStream, numberItemsUntilNextSupport ).c_str());
-	   int sampleMinSupport = atoi( fetchElement( lineStream, numberItemsUntilNextSupport ).c_str()); // now at position 35, total +supports sample 1
-   	//int count=0;
-  		while (!lineStream.fail()) {
-      	if (sampleMap.find( sampleName )==sampleMap.end() ) {
-      	   cout << "Error: could not find sample " << sampleName << endl;
-      	}
-      	else {
-         	int sampleID = sampleMap[ sampleName ];
-         	svd.addGenotype( sampleID, samplePlusSupport , sampleMinSupport, totalRefSupport );
-      	}
-			/*if ( pindel024uOrLater ) {
-				refSupportAtStartOfEvent = atoi( fetchElement( lineStream, 1 ).c_str() );
-				refSupportAtEndOfEvent = atoi( fetchElement( lineStream, 1 ).c_str());
-			}*/
+		int totalRefSupport = max(refSupportAtStartOfEvent, refSupportAtEndOfEvent);
+		int numberItemsUntilNextSupport = ( pindel024uOrLater ? 2 : 2 );	
+		int samplePlusSupport = atoi( fetchElement( lineStream, numberItemsUntilNextSupport ).c_str());
+		int sampleMinSupport = atoi( fetchElement( lineStream, numberItemsUntilNextSupport ).c_str()); // now at position 35, total +supports sample 1
+		//int count=0;
+		while (!lineStream.fail()) {
+			if (sampleMap.find( sampleName )==sampleMap.end() ) {
+				cout << "Error: could not find sample " << sampleName << endl;
+			}
+			else {
+				int sampleID = sampleMap[ sampleName ];
+				svd.addGenotype( sampleID, samplePlusSupport , sampleMinSupport, totalRefSupport );
+			}
+				/*if ( pindel024uOrLater ) {
+					refSupportAtStartOfEvent = atoi( fetchElement( lineStream, 1 ).c_str() );
+					refSupportAtEndOfEvent = atoi( fetchElement( lineStream, 1 ).c_str());
+				}*/
 			int totalRefSupport = max(refSupportAtStartOfEvent, refSupportAtEndOfEvent);
-      	sampleName = fetchElement( lineStream, 1); // for unique support, 2->1,
-	      samplePlusSupport = atoi( fetchElement( lineStream, numberItemsUntilNextSupport ).c_str()); // for unique support, 2->1
-   	   sampleMinSupport = atoi( fetchElement( lineStream, numberItemsUntilNextSupport ).c_str()); // now at position 33, total +supports sample 1
-  		}
-      return;
-   }
-   svd.setSVlen( fetchElement( lineStream, 1 ) ); // to 3
+			sampleName = fetchElement( lineStream, 1); // for unique support, 2->1,
+			samplePlusSupport = atoi( fetchElement( lineStream, numberItemsUntilNextSupport ).c_str()); // for unique support, 2->1
+			sampleMinSupport = atoi( fetchElement( lineStream, numberItemsUntilNextSupport ).c_str()); // now at position 33, total +supports sample 1
+		}
+		return;
+	}
+	svd.setSVlen( fetchElement( lineStream, 1 ) ); // to 3
 
-   // get number(s) of NT bases added (two numbers for inversions!)
-   string numNTaddedStr = fetchElement( lineStream, 2 ); // to 5
+	// get number(s) of NT bases added (two numbers for inversions!)
+	string numNTaddedStr = fetchElement( lineStream, 2 ); // to 5
 
-   int numNTadded = atoi( numNTaddedStr.c_str() ); // should get first number
+	int numNTadded = atoi( numNTaddedStr.c_str() ); // should get first number
 	bool simpleInversion = false;
-   int numNTinvAdded=-1;
+	int numNTinvAdded=-1;
 	//cout << "Printing " << numNTaddedStr << endl;
-   if ( svType.compare("INV") == 0 ) { // two numbers separated by : instead of one
+	if ( svType.compare("INV") == 0 ) { // two numbers separated by : instead of one
 		//cout << "Found ':' at position " << numNTaddedStr.find(":") << endl;
-      if (numNTaddedStr.find(":")==string::npos) {
+		if (numNTaddedStr.find(":")==string::npos) {
 			//cout << "Found simple inversion!\n";
-         simpleInversion = true;
-      }
-      else {
-         int separatorPos = numNTaddedStr.find(":");
-         string secondNumber = numNTaddedStr.substr(separatorPos+1);
-         numNTinvAdded = atoi( secondNumber.c_str() );
-      }
-   }
+			simpleInversion = true;
+		}
+		else {
+			int separatorPos = numNTaddedStr.find(":");
+			string secondNumber = numNTaddedStr.substr(separatorPos+1);
+			numNTinvAdded = atoi( secondNumber.c_str() );
+		}
+	}
 
-   string ntAdded = fetchElement( lineStream, 1 ); // to 6
-   string ntInvAdded = "";
+	string ntAdded = fetchElement( lineStream, 1 ); // to 6
+	string ntInvAdded = "";
 
 	// basically, there are two type of inversions:
 	//	a) The 'alternatively called small deletions' INV 2 NT 2 "TG"
 	// b) the regular inversions INV98 NT 0:60 "":"GCT"
-   if ( svType.compare("INV") == 0 ) {
+	if ( svType.compare("INV") == 0 ) {
 		if (ntAdded.find(":")==string::npos ) {
 			simpleInversion = true;
 		}
-      else {
+		else {
 			int separatorPos = ntAdded.find(":");
-	      ntInvAdded = ntAdded.substr( separatorPos+2, numNTinvAdded ); // erases ""
+			ntInvAdded = ntAdded.substr( separatorPos+2, numNTinvAdded ); // erases ""
 			svd.setSecondNT( ntInvAdded );
-	      ntAdded = ntAdded.substr(0,separatorPos);
+			ntAdded = ntAdded.substr(0,separatorPos);
 		}
-   }
-   ntAdded.erase(0,1); // erases opening "
-   ntAdded.erase(numNTadded); // erases closing "
+	}
+	ntAdded.erase(0,1); // erases opening "
+	ntAdded.erase(numNTadded); // erases closing "
 	if (!simpleInversion) { svd.setNT( ntAdded ); }
-   string chromosomeID = fetchElement( lineStream, 2); // now at position 8
-   if (chromosomeID!=targetChromosomeID) {
-      return;
-   }
-   const string* reference = genome.getChromosome( chromosomeID );
-//cout << "reference is " << *reference << endl;
-   if ( reference== NULL ) {
-      cout << "Error! Reference chromosome \"" << chromosomeID << "\" not found!" << endl;
-      exit(EXIT_FAILURE);
-   }
-   svd.setChromosome( chromosomeID );
-   int beforeStartPos = atoi( fetchElement( lineStream, 2 ).c_str() ); // pos 10
-   svd.setPosition( beforeStartPos ); // now at position 10
-   int leftmostEndPos = atoi( fetchElement( lineStream, 1 ).c_str()); // now at position 11
-   int leftmostStartPos = atoi (fetchElement( lineStream, 2 ).c_str());  // at position 13
-   int rightmostEndPos = atoi (fetchElement( lineStream, 1 ).c_str()); // now at position 14
-   svd.setBPrange( leftmostStartPos, rightmostEndPos );
-   svd.setEnd( leftmostEndPos );
-   svd.setHomlen( rightmostEndPos - leftmostEndPos );
-   string homSeq="";
-   for (int position=leftmostEndPos; position<rightmostEndPos; position++ ) {
-      homSeq += (*reference)[ position ];
-   }
-   svd.setHomseq( homSeq );
-   if ( svType.compare("D")==0 ) {
-      if (numNTadded==0 ) {
-         svd.setSVtype( "DEL" );
-         svd.setReplace( 0 );
-      }
-      else {   // some NT-bases added
-         svd.setSVtype( "RPL" );
-         svd.setReplace( numNTadded );
-      }
-   }
-   else if ( svType.compare("I")==0 ) {
-      svd.setSVtype("INS");
-      svd.setReplace( 0 );
-   }
-   else if ( svType.compare("TD")==0 ) {
-      svd.setSVtype("DUP:TANDEM");
-      svd.setReplace( numNTadded );
-   }
-   else if ( svType.compare("INV") == 0 ) {
-      svd.setSVtype("INV");
-      if (simpleInversion) {
+
+	string chromosomeID = fetchElement( lineStream, 2); // now at position 8
+	if (chromosomeID!=targetChromosomeID) {
+		return;
+	}
+	const string* reference = genome.getChromosome( chromosomeID );
+	//cout << "reference is " << *reference << endl;
+	if ( reference== NULL ) {
+		cout << "Error! Reference chromosome \"" << chromosomeID << "\" not found!" << endl;
+		exit(EXIT_FAILURE);
+	}
+	svd.setChromosome( chromosomeID );
+	int beforeStartPos = atoi( fetchElement( lineStream, 2 ).c_str() ); // pos 10
+	svd.setPosition( beforeStartPos ); // now at position 10
+	int leftmostEndPos = atoi( fetchElement( lineStream, 1 ).c_str()); // now at position 11
+	int leftmostStartPos = atoi (fetchElement( lineStream, 2 ).c_str());  // at position 13
+	int rightmostEndPos = atoi (fetchElement( lineStream, 1 ).c_str()); // now at position 14
+	svd.setBPrange( leftmostStartPos, rightmostEndPos );
+	svd.setEnd( leftmostEndPos );
+	svd.setHomlen( rightmostEndPos - leftmostEndPos );
+	string homSeq="";
+	for (int position=leftmostEndPos; position<rightmostEndPos; position++ ) {
+		homSeq += (*reference)[ position ];
+	}
+	svd.setHomseq( homSeq );
+	if ( svType.compare("D")==0 ) {
+		if (numNTadded==0 ) {
+			svd.setSVtype( "DEL" );
+			svd.setReplace( 0 );
+		}
+		else {   // some NT-bases added
+			svd.setSVtype( "RPL" );
+			svd.setReplace( numNTadded );
+		}
+	}
+	else if ( svType.compare("I")==0 ) {
+		svd.setSVtype("INS");
+		svd.setReplace( 0 );
+	}
+	else if ( svType.compare("TD")==0 ) {
+		svd.setSVtype("DUP:TANDEM");
+		svd.setReplace( numNTadded );
+	}
+	else if ( svType.compare("INV") == 0 ) {
+		svd.setSVtype("INV");
+		if (simpleInversion) {
 			svd.setReplace( 0, 0 );
 		}
 		else {
-         svd.setReplace( numNTadded, numNTinvAdded );
-      }
-   }
-   string sampleName = fetchElement( lineStream, 18);
-   int refSupportAtStartOfEvent = 0;
+			svd.setReplace( numNTadded, numNTinvAdded );
+		}
+	}
+	string sampleName = fetchElement( lineStream, 18);
+	int refSupportAtStartOfEvent = 0;
 	int refSupportAtEndOfEvent = 0;
 
 	if ( pindel024uOrLater ) {
 		refSupportAtStartOfEvent = atoi( fetchElement( lineStream, 1 ).c_str() );
 		refSupportAtEndOfEvent = atoi( fetchElement( lineStream, 1 ).c_str() );
+		//std::cout << "outside refSupportAtStartOfEvent: " <<  sampleName << "\t" << refSupportAtStartOfEvent << "\t" << "refSupportAtEndOfEvent: " << refSupportAtEndOfEvent << std::endl;
 	}
 	int totalRefSupport = max(refSupportAtStartOfEvent, refSupportAtEndOfEvent);
+	std::cout << "outside totalRefSupport: " << totalRefSupport << std::endl; 
 	int numberOfItemsUntilNextSupport = ( pindel024uOrLater ? 2 : 2 );
-   int plusSupport = atoi( fetchElement( lineStream, numberOfItemsUntilNextSupport - 1 ).c_str()); // now at position 33, total +supports sample 1; for unique support 1->2
-   int minSupport = atoi( fetchElement( lineStream, numberOfItemsUntilNextSupport ).c_str()); // now at position 35, total +supports sample 1
-   int count=0;
-   while (!lineStream.fail()) {
-      if (sampleMap.find( sampleName )==sampleMap.end() ) {
-         cout << "Error: could not find sample " << sampleName << endl;
-      }
-      else {
-         int sampleID = sampleMap[ sampleName ];
-         svd.addGenotype( sampleID, plusSupport , minSupport, totalRefSupport );
-      }
-      sampleName = fetchElement( lineStream, 2); // for unique support, 2->1,
+	int plusSupport = atoi( fetchElement( lineStream, numberOfItemsUntilNextSupport - 1 ).c_str()); // now at position 33, total +supports sample 1; for unique support 1->2
+	int minSupport = atoi( fetchElement( lineStream, numberOfItemsUntilNextSupport ).c_str()); // now at position 35, total +supports sample 1
+	int count=0;
+	while (!lineStream.fail()) {
+		if (sampleMap.find( sampleName )==sampleMap.end() ) {
+			cout << "Error: could not find sample " << sampleName << endl;
+		}
+		else {
+			int sampleID = sampleMap[ sampleName ];
+			//std::cout << "Adding " << sampleID << "\t" << plusSupport << "\t" << minSupport << "\t" << totalRefSupport << std::endl; 
+			svd.addGenotype( sampleID, plusSupport , minSupport, totalRefSupport );
+		}
+		sampleName = fetchElement( lineStream, 2); // for unique support, 2->1,
 		if ( pindel024uOrLater ) {
 			refSupportAtStartOfEvent = atoi( fetchElement( lineStream, 1 ).c_str() );
 			refSupportAtEndOfEvent = atoi( fetchElement( lineStream, 1 ).c_str() );
+			//std::cout << "inside refSupportAtStartOfEvent: " << sampleName << "\t" << refSupportAtStartOfEvent << "\t" << "refSupportAtEndOfEvent: " << refSupportAtEndOfEvent << std::endl;
 		}
-		int totalRefSupport = max(refSupportAtStartOfEvent, refSupportAtEndOfEvent);
-      plusSupport = atoi( fetchElement( lineStream, numberOfItemsUntilNextSupport - 1 ).c_str()); // for unique support, 2->1
-      minSupport = atoi( fetchElement( lineStream, numberOfItemsUntilNextSupport ).c_str()); // now at position 33, total +supports sample 1
-   }
+		totalRefSupport = max(refSupportAtStartOfEvent, refSupportAtEndOfEvent);
+		//std::cout << "insert totalRefSupport: " << totalRefSupport << std::endl; 
+		plusSupport = atoi( fetchElement( lineStream, numberOfItemsUntilNextSupport - 1 ).c_str()); // for unique support, 2->1
+		minSupport = atoi( fetchElement( lineStream, numberOfItemsUntilNextSupport ).c_str()); // now at position 33, total +supports sample 1
+	}
 }
 
 /* 'readReference' reads in the reference. */
