@@ -1652,7 +1652,7 @@ void convertIndelToSVdata( InputReader& pindelInput, map< string, int>& sampleMa
 		//std::cout << "outside refSupportAtStartOfEvent: " <<  sampleName << "\t" << refSupportAtStartOfEvent << "\t" << "refSupportAtEndOfEvent: " << refSupportAtEndOfEvent << std::endl;
 	}
 	int totalRefSupport = max(refSupportAtStartOfEvent, refSupportAtEndOfEvent);
-	std::cout << "outside totalRefSupport: " << totalRefSupport << std::endl; 
+	//std::cout << "outside totalRefSupport: " << totalRefSupport << std::endl; 
 	int numberOfItemsUntilNextSupport = ( pindel024uOrLater ? 2 : 2 );
 	int plusSupport = atoi( fetchElement( lineStream, numberOfItemsUntilNextSupport - 1 ).c_str()); // now at position 33, total +supports sample 1; for unique support 1->2
 	int minSupport = atoi( fetchElement( lineStream, numberOfItemsUntilNextSupport ).c_str()); // now at position 35, total +supports sample 1
