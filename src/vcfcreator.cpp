@@ -742,9 +742,9 @@ Genotype::Genotype( const int readDepthPlus, const int readDepthMinus, const int
 
 void Genotype::fuse( const Genotype& gt )
 {
-   d_readDepthPlus += gt.d_readDepthPlus;
-   d_readDepthMinus += gt.d_readDepthMinus;
-	d_totalRefSupport += gt.d_totalRefSupport;
+	d_readDepthPlus += gt.d_readDepthPlus;
+	d_readDepthMinus += gt.d_readDepthMinus;
+	d_totalRefSupport = max(d_totalRefSupport, gt.d_totalRefSupport);
 }
 
 /** 'balanced' returns whether the a and b seem derived from a normal genomic binomial distribution of a and b, chance should be over 95% that the distribution is believable given heterozygosy (theoretically, as many
@@ -857,55 +857,55 @@ const string Genotype::getGTAD() const
 class SVData
 {
 
-   friend ostream& operator<<(ostream& os, const SVData& svd);
+	friend ostream& operator<<(ostream& os, const SVData& svd);
 
 public:
-   SVData(const int genotypeTotal);
+	SVData(const int genotypeTotal);
 
-   int getPosition() const {
+	int getPosition() const {
 		// attempted workaround for GATK undocumented feature
 		if (g_par.gatkCompatible && altSameLengthAsRef()) {
 			return d_position+1;
 		}
 		else {
-      	return d_position;
+			return d_position;
 		}
-   }
-   int getSize() const {
-      return d_svlen;
-   }
-   bool bothStrands() const;
+ 	}
+	int getSize() const {
+		return d_svlen;
+	}
+	bool bothStrands() const;
 	int getNumSupportSamples(const bool onlyBalancedSamples, const int minimumStrandSupport) const;
-   int getNumSupportReads() const;
+	int getNumSupportReads() const;
 
-   string getChromosome() const {
-      return d_chromosome;
-   }
+	string getChromosome() const {
+		return d_chromosome;
+	}
 
-   void setChromosome(const string& chromosome) {
-      d_chromosome = chromosome;
-   }
-   void setPosition(const int position) {
-      d_position = position;
-   }
-   void setID(const string& id) {
-      d_id = id;
-   }
+	void setChromosome(const string& chromosome) {
+		d_chromosome = chromosome;
+	}
+	void setPosition(const int position) {
+		d_position = position;
+	}
+	void setID(const string& id) {
+		d_id = id;
+	}
 
-   void setQuality(const double quality) {
-      ostringstream strs;
-      strs << quality;
-      d_quality = strs.str();
-   }
-   void setFilter(const string& filter) {
-      d_filter = filter;
-   }
+	void setQuality(const double quality) {
+		ostringstream strs;
+		strs << quality;
+		d_quality = strs.str();
+	}
+	void setFilter(const string& filter) {
+		d_filter = filter;
+	}
 
-   void setEnd(const int end) {
-//cout << "Setting end to " << end << endl;
+	void setEnd(const int end) {
+		//cout << "Setting end to " << end << endl;
 
-      d_end = end;
-   }
+		d_end = end;
+	}
 	int getVCFPrintEnd() const
 	{
 		if (d_end <= d_position ) {
@@ -915,40 +915,40 @@ public:
 		return d_position+getReference().size()-1;
 	}
 
-   void setHomlen(const int homlen) {
-      d_homlen = homlen;
-   }
-   void setHomseq(const string& homseq) {
-      d_homseq = homseq;
-   }
-   void setSVlen(const int svlen) {
-      d_svlen = svlen;
-   }
-   void setSVlen(const string& svlen) {
-      d_svlen = atoi(svlen.c_str());
-   }
-   void setSVtype(const string& svtype) {
-      d_svtype = svtype;
-   }
+	void setHomlen(const int homlen) {
+		d_homlen = homlen;
+	}
+	void setHomseq(const string& homseq) {
+		d_homseq = homseq;
+	}
+	void setSVlen(const int svlen) {
+		d_svlen = svlen;
+	}
+	void setSVlen(const string& svlen) {
+		d_svlen = atoi(svlen.c_str());
+	}
+	void setSVtype(const string& svtype) {
+		d_svtype = svtype;
+	}
 
-   //void setSupportingReads(const int supportingreads) { d_supportingreads = supportingreads; }
-   void addGenotype(const int sampleID, const int readDepthPlus, const int readDepthMinus, const int totalRefSupport) {
-      Genotype gt(readDepthPlus,readDepthMinus, totalRefSupport);
-      d_format[ sampleID ] = gt ;
-   }
+	//void setSupportingReads(const int supportingreads) { d_supportingreads = supportingreads; }
+	void addGenotype(const int sampleID, const int readDepthPlus, const int readDepthMinus, const int totalRefSupport) {
+		Genotype gt(readDepthPlus,readDepthMinus, totalRefSupport);
+		d_format[ sampleID ] = gt ;
+	}
 
-   void setReplace( int replaceLength, int secondReplaceLen=-1 ) {
-      d_replaceLen = replaceLength;
-      d_replaceLenTwo = secondReplaceLen;
-   }
-   void setBPrange( const int bpr_start, const int bpr_end ) {
-      d_bpr_start = bpr_start;
-      d_bpr_end = bpr_end ;
-   }
+	void setReplace( int replaceLength, int secondReplaceLen=-1 ) {
+		d_replaceLen = replaceLength;
+		d_replaceLenTwo = secondReplaceLen;
+	}
+	void setBPrange( const int bpr_start, const int bpr_end ) {
+		d_bpr_start = bpr_start;
+		d_bpr_end = bpr_end ;
+	}
 	void setGenome(Genome& genome) { d_genome_ptr = &genome; };
-   bool operator<(const SVData& otherSV ) const;
-   bool operator==(const SVData& otherSV ) const;
-   void fuse( SVData& otherSV );
+	bool operator<(const SVData& otherSV ) const;
+	bool operator==(const SVData& otherSV ) const;
+	void fuse( SVData& otherSV );
 	string getReference() const; // reference sequence, for indels including the base before it
 	string getAlternative() const;
 	string getOutputFormattedReference() const;
@@ -969,26 +969,26 @@ private:
 			     (d_svtype=="INV" && d_replaceLen==0 && d_replaceLenTwo ==0 ));
 	}
 
-   int d_position; // 1-based
+	int d_position; // 1-based
 
-   int d_end;
-   int d_homlen;
-   int d_bpr_start, d_bpr_end;
-   int d_svlen;
-   int d_replaceLen;
-   int d_replaceLenTwo; // for inversions
+	int d_end;
+	int d_homlen;
+	int d_bpr_start, d_bpr_end;
+	int d_svlen;
+	int d_replaceLen;
+	int d_replaceLenTwo; // for inversions
 
 	string d_nt;
 	string d_nt2; // for inversions
-   vector<Genotype> d_format;
+	vector<Genotype> d_format;
 	Genome* d_genome_ptr;
-   string d_chromosome;
-   string d_id; // default '.', as we don't mine variant databases yet
-   //StringCollection d_alternatives;
-   string d_quality; // '.' by default, but can be floating-point number
-   string d_filter;  // "PASS" by default
-   string d_svtype;
-   string d_homseq;
+	string d_chromosome;
+	string d_id; // default '.', as we don't mine variant databases yet
+	//StringCollection d_alternatives;
+	string d_quality; // '.' by default, but can be floating-point number
+	string d_filter;  // "PASS" by default
+	string d_svtype;
+	string d_homseq;
 
 	string getSVSequence() const;
 };
@@ -1971,61 +1971,60 @@ void initBaseArray()
 
 void reportSVsInChromosome(const string& chromosomeID, const set<string>& chromosomeNames, const set<string>& sampleNames, InputReader& pindelInput, map< string, int >& sampleMap, Genome& genome, ofstream& vcfFile )
 {
-		// if no reads have been found for this chromosome, skip it
-		if (chromosomeNames.find(chromosomeID) == chromosomeNames.end() ) {
-			cout << "No reads for chromosome " << chromosomeID << ", skipping it.\n";
-			return;
-		}
-      cout << "Processing chromosome " << chromosomeID << endl;
-      // rewind file to start
-		int regionStart = 0;
-		int regionEnd = 0;
-		SVData backupSV(sampleNames.size() );
-		bool backupAvailable = false;
-      do {
-			regionEnd = regionStart + g_par.windowSize*1000000;
-			cout << "Reading region " << regionStart << "-" << regionEnd << endl;
-	      pindelInput.rewind();
-   	   int counter=0;
-   	   vector<SVData> svs;
-			if (backupAvailable) { svs.push_back( backupSV ); }
-   	   while (!pindelInput.eof()) {
-   	      SVData svd( sampleNames.size() );
-   	      convertIndelToSVdata( pindelInput, sampleMap, genome, svd, chromosomeID);
-   	      if (!pindelInput.eof() && ( chromosomeID=="" || (svd.getChromosome()==chromosomeID && svd.getPosition()>=regionStart && svd.getPosition()<regionEnd)) ) {
-   	         svs.push_back( svd );
-   	      }
-   	      counter++;
-//if (counter%10==0) cout << "At counter " << counter << " pos " << svd.getPosition() << endl;
-     		}
-
-	      cout << "Total reads: " << svs.size() << endl;
-   		sort ( svs.begin(), svs.end() );
-      	cout << "Sorting completed" << endl;
-			// now output the SVs
-	      for (int svIndex=0; svIndex<svs.size(); svIndex++ ) {
-   	      if ( (svIndex+1)<svs.size() && ( svs[ svIndex ] == svs[ svIndex+1 ] ) ) {
-   	         svs[ svIndex+1 ].fuse( svs[ svIndex ]);
-   	      }
-   	      else { // if not fused with the next element, output this element (unless it's the last element, then it must be saved)
-   	         if ( svIndex!=svs.size()-1 && throughFilter( svs[ svIndex ]) ) {
-   	            vcfFile << svs[ svIndex ];
-   	         }
-   	         else  { //empty
-
-   	         } // if else: whether the SV passes through the filter
-   	      } // if else: whether the SV can be fused with the next SV
-   	   }  // for: loop over all SVs
-			if (svs.size()>0) {
-         	backupSV = svs[ svs.size()-1 ];
-				backupAvailable = true;
+	// if no reads have been found for this chromosome, skip it
+	if (chromosomeNames.find(chromosomeID) == chromosomeNames.end() ) {
+		cout << "No reads for chromosome " << chromosomeID << ", skipping it.\n";
+		return;
+	}
+	cout << "Processing chromosome " << chromosomeID << endl;
+	// rewind file to start
+	int regionStart = 0;
+	int regionEnd = 0;
+	SVData backupSV(sampleNames.size() );
+	bool backupAvailable = false;
+	do {
+		regionEnd = regionStart + g_par.windowSize*1000000;
+		cout << "Reading region " << regionStart << "-" << regionEnd << endl;
+		pindelInput.rewind();
+		int counter=0;
+		vector<SVData> svs;
+		if (backupAvailable) { svs.push_back( backupSV ); }
+		while (!pindelInput.eof()) {
+			SVData svd( sampleNames.size() );
+			convertIndelToSVdata( pindelInput, sampleMap, genome, svd, chromosomeID);
+			if (!pindelInput.eof() && ( chromosomeID=="" || (svd.getChromosome()==chromosomeID && svd.getPosition()>=regionStart && svd.getPosition()<regionEnd)) ) {
+				svs.push_back( svd );
 			}
-			regionStart += (g_par.windowSize*1000000);
-		} while (regionEnd<genome.getChromosome( chromosomeID )->size());
-      if ( backupAvailable && throughFilter( backupSV) ) {
-   	   vcfFile << backupSV;
-   	}
+			counter++;
+			//if (counter%10==0) cout << "At counter " << counter << " pos " << svd.getPosition() << endl;
+		}
 
+		cout << "Total reads: " << svs.size() << endl;
+		sort ( svs.begin(), svs.end() );
+		cout << "Sorting completed" << endl;
+		// now output the SVs
+		for (int svIndex=0; svIndex<svs.size(); svIndex++ ) {
+			//if ( (svIndex+1)<svs.size() && ( svs[ svIndex ] == svs[ svIndex+1 ] ) ) {
+				//svs[ svIndex+1 ].fuse( svs[ svIndex ]);
+			//}
+			//else { // if not fused with the next element, output this element (unless it's the last element, then it must be saved)
+				if ( svIndex!=svs.size()-1 && throughFilter( svs[ svIndex ]) ) {
+					vcfFile << svs[ svIndex ];
+				}
+				else  { //empty
+	
+				} // if else: whether the SV passes through the filter
+			//} // if else: whether the SV can be fused with the next SV
+		}  // for: loop over all SVs
+		if (svs.size()>0) {
+			backupSV = svs[ svs.size()-1 ];
+			backupAvailable = true;
+		}
+		regionStart += (g_par.windowSize*1000000);
+	} while (regionEnd<genome.getChromosome( chromosomeID )->size());
+	if ( backupAvailable && throughFilter( backupSV) ) {
+		vcfFile << backupSV;
+	}
 }
 
 int main(int argc, char* argv[])
