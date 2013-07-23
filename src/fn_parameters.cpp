@@ -117,6 +117,7 @@ void defineParameters(std::vector<Parameter *>& parameters)
     parameters.push_back(
         new BoolParameter(&userSettings->Analyze_TD, "-t", "--report_duplications",
                           "report tandem duplications " "(default true)", false, true));
+/*
     parameters.push_back(
         new BoolParameter(
             &userSettings->Analyze_LI,
@@ -127,7 +128,7 @@ void defineParameters(std::vector<Parameter *>& parameters)
     parameters.push_back(
         new BoolParameter(&userSettings->Analyze_BP, "-k", "--report_breakpoints",
                           "report breakpoints " "(default true)", false, true));
-
+*/
     parameters.push_back(
         new BoolParameter(
             &userSettings->ReportCloseMappedRead,
