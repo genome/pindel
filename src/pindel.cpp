@@ -1592,7 +1592,9 @@ int main(int argc, char *argv[])
 			if (userSettings->inf_InclusiveBedFileName != "") {
 				BED OneBedRecord;
 				std::ifstream inf_IncludeBed( userSettings->inf_InclusiveBedFileName.c_str() );
+				std::string restofbedline;
 				while (inf_IncludeBed >> OneBedRecord.ChrName >> OneBedRecord.Start >> OneBedRecord.End) {
+					getline(inf_IncludeBed, restofbedline);
 					if (OneBedRecord.Start > OneBedRecord.End) {
 						unsigned tempint = OneBedRecord.Start;
 						OneBedRecord.Start = OneBedRecord.End;
@@ -1627,7 +1629,9 @@ int main(int argc, char *argv[])
 				if (End > ChrSize) End = ChrSize;
 				BED OneBedRecord;
 				std::ifstream inf_IncludeBed( userSettings->inf_InclusiveBedFileName.c_str() );
+				std::string restofbedline;
 				while (inf_IncludeBed >> OneBedRecord.ChrName >> OneBedRecord.Start >> OneBedRecord.End) {
+					getline(inf_IncludeBed, restofbedline);
 					if (OneBedRecord.Start > OneBedRecord.End) {
 						unsigned tempint = OneBedRecord.Start;
 						OneBedRecord.Start = OneBedRecord.End;
@@ -1664,7 +1668,9 @@ int main(int argc, char *argv[])
 		if (userSettings->inf_ExclusiveBedFileName != "") {
 			BED OneBedRecord;
 			std::ifstream inf_ExcludeBed( userSettings->inf_ExclusiveBedFileName.c_str() );
+			std::string restofbedline;
 			while (inf_ExcludeBed >> OneBedRecord.ChrName >> OneBedRecord.Start >> OneBedRecord.End) {
+				getline(inf_ExcludeBed, restofbedline);
 				if (OneBedRecord.Start > OneBedRecord.End) {
 					unsigned tempint = OneBedRecord.Start;
 					OneBedRecord.Start = OneBedRecord.End;
