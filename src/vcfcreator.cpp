@@ -1699,7 +1699,7 @@ void readReference( const string& referenceName, Genome& genome )
       do {
          refName += refLine[ counter++ ];
       }
-      while ( counter<refLine.size() && (refLine[ counter ] != ' ') && (refLine[ counter ] != '\t') && (refLine[ counter ] != '\n') );
+      while ( counter<refLine.size() && (refLine[ counter ] != ' ') && (refLine[ counter ] != '\t') && (refLine[ counter ] != '\n') && (refLine[ counter ] != '\r'));
       cout << "Scanning chromosome: " << refName << endl;
       Chromosome newChrom( refName, referenceName );
       getline(referenceFile,currentLine);
