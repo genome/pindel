@@ -49,21 +49,22 @@ void SearchFarEndAtPos( const std::string& chromosome, SPLIT_READ& Temp_One_Read
    char CurrentBaseRC = Convert2RC4N[(short) CurrentBase];
     
    if (CurrentBase == 'N' || Temp_One_Read.MaxLenCloseEnd() == 0) return;
-   int CurrentReadLength = Temp_One_Read.getReadLength();
+   //int CurrentReadLength = Temp_One_Read.getReadLength();
     
    std::vector <FarEndSearchPerRegion*> WholeGenomeSearchResult;
    unsigned NumberOfHits = 0;
-
-
+   if (Regions.size() > 1)
+   std::cout << "Regions.size():\t" << Regions.size() << "\t";
    for (unsigned RegionIndex = 0; RegionIndex < Regions.size(); RegionIndex++) {
        
        FarEndSearchPerRegion* CurrentRegion = new FarEndSearchPerRegion(Regions[RegionIndex].getChromosome(), Temp_One_Read.getTOTAL_SNP_ERROR_CHECKED(), Regions[RegionIndex].getSize());
 
-       int Start = Regions[RegionIndex].getStart() - CurrentReadLength;
-       int End = Regions[RegionIndex].getEnd() + CurrentReadLength;
+       int Start = Regions[RegionIndex].getStart();
+       int End = Regions[RegionIndex].getEnd();
        if (Start < 0) Start = End -1;
        const std::string & chromosome = Regions[RegionIndex].getChromosome()->getSeq();
-       //std::cout << Regions[RegionIndex].getChromosome()->getName() << " " << chromosome.size() - g_SpacerBeforeAfter * 2 << " " << Start - g_SpacerBeforeAfter << " " << End - g_SpacerBeforeAfter << std::endl;
+       if (Regions.size() > 1)	
+       std::cout << RegionIndex << "\t" << Regions[RegionIndex].getChromosome()->getName() << " " << chromosome.size() - g_SpacerBeforeAfter * 2 << " " << Start - g_SpacerBeforeAfter << " " << End - g_SpacerBeforeAfter << "\t";
        for (int pos = Start; pos < End; pos++) {
            if (chromosome.at(pos) == CurrentBase) {
                CurrentRegion->PD_Plus[0].push_back(pos); // else
@@ -76,6 +77,8 @@ void SearchFarEndAtPos( const std::string& chromosome, SPLIT_READ& Temp_One_Read
        WholeGenomeSearchResult.push_back(CurrentRegion);
 	 
    }
+   if (Regions.size() > 1)
+   std::cout << std::endl; 
 
 	if (NumberOfHits>0) {
       short BP_Start = 10; // perhaps use global constant like "g_MinimumLengthToReportMatch"
@@ -101,7 +104,7 @@ void SearchFarEndAtPosPerfect( const std::string& chromosome, SPLIT_READ& Temp_O
     char CurrentBaseRC = Convert2RC4N[(short) CurrentBase];
     
     if (CurrentBase == 'N' || Temp_One_Read.MaxLenCloseEnd() == 0) return;
-    int CurrentReadLength = Temp_One_Read.getReadLength();
+    //int CurrentReadLength = Temp_One_Read.getReadLength();
     
     std::vector <FarEndSearchPerRegion*> WholeGenomeSearchResult;
     unsigned NumberOfHits = 0;
@@ -111,8 +114,8 @@ void SearchFarEndAtPosPerfect( const std::string& chromosome, SPLIT_READ& Temp_O
         
         FarEndSearchPerRegion* CurrentRegion = new FarEndSearchPerRegion(Regions[RegionIndex].getChromosome(), Temp_One_Read.getTOTAL_SNP_ERROR_CHECKED(), Regions[RegionIndex].getSize());
         
-        int Start = Regions[RegionIndex].getStart() - CurrentReadLength;
-        int End = Regions[RegionIndex].getEnd() + CurrentReadLength;
+        int Start = Regions[RegionIndex].getStart();
+        int End = Regions[RegionIndex].getEnd();
         if (Start < 0) Start = End -1;
         const std::string & chromosome = Regions[RegionIndex].getChromosome()->getSeq();
         //std::cout << Regions[RegionIndex].getChromosome()->getName() << " " << chromosome.size() - g_SpacerBeforeAfter * 2 << " " << Start - g_SpacerBeforeAfter << " " << End - g_SpacerBeforeAfter << std::endl;

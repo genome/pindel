@@ -544,7 +544,7 @@ friend class Genome;
 public:
 	Chromosome( const std::string& name, const std::string& sequence ) { m_name = name; m_sequence = sequence; };
 	const std::string& getName() const { return m_name; }
-	const std::string& getSeq() const { return m_sequence; }
+    const std::string & getSeq() const { return m_sequence; }
 	const unsigned int getCompSize() const { return m_sequence.size(); }
 	const unsigned int getBiolSize() const { return m_sequence.size() - 2 * g_SpacerBeforeAfter; }
 
