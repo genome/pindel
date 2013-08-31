@@ -514,10 +514,10 @@ void BDData::UpdateBD(ControlState & currentState) {
 			#pragma omp for
 			for (int read_index = 0; read_index < (int)currentState.Reads_RP_Discovery.size(); read_index++) {
 				if (currentState.Reads_RP_Discovery[read_index].Report == false) continue;
-				if (currentState.Reads_RP_Discovery[read_index].ReadLength > 1000) 
-					std::cout << "warning: currentState.Reads_RP_Discovery[read_index].ReadLength " 
-						<< currentState.Reads_RP_Discovery[read_index].ReadLength << std::endl;
-				unsigned shift_distance = currentState.Reads_RP_Discovery[read_index].ReadLength + 100;
+				if (currentState.Reads_RP_Discovery[read_index].InsertSize > 2000) 
+					std::cout << "warning: currentState.Reads_RP_Discovery[read_index].InsertSize " 
+						<< currentState.Reads_RP_Discovery[read_index].InsertSize << std::endl;
+				unsigned shift_distance = currentState.Reads_RP_Discovery[read_index].InsertSize;
    
 				std::string firstChrName = currentState.Reads_RP_Discovery[read_index].ChrNameA;
 				std::string secondChrName = currentState.Reads_RP_Discovery[read_index].ChrNameB;
@@ -568,10 +568,10 @@ void BDData::UpdateBD(ControlState & currentState) {
 			for (int read_index = 0; read_index < (int)currentState.Reads_RP_Discovery_InterChr.size(); read_index++) {
 				if (currentState.Reads_RP_Discovery_InterChr[read_index].Report == false) continue;
               
-				if (currentState.Reads_RP_Discovery[read_index].ReadLength > 1000) 
-					std::cout << "warning: currentState.Reads_RP_Discovery[read_index].ReadLength " 
-						<< currentState.Reads_RP_Discovery[read_index].ReadLength << std::endl;
-				unsigned shift_distance = currentState.Reads_RP_Discovery[read_index].ReadLength + 100;
+				if (currentState.Reads_RP_Discovery[read_index].InsertSize > 2000) 
+					std::cout << "warning: currentState.Reads_RP_Discovery[read_index].InsertSize " 
+						<< currentState.Reads_RP_Discovery[read_index].InsertSize << std::endl;
+				unsigned shift_distance = currentState.Reads_RP_Discovery[read_index].InsertSize;
    
 				std::string firstChrName = currentState.Reads_RP_Discovery_InterChr[read_index].ChrNameA;
 				std::string secondChrName = currentState.Reads_RP_Discovery_InterChr[read_index].ChrNameB;
