@@ -212,35 +212,35 @@ void InitializeA1B1(std::vector <RP_READ> & Reads_RP) {
         for (int first = 0; first < (int)Reads_RP.size(); first++) {    //Han(2013.06.17)
                 unsigned Distance = Reads_RP[first].InsertSize;
             if (Reads_RP[first].DA == '+') {
-                if (Reads_RP[first].PosA > (unsigned)Reads_RP[first].ReadLength)
-                    Reads_RP[first].PosA = Reads_RP[first].PosA - Reads_RP[first].ReadLength;
+                if (Reads_RP[first].PosA > (unsigned)Reads_RP[first].ReadLength * 2)
+                    Reads_RP[first].PosA = Reads_RP[first].PosA - Reads_RP[first].ReadLength * 2;
                 else Reads_RP[first].PosA = 1;
-                    Reads_RP[first].PosA1 = Reads_RP[first].PosA + Distance;        //Han(2013.06.17)
+                    Reads_RP[first].PosA1 = Reads_RP[first].PosA + Distance + Reads_RP[first].ReadLength;        //Han(2013.06.17)
             }
                 else { // DA == '-'
                         if (Reads_RP[first].PosA > Distance) {
-                                Reads_RP[first].PosA = Reads_RP[first].PosA - Distance + Reads_RP[first].ReadLength;
-                                Reads_RP[first].PosA1 = Reads_RP[first].PosA + Distance;
+                                Reads_RP[first].PosA = Reads_RP[first].PosA - Distance;
+                                Reads_RP[first].PosA1 = Reads_RP[first].PosA + Distance + Reads_RP[first].ReadLength;
                         }
                         else {
                                 Reads_RP[first].PosA = 1;
-                                Reads_RP[first].PosA1 = Reads_RP[first].PosA + Distance;
+                                Reads_RP[first].PosA1 = Reads_RP[first].PosA + Distance + Reads_RP[first].ReadLength;
                         }
                 }
             if (Reads_RP[first].DB == '+') {
-                if (Reads_RP[first].PosB > (unsigned)Reads_RP[first].ReadLength)
-                    Reads_RP[first].PosB = Reads_RP[first].PosB - Reads_RP[first].ReadLength;
+                if (Reads_RP[first].PosB > (unsigned)Reads_RP[first].ReadLength * 2)
+                    Reads_RP[first].PosB = Reads_RP[first].PosB - Reads_RP[first].ReadLength * 2;
                 else Reads_RP[first].PosB = 1;
-                        Reads_RP[first].PosB1 = Reads_RP[first].PosB + Distance;        //Han(2013.06.17)
+                        Reads_RP[first].PosB1 = Reads_RP[first].PosB + Distance + Reads_RP[first].ReadLength;        //Han(2013.06.17)
             }
                 else { // DA == '-'
-                        if (Reads_RP[first].PosB > Distance) {
-                                Reads_RP[first].PosB = Reads_RP[first].PosB - Distance  + Reads_RP[first].ReadLength;
-                                Reads_RP[first].PosB1 = Reads_RP[first].PosB + Distance;
+                        if (Reads_RP[first].PosB > Distance ) {
+                                Reads_RP[first].PosB = Reads_RP[first].PosB - Distance;
+                                Reads_RP[first].PosB1 = Reads_RP[first].PosB + Distance + Reads_RP[first].ReadLength;
                         }
                         else {
                                 Reads_RP[first].PosB = 1;
-                                Reads_RP[first].PosB1 = Reads_RP[first].PosB + Distance;
+                                Reads_RP[first].PosB1 = Reads_RP[first].PosB + Distance + Reads_RP[first].ReadLength;
                         }
                 }
 
@@ -494,7 +494,6 @@ void Summarize_InterChr(std::vector <RP_READ> & Reads_RP) {
 }
 
 void BDData::UpdateBD(ControlState & currentState) {
-	
 	std::ofstream RPoutputfile(userSettings->getRPOutputFilename().c_str(), std::ios::app);
 	m_bdEvents = m_bdEvents_external;
 
@@ -515,17 +514,25 @@ void BDData::UpdateBD(ControlState & currentState) {
 			#pragma omp for
 			for (int read_index = 0; read_index < (int)currentState.Reads_RP_Discovery.size(); read_index++) {
 				if (currentState.Reads_RP_Discovery[read_index].Report == false) continue;
+				if (currentState.Reads_RP_Discovery[read_index].ReadLength > 1000) 
+					std::cout << "warning: currentState.Reads_RP_Discovery[read_index].ReadLength " 
+						<< currentState.Reads_RP_Discovery[read_index].ReadLength << std::endl;
+				unsigned shift_distance = currentState.Reads_RP_Discovery[read_index].ReadLength + 100;
    
 				std::string firstChrName = currentState.Reads_RP_Discovery[read_index].ChrNameA;
 				std::string secondChrName = currentState.Reads_RP_Discovery[read_index].ChrNameB;
 				unsigned int firstPos = currentState.Reads_RP_Discovery[read_index].PosA + g_SpacerBeforeAfter;
                			unsigned int firstPos2 = currentState.Reads_RP_Discovery[read_index].PosA1 + g_SpacerBeforeAfter;	//Han(2013.06.17)
                 		if (firstPos > firstPos2) std::swap(firstPos, firstPos2);
-
+				if (currentState.Reads_RP_Discovery[read_index].DA == '+')
+					firstPos = firstPos - shift_distance;
+				else firstPos2 = firstPos2 + shift_distance;
 				unsigned int secondPos  = currentState.Reads_RP_Discovery[read_index].PosB + g_SpacerBeforeAfter;
 				unsigned int secondPos2  = currentState.Reads_RP_Discovery[read_index].PosB1 + g_SpacerBeforeAfter;	//Han(2013.06.17)
                 		if (secondPos > secondPos2) std::swap(secondPos, secondPos2);
-
+				if (currentState.Reads_RP_Discovery[read_index].DB == '+')
+                                        secondPos = secondPos - shift_distance;
+				else secondPos2 = secondPos2 + shift_distance;
 				if ( firstChrName!="" && secondChrName!="" ) {
 					BreakDancerCoordinate firstBDCoordinate( firstChrName, firstPos, firstPos2 );
 					BreakDancerCoordinate secondBDCoordinate( secondChrName, secondPos, secondPos2 );
@@ -561,6 +568,11 @@ void BDData::UpdateBD(ControlState & currentState) {
 			for (int read_index = 0; read_index < (int)currentState.Reads_RP_Discovery_InterChr.size(); read_index++) {
 				if (currentState.Reads_RP_Discovery_InterChr[read_index].Report == false) continue;
               
+				if (currentState.Reads_RP_Discovery[read_index].ReadLength > 1000) 
+					std::cout << "warning: currentState.Reads_RP_Discovery[read_index].ReadLength " 
+						<< currentState.Reads_RP_Discovery[read_index].ReadLength << std::endl;
+				unsigned shift_distance = currentState.Reads_RP_Discovery[read_index].ReadLength + 100;
+   
 				std::string firstChrName = currentState.Reads_RP_Discovery_InterChr[read_index].ChrNameA;
 				std::string secondChrName = currentState.Reads_RP_Discovery_InterChr[read_index].ChrNameB;
 
@@ -569,8 +581,15 @@ void BDData::UpdateBD(ControlState & currentState) {
 				unsigned int secondPos  = currentState.Reads_RP_Discovery_InterChr[read_index].PosB + g_SpacerBeforeAfter;
 				unsigned int secondPos2  = currentState.Reads_RP_Discovery_InterChr[read_index].PosB1 + g_SpacerBeforeAfter;
 
-				if (firstPos > firstPos2) std::swap(firstPos, firstPos2);
-				if (secondPos > secondPos2) std::swap(secondPos, secondPos2);
+                                if (firstPos > firstPos2) std::swap(firstPos, firstPos2);
+                                if (currentState.Reads_RP_Discovery[read_index].DA == '+')
+                                        firstPos = firstPos - shift_distance;
+                                else firstPos2 = firstPos2 + shift_distance;
+                                if (secondPos > secondPos2) std::swap(secondPos, secondPos2);
+                                if (currentState.Reads_RP_Discovery[read_index].DB == '+')
+                                        secondPos = secondPos - shift_distance;
+                                else secondPos2 = secondPos2 + shift_distance;
+
 				if ( firstChrName!="" && secondChrName!="" ) {
 					BreakDancerCoordinate firstBDCoordinate( firstChrName, firstPos, firstPos2 );
 					BreakDancerCoordinate secondBDCoordinate( secondChrName, secondPos, secondPos2 );
