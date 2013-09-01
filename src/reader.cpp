@@ -546,7 +546,7 @@ bool isGoodAnchor( const flags_hit *read, const bam1_t * bamOfRead ) //bam1_qnam
 //return true;
 	const bam1_core_t *bamCore = &bamOfRead->core;
 		
-	if (bamCore->flag & BAM_FSECONDARY || bamCore->flag & BAM_FQCFAIL) return false;
+	if (bamCore->flag & BAM_FSECONDARY || bamCore->flag & BAM_FQCFAIL || bamCore->flag & BAM_FDUP) return false;
 
 	//UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
 	if (userSettings->minimalAnchorQuality == 0) return true;
@@ -596,12 +596,16 @@ bool isGoodAnchor( const flags_hit *read, const bam1_t * bamOfRead ) //bam1_qnam
 
 bool isRefRead ( const flags_hit *read, const bam1_t * bamOfRead )
 {
+const bam1_core_t *bamCore = &bamOfRead->core;
+
+if (bamCore->flag & BAM_FSECONDARY || bamCore->flag & BAM_FQCFAIL || bamCore->flag & BAM_FDUP) return false;
+
 	//std::cout << "isRefRead 1" << std::endl;
 	//UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
 	//std::cout << "isRefRead 2" << std::endl;
 	const uint8_t *nm = bam_aux_get(bamOfRead, "NM");
 	//std::cout << "isRefRead 3" << std::endl;
-	const bam1_core_t *bamCore = &bamOfRead->core;
+	//const bam1_core_t *bamCore = &bamOfRead->core;
 	int maxEdits = int (bamCore->l_qseq * userSettings->MaximumAllowedMismatchRate) + 1;
 	//std::cout << "isRefRead 4" << std::endl;
 	uint32_t *cigar_pointer = bam1_cigar (bamOfRead);
@@ -630,6 +634,11 @@ bool isRefRead ( const flags_hit *read, const bam1_t * bamOfRead )
 
 bool isWeirdRead( const flags_hit *read, const bam1_t * bamOfRead )
 {
+
+const bam1_core_t *bamCore = &bamOfRead->core;
+
+if (bamCore->flag & BAM_FSECONDARY || bamCore->flag & BAM_FQCFAIL || bamCore->flag & BAM_FDUP) return false;
+
 	if (!(read->mapped)) return true;
 
 	const uint8_t *nm = bam_aux_get(bamOfRead, "NM");
@@ -646,7 +655,7 @@ bool isWeirdRead( const flags_hit *read, const bam1_t * bamOfRead )
 	}
 	
 	
-	const bam1_core_t *bamCore;
+	//const bam1_core_t *bamCore;
 	bamCore = &bamOfRead->core; 
 
 	//int maxEdits = int (bamCore->l_qseq * userSettings->MaximumAllowedMismatchRate) + 1;
