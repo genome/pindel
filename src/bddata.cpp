@@ -524,15 +524,15 @@ void BDData::UpdateBD(ControlState & currentState) {
 				unsigned int firstPos = currentState.Reads_RP_Discovery[read_index].PosA + g_SpacerBeforeAfter;
                			unsigned int firstPos2 = currentState.Reads_RP_Discovery[read_index].PosA1 + g_SpacerBeforeAfter;	//Han(2013.06.17)
                 		if (firstPos > firstPos2) std::swap(firstPos, firstPos2);
-				if (currentState.Reads_RP_Discovery[read_index].DA == '+')
+				if (currentState.Reads_RP_Discovery[read_index].DA == '+' && firstPos > shift_distance)
 					firstPos = firstPos - shift_distance;
-				else firstPos2 = firstPos2 + shift_distance;
+				else if (shift_distance * 2 < g_SpacerBeforeAfter ) firstPos2 = firstPos2 + shift_distance;
 				unsigned int secondPos  = currentState.Reads_RP_Discovery[read_index].PosB + g_SpacerBeforeAfter;
 				unsigned int secondPos2  = currentState.Reads_RP_Discovery[read_index].PosB1 + g_SpacerBeforeAfter;	//Han(2013.06.17)
                 		if (secondPos > secondPos2) std::swap(secondPos, secondPos2);
-				if (currentState.Reads_RP_Discovery[read_index].DB == '+')
+				if (currentState.Reads_RP_Discovery[read_index].DB == '+' && secondPos > shift_distance)
                                         secondPos = secondPos - shift_distance;
-				else secondPos2 = secondPos2 + shift_distance;
+				else if (shift_distance * 2 < shift_distance) secondPos2 = secondPos2 + shift_distance;
 				if ( firstChrName!="" && secondChrName!="" ) {
 					BreakDancerCoordinate firstBDCoordinate( firstChrName, firstPos, firstPos2 );
 					BreakDancerCoordinate secondBDCoordinate( secondChrName, secondPos, secondPos2 );
@@ -582,13 +582,13 @@ void BDData::UpdateBD(ControlState & currentState) {
 				unsigned int secondPos2  = currentState.Reads_RP_Discovery_InterChr[read_index].PosB1 + g_SpacerBeforeAfter;
 
                                 if (firstPos > firstPos2) std::swap(firstPos, firstPos2);
-                                if (currentState.Reads_RP_Discovery[read_index].DA == '+')
+                                if (currentState.Reads_RP_Discovery[read_index].DA == '+' && firstPos > shift_distance)
                                         firstPos = firstPos - shift_distance;
-                                else firstPos2 = firstPos2 + shift_distance;
+                                else if (shift_distance * 2 < g_SpacerBeforeAfter) firstPos2 = firstPos2 + shift_distance;
                                 if (secondPos > secondPos2) std::swap(secondPos, secondPos2);
-                                if (currentState.Reads_RP_Discovery[read_index].DB == '+')
+                                if (currentState.Reads_RP_Discovery[read_index].DB == '+' && secondPos > shift_distance)
                                         secondPos = secondPos - shift_distance;
-                                else secondPos2 = secondPos2 + shift_distance;
+                                else if (shift_distance * 2 < g_SpacerBeforeAfter) secondPos2 = secondPos2 + shift_distance;
 
 				if ( firstChrName!="" && secondChrName!="" ) {
 					BreakDancerCoordinate firstBDCoordinate( firstChrName, firstPos, firstPos2 );
