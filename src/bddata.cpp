@@ -294,7 +294,7 @@ void UpdateFirstBasedOnSecondInterChromosome(RP_READ & Current_first, RP_READ & 
     }
     else if (Current_first.ChrNameA == Current_second.ChrNameB && Current_first.ChrNameB == Current_second.ChrNameA) {
         if (Current_first.DA == Current_second.DB && Current_first.DB == Current_second.DA) {
-            RP_READ Current_AnotherSecond;
+            RP_READ Current_AnotherSecond = Current_second;
             Current_AnotherSecond.DA = Current_second.DB;
             Current_AnotherSecond.DB = Current_second.DA;
             Current_AnotherSecond.PosA = Current_second.PosB;
@@ -568,10 +568,10 @@ void BDData::UpdateBD(ControlState & currentState) {
 			for (int read_index = 0; read_index < (int)currentState.Reads_RP_Discovery_InterChr.size(); read_index++) {
 				if (currentState.Reads_RP_Discovery_InterChr[read_index].Report == false) continue;
               
-				if (currentState.Reads_RP_Discovery[read_index].InsertSize > 2000) 
+				if (currentState.Reads_RP_Discovery_InterChr[read_index].InsertSize > 2000) 
 					std::cout << "warning: currentState.Reads_RP_Discovery[read_index].InsertSize " 
-						<< currentState.Reads_RP_Discovery[read_index].InsertSize << std::endl;
-				unsigned shift_distance = currentState.Reads_RP_Discovery[read_index].InsertSize;
+						<< currentState.Reads_RP_Discovery_InterChr[read_index].InsertSize << std::endl;
+				unsigned shift_distance = currentState.Reads_RP_Discovery_InterChr[read_index].InsertSize;
    
 				std::string firstChrName = currentState.Reads_RP_Discovery_InterChr[read_index].ChrNameA;
 				std::string secondChrName = currentState.Reads_RP_Discovery_InterChr[read_index].ChrNameB;
@@ -582,11 +582,11 @@ void BDData::UpdateBD(ControlState & currentState) {
 				unsigned int secondPos2  = currentState.Reads_RP_Discovery_InterChr[read_index].PosB1 + g_SpacerBeforeAfter;
 
                                 if (firstPos > firstPos2) std::swap(firstPos, firstPos2);
-                                if (currentState.Reads_RP_Discovery[read_index].DA == '+' && firstPos > shift_distance)
+                                if (currentState.Reads_RP_Discovery_InterChr[read_index].DA == '+' && firstPos > shift_distance)
                                         firstPos = firstPos - shift_distance;
                                 else if (shift_distance * 2 < g_SpacerBeforeAfter) firstPos2 = firstPos2 + shift_distance;
                                 if (secondPos > secondPos2) std::swap(secondPos, secondPos2);
-                                if (currentState.Reads_RP_Discovery[read_index].DB == '+' && secondPos > shift_distance)
+                                if (currentState.Reads_RP_Discovery_InterChr[read_index].DB == '+' && secondPos > shift_distance)
                                         secondPos = secondPos - shift_distance;
                                 else if (shift_distance * 2 < g_SpacerBeforeAfter) secondPos2 = secondPos2 + shift_distance;
 
