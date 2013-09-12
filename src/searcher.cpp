@@ -32,12 +32,14 @@ unsigned int numberOfCompetingPositions( const std::vector < PosVector >& positi
 	return sum;
 }
 
+inline bool Matches(const char readBase, const char referenceBase) __attribute__((always_inline));
 
-bool Matches( const char readBase, const char referenceBase )
+inline bool Matches( const char readBase, const char referenceBase )
 {
 	//std::cout << "read/ref: " << readBase << "," << referenceBase << "\n";
-	if (readBase!='N') { return referenceBase == readBase; }
-	else { return Match2N[(short) referenceBase] == 'N'; } 
+	//if (readBase!='N') { return referenceBase == readBase; }
+	//else { return Match2N[(short) referenceBase] == 'N'; }
+        return MatchPair[readBase][referenceBase];
 }
 
 
@@ -46,15 +48,27 @@ void CategorizePositions(const char readBase, const std::string & chromosomeSeq,
 	const int searchDirection,	const int maxNumMismatches )
 {
 	int SizeOfCurrent = PD_Plus[ numMisMatches ].size();
- 	for (int j = 0; j < SizeOfCurrent; j++) {
-      unsigned int pos = PD_Plus[ numMisMatches ][j] + searchDirection;
-      if ( Matches( readBase, chromosomeSeq[ pos ] ) ) {
-         PD_Plus_Output[ numMisMatches ].push_back(pos);
-      }
-      else {
-         if ( numMisMatches<maxNumMismatches) { PD_Plus_Output[ numMisMatches + 1].push_back(pos); }
-      } 
-   }
+        const PosVector& PD_Plus_current = PD_Plus[numMisMatches];
+        PosVector* PD_Plus_Output_current = &PD_Plus_Output[numMisMatches];
+
+        if (numMisMatches < maxNumMismatches) {
+		for (int j = 0; j < SizeOfCurrent; j++) {
+			unsigned int pos = PD_Plus_current[j] + searchDirection;
+                        (PD_Plus_Output_current + MismatchPair[(int)readBase][(int)chromosomeSeq[pos]])->push_back(pos);
+			/*if ( Matches( readBase, chromosomeSeq[ pos ] ) ) {
+				PD_Plus_Output_current->push_back(pos);
+			} else {
+				(PD_Plus_Output_current + 1)->push_back(pos);
+			} */
+		}
+	} else {
+		for (int j = 0; j < SizeOfCurrent; j++) {
+			unsigned int pos = PD_Plus_current[j] + searchDirection;
+			if ( !MismatchPair[readBase][chromosomeSeq[pos]] ) {
+				PD_Plus_Output_current->push_back(pos);
+			}
+		}
+        }
 	//std::cout << "From " << PD_Plus[ numMisMatches ].size() << "Good: " << PD_Plus_Output[ numMisMatches ].size() << "Bad: " << PD_Plus_Output[ numMisMatches + 1].size() << std::endl;
 }
 
@@ -162,6 +176,9 @@ void CheckLeft_Close (SPLIT_READ & read,
 		if (minimumNumberOfMismatches( Left_PD,read.getMAX_SNP_ERROR() ) > g_maxMismatch[CurrentLength] ) {
 			return; 
 		}
+
+      std::string forwardSeq = read.getUnmatchedSeq();
+      std::string reverseSeq = ReverseComplement(forwardSeq);
       // put it to LeftUP if unique
       for (short i = 0; i <= read.getMAX_SNP_ERROR(); i++) {
          if (Left_PD[i].size() == 1 && CurrentLength >= BP_Left_Start + i) {
@@ -176,7 +193,7 @@ void CheckLeft_Close (SPLIT_READ & read,
                UniquePoint TempOne(g_genome.getChr(read.FragName), CurrentLength, Left_PD[i][0], FORWARD, ANTISENSE, i );  
 					//if (read.Name=="@read_6990/2" ) { std::cout << "Saving point\n";             }
                 //if (read.Name == "@DD7DT8Q1:4:1106:17724:13906#GTACCT/1") std::cout << "DD7DT8Q1 outside" << std::endl;
-               if (CheckMismatches(chromosomeSeq, read.getUnmatchedSeq(), TempOne, read.CloseEndMismatch)) {
+               if (CheckMismatches(chromosomeSeq, forwardSeq, reverseSeq, TempOne, read.CloseEndMismatch)) {
                   //if (read.Name == "@DD7DT8Q1:4:1106:17724:13906#GTACCT/1") std::cout << " DD7DT8Q1 inside" << std::endl;
                   //LeftUP.Mismatches = i;
                   LeftUP.push_back (TempOne);
@@ -208,6 +225,8 @@ void CheckLeft_Close_Perfect (SPLIT_READ & read,
 		if (minimumNumberOfMismatches( Left_PD,read.getMAX_SNP_ERROR() ) > g_maxMismatch[CurrentLength] ) {
 			return;
 		}
+      std::string forwardSeq = read.getUnmatchedSeq();
+      std::string reverseSeq = ReverseComplement(forwardSeq);
         // put it to LeftUP if unique
         for (short i = 0; i < 1; i++) {
             if (Left_PD[i].size() == 1 && CurrentLength >= BP_Left_Start + i) {
@@ -222,7 +241,7 @@ void CheckLeft_Close_Perfect (SPLIT_READ & read,
                     UniquePoint TempOne(g_genome.getChr(read.FragName), CurrentLength, Left_PD[i][0], FORWARD, ANTISENSE, i );
 					//if (read.Name=="@read_6990/2" ) { std::cout << "Saving point\n";             }
                     //if (read.Name == "@DD7DT8Q1:4:1106:17724:13906#GTACCT/1") std::cout << "DD7DT8Q1 outside" << std::endl;
-                    if (CheckMismatches(chromosomeSeq, read.getUnmatchedSeq(), TempOne, read.CloseEndMismatch)) {
+                    if (CheckMismatches(chromosomeSeq, forwardSeq, reverseSeq, TempOne, read.CloseEndMismatch)) {
                         //if (read.Name == "@DD7DT8Q1:4:1106:17724:13906#GTACCT/1") std::cout << " DD7DT8Q1 inside" << std::endl;
                         //LeftUP.Mismatches = i;
                         LeftUP.push_back (TempOne);
@@ -254,6 +273,8 @@ void CheckRight_Close (SPLIT_READ & read,
 		if (minimumNumberOfMismatches( Right_PD,read.getMAX_SNP_ERROR() ) > g_maxMismatch[CurrentLength] ) {
 			return; 
 		}
+      std::string forwardSeq = read.getUnmatchedSeq();
+      std::string reverseSeq = ReverseComplement(forwardSeq);
       for (short i = 0; i <= read.getMAX_SNP_ERROR(); i++) {
          if (Right_PD[i].size () == 1 && CurrentLength >= BP_Right_Start + i) {
             unsigned int Sum = numberOfCompetingPositions( Right_PD, i+userSettings->ADDITIONAL_MISMATCH );
@@ -265,7 +286,7 @@ void CheckRight_Close (SPLIT_READ & read,
 				}*/
             if (Sum == 1 && (unsigned)i <= g_maxMismatch[CurrentLength] ) {
                UniquePoint TempOne( g_genome.getChr(read.FragName), CurrentLength, Right_PD[i][0], BACKWARD, SENSE, i);
-               if (CheckMismatches(chromosomeSeq, read.getUnmatchedSeq(), TempOne, read.CloseEndMismatch)) {
+               if (CheckMismatches(chromosomeSeq, forwardSeq, reverseSeq, TempOne, read.CloseEndMismatch)) {
                   RightUP.push_back (TempOne);
                   break;
                } // ###################################
@@ -295,6 +316,8 @@ void CheckRight_Close_Perfect (SPLIT_READ & read,
 		if (minimumNumberOfMismatches( Right_PD,read.getMAX_SNP_ERROR() ) > g_maxMismatch[CurrentLength] ) {
 			return;
 		}
+      std::string forwardSeq = read.getUnmatchedSeq();
+      std::string reverseSeq = ReverseComplement(forwardSeq);
         for (short i = 0; i < 1; i++) {
             if (Right_PD[i].size () == 1 && CurrentLength >= BP_Right_Start + i) {
                 unsigned int Sum = numberOfCompetingPositions( Right_PD, i+userSettings->ADDITIONAL_MISMATCH );
@@ -306,7 +329,7 @@ void CheckRight_Close_Perfect (SPLIT_READ & read,
                  }*/
                 if (Sum == 1 && (unsigned)i <= g_maxMismatch[CurrentLength] ) {
                     UniquePoint TempOne( g_genome.getChr(read.FragName), CurrentLength, Right_PD[i][0], BACKWARD, SENSE, i);
-                    if (CheckMismatches(chromosomeSeq, read.getUnmatchedSeq(), TempOne, read.CloseEndMismatch)) {
+                    if (CheckMismatches(chromosomeSeq, forwardSeq, reverseSeq, TempOne, read.CloseEndMismatch)) {
                         RightUP.push_back (TempOne);
                         break;
                     } // ###################################
@@ -321,58 +344,78 @@ void CheckRight_Close_Perfect (SPLIT_READ & read,
     //std::cout << "out CheckRight_Close_Perfect " << std::endl;
 }
 
-bool CheckMismatches (const std::string & TheInput, const std::string & InputReadSeq, const UniquePoint & UP, short & numberOfMismatch)
+bool CheckMismatches (const std::string & TheInput, const std::string & InputReadSeq, const std::string& InputReadSeqRev, const UniquePoint & UP, short & numberOfMismatch)
 {
 	int Min_Perfect_Match_Around_BP = userSettings->Min_Perfect_Match_Around_BP;
-   std::string CurrentReadSeq;
-   if (UP.Strand == SENSE) {
+   //std::string CurrentReadSeq;
+   const std::string* CurrentReadSeq = (UP.Strand == SENSE)? &InputReadSeq: &InputReadSeqRev;
+   /*if (UP.Strand == SENSE) {
       CurrentReadSeq = InputReadSeq;
    }
    else {
       CurrentReadSeq = ReverseComplement (InputReadSeq);
-   }
-   short CurrentReadLength = CurrentReadSeq.size ();
+   }*/
+   short CurrentReadLength = CurrentReadSeq->size ();
    unsigned int Start = 0;
-   std::string BP_On_Read, BP_On_Ref;
+   //std::string BP_On_Read, BP_On_Ref;
    if (UP.Direction == FORWARD) {
 
       Start = UP.AbsLoc - UP.LengthStr + 1;
       if (UP.LengthStr <= Min_Perfect_Match_Around_BP) {
          return false;
       }
-      BP_On_Read = CurrentReadSeq.substr (UP.LengthStr - Min_Perfect_Match_Around_BP, Min_Perfect_Match_Around_BP);
+      const char* BP_On_Read_c = &(*CurrentReadSeq)[UP.LengthStr - Min_Perfect_Match_Around_BP];
+      const char* BP_On_Ref_c = &TheInput[UP.AbsLoc - Min_Perfect_Match_Around_BP + 1];
+      if (strncmp(BP_On_Read_c, BP_On_Ref_c, Min_Perfect_Match_Around_BP) != 0) {
+        return false;
+      }
+      /*BP_On_Read = CurrentReadSeq->substr (UP.LengthStr - Min_Perfect_Match_Around_BP, Min_Perfect_Match_Around_BP);
       BP_On_Ref = TheInput.substr (UP.AbsLoc - Min_Perfect_Match_Around_BP + 1, Min_Perfect_Match_Around_BP);
 
       if (BP_On_Read != BP_On_Ref) {
          return false; //#################################
-      }
+      }*/
    }
    else if (UP.Direction == BACKWARD) {
       Start = UP.AbsLoc + UP.LengthStr - CurrentReadLength;
       if (CurrentReadLength < UP.LengthStr) {
          return false;
       }
-      BP_On_Read = CurrentReadSeq.substr (CurrentReadLength - UP.LengthStr, Min_Perfect_Match_Around_BP);
+      if (CurrentReadLength - UP.LengthStr + Min_Perfect_Match_Around_BP > CurrentReadLength) {
+         return false;
+      }
+      if (UP.AbsLoc + Min_Perfect_Match_Around_BP > TheInput.size()) {
+          return false;
+      }
+      const char* BP_On_Read_c = &(*CurrentReadSeq)[CurrentReadLength - UP.LengthStr];
+      const char* BP_On_Ref_c = &TheInput[UP.AbsLoc];
+      if (strncmp(BP_On_Read_c, BP_On_Ref_c, Min_Perfect_Match_Around_BP) != 0) {
+        return false;
+      }
+      /*BP_On_Read = CurrentReadSeq->substr (CurrentReadLength - UP.LengthStr, Min_Perfect_Match_Around_BP);
       BP_On_Ref = TheInput.substr (UP.AbsLoc, Min_Perfect_Match_Around_BP);
       if (BP_On_Read != BP_On_Ref) {
          return false; //#################################
-      }
+      }*/
    }
-   float MAX_ALLOWED_MISMATCHES = CurrentReadSeq.size () * userSettings->MaximumAllowedMismatchRate;	//
+   float MAX_ALLOWED_MISMATCHES = CurrentReadSeq->size () * userSettings->MaximumAllowedMismatchRate;	//
 
    short NumMismatches = 0;			// Match2N[(short)'A'] = 'N';
 
    for (short i = 0; i < CurrentReadLength; i++) {
-      if (CurrentReadSeq[i] == N_char) {
+      char CurrentReadSeqChar = (*CurrentReadSeq)[i];
+      NumMismatches += MismatchPair[CurrentReadSeqChar][TheInput[Start+i]];
+
+      /*if (CurrentReadSeqChar == N_char) {
          if (Match2N[(short) TheInput[Start + i]] != N_char) {
             NumMismatches++;
          }
       }
       else {
-         if (TheInput[Start + i] != CurrentReadSeq[i]) {
+         if (TheInput[Start + i] != CurrentReadSeqChar) {
             NumMismatches++;
          }
-      }
+      }*/
    }
    numberOfMismatch = NumMismatches;
    // std::cout << "NumMismatches > MAX_ALLOWED_MISMATCHES " << NumMismatches << " " << MAX_ALLOWED_MISMATCHES << std::endl;

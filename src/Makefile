@@ -31,7 +31,7 @@ pindel-debug: $(SOURCES:.cpp=-debug.o)
 
 # Normal version of pindel	
 pindel:	$(SOURCES:.cpp=.o)
-	$(CXX) $(LDFLAGS) $^ -O3 -fopenmp -lm -lz -L$(SAMTOOLS) -lbam -o $@
+	$(CXX) $(LDFLAGS) -pg -static $^ -O3 -fopenmp -lm -lz -L$(SAMTOOLS) -Llibs -ltcmalloc_minimal -lbam -o $@
 
 clean:
 	$(RM) pindel pindel-debug $(OBJECTS) $(OBJECTS_DEBUG) $(CPPCHECKS) \
@@ -39,7 +39,7 @@ clean:
 
 # Pattern rule to create normal .o files	
 %.o: %.cpp
-	$(CXX) $(CXXFLAGS) -Wall -g -c -O3 -fopenmp -I$(SAMTOOLS) $< -o $@
+	$(CXX) $(CXXFLAGS) -pg -static -Wall -g -c -O3 -msse4.2 -funroll-loops -fopenmp -I$(SAMTOOLS) $< -o $@
 
 # Pattern rule to create debug version of .o files
 %-debug.o: %.cpp

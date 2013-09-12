@@ -61,6 +61,8 @@ struct RefCoveragePerPosition {
 extern std::vector <RefCoveragePerPosition> g_RefCoverageRegion;
 extern char Match[256];
 extern char Match2N[256];
+extern char MatchPair[256][256];
+extern char MismatchPair[256][256];
 extern char Convert2RC[256];
 extern char Convert2RC4N[256];
 extern char Cap2LowArray[256];

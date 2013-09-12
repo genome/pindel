@@ -111,6 +111,8 @@ short g_reportLength = 1;
 unsigned g_RegionStart, g_RegionEnd;
 char Match[256];
 char Match2N[256];
+char MatchPair[256][256];
+char MismatchPair[256][256];
 char Convert2RC[256];
 char Convert2RC4N[256];
 char Cap2LowArray[256];
@@ -994,6 +996,13 @@ void init(int argc, char *argv[], ControlState& currentState )
     Cap2LowArray[(short) 'N'] = 'n';
     Cap2LowArray[(short) '$'] = 'n';
 
+    for (int i = 0; i < 256; i++) {
+      for (int j = 0; j < 256; j++) {
+        if (i != 'N') { MatchPair[i][j] = (i == j)? 1: 0; }
+        else { MatchPair[i][j] = (Match2N[j] == 'N')? 1: 0; }
+        MismatchPair[i][j] = 1 - MatchPair[i][j];
+      }
+    }
 //std::cout << "18" << std::endl;
 
     std::string Spacer = "";
@@ -2430,6 +2439,8 @@ void ExtendMatchPerfect(SPLIT_READ & read,
         FarEndSearchPerRegion* CurrentRegion_output=new FarEndSearchPerRegion (CurrentRegion_input->CurrentChromosome, read.getTOTAL_SNP_ERROR_CHECKED(), Max_size);
         for (int i = 0; i <= read.getTOTAL_SNP_ERROR_CHECKED_Minus(); i++) {
             CategorizePositions( CurrentChar, chromosomeSeq, CurrentRegion_input->PD_Plus, CurrentRegion_output->PD_Plus, i, 1, userSettings -> ADDITIONAL_MISMATCH);
+        }
+        for (int i = 0; i <= read.getTOTAL_SNP_ERROR_CHECKED_Minus(); i++) {
             CategorizePositions( CurrentCharRC, chromosomeSeq, CurrentRegion_input->PD_Minus, CurrentRegion_output->PD_Minus, i, -1, userSettings -> ADDITIONAL_MISMATCH);
         }
         if (CountElements(CurrentRegion_output, 1)) {
@@ -2527,6 +2538,7 @@ void CheckBothPerfect(SPLIT_READ & read,
                const short CurrentLength,
                SortedUniquePoints &UP)
 {
+    const std::string readSeqRev = ReverseComplement(readSeq);
 	//UserDefinedSettings *userSettings = UserDefinedSettings::Instance();
     unsigned NumberOfMatchPositionsWithLessMismatches = 0;
     int Sum = 0;
@@ -2584,7 +2596,7 @@ void CheckBothPerfect(SPLIT_READ & read,
                             MatchPosition = MinMatch;
                         }
                         
-                        if (CheckMismatches(WholeGenomeSearchResult_input[regionWithMatch]->CurrentChromosome->getSeq(), readSeq, MatchPosition, read.FarEndMismatch)) {
+                        if (CheckMismatches(WholeGenomeSearchResult_input[regionWithMatch]->CurrentChromosome->getSeq(), readSeq, readSeqRev, MatchPosition, read.FarEndMismatch)) {
                             UP.push_back (MatchPosition);
                             break;
                         } // if CheckMismatches
@@ -2607,6 +2619,7 @@ void CheckBoth(SPLIT_READ & read,
                const short CurrentLength,
                SortedUniquePoints &UP)
 {
+   const std::string& readSeqRev = ReverseComplement(readSeq);
 	//UserDefinedSettings *userSettings = UserDefinedSettings::Instance();
    unsigned NumberOfMatchPositionsWithLessMismatches = 0;
    int Sum = 0;
@@ -2664,7 +2677,7 @@ void CheckBoth(SPLIT_READ & read,
 									MatchPosition = MinMatch;
                         }
 
-                        if (CheckMismatches(WholeGenomeSearchResult_input[regionWithMatch]->CurrentChromosome->getSeq(), readSeq, MatchPosition, read.FarEndMismatch)) {
+                        if (CheckMismatches(WholeGenomeSearchResult_input[regionWithMatch]->CurrentChromosome->getSeq(), readSeq, readSeqRev, MatchPosition, read.FarEndMismatch)) {
                             UP.push_back (MatchPosition);
                             break;
                         } // if CheckMismatches
