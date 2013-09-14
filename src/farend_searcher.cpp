@@ -19,6 +19,10 @@
  */
 
 #include <math.h>
+#include <emmintrin.h>
+#include <pmmintrin.h>
+#include <smmintrin.h>
+#include <x86intrin.h>
 
 #include "pindel.h"
 #include "searcher.h"
@@ -42,17 +46,21 @@ bool NewUPFarIsBetter(const SortedUniquePoints & UP, const SPLIT_READ& Read) {
 
 void SearchFarEndAtPos( const std::string& chromosome, SPLIT_READ& Temp_One_Read, const std::vector <SearchWindow> & Regions )
 {
+	const std::string& forwardSeq = Temp_One_Read.getUnmatchedSeq();
+        const std::string& reverseSeq = Temp_One_Read.getUnmatchedSeqRev();
+        const unsigned readLength = forwardSeq.size();
 
 	// step 1 find out which chromosomes in Regions: set? linear pass of regions
 	// step 2 for each identified chromsome, for each regions on the chromosme, do the business.
-	const char CurrentBase = Temp_One_Read.getUnmatchedSeq()[0];
-	const char CurrentBaseRC = Convert2RC4N[(short) CurrentBase];
+	const char CurrentBase = forwardSeq[0];
+	const char CurrentBaseRC = reverseSeq[readLength - 1];
 
 	if (CurrentBase == 'N' || Temp_One_Read.MaxLenCloseEnd() == 0) return;
 	//int CurrentReadLength = Temp_One_Read.getReadLength();
-
+	const uint32_t cmpestrmflag       = _SIDD_UBYTE_OPS | _SIDD_CMP_EQUAL_EACH | _SIDD_NEGATIVE_POLARITY;
 	std::vector <FarEndSearchPerRegion*> WholeGenomeSearchResult;
 	unsigned NumberOfHits = 0;
+        const int InitExtend = 8;
 	for (unsigned RegionIndex = 0; RegionIndex < Regions.size(); RegionIndex++) {
 
 		FarEndSearchPerRegion* CurrentRegion = new FarEndSearchPerRegion(Regions[RegionIndex].getChromosome(), Temp_One_Read.getTOTAL_SNP_ERROR_CHECKED(), Regions[RegionIndex].getSize());
@@ -61,15 +69,44 @@ void SearchFarEndAtPos( const std::string& chromosome, SPLIT_READ& Temp_One_Read
 		int Start = Regions[RegionIndex].getStart();
 		int End = std::min((unsigned) Regions[RegionIndex].getEnd(), (unsigned) chromosome.size());
 		if (Start < 0) Start = End -1;
+		__m128i forwardSIMD = _mm_lddqu_si128((__m128i* const) &forwardSeq[0]);
+		__m128i reverseSIMD = _mm_lddqu_si128((__m128i* const) &reverseSeq[readLength - InitExtend]);
+                __m128i dontcarSIMD = _mm_set1_epi8('N');
+
+                __m128i forwardMaskSIMD = _mm_cmpestrm(forwardSIMD, InitExtend, dontcarSIMD, InitExtend, cmpestrmflag);
+                __m128i reverseMaskSIMD = _mm_cmpestrm(reverseSIMD, InitExtend, dontcarSIMD, InitExtend, cmpestrmflag);
 		for (int pos = Start; pos < End; pos++) {
 			if (chromosome[pos] == CurrentBase) {
-				CurrentRegion->PD_Plus[0].push_back(pos); // else
+                                // TODO: Make the SIMD match the MismatchPair based code
+                                __m128i chromosSIMD = _mm_lddqu_si128((__m128i* const) &chromosome[pos]);
+                                __m128i cmpres = _mm_and_si128(forwardMaskSIMD, _mm_cmpestrm(forwardSIMD, InitExtend, chromosSIMD, InitExtend, cmpestrmflag));
+				int nMismatches = _mm_popcnt_u32(_mm_extract_epi32(cmpres, 0)); 
+                                /*for (int i = 1; i < InitExtend; i++) {
+                                    nMismatches += MismatchPair[forwardSeq[i]][chromosome[pos+i]];
+                                }*/
+                                if (nMismatches < CurrentRegion->PD_Plus.size()) { 
+					CurrentRegion->PD_Plus[nMismatches].push_back(pos + InitExtend - 1); // else
+                                }
 			}
 			if (chromosome[pos] == CurrentBaseRC) {
-				CurrentRegion->PD_Minus[0].push_back(pos);
+                                __m128i chromosSIMD = _mm_lddqu_si128((__m128i* const) &chromosome[pos + 1 - InitExtend]);
+                                __m128i cmpres = _mm_and_si128(reverseMaskSIMD, _mm_cmpestrm(reverseSIMD, InitExtend, chromosSIMD, InitExtend, cmpestrmflag));
+				int nMismatches = _mm_popcnt_u32(_mm_extract_epi32(cmpres, 0)); 
+                                /*int nMismatches = 0;
+                                for (int i = 1; i < InitExtend; i++) {
+                                    nMismatches += MismatchPair[reverseSeq[readLength - 1 - i]][chromosome[pos-i]];
+                                }*/
+                                if (nMismatches < CurrentRegion->PD_Minus.size()) { 
+					CurrentRegion->PD_Minus[nMismatches].push_back(pos - InitExtend + 1); // else
+                                }
 			}
 		}
-		NumberOfHits += CurrentRegion->PD_Plus[0].size() + CurrentRegion->PD_Minus[0].size();
+                for (int i = 0; i < CurrentRegion->PD_Plus.size(); i++) {
+			NumberOfHits += CurrentRegion->PD_Plus[i].size();
+                }
+                for (int i = 0; i < CurrentRegion->PD_Minus.size(); i++) {
+			NumberOfHits += CurrentRegion->PD_Minus[i].size();
+                }
 		WholeGenomeSearchResult.push_back(CurrentRegion);
 
 	}
@@ -78,7 +115,7 @@ void SearchFarEndAtPos( const std::string& chromosome, SPLIT_READ& Temp_One_Read
 		short BP_Start = 10; // perhaps use global constant like "g_MinimumLengthToReportMatch"
 		short BP_End = Temp_One_Read.getReadLengthMinus(); // matched far end should be between BP_Start and BP_End bases long (including BP_Start and End)
 		SortedUniquePoints UP; // temporary container for unique far ends
-		CheckBoth(Temp_One_Read, Temp_One_Read.getUnmatchedSeq(), Temp_One_Read.getUnmatchedSeqRev(), WholeGenomeSearchResult, BP_Start, BP_End, 1, UP);
+		CheckBoth(Temp_One_Read, forwardSeq, reverseSeq, WholeGenomeSearchResult, BP_Start, BP_End, InitExtend, UP);
 
 		if ( NewUPFarIsBetter(UP, Temp_One_Read)) { // UP.MaxLen() > Temp_One_Read.MaxLenFarEnd()
 			Temp_One_Read.UP_Far.swap(UP);

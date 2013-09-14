@@ -39,7 +39,7 @@ clean:
 
 # Pattern rule to create normal .o files	
 %.o: %.cpp
-	$(CXX) $(CXXFLAGS) -pg -static -Wall -g -c -O3 -msse4.2 -funroll-loops -fopenmp -I$(SAMTOOLS) $< -o $@
+	$(CXX) $(CXXFLAGS) -pg -static -Wall -g -c -O3 -funroll-loops -fopenmp -I$(SAMTOOLS) $< -o $@
 
 # Pattern rule to create debug version of .o files
 %-debug.o: %.cpp
