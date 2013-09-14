@@ -241,6 +241,7 @@ struct SPLIT_READ {
         FarFragName = "";
 	Name = "";
 	UnmatchedSeq = "";
+        UnmatchedSeqRev = "";
 	MatchedD = 0;
         MatchedFarD = 0;
 	MatchedRelPos = 0;
@@ -276,6 +277,7 @@ struct SPLIT_READ {
 
 	void setUnmatchedSeq( const std::string & unmatchedSeq );
 	const std::string& getUnmatchedSeq() const { return UnmatchedSeq; }	
+        const std::string& getUnmatchedSeqRev() const { return UnmatchedSeqRev; }
 
 
 	char MatchedD; // rename AnchorStrand?
@@ -322,7 +324,8 @@ struct SPLIT_READ {
 	bool hasCloseEnd() const;
 	unsigned int MaxLenCloseEnd() const;
 	unsigned int MaxLenFarEnd() const;
-    std::string UnmatchedSeq;
+        std::string UnmatchedSeq;
+        std::string UnmatchedSeqRev;
 	friend std::ostream& operator<<(std::ostream& os, const SPLIT_READ& splitRead);
     
 private:
@@ -505,15 +508,15 @@ std::string Cap2Low(const std::string & input);
 		SortedUniquePoints &UP);*/
 class FarEndSearchPerRegion;
 void CheckBoth(SPLIT_READ & read,
-               const std::string & readSeq,
-               const std::vector <FarEndSearchPerRegion*> & WholeGenomeSearchResult_input,
+               const std::string & readSeq, const std::string& readSeqRev,
+               std::vector <FarEndSearchPerRegion*> & WholeGenomeSearchResult_input,
                const short minimumLengthToReportMatch,
                const short BP_End,
                const short CurrentLength,
                SortedUniquePoints &UP);
 void CheckBothPerfect(SPLIT_READ & read,
-               const std::string & readSeq,
-               const std::vector <FarEndSearchPerRegion*> & WholeGenomeSearchResult_input,
+               const std::string & readSeq, const std::string& readSeqRev,
+               std::vector <FarEndSearchPerRegion*> & WholeGenomeSearchResult_input,
                const short minimumLengthToReportMatch,
                const short BP_End,
                const short CurrentLength,

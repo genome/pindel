@@ -65,7 +65,7 @@ int searchTandemDuplicationsNT(ControlState& currentState, unsigned NumBoxes, co
 
                currentRead.IndelSize = currentRead.UP_Close[CloseIndex].AbsLoc - currentRead.UP_Far[FarIndex].AbsLoc + 1;
                currentRead.NT_size = currentRead.getReadLength() - currentRead.UP_Close[CloseIndex].LengthStr - currentRead.UP_Far[FarIndex].LengthStr;
-               currentRead.NT_str = ReverseComplement( currentRead.getUnmatchedSeq()).substr( currentRead.BP + 1, currentRead.NT_size);
+               currentRead.NT_str = currentRead.getUnmatchedSeqRev().substr( currentRead.BP + 1, currentRead.NT_size);
                currentRead.BPRight = currentRead.UP_Close[CloseIndex].AbsLoc - g_SpacerBeforeAfter;
                currentRead.BPLeft = currentRead.UP_Far[FarIndex].AbsLoc - g_SpacerBeforeAfter;
                if (readTransgressesBinBoundaries( currentRead, window.getEnd())) {

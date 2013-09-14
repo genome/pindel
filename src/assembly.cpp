@@ -531,7 +531,7 @@ void TryLI(std::map<std::string,int> & ChrName2Index, ControlState & CurrentStat
             if (Second[ReadIndex_Minus].MatchedD == '+') continue;
             MaximumOverlap = std::min(First[ReadIndex_Plus].getReadLength(), Second[ReadIndex_Minus].getReadLength());
             std::cout << MaximumOverlap << std::endl;
-            FirstOne = ReverseComplement(First[ReadIndex_Plus].getUnmatchedSeq());
+            FirstOne = First[ReadIndex_Plus].getUnmatchedSeqRev();
             SecondOne = Second[ReadIndex_Minus].getUnmatchedSeq();
             FirstLength = FirstOne.size();
             SecondLength = SecondOne.size();

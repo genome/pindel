@@ -54,7 +54,7 @@ unsigned int SearchShortInsertions::calculateIndelSize( const SPLIT_READ& read)
 
 std::string SearchShortInsertions::getInsertedStr1(const SPLIT_READ& read)
 {
-   return ReverseComplement(read.getUnmatchedSeq()).substr( read.BP + 1, read.IndelSize);
+   return read.getUnmatchedSeqRev().substr( read.BP + 1, read.IndelSize);
 }
 
 std::string SearchShortInsertions::getInsertedStr2(const SPLIT_READ& read)
