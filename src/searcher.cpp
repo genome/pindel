@@ -398,10 +398,6 @@ bool CheckMismatches (const std::string & TheInput, const std::string & InputRea
        __m128i cmpres = _mm_and_si128(readMaskSIMD, _mm_cmpestrm(readSIMD, toProcess, inputSIMD, toProcess, cmpestrmflag));
        NumMismatches += _mm_popcnt_u32(_mm_extract_epi32(cmpres, 0));
    }
-   /*for (short i = 0; i < CurrentReadLength; i++) {
-      char CurrentReadSeqChar = (*CurrentReadSeq)[i];
-      NumMismatches += MismatchPair[CurrentReadSeqChar][TheInput[Start+i]];
-   }*/
    numberOfMismatch = NumMismatches;
    // std::cout << "NumMismatches > MAX_ALLOWED_MISMATCHES " << NumMismatches << " " << MAX_ALLOWED_MISMATCHES << std::endl;
    if ((float)NumMismatches >= MAX_ALLOWED_MISMATCHES) {
