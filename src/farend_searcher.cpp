@@ -57,58 +57,50 @@ void SearchFarEndAtPos( const std::string& chromosome, SPLIT_READ& Temp_One_Read
 
 	if (CurrentBase == 'N' || Temp_One_Read.MaxLenCloseEnd() == 0) return;
 	//int CurrentReadLength = Temp_One_Read.getReadLength();
-	const uint32_t cmpestrmflag       = _SIDD_UBYTE_OPS | _SIDD_CMP_EQUAL_EACH | _SIDD_NEGATIVE_POLARITY;
 	std::vector <FarEndSearchPerRegion*> WholeGenomeSearchResult;
 	unsigned NumberOfHits = 0;
-        const int InitExtend = 8;
-	for (unsigned RegionIndex = 0; RegionIndex < Regions.size(); RegionIndex++) {
+        const int InitExtend = 9;
 
-		FarEndSearchPerRegion* CurrentRegion = new FarEndSearchPerRegion(Regions[RegionIndex].getChromosome(), Temp_One_Read.getTOTAL_SNP_ERROR_CHECKED(), Regions[RegionIndex].getSize());
+	const uint32_t cmpestrmflag = _SIDD_UBYTE_OPS | _SIDD_CMP_EQUAL_EACH | _SIDD_NEGATIVE_POLARITY;
+	__m128i forwardSIMD = _mm_lddqu_si128((__m128i* const) &forwardSeq[0]);
+	__m128i reverseSIMD = _mm_lddqu_si128((__m128i* const) &reverseSeq[readLength - InitExtend]);
+	__m128i dontcarSIMD = _mm_set1_epi8('N');
+
+	__m128i forwardMaskSIMD = _mm_cmpestrm(forwardSIMD, InitExtend, dontcarSIMD, InitExtend, cmpestrmflag);
+	__m128i reverseMaskSIMD = _mm_cmpestrm(reverseSIMD, InitExtend, dontcarSIMD, InitExtend, cmpestrmflag);
+
+        unsigned PD_size = std::max(InitExtend, (int)Temp_One_Read.getTOTAL_SNP_ERROR_CHECKED());
+	for (unsigned RegionIndex = 0; RegionIndex < Regions.size(); RegionIndex++) {
+		FarEndSearchPerRegion* CurrentRegion = new FarEndSearchPerRegion(Regions[RegionIndex].getChromosome(), PD_size, std::max(1, (int)Regions[RegionIndex].getSize()/4));
 		const std::string & chromosome = Regions[RegionIndex].getChromosome()->getSeq();
 
 		int Start = Regions[RegionIndex].getStart();
 		int End = std::min((unsigned) Regions[RegionIndex].getEnd(), (unsigned) chromosome.size());
 		if (Start < 0) Start = End -1;
-		__m128i forwardSIMD = _mm_lddqu_si128((__m128i* const) &forwardSeq[0]);
-		__m128i reverseSIMD = _mm_lddqu_si128((__m128i* const) &reverseSeq[readLength - InitExtend]);
-                __m128i dontcarSIMD = _mm_set1_epi8('N');
-
-                __m128i forwardMaskSIMD = _mm_cmpestrm(forwardSIMD, InitExtend, dontcarSIMD, InitExtend, cmpestrmflag);
-                __m128i reverseMaskSIMD = _mm_cmpestrm(reverseSIMD, InitExtend, dontcarSIMD, InitExtend, cmpestrmflag);
 		for (int pos = Start; pos < End; pos++) {
 			if (chromosome[pos] == CurrentBase) {
                                 // TODO: Make the SIMD match the MismatchPair based code
                                 __m128i chromosSIMD = _mm_lddqu_si128((__m128i* const) &chromosome[pos]);
                                 __m128i cmpres = _mm_and_si128(forwardMaskSIMD, _mm_cmpestrm(forwardSIMD, InitExtend, chromosSIMD, InitExtend, cmpestrmflag));
-				int nMismatches = _mm_popcnt_u32(_mm_extract_epi32(cmpres, 0)); 
-                                /*for (int i = 1; i < InitExtend; i++) {
-                                    nMismatches += MismatchPair[forwardSeq[i]][chromosome[pos+i]];
-                                }*/
-                                if (nMismatches < CurrentRegion->PD_Plus.size()) { 
-					CurrentRegion->PD_Plus[nMismatches].push_back(pos + InitExtend - 1); // else
-                                }
+				unsigned nMismatches = _mm_popcnt_u32(_mm_extract_epi32(cmpres, 0)); 
+				CurrentRegion->PD_Plus[nMismatches].push_back(pos + InitExtend - 1); // else
+				//CurrentRegion->PD_Plus[0].push_back(pos);
 			}
 			if (chromosome[pos] == CurrentBaseRC) {
                                 __m128i chromosSIMD = _mm_lddqu_si128((__m128i* const) &chromosome[pos + 1 - InitExtend]);
                                 __m128i cmpres = _mm_and_si128(reverseMaskSIMD, _mm_cmpestrm(reverseSIMD, InitExtend, chromosSIMD, InitExtend, cmpestrmflag));
-				int nMismatches = _mm_popcnt_u32(_mm_extract_epi32(cmpres, 0)); 
-                                /*int nMismatches = 0;
-                                for (int i = 1; i < InitExtend; i++) {
-                                    nMismatches += MismatchPair[reverseSeq[readLength - 1 - i]][chromosome[pos-i]];
-                                }*/
-                                if (nMismatches < CurrentRegion->PD_Minus.size()) { 
-					CurrentRegion->PD_Minus[nMismatches].push_back(pos - InitExtend + 1); // else
-                                }
+				unsigned nMismatches = _mm_popcnt_u32(_mm_extract_epi32(cmpres, 0)); 
+				CurrentRegion->PD_Minus[nMismatches].push_back(pos - InitExtend + 1); // else
+                                //CurrentRegion->PD_Minus[0].push_back(pos);
 			}
 		}
-                for (int i = 0; i < CurrentRegion->PD_Plus.size(); i++) {
+                for (unsigned i = 0; i < Temp_One_Read.getTOTAL_SNP_ERROR_CHECKED(); i++) {
 			NumberOfHits += CurrentRegion->PD_Plus[i].size();
                 }
-                for (int i = 0; i < CurrentRegion->PD_Minus.size(); i++) {
+                for (unsigned i = 0; i < Temp_One_Read.getTOTAL_SNP_ERROR_CHECKED(); i++) {
 			NumberOfHits += CurrentRegion->PD_Minus[i].size();
                 }
 		WholeGenomeSearchResult.push_back(CurrentRegion);
-
 	}
 
 	if (NumberOfHits>0) {
