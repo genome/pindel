@@ -61,6 +61,9 @@ void SearchFarEndAtPos( const std::string& chromosome, SPLIT_READ& Temp_One_Read
 	unsigned NumberOfHits = 0;
         const int InitExtend = 9;
 
+        if (forwardSeq.size() < InitExtend) {
+            return;
+        }
 	const uint32_t cmpestrmflag = _SIDD_UBYTE_OPS | _SIDD_CMP_EQUAL_EACH | _SIDD_NEGATIVE_POLARITY;
 	__m128i forwardSIMD = _mm_lddqu_si128((__m128i* const) &forwardSeq[0]);
 	__m128i reverseSIMD = _mm_lddqu_si128((__m128i* const) &reverseSeq[readLength - InitExtend]);

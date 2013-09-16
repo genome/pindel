@@ -2214,7 +2214,6 @@ std::vector<Region> Merge(const std::vector<Region> &AllRegions)
 void GetCloseEndInner(const std::string & CurrentChrSeq, SPLIT_READ & Temp_One_Read)
 {
     std::string CurrentReadSeq;
-    //std::vector<unsigned int> PD[Temp_One_Read.getTOTAL_SNP_ERROR_CHECKED()];
 	std::vector<PosVector> PD;
 	PosVector emptyPosVector;
    PD.assign( Temp_One_Read.getTOTAL_SNP_ERROR_CHECKED(), emptyPosVector);
@@ -2236,80 +2235,57 @@ void GetCloseEndInner(const std::string & CurrentChrSeq, SPLIT_READ & Temp_One_R
         CurrentReadSeq = Temp_One_Read.getUnmatchedSeqRev();
         Start = Temp_One_Read.MatchedRelPos + g_SpacerBeforeAfter;
         End = Start + 3 * Temp_One_Read.InsertSize;
-        char LeftChar;
-        LeftChar = CurrentReadSeq[0];
+        char LeftChar = CurrentReadSeq[0];
 
         __m128i forwardSIMD = _mm_lddqu_si128((__m128i* const) &CurrentReadSeq[0]);
         __m128i dontcarSIMD = _mm_set1_epi8('N');
 	__m128i forwardMaskSIMD = _mm_cmpestrm(forwardSIMD, InitExtend, dontcarSIMD, InitExtend, cmpestrmflag);
        
         if (LeftChar != 'N') {
-            {
                 for (int pos = Start; pos < End; pos++) {
 			if (CurrentChrSeq[pos] == LeftChar) {
                                 __m128i chromosSIMD = _mm_lddqu_si128((__m128i* const) &CurrentChrSeq[pos]);
                                 __m128i cmpres = _mm_and_si128(forwardMaskSIMD, _mm_cmpestrm(forwardSIMD, InitExtend, chromosSIMD, InitExtend, cmpestrmflag));
 				int nMismatches = _mm_popcnt_u32(_mm_extract_epi32(cmpres, 0)); 
-				/*unsigned nMismatches = 0;
-				for (int i = 1; i < InitExtend; i++) {
-					nMismatches += MismatchPair[CurrentReadSeq[i]][CurrentChrSeq[pos+i]];
-				}*/
 				if (nMismatches < PD.size()) { 
 					PD[nMismatches].push_back(pos + InitExtend - 1); // else
 				}
 			}
 		}
-	    }
         }
 
         CheckLeft_Close(Temp_One_Read, CurrentChrSeq, CurrentReadSeq, PD, BP_Start, BP_End, InitExtend, UP); // LengthStr
-        if (UP.empty()) {}
-        else {
-            Temp_One_Read.Used = false;
-            Temp_One_Read.UP_Close.swap(UP);
-            UP.clear();
-        }
     }
     else if (Temp_One_Read.MatchedD == Minus) {
 
         CurrentReadSeq = Temp_One_Read.getUnmatchedSeq();
         End = Temp_One_Read.MatchedRelPos + g_SpacerBeforeAfter;
         Start = End - 3 * Temp_One_Read.InsertSize;
-        char RightChar;
         const int seqLength = CurrentReadSeq.size();
-        RightChar = CurrentReadSeq[Temp_One_Read.getReadLengthMinus()];
+        char RightChar = CurrentReadSeq[Temp_One_Read.getReadLengthMinus()];
         
 	__m128i reverseSIMD = _mm_lddqu_si128((__m128i* const) &CurrentReadSeq[seqLength - InitExtend]);
         __m128i dontcarSIMD = _mm_set1_epi8('N');
 	__m128i reverseMaskSIMD = _mm_cmpestrm(reverseSIMD, InitExtend, dontcarSIMD, InitExtend, cmpestrmflag);
-	//std::cout << "Starting to fit the close end with character" << RightChar << "\n";
 	if (RightChar != 'N') {
 		for (int pos = Start; pos < End; pos++) {
 			if (CurrentChrSeq[pos] == RightChar) {
 				__m128i chromosSIMD = _mm_lddqu_si128((__m128i* const) &CurrentChrSeq[pos + 1 - InitExtend]);
 				__m128i cmpres = _mm_and_si128(reverseMaskSIMD, _mm_cmpestrm(reverseSIMD, InitExtend, chromosSIMD, InitExtend, cmpestrmflag));
 				int nMismatches = _mm_popcnt_u32(_mm_extract_epi32(cmpres, 0)); 
-				/*unsigned nMismatches = 0;
-				for (int i = 1; i < InitExtend; i++) {
-					nMismatches += MismatchPair[CurrentReadSeq[seqLength-1-i]][CurrentChrSeq[pos-i]];
-				}*/
 				if (nMismatches < PD.size()) {
 					PD[nMismatches].push_back(pos - InitExtend + 1);
 				}
-				//PD[0].push_back(pos);
 			}
 		}
 	}
-        //std::cout << "1\t" << PD[0].size() << "\t" << PD[1].size() << std::endl;
-//        LOG_DEBUG(*logStream << "1\t" << PD[0].size() << "\t" << PD[1].size() << std::endl);
         CheckRight_Close(Temp_One_Read, CurrentChrSeq, CurrentReadSeq, PD, BP_Start, BP_End, InitExtend, UP);
-//        LOG_DEBUG(*logStream << UP.size() << std::endl);
-        if (UP.empty()) {}
-        else {
-            Temp_One_Read.Used = false;
-            Temp_One_Read.UP_Close.swap(UP);
-            UP.clear();
-        }
+    }
+    if (UP.empty()) {}
+    else {
+	    Temp_One_Read.Used = false;
+	    Temp_One_Read.UP_Close.swap(UP);
+	    UP.clear();
     }
     return;
 }
@@ -2472,6 +2448,8 @@ void ExtendWholeGenomeInPlace(
                         std::swap(WholeGenomeSearchResult_input[IndexOfRegion], WholeGenomeSearchResult_input[numRegions]);
                         if (numRegions > 0) {
 				WholeGenomeSearchResult_input.resize(numRegions);
+                        } else {
+                                WholeGenomeSearchResult_input.clear();
                         }
                         delete CurrentRegion_input; 
 		} else {
@@ -2545,6 +2523,39 @@ int getNumCompetingPositions(const std::vector<FarEndSearchPerRegion*>& WholeGen
     return sum; 
 }
 
+const FarEndSearchPerRegion* GetHitRegion(const std::vector<FarEndSearchPerRegion*>& WholeGenomeSearchResult,
+                                          int nMismatches) {
+        for (std::vector<FarEndSearchPerRegion*>::const_iterator it = WholeGenomeSearchResult.begin(); it != WholeGenomeSearchResult.end(); it++) {
+            const FarEndSearchPerRegion* hitRegion = *it;
+            if (hitRegion->PD_Plus[nMismatches].size() > 0 || hitRegion->PD_Minus[nMismatches].size() > 0) {
+                return hitRegion;
+            }
+        }
+        return NULL;
+}
+
+void AddUniquePoint(SPLIT_READ& read,
+                    const std::string& readSeq,
+                    const std::string& readSeqRev,
+                    const FarEndSearchPerRegion* hitRegion,
+                    int currentLength,
+		    int nMismatches,
+                    SortedUniquePoints& UP) {
+	UniquePoint MatchPosition;
+
+	if (hitRegion->PD_Plus[nMismatches].size() == 1) {
+		UniquePoint PlusMatch( hitRegion->CurrentChromosome, currentLength, hitRegion->PD_Plus[nMismatches][0], FORWARD, SENSE, nMismatches);
+		MatchPosition = PlusMatch;
+	}
+	else {
+		UniquePoint MinMatch(  hitRegion->CurrentChromosome, currentLength, hitRegion->PD_Minus[nMismatches][0], BACKWARD, ANTISENSE, nMismatches);
+		MatchPosition = MinMatch;
+	}
+
+	if (CheckMismatches(hitRegion->CurrentChromosome->getSeq(), readSeq, readSeqRev, MatchPosition, read.FarEndMismatch)) {
+		UP.push_back (MatchPosition);
+	} // if CheckMismatches
+}
 
 void CheckBothPerfect(SPLIT_READ & read,
 		const std::string & readSeq, const std::string& readSeqRev,
@@ -2554,51 +2565,23 @@ void CheckBothPerfect(SPLIT_READ & read,
 		short CurrentLength,
 		SortedUniquePoints &UP)
 {
-	if (WholeGenomeSearchResult_input.size() == 0) {
-		return;
-	}
+        if (userSettings->ADDITIONAL_MISMATCH == 0) {
+           return;
+        }
 
         PosVector TmpPositions[2];
         for ( ; CurrentLength < minimumLengthToReportMatch && getNumPositionsForMismatches(WholeGenomeSearchResult_input, 0) > 0; CurrentLength++) {
-		const char CurrentChar = readSeq[CurrentLength];
-		ExtendWholeGenomeInPlace(CurrentChar, 0, userSettings->ADDITIONAL_MISMATCH, 1, WholeGenomeSearchResult_input, TmpPositions); 
+		ExtendWholeGenomeInPlace(readSeq[CurrentLength], 0, userSettings->ADDITIONAL_MISMATCH, 1, WholeGenomeSearchResult_input, TmpPositions); 
         }
 
 	for ( ; CurrentLength <= BP_End && getNumPositionsForMismatches(WholeGenomeSearchResult_input, 0) > 0; CurrentLength++) {
                 if (getNumPositionsForMismatches(WholeGenomeSearchResult_input, 0) == 1) {
 			if (getNumCompetingPositions(WholeGenomeSearchResult_input, 1, userSettings->ADDITIONAL_MISMATCH) == 0) {
-				// what if j +ADD_MISMATCH exceeds the max allowed number of mismatches (the PD_element does not exist?)
-
-				// feeling the need to comment here - so factor out?
-				// only report reads if there are no reads with fewer mismatches or only one or two more mismatches
-			        unsigned regionWithMatch;
-                                for (regionWithMatch = 0; regionWithMatch < WholeGenomeSearchResult_input.size(); regionWithMatch++) {
-                                  if (WholeGenomeSearchResult_input[regionWithMatch]->PD_Plus[0].size() > 0 || WholeGenomeSearchResult_input[regionWithMatch]->PD_Minus[0].size() > 0) {
-                                     break;
-                                   }
-                                }
-				// why I love constructors
-				UniquePoint MatchPosition;
-
-				const FarEndSearchPerRegion* hitRegion = WholeGenomeSearchResult_input[ regionWithMatch ];
-				if (WholeGenomeSearchResult_input[regionWithMatch]->PD_Plus[0].size() == 1) {
-					UniquePoint PlusMatch( hitRegion->CurrentChromosome, CurrentLength, hitRegion->PD_Plus[0][0], FORWARD, SENSE, 0);
-					MatchPosition = PlusMatch;
-				}
-				else {
-					UniquePoint MinMatch(  hitRegion->CurrentChromosome, CurrentLength, hitRegion->PD_Minus[0][0], BACKWARD, ANTISENSE, 0);
-					MatchPosition = MinMatch;
-				}
-
-				if (CheckMismatches(WholeGenomeSearchResult_input[regionWithMatch]->CurrentChromosome->getSeq(), readSeq, readSeqRev, MatchPosition, read.FarEndMismatch)) {
-					UP.push_back (MatchPosition);
-				} // if CheckMismatches
-			} // if sumsize ==1
-		} // for-loop
-
+                                AddUniquePoint(read, readSeq, readSeqRev, GetHitRegion(WholeGenomeSearchResult_input, 0), CurrentLength, 0, UP);
+			} 
+		} 
 		if (CurrentLength < BP_End) {
-			const char CurrentChar = readSeq[CurrentLength];
-			ExtendWholeGenomeInPlace(CurrentChar, 0, userSettings->ADDITIONAL_MISMATCH, 1, WholeGenomeSearchResult_input, TmpPositions); 
+			ExtendWholeGenomeInPlace(readSeq[CurrentLength], 0, userSettings->ADDITIONAL_MISMATCH, 1, WholeGenomeSearchResult_input, TmpPositions); 
 		}
 	}
 }
@@ -2622,8 +2605,7 @@ void CheckBoth(SPLIT_READ & read,
 
         PosVector TmpPositions[2];
         for ( ; CurrentLength < minimumLengthToReportMatch && WholeGenomeSearchResult_input.size() > 0 && minMismatches <= read.getMAX_SNP_ERROR(); CurrentLength++) {
-		const char CurrentChar = readSeq[CurrentLength];
-		ExtendWholeGenomeInPlace(CurrentChar, minMismatches, read.getTOTAL_SNP_ERROR_CHECKED_Minus(), read.getTOTAL_SNP_ERROR_CHECKED(), WholeGenomeSearchResult_input, TmpPositions); 
+		ExtendWholeGenomeInPlace(readSeq[CurrentLength], minMismatches, read.getTOTAL_SNP_ERROR_CHECKED_Minus(), read.getTOTAL_SNP_ERROR_CHECKED(), WholeGenomeSearchResult_input, TmpPositions); 
 
                 minMismatches += (getNumPositionsForMismatches(WholeGenomeSearchResult_input, minMismatches) == 0)? 1: 0;
         }
@@ -2635,38 +2617,12 @@ void CheckBoth(SPLIT_READ & read,
 
                 if (minMismatches <= CurrentLength - minimumLengthToReportMatch && getNumPositionsForMismatches(WholeGenomeSearchResult_input, minMismatches) == 1) {
 			if (getNumCompetingPositions(WholeGenomeSearchResult_input, minMismatches + 1, minMismatches + userSettings->ADDITIONAL_MISMATCH) == 0) {
-				// what if j +ADD_MISMATCH exceeds the max allowed number of mismatches (the PD_element does not exist?)
-
-				// feeling the need to comment here - so factor out?
-				// only report reads if there are no reads with fewer mismatches or only one or two more mismatches
-			        unsigned regionWithMatch;
-                                for (regionWithMatch = 0; regionWithMatch < WholeGenomeSearchResult_input.size(); regionWithMatch++) {
-                                  if (WholeGenomeSearchResult_input[regionWithMatch]->PD_Plus[minMismatches].size() > 0 || WholeGenomeSearchResult_input[regionWithMatch]->PD_Minus[minMismatches].size() > 0) {
-                                     break;
-                                   }
-                                }
-				// why I love constructors
-				UniquePoint MatchPosition;
-
-				const FarEndSearchPerRegion* hitRegion = WholeGenomeSearchResult_input[ regionWithMatch ];
-				if (WholeGenomeSearchResult_input[regionWithMatch]->PD_Plus[minMismatches].size() == 1) {
-					UniquePoint PlusMatch( hitRegion->CurrentChromosome, CurrentLength, hitRegion->PD_Plus[minMismatches][0], FORWARD, SENSE, minMismatches);
-					MatchPosition = PlusMatch;
-				}
-				else {
-					UniquePoint MinMatch(  hitRegion->CurrentChromosome, CurrentLength, hitRegion->PD_Minus[minMismatches][0], BACKWARD, ANTISENSE, minMismatches);
-					MatchPosition = MinMatch;
-				}
-
-				if (CheckMismatches(WholeGenomeSearchResult_input[regionWithMatch]->CurrentChromosome->getSeq(), readSeq, readSeqRev, MatchPosition, read.FarEndMismatch)) {
-					UP.push_back (MatchPosition);
-				} // if CheckMismatches
-			} // if sumsize ==1
-		} // for-loop
+                                AddUniquePoint(read, readSeq, readSeqRev, GetHitRegion(WholeGenomeSearchResult_input, minMismatches), CurrentLength, minMismatches, UP);
+			} 
+		} 
 
 		if (CurrentLength < BP_End) {
-			const char CurrentChar = readSeq[CurrentLength];
-			ExtendWholeGenomeInPlace(CurrentChar, minMismatches, read.getTOTAL_SNP_ERROR_CHECKED_Minus(), read.getTOTAL_SNP_ERROR_CHECKED(), WholeGenomeSearchResult_input, TmpPositions); 
+			ExtendWholeGenomeInPlace(readSeq[CurrentLength], minMismatches, read.getTOTAL_SNP_ERROR_CHECKED_Minus(), read.getTOTAL_SNP_ERROR_CHECKED(), WholeGenomeSearchResult_input, TmpPositions); 
 		}
                 minMismatches += (getNumPositionsForMismatches(WholeGenomeSearchResult_input, minMismatches) == 0)? 1: 0;
 	}
