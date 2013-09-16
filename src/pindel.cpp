@@ -93,7 +93,7 @@ std::vector <RefCoveragePerPosition> g_RefCoverageRegion;
 short Before, After;
 BDData g_bdData;
 
-std::map <std::string, unsigned> g_ReadSeq2Index;
+//std::map <std::string, unsigned> g_ReadSeq2Index;
 
 
 //extern BDData g_bdData;
@@ -1820,10 +1820,10 @@ int main(int argc, char *argv[])
 			//std::cout << "test 6" << std::endl;
           		//std::cout << "g_bdData.size() " << g_bdData.GetBDSize() << std::endl;
           		//std::cout << "Before" << std::endl;
-			g_ReadSeq2Index.clear();
+			//g_ReadSeq2Index.clear();
          		get_SR_Reads(currentState, currentWindow );
-			std::cout << "g_ReadSeq2Index.size(): " << g_ReadSeq2Index.size() << std::endl;
-			g_ReadSeq2Index.clear();
+			//std::cout << "g_ReadSeq2Index.size(): " << g_ReadSeq2Index.size() << std::endl;
+			//g_ReadSeq2Index.clear();
          		std::cout << "There are " << currentState.RefSupportingReads.size() << " reads supporting the reference allele." << std::endl;
          		//if (userSettings->bamFilesAsInput())
              		UpdateRefReadCoverage(currentState, currentWindow);
