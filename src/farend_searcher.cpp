@@ -44,6 +44,54 @@ bool NewUPFarIsBetter(const SortedUniquePoints & UP, const SPLIT_READ& Read) {
     }
 }
 
+void FillForward(const unsigned int* positions,
+                 int npositions,
+                 const __m128i forwardSIMD,
+                 const __m128i forwardMaskSIMD,
+                 int InitExtend,
+                 const std::string& chromosome,
+                 std::vector<PosVector>& PD) {
+        int npositions_a = npositions - (npositions % 4);
+	const uint32_t cmpestrmflag = _SIDD_UBYTE_OPS | _SIDD_CMP_EQUAL_EACH | _SIDD_NEGATIVE_POLARITY;
+        __m128i InitExtendSIMD = _mm_set1_epi32(InitExtend - 1);
+	for (int i = 0; i < npositions_a; i+=4) {
+		__m128i posSIMD = _mm_lddqu_si128((__m128i const*) &positions[i]);
+		__m128i posExtendedSIMD = _mm_add_epi32(posSIMD, InitExtendSIMD);
+
+		{
+			__m128i chromosSIMD = _mm_lddqu_si128((__m128i* const) &chromosome[_mm_extract_epi32(posSIMD, 0)]);
+			__m128i cmpres = _mm_and_si128(forwardMaskSIMD, _mm_cmpestrm(forwardSIMD, InitExtend, chromosSIMD, InitExtend, cmpestrmflag));
+			unsigned nMismatches = _mm_popcnt_u32(_mm_extract_epi32(cmpres, 0)); 
+			PD[nMismatches].push_back(_mm_extract_epi32(posExtendedSIMD, 0)); // else
+		}
+		{
+			__m128i chromosSIMD = _mm_lddqu_si128((__m128i* const) &chromosome[_mm_extract_epi32(posSIMD, 1)]);
+			__m128i cmpres = _mm_and_si128(forwardMaskSIMD, _mm_cmpestrm(forwardSIMD, InitExtend, chromosSIMD, InitExtend, cmpestrmflag));
+			unsigned nMismatches = _mm_popcnt_u32(_mm_extract_epi32(cmpres, 0)); 
+			PD[nMismatches].push_back(_mm_extract_epi32(posExtendedSIMD, 1)); // else
+		}
+		{
+			__m128i chromosSIMD = _mm_lddqu_si128((__m128i* const) &chromosome[_mm_extract_epi32(posSIMD, 2)]);
+			__m128i cmpres = _mm_and_si128(forwardMaskSIMD, _mm_cmpestrm(forwardSIMD, InitExtend, chromosSIMD, InitExtend, cmpestrmflag));
+			unsigned nMismatches = _mm_popcnt_u32(_mm_extract_epi32(cmpres, 0)); 
+			PD[nMismatches].push_back(_mm_extract_epi32(posExtendedSIMD, 2)); // else
+		}
+		{
+			__m128i chromosSIMD = _mm_lddqu_si128((__m128i* const) &chromosome[_mm_extract_epi32(posSIMD, 3)]);
+			__m128i cmpres = _mm_and_si128(forwardMaskSIMD, _mm_cmpestrm(forwardSIMD, InitExtend, chromosSIMD, InitExtend, cmpestrmflag));
+			unsigned nMismatches = _mm_popcnt_u32(_mm_extract_epi32(cmpres, 0)); 
+			PD[nMismatches].push_back(_mm_extract_epi32(posExtendedSIMD, 3)); // else
+		}
+	}
+	for (int i = npositions_a; i < npositions; i++) {
+                int pos = positions[i];
+		__m128i chromosSIMD = _mm_lddqu_si128((__m128i* const) &chromosome[pos]);
+		__m128i cmpres = _mm_and_si128(forwardMaskSIMD, _mm_cmpestrm(forwardSIMD, InitExtend, chromosSIMD, InitExtend, cmpestrmflag));
+		unsigned nMismatches = _mm_popcnt_u32(_mm_extract_epi32(cmpres, 0)); 
+		PD[nMismatches].push_back(pos + InitExtend - 1); // else
+        }
+}
+
 void SearchFarEndAtPos( const std::string& chromosome, SPLIT_READ& Temp_One_Read, const std::vector <SearchWindow> & Regions )
 {
 	const std::string& forwardSeq = Temp_One_Read.getUnmatchedSeq();
@@ -59,18 +107,28 @@ void SearchFarEndAtPos( const std::string& chromosome, SPLIT_READ& Temp_One_Read
 	//int CurrentReadLength = Temp_One_Read.getReadLength();
 	std::vector <FarEndSearchPerRegion*> WholeGenomeSearchResult;
 	unsigned NumberOfHits = 0;
-        const int InitExtend = 9;
+        const int InitExtend = 10;
 
         if (forwardSeq.size() < InitExtend) {
             return;
         }
+        int CurrentBaseNum = Convert2Num[CurrentBase];
+        int CurrentBaseRCNum = Convert2Num[CurrentBaseRC];
+
 	const uint32_t cmpestrmflag = _SIDD_UBYTE_OPS | _SIDD_CMP_EQUAL_EACH | _SIDD_NEGATIVE_POLARITY;
 	__m128i forwardSIMD = _mm_lddqu_si128((__m128i* const) &forwardSeq[0]);
-	__m128i reverseSIMD = _mm_lddqu_si128((__m128i* const) &reverseSeq[readLength - InitExtend]);
+
+        __m128i reverseSIMD = _mm_setzero_si128();
+        for (int i = 0; i < InitExtend; i++) {
+            reverseSIMD = _mm_slli_si128(reverseSIMD, 1);
+            reverseSIMD = _mm_insert_epi8(reverseSIMD, reverseSeq[readLength - 1 - i], 0);
+        }
 	__m128i dontcarSIMD = _mm_set1_epi8('N');
 
 	__m128i forwardMaskSIMD = _mm_cmpestrm(forwardSIMD, InitExtend, dontcarSIMD, InitExtend, cmpestrmflag);
 	__m128i reverseMaskSIMD = _mm_cmpestrm(reverseSIMD, InitExtend, dontcarSIMD, InitExtend, cmpestrmflag);
+
+        PosVector TmpPos[6];
 
         unsigned PD_size = std::max(InitExtend, (int)Temp_One_Read.getTOTAL_SNP_ERROR_CHECKED());
 	for (unsigned RegionIndex = 0; RegionIndex < Regions.size(); RegionIndex++) {
@@ -80,7 +138,33 @@ void SearchFarEndAtPos( const std::string& chromosome, SPLIT_READ& Temp_One_Read
 		int Start = Regions[RegionIndex].getStart();
 		int End = std::min((unsigned) Regions[RegionIndex].getEnd(), (unsigned) chromosome.size());
 		if (Start < 0) Start = End -1;
+
+		for (int i = 0; i < 6; i++) {
+			TmpPos[i].clear();
+			TmpPos[i].reserve(std::max(End - Start, 1));
+		}
 		for (int pos = Start; pos < End; pos++) {
+			TmpPos[Convert2Num[chromosome[pos]]].push_back(pos);
+		}
+                //FillForward(&TmpPos[CurrentBaseNum][0], TmpPos[CurrentBaseNum].size(), forwardSIMD, forwardMaskSIMD, InitExtend, chromosome, CurrentRegion->PD_Plus);
+                 
+		for (PosVector::iterator it = TmpPos[CurrentBaseNum].begin(); it != TmpPos[CurrentBaseNum].end(); it++) {
+			int pos = *it;
+			__m128i chromosSIMD = _mm_lddqu_si128((__m128i* const) &chromosome[pos]);
+			__m128i cmpres = _mm_and_si128(forwardMaskSIMD, _mm_cmpestrm(forwardSIMD, InitExtend, chromosSIMD, InitExtend, cmpestrmflag));
+			unsigned nMismatches = _mm_popcnt_u32(_mm_extract_epi32(cmpres, 0)); 
+			CurrentRegion->PD_Plus[nMismatches].push_back(pos + InitExtend - 1); // else
+		}
+		for (PosVector::iterator it = TmpPos[CurrentBaseRCNum].begin(); it != TmpPos[CurrentBaseRCNum].end(); it++) {
+			int pos = *it;
+			__m128i chromosSIMD = _mm_lddqu_si128((__m128i* const) &chromosome[pos + 1 - InitExtend]);
+			__m128i cmpres = _mm_and_si128(reverseMaskSIMD, _mm_cmpestrm(reverseSIMD, InitExtend, chromosSIMD, InitExtend, cmpestrmflag));
+			unsigned nMismatches = _mm_popcnt_u32(_mm_extract_epi32(cmpres, 0)); 
+			CurrentRegion->PD_Minus[nMismatches].push_back(pos - InitExtend + 1); // else
+		}
+
+
+		/*for (int pos = Start; pos < End; pos++) {
 			if (chromosome[pos] == CurrentBase) {
                                 // TODO: Make the SIMD match the MismatchPair based code
                                 __m128i chromosSIMD = _mm_lddqu_si128((__m128i* const) &chromosome[pos]);
@@ -96,7 +180,7 @@ void SearchFarEndAtPos( const std::string& chromosome, SPLIT_READ& Temp_One_Read
 				CurrentRegion->PD_Minus[nMismatches].push_back(pos - InitExtend + 1); // else
                                 //CurrentRegion->PD_Minus[0].push_back(pos);
 			}
-		}
+		}*/
                 for (unsigned i = 0; i < Temp_One_Read.getTOTAL_SNP_ERROR_CHECKED(); i++) {
 			NumberOfHits += CurrentRegion->PD_Plus[i].size();
                 }

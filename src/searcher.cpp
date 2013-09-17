@@ -54,13 +54,13 @@ inline bool Matches( const char readBase, const char referenceBase )
 }
 
 /** "CategorizePositions" categorizes the positions in PD_Plus as being extended perfectly or with an (extra) mismatch */  
-/*inline void CategorizePositionsNormal(const char readBase,
+inline void CategorizePositionsNormal(const char readBase,
 		const std::string & chromosomeSeq,
 		const PosVector & PD_Input,
 		PosVector* PD_Output,
 		const int searchDirection) __attribute__((always_inline));
-*/
-void CategorizePositionsNormal(const char readBase,
+
+inline void CategorizePositionsNormal(const char readBase,
 		const std::string & chromosomeSeq,
 		const PosVector & PD_Input,
 		PosVector* PD_Output,
@@ -206,6 +206,7 @@ void CheckLeft_Close (SPLIT_READ & read,
 		short CurrentLength, SortedUniquePoints &LeftUP)
 {
 	int minMismatches = 0;
+        int matchRunLength = BP_Left_End;
         PosVector TmpPositions[2];
 	while (Left_PD[minMismatches].size() == 0 && minMismatches <= read.getMAX_SNP_ERROR()) {
 		minMismatches++;
@@ -222,7 +223,7 @@ void CheckLeft_Close (SPLIT_READ & read,
 			return; 
 		}
 
-		if (minMismatches <= CurrentLength - BP_Left_Start && Left_PD[minMismatches].size() == 1) {
+		if (minMismatches <= CurrentLength - BP_Left_Start && Left_PD[minMismatches].size() == 1 && matchRunLength >= userSettings->Min_Perfect_Match_Around_BP) {
 			const std::string& forwardSeq = read.getUnmatchedSeq();
 			const std::string& reverseSeq = read.getUnmatchedSeqRev();
 			unsigned int Sum = numberOfCompetingPositions( Left_PD, minMismatches + 1, minMismatches + userSettings->ADDITIONAL_MISMATCH );
@@ -237,7 +238,13 @@ void CheckLeft_Close (SPLIT_READ & read,
 		if (CurrentLength < BP_Left_End) {
 			ExtendInPlace(readSeq[CurrentLength], chromosomeSeq, Left_PD, TmpPositions, 1, minMismatches, read.getTOTAL_SNP_ERROR_CHECKED_Minus());
 		}
-		minMismatches += (Left_PD[minMismatches].size() == 0)? 1: 0;
+                if (Left_PD[minMismatches].size() == 0) {
+                    minMismatches++;
+                    matchRunLength = 1;
+                } else {
+                    matchRunLength++;
+                }
+		//minMismatches += (Left_PD[minMismatches].size() == 0)? 1: 0;
 	}
 }
 

@@ -65,6 +65,7 @@ extern char MatchPair[256][256];
 extern char MismatchPair[256][256];
 extern char Convert2RC[256];
 extern char Convert2RC4N[256];
+extern char Convert2Num[256];
 extern char Cap2LowArray[256];
 extern unsigned int DSizeArray[15];
 extern short g_reportLength;

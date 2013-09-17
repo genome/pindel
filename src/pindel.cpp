@@ -120,6 +120,7 @@ char MatchPair[256][256];
 char MismatchPair[256][256];
 char Convert2RC[256];
 char Convert2RC4N[256];
+char Convert2Num[256];
 char Cap2LowArray[256];
 bool FirstChr = true;
 unsigned int DSizeArray[15];
@@ -1002,6 +1003,12 @@ void init(int argc, char *argv[], ControlState& currentState )
     Cap2LowArray[(short) 'T'] = 't';
     Cap2LowArray[(short) 'N'] = 'n';
     Cap2LowArray[(short) '$'] = 'n';
+    Convert2Num[(short) 'A'] = 0;
+    Convert2Num[(short) 'C'] = 1;
+    Convert2Num[(short) 'G'] = 2;
+    Convert2Num[(short) 'T'] = 3;
+    Convert2Num[(short) 'N'] = 4;
+    Convert2Num[(short) '$'] = 5;
 
     for (int i = 0; i < 256; i++) {
       for (int j = 0; j < 256; j++) {
@@ -2263,8 +2270,14 @@ void GetCloseEndInner(const std::string & CurrentChrSeq, SPLIT_READ & Temp_One_R
         Start = End - 3 * Temp_One_Read.InsertSize;
         const int seqLength = CurrentReadSeq.size();
         char RightChar = CurrentReadSeq[Temp_One_Read.getReadLengthMinus()];
-        
-	__m128i reverseSIMD = _mm_lddqu_si128((__m128i* const) &CurrentReadSeq[seqLength - InitExtend]);
+
+	__m128i reverseSIMD = _mm_setzero_si128();
+        for (int i = 0; i < InitExtend; i++) {
+            reverseSIMD = _mm_slli_si128(reverseSIMD, 1);
+            reverseSIMD = _mm_insert_epi8(reverseSIMD, CurrentReadSeq[seqLength - 1 - i], 0);
+        }
+ 
+	//__m128i reverseSIMD = _mm_lddqu_si128((__m128i* const) &CurrentReadSeq[seqLength - InitExtend]);
         __m128i dontcarSIMD = _mm_set1_epi8('N');
 	__m128i reverseMaskSIMD = _mm_cmpestrm(reverseSIMD, InitExtend, dontcarSIMD, InitExtend, cmpestrmflag);
 	if (RightChar != 'N') {
@@ -2292,78 +2305,98 @@ void GetCloseEndInner(const std::string & CurrentChrSeq, SPLIT_READ & Temp_One_R
 
 void GetCloseEndInnerPerfectMatch(const std::string & CurrentChrSeq, SPLIT_READ & Temp_One_Read)
 {
-    std::string CurrentReadSeq;
-    //std::vector<unsigned int> PD[Temp_One_Read.getTOTAL_SNP_ERROR_CHECKED()];
+	std::string CurrentReadSeq;
+	//std::vector<unsigned int> PD[Temp_One_Read.getTOTAL_SNP_ERROR_CHECKED()];
 	std::vector<PosVector> PD;
 	PosVector emptyPosVector;
-    PD.assign( Temp_One_Read.getTOTAL_SNP_ERROR_CHECKED(), emptyPosVector);
-    g_maxInsertSize = std::max((int)Temp_One_Read.InsertSize, g_maxInsertSize);
-    for (int CheckIndex = 0; CheckIndex < Temp_One_Read.getTOTAL_SNP_ERROR_CHECKED(); CheckIndex++) {
-        PD[CheckIndex].reserve(3 * Temp_One_Read.InsertSize);
-    }
-    SortedUniquePoints UP;
-    int Start, End;
-    short BP_Start; // = MinClose;
-    short BP_End; // = ReadLength - MinClose;
-    
-    Temp_One_Read.UP_Close.clear();
-    BP_Start = g_MinClose;
-    BP_End = Temp_One_Read.getReadLengthMinus();
-    if (Temp_One_Read.MatchedD == Plus) {
-        CurrentReadSeq = Temp_One_Read.getUnmatchedSeqRev();
-        Start = Temp_One_Read.MatchedRelPos + g_SpacerBeforeAfter;
-        End = Start + 3 * Temp_One_Read.InsertSize;
-        char LeftChar;
-        LeftChar = CurrentReadSeq[0];
-        if (LeftChar != 'N') {
-            {
-                for (int pos = Start; pos < End; pos++) {
-                    if (CurrentChrSeq[pos] == LeftChar) {
-                        PD[0].push_back(pos);
-                    }
-                }
-            }
-        }
+	PD.assign( Temp_One_Read.getTOTAL_SNP_ERROR_CHECKED(), emptyPosVector);
+	g_maxInsertSize = std::max((int)Temp_One_Read.InsertSize, g_maxInsertSize);
+	for (int CheckIndex = 0; CheckIndex < Temp_One_Read.getTOTAL_SNP_ERROR_CHECKED(); CheckIndex++) {
+		PD[CheckIndex].reserve(3 * Temp_One_Read.InsertSize);
+	}
+	SortedUniquePoints UP;
+	int Start, End;
+	short BP_Start; // = MinClose;
+	short BP_End; // = ReadLength - MinClose;
+
+	Temp_One_Read.UP_Close.clear();
+	BP_Start = g_MinClose;
+	BP_End = Temp_One_Read.getReadLengthMinus();
+	const int InitExtend = std::min((int)8, (int)BP_Start);
+	const uint32_t cmpestrmflag       = _SIDD_UBYTE_OPS | _SIDD_CMP_EQUAL_EACH | _SIDD_NEGATIVE_POLARITY;
+	if (Temp_One_Read.MatchedD == Plus) {
+		CurrentReadSeq = Temp_One_Read.getUnmatchedSeqRev();
+		Start = Temp_One_Read.MatchedRelPos + g_SpacerBeforeAfter;
+		End = Start + 3 * Temp_One_Read.InsertSize;
+		char LeftChar = CurrentReadSeq[0];
+
+		__m128i forwardSIMD = _mm_lddqu_si128((__m128i* const) &CurrentReadSeq[0]);
+		__m128i dontcarSIMD = _mm_set1_epi8('N');
+		__m128i forwardMaskSIMD = _mm_cmpestrm(forwardSIMD, InitExtend, dontcarSIMD, InitExtend, cmpestrmflag);
+		if (LeftChar != 'N') {
+			for (int pos = Start; pos < End; pos++) {
+				if (CurrentChrSeq[pos] == LeftChar) {
+					__m128i chromosSIMD = _mm_lddqu_si128((__m128i* const) &CurrentChrSeq[pos]);
+					__m128i cmpres = _mm_and_si128(forwardMaskSIMD, _mm_cmpestrm(forwardSIMD, InitExtend, chromosSIMD, InitExtend, cmpestrmflag));
+					int nMismatches = _mm_popcnt_u32(_mm_extract_epi32(cmpres, 0)); 
+                                        //for (int i = 1; i < InitExtend; i++) {
+                                        //    nMismatches += MismatchPair[CurrentReadSeq[i]][CurrentChrSeq[pos+i]];
+                                        //}
+					if (nMismatches < PD.size()) { 
+						PD[nMismatches].push_back(pos + InitExtend - 1); // else
+					}
+					//PD[0].push_back(pos);
+				}
+			}
+		}
+		if (PD[0].size()) {
+			CheckLeft_Close_Perfect(Temp_One_Read, CurrentChrSeq, CurrentReadSeq, PD, BP_Start, BP_End, InitExtend, UP); // LengthStr
+		}
+	}
+	else if (Temp_One_Read.MatchedD == Minus) {
+
+		CurrentReadSeq = Temp_One_Read.getUnmatchedSeq();
+		End = Temp_One_Read.MatchedRelPos + g_SpacerBeforeAfter;
+		Start = End - 3 * Temp_One_Read.InsertSize;
+		char RightChar = CurrentReadSeq[Temp_One_Read.getReadLengthMinus()];
         
-        if (PD[0].size()) {
-            CheckLeft_Close_Perfect(Temp_One_Read, CurrentChrSeq, CurrentReadSeq, PD, BP_Start, BP_End, 1, UP); // LengthStr
-        }
-        if (UP.empty()) {}
-        else {
-            Temp_One_Read.Used = false;
-            Temp_One_Read.UP_Close.swap(UP);
-            UP.clear();
-        }
-    }
-    else if (Temp_One_Read.MatchedD == Minus) {
-        
-        CurrentReadSeq = Temp_One_Read.getUnmatchedSeq();
-        End = Temp_One_Read.MatchedRelPos + g_SpacerBeforeAfter;
-        Start = End - 3 * Temp_One_Read.InsertSize;
-        char RightChar;
-        RightChar = CurrentReadSeq[Temp_One_Read.getReadLengthMinus()];
-		//std::cout << "Starting to fit the close end with character" << RightChar << "\n";
-        if (RightChar != 'N') {
-            for (int pos = Start; pos < End; pos++) {
-                if (CurrentChrSeq[pos] == RightChar) {
-                    PD[0].push_back(pos);
-                }
-            }
-        }
-        //std::cout << "1\t" << PD[0].size() << "\t" << PD[1].size() << std::endl;
-//        LOG_DEBUG(*logStream << "1\t" << PD[0].size() << "\t" << PD[1].size() << std::endl);
-        if (PD[0].size()) {
-           CheckRight_Close_Perfect(Temp_One_Read, CurrentChrSeq, CurrentReadSeq, PD, BP_Start, BP_End, 1, UP);
-        }
-//        LOG_DEBUG(*logStream << UP.size() << std::endl);
-        if (UP.empty()) {}
-        else {
-            Temp_One_Read.Used = false;
-            Temp_One_Read.UP_Close.swap(UP);
-            UP.clear();
-        }
-    }
-    return;
+		const int seqLength = CurrentReadSeq.size();
+		__m128i reverseSIMD = _mm_setzero_si128();
+		for (int i = 0; i < InitExtend; i++) {
+			reverseSIMD = _mm_slli_si128(reverseSIMD, 1);
+			reverseSIMD = _mm_insert_epi8(reverseSIMD, CurrentReadSeq[seqLength - 1 - i], 0);
+		}
+ 
+;
+		__m128i dontcarSIMD = _mm_set1_epi8('N');
+		__m128i reverseMaskSIMD = _mm_cmpestrm(reverseSIMD, InitExtend, dontcarSIMD, InitExtend, cmpestrmflag);
+		if (RightChar != 'N') {
+			for (int pos = Start; pos < End; pos++) {
+				if (CurrentChrSeq[pos] == RightChar) {
+					__m128i chromosSIMD = _mm_lddqu_si128((__m128i* const) &CurrentChrSeq[pos + 1 - InitExtend]);
+					__m128i cmpres = _mm_and_si128(reverseMaskSIMD, _mm_cmpestrm(reverseSIMD, InitExtend, chromosSIMD, InitExtend, cmpestrmflag));
+					int nMismatches = _mm_popcnt_u32(_mm_extract_epi32(cmpres, 0)); 
+                                        //for (int i = 1; i < InitExtend; i++) {
+                                        //    nMismatches += MismatchPair[CurrentReadSeq[seqLength-1-i]][CurrentChrSeq[pos-i]];
+                                        //}
+					if (nMismatches < PD.size()) {
+						PD[nMismatches].push_back(pos - InitExtend + 1);
+					}
+					//PD[0].push_back(pos);
+				}
+			}
+		}
+		if (PD[0].size()) {
+			CheckRight_Close_Perfect(Temp_One_Read, CurrentChrSeq, CurrentReadSeq, PD, BP_Start, BP_End, InitExtend, UP);
+		}
+	}
+	if (UP.empty()) {}
+	else {
+		Temp_One_Read.Used = false;
+		Temp_One_Read.UP_Close.swap(UP);
+		UP.clear();
+	}
+	return;
 }
 
 void GetCloseEnd(const std::string & CurrentChrSeq, SPLIT_READ & Temp_One_Read)
@@ -2603,11 +2636,18 @@ void CheckBoth(SPLIT_READ & read,
             minMismatches++;
         }
 
+        int matchRunLength = CurrentLength - minMismatches;
         PosVector TmpPositions[2];
         for ( ; CurrentLength < minimumLengthToReportMatch && WholeGenomeSearchResult_input.size() > 0 && minMismatches <= read.getMAX_SNP_ERROR(); CurrentLength++) {
 		ExtendWholeGenomeInPlace(readSeq[CurrentLength], minMismatches, read.getTOTAL_SNP_ERROR_CHECKED_Minus(), read.getTOTAL_SNP_ERROR_CHECKED(), WholeGenomeSearchResult_input, TmpPositions); 
 
-                minMismatches += (getNumPositionsForMismatches(WholeGenomeSearchResult_input, minMismatches) == 0)? 1: 0;
+                if (getNumPositionsForMismatches(WholeGenomeSearchResult_input, minMismatches) == 0) {
+                  minMismatches++;
+                  matchRunLength = 1;
+                } else {
+                  matchRunLength++;
+                }
+                //minMismatches += (getNumPositionsForMismatches(WholeGenomeSearchResult_input, minMismatches) == 0)? 1: 0;
         }
 
 	for ( ; CurrentLength <= BP_End && WholeGenomeSearchResult_input.size() > 0 && minMismatches <= read.getMAX_SNP_ERROR(); CurrentLength++) {
@@ -2615,7 +2655,8 @@ void CheckBoth(SPLIT_READ & read,
 			return;
                 }
 
-                if (minMismatches <= CurrentLength - minimumLengthToReportMatch && getNumPositionsForMismatches(WholeGenomeSearchResult_input, minMismatches) == 1) {
+                if (minMismatches <= CurrentLength - minimumLengthToReportMatch && matchRunLength >= userSettings->Min_Perfect_Match_Around_BP
+                    && getNumPositionsForMismatches(WholeGenomeSearchResult_input, minMismatches) == 1) {
 			if (getNumCompetingPositions(WholeGenomeSearchResult_input, minMismatches + 1, minMismatches + userSettings->ADDITIONAL_MISMATCH) == 0) {
                                 AddUniquePoint(read, readSeq, readSeqRev, GetHitRegion(WholeGenomeSearchResult_input, minMismatches), CurrentLength, minMismatches, UP);
 			} 
@@ -2624,7 +2665,13 @@ void CheckBoth(SPLIT_READ & read,
 		if (CurrentLength < BP_End) {
 			ExtendWholeGenomeInPlace(readSeq[CurrentLength], minMismatches, read.getTOTAL_SNP_ERROR_CHECKED_Minus(), read.getTOTAL_SNP_ERROR_CHECKED(), WholeGenomeSearchResult_input, TmpPositions); 
 		}
-                minMismatches += (getNumPositionsForMismatches(WholeGenomeSearchResult_input, minMismatches) == 0)? 1: 0;
+                if (getNumPositionsForMismatches(WholeGenomeSearchResult_input, minMismatches) == 0) {
+                  minMismatches++;
+                  matchRunLength = 1;
+                } else {
+                  matchRunLength++;
+                }
+                //minMismatches += (getNumPositionsForMismatches(WholeGenomeSearchResult_input, minMismatches) == 0)? 1: 0;
 	}
 }
 
