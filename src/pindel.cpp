@@ -74,7 +74,7 @@
 /* EW: update 0.2.4s: bugfix for -p option of Pindel0.2.4r */
 /* EW: update 0.2.4t, updates now shown in RELEASE document in trunk directory */
 
-const std::string Pindel_Version_str = "Pindel version 0.2.5a1, July 23 2013.";
+const std::string Pindel_Version_str = "Pindel version 0.2.5a2, September 17 2013.";
 
 const Chromosome g_dummyChromosome("","");
 Genome g_genome;
@@ -1020,7 +1020,7 @@ void init(int argc, char *argv[], ControlState& currentState )
 void SearchFarEnd( const std::string& chromosome, SPLIT_READ& read, const Chromosome& currentChromosome)
 {
 	//std::cout << "entering SearchFarEnd" << std::endl;
-	const int START_SEARCH_SPAN = 32;
+	const int START_SEARCH_SPAN = 64;
 	//std::cout << "getting searchCluster" << std::endl;
 	const std::vector< SearchWindow>& searchCluster =  g_bdData.getCorrespondingSearchWindowCluster( read );
 	//std::cout << "searchCluster size: " << searchCluster.size() << std::endl;
@@ -1139,6 +1139,7 @@ void SearchFarEnds( const std::string & chromosomeSeq, std::vector<SPLIT_READ>& 
 	{
 		#pragma omp for
 		for (int readIndex= 0; readIndex < (int)reads.size(); readIndex++ ) {
+			//std::cout << "readIndex: " << readIndex << std::endl;
 			//if (readIndex % 1000 == 0) 
 			//	std::cout << "readIndex: " << readIndex << std::endl;
 			//	std::cout << "readIndex: " << readIndex << "\t" << reads[readIndex].Name << "\t" 

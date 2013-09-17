@@ -64,7 +64,7 @@ void SearchFarEndAtPos( const std::string& chromosome, SPLIT_READ& Temp_One_Read
        if (Start < 0) Start = End -1;
        const std::string & chromosome = Regions[RegionIndex].getChromosome()->getSeq();
        //if (Regions.size() > 1)
-       //std::cout << RegionIndex << "\t" << Regions[RegionIndex].getChromosome()->getName() << " " << chromosome.size() - g_SpacerBeforeAfter * 2 << " " << Start - g_SpacerBeforeAfter << " " << End - g_SpacerBeforeAfter << "\t";
+       //		std::cout << RegionIndex << "\t" << Regions[RegionIndex].getChromosome()->getName() << " " << End - Start << " " << Start - g_SpacerBeforeAfter << " " << End - g_SpacerBeforeAfter << "\t";
        for (int pos = Start; pos < End; pos++) {
            if (chromosome.at(pos) == CurrentBase) {
                CurrentRegion->PD_Plus[0].push_back(pos); // else
@@ -77,8 +77,8 @@ void SearchFarEndAtPos( const std::string& chromosome, SPLIT_READ& Temp_One_Read
        WholeGenomeSearchResult.push_back(CurrentRegion);
 	 
    }
-   //if (Regions.size() > 1)
-   //std::cout << std::endl;
+   if (Regions.size() > 1)
+  // std::cout << std::endl;
 
 	if (NumberOfHits>0) {
       short BP_Start = 10; // perhaps use global constant like "g_MinimumLengthToReportMatch"
