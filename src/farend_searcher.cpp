@@ -19,6 +19,7 @@
  */
 
 #include <math.h>
+#include <assert.h>
 #include <emmintrin.h>
 #include <pmmintrin.h>
 #include <smmintrin.h>
@@ -92,7 +93,7 @@ void FillForward(const unsigned int* positions,
         }
 }
 
-void SearchFarEndAtPos( const std::string& chromosome, SPLIT_READ& Temp_One_Read, const std::vector <SearchWindow> & Regions )
+void SearchFarEndAtPos(const Chromosome* chrom, const std::string& chromosome, SPLIT_READ& Temp_One_Read, const std::vector <SearchWindow> & Regions )
 {
 	const std::string& forwardSeq = Temp_One_Read.getUnmatchedSeq();
         const std::string& reverseSeq = Temp_One_Read.getUnmatchedSeqRev();
@@ -139,48 +140,24 @@ void SearchFarEndAtPos( const std::string& chromosome, SPLIT_READ& Temp_One_Read
 		int End = std::min((unsigned) Regions[RegionIndex].getEnd(), (unsigned) chromosome.size());
 		if (Start < 0) Start = End -1;
 
-		for (int i = 0; i < 6; i++) {
-			TmpPos[i].clear();
-			TmpPos[i].reserve(std::max(End - Start, 1));
-		}
-		for (int pos = Start; pos < End; pos++) {
-			TmpPos[Convert2Num[chromosome[pos]]].push_back(pos);
-		}
-                //FillForward(&TmpPos[CurrentBaseNum][0], TmpPos[CurrentBaseNum].size(), forwardSIMD, forwardMaskSIMD, InitExtend, chromosome, CurrentRegion->PD_Plus);
-                 
-		for (PosVector::iterator it = TmpPos[CurrentBaseNum].begin(); it != TmpPos[CurrentBaseNum].end(); it++) {
+                const unsigned int* Plus_s, * Plus_e;
+                const unsigned int* Minus_s, * Minus_e;
+                chrom->getPositions(CurrentBaseNum, Start, End, &Plus_s, &Plus_e);
+                chrom->getPositions(CurrentBaseRCNum, Start, End, &Minus_s, &Minus_e);
+                for (const unsigned int * it = Plus_s; it != Plus_e; it++) {
 			int pos = *it;
 			__m128i chromosSIMD = _mm_lddqu_si128((__m128i* const) &chromosome[pos]);
 			__m128i cmpres = _mm_and_si128(forwardMaskSIMD, _mm_cmpestrm(forwardSIMD, InitExtend, chromosSIMD, InitExtend, cmpestrmflag));
 			unsigned nMismatches = _mm_popcnt_u32(_mm_extract_epi32(cmpres, 0)); 
 			CurrentRegion->PD_Plus[nMismatches].push_back(pos + InitExtend - 1); // else
 		}
-		for (PosVector::iterator it = TmpPos[CurrentBaseRCNum].begin(); it != TmpPos[CurrentBaseRCNum].end(); it++) {
+                for (const unsigned int * it = Minus_s; it != Minus_e; it++) {
 			int pos = *it;
 			__m128i chromosSIMD = _mm_lddqu_si128((__m128i* const) &chromosome[pos + 1 - InitExtend]);
 			__m128i cmpres = _mm_and_si128(reverseMaskSIMD, _mm_cmpestrm(reverseSIMD, InitExtend, chromosSIMD, InitExtend, cmpestrmflag));
 			unsigned nMismatches = _mm_popcnt_u32(_mm_extract_epi32(cmpres, 0)); 
 			CurrentRegion->PD_Minus[nMismatches].push_back(pos - InitExtend + 1); // else
 		}
-
-
-		/*for (int pos = Start; pos < End; pos++) {
-			if (chromosome[pos] == CurrentBase) {
-                                // TODO: Make the SIMD match the MismatchPair based code
-                                __m128i chromosSIMD = _mm_lddqu_si128((__m128i* const) &chromosome[pos]);
-                                __m128i cmpres = _mm_and_si128(forwardMaskSIMD, _mm_cmpestrm(forwardSIMD, InitExtend, chromosSIMD, InitExtend, cmpestrmflag));
-				unsigned nMismatches = _mm_popcnt_u32(_mm_extract_epi32(cmpres, 0)); 
-				CurrentRegion->PD_Plus[nMismatches].push_back(pos + InitExtend - 1); // else
-				//CurrentRegion->PD_Plus[0].push_back(pos);
-			}
-			if (chromosome[pos] == CurrentBaseRC) {
-                                __m128i chromosSIMD = _mm_lddqu_si128((__m128i* const) &chromosome[pos + 1 - InitExtend]);
-                                __m128i cmpres = _mm_and_si128(reverseMaskSIMD, _mm_cmpestrm(reverseSIMD, InitExtend, chromosSIMD, InitExtend, cmpestrmflag));
-				unsigned nMismatches = _mm_popcnt_u32(_mm_extract_epi32(cmpres, 0)); 
-				CurrentRegion->PD_Minus[nMismatches].push_back(pos - InitExtend + 1); // else
-                                //CurrentRegion->PD_Minus[0].push_back(pos);
-			}
-		}*/
                 for (unsigned i = 0; i < Temp_One_Read.getTOTAL_SNP_ERROR_CHECKED(); i++) {
 			NumberOfHits += CurrentRegion->PD_Plus[i].size();
                 }

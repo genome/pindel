@@ -471,7 +471,8 @@ void GetRealStart4Insertion(const std::string & TheInput,
 		unsigned int &RealEnd);
 void GetRealStart4Deletion(const std::string & TheInput,	unsigned int &RealStart, unsigned int &RealEnd);
 bool ReportEvent(const std::vector<SPLIT_READ> &Deletions, const unsigned int &Pre_S, const unsigned int &Pre_E);
-void GetCloseEnd(const std::string & CurrentChr, SPLIT_READ & Temp_One_Read);
+void GetCloseEnd(const std::string & CurrentChrSeq, SPLIT_READ & Temp_One_Read);
+void GetCloseEnd(const Chromosome& CurrentChr, SPLIT_READ & Temp_One_Read);
 void GetFarEnd_OtherStrand(const std::string & CurrentChr, SPLIT_READ & Temp_One_Read, const short &RangeIndex);
 void GetFarEnd_SingleStrandDownStream(const std::string & CurrentChr, SPLIT_READ & Temp_One_Read, const short &RangeIndex);
 void GetFarEnd_SingleStrandUpStream(const std::string & CurrentChr, SPLIT_READ & Temp_One_Read, const short &RangeIndex);
@@ -548,15 +549,18 @@ class Chromosome {
 friend class Genome;
 
 public:
-	Chromosome( const std::string& name, const std::string& sequence ) { m_name = name; m_sequence = sequence; };
+	Chromosome( const std::string& name, const std::string& sequence ) { m_name = name; m_sequence = sequence; buildIndex();};
 	const std::string& getName() const { return m_name; }
     const std::string & getSeq() const { return m_sequence; }
 	const unsigned int getCompSize() const { return m_sequence.size(); }
 	const unsigned int getBiolSize() const { return m_sequence.size() - 2 * g_SpacerBeforeAfter; }
-
+        void buildIndex();
+        void getPositions(char refchar, unsigned int start, unsigned int end, const unsigned int** start_p, const unsigned int** end_p) const;
 private:
 	std::string m_name;
 	std::string m_sequence;
+        PosVector index;
+        unsigned int char_pos_start[5];
 };
 
 extern const Chromosome g_dummyChromosome;

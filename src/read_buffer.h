@@ -14,7 +14,7 @@
 
 class ReadBuffer {
    public:
-      ReadBuffer( int capacity, std::vector<SPLIT_READ> &referenceToFilteredReads, std::vector<SPLIT_READ> &referenceToOneEndMappedReads, const std::string& chromosome);
+      ReadBuffer( int capacity, std::vector<SPLIT_READ> &referenceToFilteredReads, std::vector<SPLIT_READ> &referenceToOneEndMappedReads, const std::string& chromosome, const Chromosome& chr);
       void flush();
       void addRead( const SPLIT_READ& newRead );
       ~ReadBuffer();
@@ -26,6 +26,7 @@ class ReadBuffer {
 
       const int m_CAPACITY;
 		const std::string& m_CHROMOSOME;
+      const Chromosome& chr;
       int m_currentsize;
       std::vector<SPLIT_READ> m_rawreads;
 };

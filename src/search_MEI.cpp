@@ -137,7 +137,7 @@ static int get_split_reads_for_cluster(std::vector<bam_info>& bam_sources, char 
         std::vector<SPLIT_READ> HangingReads; // Kai: those are reads without closed end mapped, or hanging reads.
         std::vector<REF_READ> Ref_Supporting_Reads; // Kai: those reads support the reference allele;
         // Read split reads in defined window.
-        ReadBuffer read_buffer(SPLIT_READ_BUFFER_SIZE, split_reads, HangingReads, chromosome->getSeq());
+        ReadBuffer read_buffer(SPLIT_READ_BUFFER_SIZE, split_reads, HangingReads, chromosome->getSeq(), *chromosome);
 
         ReadInBamReads_SR(source.BamFile.c_str(), chromosome->getName(), &chromosome->getSeq(), split_reads, 
                           HangingReads, Ref_Supporting_Reads, source.InsertSize, source.Tag, search_window, 
