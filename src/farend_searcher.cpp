@@ -77,7 +77,7 @@ void SearchFarEndAtPos( const std::string& chromosome, SPLIT_READ& Temp_One_Read
        WholeGenomeSearchResult.push_back(CurrentRegion);
 	 
    }
-   if (Regions.size() > 1)
+  // if (Regions.size() > 1)
   // std::cout << std::endl;
 
 	if (NumberOfHits>0) {
@@ -91,7 +91,7 @@ void SearchFarEndAtPos( const std::string& chromosome, SPLIT_READ& Temp_One_Read
       }
       UP.clear(); // may not be necessary as this is deleted from the stack anyway
 	}
-   for (unsigned RegionIndex = 0; RegionIndex < Regions.size(); RegionIndex++) {
+   for (unsigned RegionIndex = 0; RegionIndex < WholeGenomeSearchResult.size(); RegionIndex++) {
     	delete WholeGenomeSearchResult[ RegionIndex ];
    }
 }
@@ -142,7 +142,7 @@ void SearchFarEndAtPosPerfect( const std::string& chromosome, SPLIT_READ& Temp_O
         }
         UP.clear(); // may not be necessary as this is deleted from the stack anyway
 	}
-    for (unsigned RegionIndex = 0; RegionIndex < Regions.size(); RegionIndex++) {
+    for (unsigned RegionIndex = 0; RegionIndex < WholeGenomeSearchResult.size(); RegionIndex++) {
     	delete WholeGenomeSearchResult[ RegionIndex ];
     }
 }
