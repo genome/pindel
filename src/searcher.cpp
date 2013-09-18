@@ -23,7 +23,7 @@
 #include <pmmintrin.h>
 #include <smmintrin.h>
 #include <x86intrin.h>
-
+#include <assert.h>
 #include "pindel.h"
 #include "searcher.h"
 #include <cmath>
@@ -72,7 +72,6 @@ inline void CategorizePositionsNormal(const char readBase,
 	}
 }
 
-/** "CategorizePositions" categorizes the positions in PD_Plus as being extended perfectly or with an (extra) mismatch */  
 void CategorizePositionsBoundary(const char readBase,
 		const std::string & chromosomeSeq,
 		const PosVector & PD_Input,
@@ -86,6 +85,21 @@ void CategorizePositionsBoundary(const char readBase,
 		}
 	}
 }
+
+inline void CategorizePositions2Normal(char readBase1, char readBase2,
+		const std::string & chromosomeSeq,
+		const PosVector & PD_Input,
+		PosVector* PD_Output,
+		const int searchDirection)
+{
+	for (int j = 0; j < PD_Input.size(); j++) {
+		unsigned int pos1 = PD_Input[j] + searchDirection;
+                unsigned int pos2 = pos1 + searchDirection;
+                int index = MismatchPair[(int)readBase1][(int)chromosomeSeq[pos1]] + MismatchPair[(int)readBase2][(int)chromosomeSeq[pos2]];
+		PD_Output[index].push_back(pos2);
+	}
+}
+
 
 /** "CategorizePositions" categorizes the positions in PD_Plus as being extended perfectly or with an (extra) mismatch */  
 void CategorizePositions(const char readBase, const std::string & chromosomeSeq, const std::vector<PosVector>& PD_Plus, std::vector<PosVector>& PD_Plus_Output, const int numMisMatches, 	
@@ -130,6 +144,31 @@ void ExtendInPlace(char currentChar,
 		TmpPositions[1].clear();
 	}
 	CategorizePositionsBoundary(currentChar, chromosomeSeq, TmpPositions[0], &positions[maxMismatches], direction);
+}
+
+void ExtendInPlace2(char char1, char char2,
+                   const std::string& chromosomeSeq,
+                   std::vector<PosVector>& positions,
+                   PosVector* TmpPositions,
+		   int direction,
+                   int minMismatches,
+		   int maxMismatches) {
+	if (minMismatches > maxMismatches) {
+		return;
+	}
+        //assert(positions.size() > maxMismatches + 2);
+        TmpPositions[0].clear();
+        TmpPositions[1].clear();
+        TmpPositions[2].clear();
+	TmpPositions[0].swap(positions[minMismatches]);
+	TmpPositions[1].swap(positions[minMismatches+1]);
+	for (int i = minMismatches; i <= maxMismatches; i++) {
+		TmpPositions[2].swap(positions[i+2]); 
+		CategorizePositions2Normal(char1, char2, chromosomeSeq, TmpPositions[0], &positions[i], direction);
+		TmpPositions[0].swap(TmpPositions[1]);
+		TmpPositions[1].swap(TmpPositions[2]);
+		TmpPositions[2].clear();
+	}
 }
 
 void ExtendMatchClose( SPLIT_READ & read, const std::string & chromosomeSeq,
@@ -207,7 +246,7 @@ void CheckLeft_Close (SPLIT_READ & read,
 {
 	int minMismatches = 0;
         int matchRunLength = BP_Left_End;
-        PosVector TmpPositions[2];
+        PosVector TmpPositions[3];
 	while (Left_PD[minMismatches].size() == 0 && minMismatches <= read.getMAX_SNP_ERROR()) {
 		minMismatches++;
 	}
@@ -229,12 +268,16 @@ void CheckLeft_Close (SPLIT_READ & read,
 			unsigned int Sum = numberOfCompetingPositions( Left_PD, minMismatches + 1, minMismatches + userSettings->ADDITIONAL_MISMATCH );
 
 			if (Sum == 0) {
-				UniquePoint TempOne(g_genome.getChr(read.FragName), CurrentLength, Left_PD[minMismatches][0], FORWARD, ANTISENSE, minMismatches);  
+				UniquePoint TempOne(g_genome.getChr(read.FragId), CurrentLength, Left_PD[minMismatches][0], FORWARD, ANTISENSE, minMismatches);  
 				if (CheckMismatches(chromosomeSeq, forwardSeq, reverseSeq, TempOne, read.CloseEndMismatch)) {
 					LeftUP.push_back (TempOne);
 				}
 			}
 		}
+
+                if (Left_PD[minMismatches].size() > 1 && BP_Left_End - CurrentLength < userSettings->ADDITIONAL_MISMATCH + 1) {
+			return;
+                }
 		if (CurrentLength < BP_Left_End) {
 			ExtendInPlace(readSeq[CurrentLength], chromosomeSeq, Left_PD, TmpPositions, 1, minMismatches, read.getTOTAL_SNP_ERROR_CHECKED_Minus());
 		}
@@ -266,7 +309,7 @@ void CheckLeft_Close_Perfect (SPLIT_READ & read,
 			if (numberOfCompetingPositions(Left_PD, 1, userSettings->ADDITIONAL_MISMATCH) == 0) {
 				const std::string& forwardSeq = read.getUnmatchedSeq();
 				const std::string& reverseSeq = read.getUnmatchedSeqRev();
-				UniquePoint TempOne( g_genome.getChr(read.FragName), CurrentLength, Left_PD[0][0], FORWARD, ANTISENSE, 0);
+				UniquePoint TempOne( g_genome.getChr(read.FragId), CurrentLength, Left_PD[0][0], FORWARD, ANTISENSE, 0);
 				if (CheckMismatches(chromosomeSeq, forwardSeq, reverseSeq, TempOne, read.CloseEndMismatch)) {
 					LeftUP.push_back (TempOne);
 				} 
@@ -293,6 +336,7 @@ void CheckRight_Close (SPLIT_READ & read,
 		minMismatches++;
 	}
 
+        int matchRunLength = BP_Right_Start;
         for ( ; CurrentLength < BP_Right_Start && minMismatches <= read.getMAX_SNP_ERROR(); CurrentLength++) {
 			ExtendInPlace(readSeq[read.getReadLengthMinus() - CurrentLength] , chromosomeSeq, Right_PD, TmpPositions, -1, minMismatches, read.getTOTAL_SNP_ERROR_CHECKED_Minus());
 			
@@ -304,12 +348,12 @@ void CheckRight_Close (SPLIT_READ & read,
 			return; 
 		}
 
-		if (minMismatches <= CurrentLength - BP_Right_Start && Right_PD[minMismatches].size() == 1) {
+		if (minMismatches <= CurrentLength - BP_Right_Start && Right_PD[minMismatches].size() == 1 && matchRunLength >= userSettings->Min_Perfect_Match_Around_BP) {
 			const std::string& forwardSeq = read.getUnmatchedSeq();
 			const std::string& reverseSeq = read.getUnmatchedSeqRev();
 			unsigned int Sum = numberOfCompetingPositions(Right_PD, minMismatches+1, minMismatches+userSettings->ADDITIONAL_MISMATCH );
 			if (Sum == 0) {
-				UniquePoint TempOne( g_genome.getChr(read.FragName), CurrentLength, Right_PD[minMismatches][0], BACKWARD, SENSE, minMismatches);
+				UniquePoint TempOne( g_genome.getChr(read.FragId), CurrentLength, Right_PD[minMismatches][0], BACKWARD, SENSE, minMismatches);
 				if (CheckMismatches(chromosomeSeq, forwardSeq, reverseSeq, TempOne, read.CloseEndMismatch)) {
 					RightUP.push_back (TempOne);
 				} // ###################################
@@ -319,7 +363,14 @@ void CheckRight_Close (SPLIT_READ & read,
 		if (CurrentLength < BP_Right_End) {
 			ExtendInPlace(readSeq[read.getReadLengthMinus() - CurrentLength] , chromosomeSeq, Right_PD, TmpPositions, -1, minMismatches, read.getTOTAL_SNP_ERROR_CHECKED_Minus());
 		}
-		minMismatches += (Right_PD[minMismatches].size() == 0)? 1: 0;	
+		//minMismatches += (Right_PD[minMismatches].size() == 0)? 1: 0;
+                if (Right_PD[minMismatches].size() == 0) {
+                    minMismatches++;
+                    matchRunLength = 1;
+                } else {
+                    matchRunLength++;
+                }
+	
 	}
 }
 
@@ -341,7 +392,7 @@ void CheckRight_Close_Perfect (SPLIT_READ & read,
 			if(numberOfCompetingPositions(Right_PD, 1, userSettings->ADDITIONAL_MISMATCH) == 0) {
 				const std::string& forwardSeq = read.getUnmatchedSeq();
 				const std::string& reverseSeq = read.getUnmatchedSeqRev();
-				UniquePoint TempOne( g_genome.getChr(read.FragName), CurrentLength, Right_PD[0][0], BACKWARD, SENSE, 0);
+				UniquePoint TempOne( g_genome.getChr(read.FragId), CurrentLength, Right_PD[0][0], BACKWARD, SENSE, 0);
 				if (CheckMismatches(chromosomeSeq, forwardSeq, reverseSeq, TempOne, read.CloseEndMismatch)) {
 					RightUP.push_back (TempOne);
 				} // ###################################

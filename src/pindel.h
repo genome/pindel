@@ -240,6 +240,8 @@ struct SPLIT_READ {
 	SPLIT_READ() {
 	FragName = "";
         FarFragName = "";
+        FragId = -1;
+        FarFragId = -1;
 	Name = "";
 	UnmatchedSeq = "";
         UnmatchedSeqRev = "";
@@ -274,6 +276,7 @@ struct SPLIT_READ {
 	}
 	std::string FragName;
    	std::string FarFragName;
+        int FragId, FarFragId;
 	std::string Name;
 
 	void setUnmatchedSeq( const std::string & unmatchedSeq );

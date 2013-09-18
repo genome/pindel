@@ -129,8 +129,6 @@ void SearchFarEndAtPos(const Chromosome* chrom, const std::string& chromosome, S
 	__m128i forwardMaskSIMD = _mm_cmpestrm(forwardSIMD, InitExtend, dontcarSIMD, InitExtend, cmpestrmflag);
 	__m128i reverseMaskSIMD = _mm_cmpestrm(reverseSIMD, InitExtend, dontcarSIMD, InitExtend, cmpestrmflag);
 
-        PosVector TmpPos[6];
-
         unsigned PD_size = std::max(InitExtend, (int)Temp_One_Read.getTOTAL_SNP_ERROR_CHECKED());
 	for (unsigned RegionIndex = 0; RegionIndex < Regions.size(); RegionIndex++) {
 		FarEndSearchPerRegion* CurrentRegion = new FarEndSearchPerRegion(Regions[RegionIndex].getChromosome(), PD_size, std::max(1, (int)Regions[RegionIndex].getSize()/4));

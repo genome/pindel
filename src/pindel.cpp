@@ -2435,6 +2435,7 @@ void GetCloseEndInnerPerfectMatch(const std::string & CurrentChrSeq, SPLIT_READ 
 
 void GetCloseEnd(const std::string & CurrentChrSeq, SPLIT_READ & Temp_One_Read)
 {
+	Temp_One_Read.FragId = g_genome.getChrID(Temp_One_Read.FragName);
 
     GetCloseEndInner( CurrentChrSeq, Temp_One_Read);
 	//std::cout << "\nfirst: " << Temp_One_Read.Name << " " << Temp_One_Read.UP_Close.size() << std::endl;
@@ -2659,6 +2660,7 @@ void GetCloseEndInnerPerfectMatch(const Chromosome& CurrentChr, SPLIT_READ & Tem
 
 void GetCloseEnd(const Chromosome& CurrentChr, SPLIT_READ & Temp_One_Read)
 {
+        Temp_One_Read.FragId = g_genome.getChrID(Temp_One_Read.FragName);
 	GetCloseEndInner(CurrentChr, Temp_One_Read);
 	if (Temp_One_Read.UP_Close.size()==0) { // no good close ends found
 		Temp_One_Read.setUnmatchedSeq(Temp_One_Read.getUnmatchedSeqRev() );
