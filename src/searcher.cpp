@@ -430,12 +430,12 @@ bool CheckMismatches (const std::string & TheInput, const std::string & InputRea
       if (CurrentReadLength < UP.LengthStr) {
          return false;
       }
-      if (CurrentReadLength - UP.LengthStr + Min_Perfect_Match_Around_BP > CurrentReadLength) {
+      /*if (CurrentReadLength - UP.LengthStr + Min_Perfect_Match_Around_BP > CurrentReadLength) {
          return false;
       }
       if (UP.AbsLoc + Min_Perfect_Match_Around_BP > TheInput.size()) {
           return false;
-      }
+      }*/
       const char* BP_On_Read_c = &(*CurrentReadSeq)[CurrentReadLength - UP.LengthStr];
       const char* BP_On_Ref_c = &TheInput[UP.AbsLoc];
       if (strncmp(BP_On_Read_c, BP_On_Ref_c, Min_Perfect_Match_Around_BP) != 0) {

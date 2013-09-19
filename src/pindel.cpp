@@ -1194,7 +1194,7 @@ void SearchFarEnds( const std::string & chromosomeSeq, std::vector<SPLIT_READ>& 
 	//std::cout << "report per 1k reads, not sequential due to openmp" << std::endl;
 	#pragma omp parallel default(shared)
 	{
-		#pragma omp for
+		#pragma omp for schedule(dynamic, 1000)
 		for (int readIndex= 0; readIndex < (int)reads.size(); readIndex++ ) {
 			//if (readIndex % 1000 == 0) 
 			//	std::cout << "readIndex: " << readIndex << std::endl;

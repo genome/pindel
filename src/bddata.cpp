@@ -248,7 +248,7 @@ void InitializeA1B1(std::vector <RP_READ> & Reads_RP) {
 
 }
 
-void ProcessSameChromosomeSameStrand(RP_READ & Current_first, RP_READ & Current_second) {
+void ProcessSameChromosomeSameStrand(RP_READ & Current_first, const RP_READ & Current_second) {
     if ((Current_first.DA == '+' &&
         Current_first.PosA < Current_second.PosA &&
         Current_second.PosA < Current_first.PosA1 &&
@@ -284,7 +284,7 @@ void UpdateFirstBasedOnSecondIntraChromosome(RP_READ & Current_first, RP_READ & 
     }
 }
 
-void UpdateFirstBasedOnSecondInterChromosome(RP_READ & Current_first, RP_READ & Current_second)
+void UpdateFirstBasedOnSecondInterChromosome(RP_READ & Current_first, const RP_READ & Current_second)
 {
     if (Current_first.ChrNameA == Current_second.ChrNameA && Current_first.ChrNameB == Current_second.ChrNameB) {
         if (Current_first.DA == Current_second.DA && Current_first.DB == Current_second.DB)
@@ -366,14 +366,16 @@ void ModifyRP_InterChr(std::vector <RP_READ> & Reads_RP) {
 	InitializeA1B1(Reads_RP);   
 	
 
-	//#pragma omp parallel default(shared)
+        const std::vector<RP_READ> Reads_RP_in = Reads_RP;
+	#pragma omp parallel default(shared)
 	{
-	//#pragma omp for
+	        #pragma omp for schedule(dynamic, 1000)
 		for (int first = 0; first < (int)Reads_RP.size() - 1; first++) {
 
 			RP_READ & Current_first = Reads_RP[first];
-			for (unsigned second = 0; second < Reads_RP.size(); second++) {
-				RP_READ & Current_second = Reads_RP[second];
+			for (unsigned second = 0; second < Reads_RP_in.size(); second++) {
+                                //if (second == first) { continue; }
+				const RP_READ & Current_second = Reads_RP_in[second];
 				UpdateFirstBasedOnSecondInterChromosome(Current_first, Current_second);
 			}
 		}
