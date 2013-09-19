@@ -448,13 +448,17 @@ bool CheckMismatches (const std::string & TheInput, const std::string & InputRea
    const uint32_t cmpestrmflag       = _SIDD_UBYTE_OPS | _SIDD_CMP_EQUAL_EACH | _SIDD_NEGATIVE_POLARITY;
    __m128i dontcarSIMD = _mm_set1_epi8('N');
 
-   for (short i = 0; i < CurrentReadLength; i+=16) {
-       int toProcess = std::min(CurrentReadLength - i, 16);
-       __m128i readSIMD = _mm_lddqu_si128((__m128i* const) &(*CurrentReadSeq)[i]);
+   int CurrentReadLength_a = CurrentReadLength - (CurrentReadLength % 16);
+   for (short i = 0; i < CurrentReadLength_a; i+=16) {
+       int toProcess = 16;
+       __m128i readSIMD = _mm_lddqu_si128((__m128i* const) &(*CurrentReadSeq)[i]); // TODO: fix potential seg fault
        __m128i inputSIMD = _mm_lddqu_si128((__m128i* const) &TheInput[Start+i]);
        __m128i readMaskSIMD = _mm_cmpestrm(readSIMD, toProcess, dontcarSIMD, toProcess, cmpestrmflag);
        __m128i cmpres = _mm_and_si128(readMaskSIMD, _mm_cmpestrm(readSIMD, toProcess, inputSIMD, toProcess, cmpestrmflag));
        NumMismatches += _mm_popcnt_u32(_mm_extract_epi32(cmpres, 0));
+   }
+   for (int i = CurrentReadLength_a; i < CurrentReadLength; i++) {
+       NumMismatches += MismatchPair[(int)(*CurrentReadSeq)[i]][(int)TheInput[Start+i]];
    }
    numberOfMismatch = NumMismatches;
    // std::cout << "NumMismatches > MAX_ALLOWED_MISMATCHES " << NumMismatches << " " << MAX_ALLOWED_MISMATCHES << std::endl;

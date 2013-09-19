@@ -131,6 +131,7 @@ void SearchFarEndAtPos(const Chromosome* chrom, const std::string& chromosome, S
 
         unsigned PD_size = std::max(InitExtend, (int)Temp_One_Read.getTOTAL_SNP_ERROR_CHECKED());
 	for (unsigned RegionIndex = 0; RegionIndex < Regions.size(); RegionIndex++) {
+                const Chromosome* Chr = Regions[RegionIndex].getChromosome();
 		FarEndSearchPerRegion* CurrentRegion = new FarEndSearchPerRegion(Regions[RegionIndex].getChromosome(), PD_size, std::max(1, (int)Regions[RegionIndex].getSize()/4));
 		const std::string & chromosome = Regions[RegionIndex].getChromosome()->getSeq();
 
@@ -140,8 +141,8 @@ void SearchFarEndAtPos(const Chromosome* chrom, const std::string& chromosome, S
 
                 const unsigned int* Plus_s, * Plus_e;
                 const unsigned int* Minus_s, * Minus_e;
-                chrom->getPositions(CurrentBaseNum, Start, End, &Plus_s, &Plus_e);
-                chrom->getPositions(CurrentBaseRCNum, Start, End, &Minus_s, &Minus_e);
+                Chr->getPositions(CurrentBaseNum, Start, End, &Plus_s, &Plus_e);
+                Chr->getPositions(CurrentBaseRCNum, Start, End, &Minus_s, &Minus_e);
                 for (const unsigned int * it = Plus_s; it != Plus_e; it++) {
 			int pos = *it;
 			__m128i chromosSIMD = _mm_lddqu_si128((__m128i* const) &chromosome[pos]);
@@ -194,23 +195,36 @@ void SearchFarEndAtPosPerfect( const std::string& chromosome, SPLIT_READ& Temp_O
 	std::vector <FarEndSearchPerRegion*> WholeGenomeSearchResult;
 	unsigned NumberOfHits = 0;
 
+        int CurrentBaseNum = Convert2Num[CurrentBase];
+        int CurrentBaseRCNum = Convert2Num[CurrentBaseRC];
 
 	for (unsigned RegionIndex = 0; RegionIndex < Regions.size(); RegionIndex++) {
-
+                const Chromosome* Chr = Regions[RegionIndex].getChromosome();
 		FarEndSearchPerRegion* CurrentRegion = new FarEndSearchPerRegion(Regions[RegionIndex].getChromosome(), Temp_One_Read.getTOTAL_SNP_ERROR_CHECKED(), Regions[RegionIndex].getSize());
 		const std::string & chromosome = Regions[RegionIndex].getChromosome()->getSeq();
 
 		int Start = Regions[RegionIndex].getStart();
 		int End = std::min((unsigned) Regions[RegionIndex].getEnd(), (unsigned) chromosome.size());
 		if (Start < 0) Start = End -1;
-		for (int pos = Start; pos < End; pos++) {
+
+                const unsigned int* Plus_s, * Plus_e;
+                const unsigned int* Minus_s, * Minus_e;
+                Chr->getPositions(CurrentBaseNum, Start, End, &Plus_s, &Plus_e);
+                Chr->getPositions(CurrentBaseRCNum, Start, End, &Minus_s, &Minus_e);
+                for (const unsigned int* it = Plus_s; it != Plus_e; it++) {
+			CurrentRegion->PD_Plus[0].push_back(*it);
+		}
+                for (const unsigned int* it = Minus_s; it != Minus_e; it++) {
+			CurrentRegion->PD_Minus[0].push_back(*it);
+		}
+		/*for (int pos = Start; pos < End; pos++) {
 			if (chromosome[pos] == CurrentBase) {
 				CurrentRegion->PD_Plus[0].push_back(pos); // else
 			}
 			if (chromosome[pos] == CurrentBaseRC) {
 				CurrentRegion->PD_Minus[0].push_back(pos);
 			}
-		}
+		}*/
 		NumberOfHits += CurrentRegion->PD_Plus[0].size() + CurrentRegion->PD_Minus[0].size();
 		WholeGenomeSearchResult.push_back(CurrentRegion);
 	}

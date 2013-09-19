@@ -2373,13 +2373,9 @@ void GetCloseEndInnerPerfectMatch(const std::string & CurrentChrSeq, SPLIT_READ 
 					__m128i chromosSIMD = _mm_lddqu_si128((__m128i* const) &CurrentChrSeq[pos]);
 					__m128i cmpres = _mm_and_si128(forwardMaskSIMD, _mm_cmpestrm(forwardSIMD, InitExtend, chromosSIMD, InitExtend, cmpestrmflag));
 					int nMismatches = _mm_popcnt_u32(_mm_extract_epi32(cmpres, 0)); 
-                                        //for (int i = 1; i < InitExtend; i++) {
-                                        //    nMismatches += MismatchPair[CurrentReadSeq[i]][CurrentChrSeq[pos+i]];
-                                        //}
 					if (nMismatches < PD.size()) { 
 						PD[nMismatches].push_back(pos + InitExtend - 1); // else
 					}
-					//PD[0].push_back(pos);
 				}
 			}
 		}
@@ -2410,13 +2406,9 @@ void GetCloseEndInnerPerfectMatch(const std::string & CurrentChrSeq, SPLIT_READ 
 					__m128i chromosSIMD = _mm_lddqu_si128((__m128i* const) &CurrentChrSeq[pos + 1 - InitExtend]);
 					__m128i cmpres = _mm_and_si128(reverseMaskSIMD, _mm_cmpestrm(reverseSIMD, InitExtend, chromosSIMD, InitExtend, cmpestrmflag));
 					int nMismatches = _mm_popcnt_u32(_mm_extract_epi32(cmpres, 0)); 
-                                        //for (int i = 1; i < InitExtend; i++) {
-                                        //    nMismatches += MismatchPair[CurrentReadSeq[seqLength-1-i]][CurrentChrSeq[pos-i]];
-                                        //}
 					if (nMismatches < PD.size()) {
 						PD[nMismatches].push_back(pos - InitExtend + 1);
 					}
-					//PD[0].push_back(pos);
 				}
 			}
 		}
