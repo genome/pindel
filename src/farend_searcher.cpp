@@ -175,7 +175,6 @@ void SearchFarEndAtPos(const Chromosome* chrom, const std::string& chromosome, S
 		if ( NewUPFarIsBetter(UP, Temp_One_Read)) { // UP.MaxLen() > Temp_One_Read.MaxLenFarEnd()
 			Temp_One_Read.UP_Far.swap(UP);
 		}
-		UP.clear(); // may not be necessary as this is deleted from the stack anyway
 	}
         for (unsigned RegionIndex = 0; RegionIndex < WholeGenomeSearchResult.size(); RegionIndex++) {
 		delete WholeGenomeSearchResult[ RegionIndex ];
@@ -217,14 +216,6 @@ void SearchFarEndAtPosPerfect( const std::string& chromosome, SPLIT_READ& Temp_O
                 for (const unsigned int* it = Minus_s; it != Minus_e; it++) {
 			CurrentRegion->PD_Minus[0].push_back(*it);
 		}
-		/*for (int pos = Start; pos < End; pos++) {
-			if (chromosome[pos] == CurrentBase) {
-				CurrentRegion->PD_Plus[0].push_back(pos); // else
-			}
-			if (chromosome[pos] == CurrentBaseRC) {
-				CurrentRegion->PD_Minus[0].push_back(pos);
-			}
-		}*/
 		NumberOfHits += CurrentRegion->PD_Plus[0].size() + CurrentRegion->PD_Minus[0].size();
 		WholeGenomeSearchResult.push_back(CurrentRegion);
 	}
@@ -238,7 +229,6 @@ void SearchFarEndAtPosPerfect( const std::string& chromosome, SPLIT_READ& Temp_O
 		if ( NewUPFarIsBetter(UP, Temp_One_Read)) { // UP.MaxLen() > Temp_One_Read.MaxLenFarEnd()
 			Temp_One_Read.UP_Far.swap(UP);
 		}
-		UP.clear(); // may not be necessary as this is deleted from the stack anyway
 	}
         for (unsigned RegionIndex = 0; RegionIndex < WholeGenomeSearchResult.size(); RegionIndex++) {
 		delete WholeGenomeSearchResult[ RegionIndex ];

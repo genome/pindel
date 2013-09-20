@@ -451,7 +451,7 @@ bool CheckMismatches (const std::string & TheInput, const std::string & InputRea
    int CurrentReadLength_a = CurrentReadLength - (CurrentReadLength % 16);
    for (short i = 0; i < CurrentReadLength_a; i+=16) {
        int toProcess = 16;
-       __m128i readSIMD = _mm_lddqu_si128((__m128i* const) &(*CurrentReadSeq)[i]); // TODO: fix potential seg fault
+       __m128i readSIMD = _mm_lddqu_si128((__m128i* const) &(*CurrentReadSeq)[i]);
        __m128i inputSIMD = _mm_lddqu_si128((__m128i* const) &TheInput[Start+i]);
        __m128i readMaskSIMD = _mm_cmpestrm(readSIMD, toProcess, dontcarSIMD, toProcess, cmpestrmflag);
        __m128i cmpres = _mm_and_si128(readMaskSIMD, _mm_cmpestrm(readSIMD, toProcess, inputSIMD, toProcess, cmpestrmflag));

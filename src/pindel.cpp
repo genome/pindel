@@ -1092,7 +1092,7 @@ void SearchFarEnd( const std::string& chromosome, SPLIT_READ& read, const Chromo
 			//std::cout << "return" << std::endl;
 			return;
 		}
-		else SearchFarEndAtPosPerfect( chromosome, read, searchCluster);
+		//else SearchFarEndAtPosPerfect( chromosome, read, searchCluster);
 	}
 	//std::cout << "SearchFarEnd	2" << std::endl;
 	//UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
@@ -1138,12 +1138,12 @@ void SearchFarEnd( const std::string& chromosome, SPLIT_READ& read, const Chromo
 			//read.Investigated = true;
 			return;
 		}
-		else SearchFarEndAtPosPerfect( chromosome, read, searchCluster);
+		/*else SearchFarEndAtPosPerfect( chromosome, read, searchCluster);
 		if (read.goodFarEndFound()) {
 			//read.Investigated = true;
 			//std::cout << "SearchFarEnd	found ###################3" << std::endl;
 			return;
-		}
+		}*/
 		searchSpan *= 4;
 	}
 	//std::cout << std::endl;
@@ -1903,7 +1903,10 @@ int main(int argc, char *argv[])
             			if (!userSettings->reportOnlyCloseMappedReads) {
 					timer.switchTo("Searching far ends");
 					*logStream << "search far ends" << std::endl;
+                                        time_t Search_FarEnds_s = time(NULL);
 					SearchFarEnds( currentChromosome->getSeq(), currentState.Reads_SR, *currentChromosome );
+                                        time_t Search_FarEnds_e = time(NULL);
+                                        *logStream << "far end search took " << (Search_FarEnds_e - Search_FarEnds_s) << " seconds" << std::endl;
 					*logStream << "update FarFragName" << std::endl;
                     			UpdateFarFragName(currentState.Reads_SR);
 					*logStream << "update FarFragName done" << std::endl;
