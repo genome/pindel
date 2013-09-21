@@ -246,7 +246,7 @@ void InitializeA1B1(std::vector <RP_READ> & Reads_RP) {
                         }
                 }
 		if (Reads_RP[first].PosA1 - Reads_RP[first].PosA > 10000 || Reads_RP[first].PosB1 - Reads_RP[first].PosB > 10000) {
-			std::cout << "InitializeA1B1 " <<  Reads_RP[first].PosA1 << "\t" << Reads_RP[first].PosA << "\t" << Reads_RP[first].PosB1 << "\t" << Reads_RP[first].PosB << std::endl;
+			//std::cout << "InitializeA1B1 " <<  Reads_RP[first].PosA1 << "\t" << Reads_RP[first].PosA << "\t" << Reads_RP[first].PosB1 << "\t" << Reads_RP[first].PosB << std::endl;
 		}
         }       //Han(2013.06.17)
 
@@ -254,8 +254,8 @@ void InitializeA1B1(std::vector <RP_READ> & Reads_RP) {
 
 void ProcessSameChromosomeSameStrand(RP_READ & Current_first, const RP_READ & Current_second) {
 	if (Current_second.PosA1 - Current_second.PosA > 10000 || Current_second.PosB1 - Current_second.PosB > 10000) {
-		std::cout << Current_second.PosA1 << "\t" << Current_second.PosA << "\t" << Current_second.PosB1 << "\t" << Current_second.PosB << std::endl;
-		std::cout << "ProcessSameChromosomeSameStrand > 10k" << std::endl;
+		//std::cout << Current_second.PosA1 << "\t" << Current_second.PosA << "\t" << Current_second.PosB1 << "\t" << Current_second.PosB << std::endl;
+		//std::cout << "ProcessSameChromosomeSameStrand > 10k" << std::endl;
 		return; 
 	}
     if ((Current_first.DA == '+' &&
@@ -285,8 +285,8 @@ void ProcessSameChromosomeSameStrand(RP_READ & Current_first, const RP_READ & Cu
                 //std::cout << "PosA " << Current_first.PosA << std::endl;
             }
 	if (Current_first.PosA1 - Current_first.PosA > 10000 || Current_first.PosB1 - Current_first.PosB > 10000) {
-		std::cout << Current_first.PosA1 << "\t" << Current_first.PosA << "\t" << Current_first.PosB1 << "\t" << Current_first.PosB << std::endl;
-		std::cout << "after ProcessSameChromosomeSameStrand > 10k" << std::endl;
+		//std::cout << Current_first.PosA1 << "\t" << Current_first.PosA << "\t" << Current_first.PosB1 << "\t" << Current_first.PosB << std::endl;
+		//std::cout << "after ProcessSameChromosomeSameStrand > 10k" << std::endl;
 		//return; 
 	}
 }
