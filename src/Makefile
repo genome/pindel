@@ -35,7 +35,7 @@ pindel:	$(SOURCES:.cpp=.o)
 
 clean:
 	$(RM) pindel pindel-debug $(OBJECTS) $(OBJECTS_DEBUG) $(CPPCHECKS) \
-	    *.gcov *.gcda *.gcno gmon.out *.d *.o
+	    *.gcov *.gcda *.gcno gmon.out *.d *.o *.d.*
 
 # Pattern rule to create normal .o files	
 %.o: %.cpp
