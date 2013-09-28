@@ -51,8 +51,8 @@ FarEndSearchPerRegion( const Chromosome* Chromosome, unsigned short NumberOfErro
 
 
 
-void SearchFarEndAtPos(const Chromosome* chrom, const std::string& chromosome, SPLIT_READ& Temp_One_Read, const std::vector <SearchWindow> & Regions );
+void SearchFarEndAtPos(SPLIT_READ& Temp_One_Read, const std::vector <SearchWindow> & Regions );
 
-void SearchFarEndAtPosPerfect( const std::string& chromosome, SPLIT_READ& Temp_One_Read, const std::vector <SearchWindow> & Regions );
+void SearchFarEndAtPosPerfect(SPLIT_READ& Temp_One_Read, const std::vector <SearchWindow> & Regions );
 
 #endif /* FARENDSEARCHER_H_ */

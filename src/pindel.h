@@ -218,6 +218,8 @@ struct RP_READ {
     std::string ChrNameB;
     char DA;
     char DB;
+    unsigned ChrIdA;
+    unsigned ChrIdB;
     unsigned PosA;
     unsigned PosB;
     unsigned OriginalPosA;
