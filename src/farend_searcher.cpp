@@ -93,7 +93,7 @@ void FillForward(const unsigned int* positions,
         }
 }
 
-void SearchFarEndAtPos(const Chromosome* chrom, const std::string& chromosome, SPLIT_READ& Temp_One_Read, const std::vector <SearchWindow> & Regions )
+void SearchFarEndAtPos(SPLIT_READ& Temp_One_Read, const std::vector <SearchWindow> & Regions )
 {
 	const std::string& forwardSeq = Temp_One_Read.getUnmatchedSeq();
         const std::string& reverseSeq = Temp_One_Read.getUnmatchedSeqRev();
@@ -108,7 +108,7 @@ void SearchFarEndAtPos(const Chromosome* chrom, const std::string& chromosome, S
 	//int CurrentReadLength = Temp_One_Read.getReadLength();
 	std::vector <FarEndSearchPerRegion*> WholeGenomeSearchResult;
 	unsigned NumberOfHits = 0;
-        const int InitExtend = 10;
+        const int InitExtend = 10; // should be equal to BP_start
 
         if (forwardSeq.size() < InitExtend) {
             return;
@@ -129,38 +129,59 @@ void SearchFarEndAtPos(const Chromosome* chrom, const std::string& chromosome, S
 	__m128i forwardMaskSIMD = _mm_cmpestrm(forwardSIMD, InitExtend, dontcarSIMD, InitExtend, cmpestrmflag);
 	__m128i reverseMaskSIMD = _mm_cmpestrm(reverseSIMD, InitExtend, dontcarSIMD, InitExtend, cmpestrmflag);
 
-        unsigned PD_size = std::max(InitExtend, (int)Temp_One_Read.getTOTAL_SNP_ERROR_CHECKED());
-	for (unsigned RegionIndex = 0; RegionIndex < Regions.size(); RegionIndex++) {
-                const Chromosome* Chr = Regions[RegionIndex].getChromosome();
-		FarEndSearchPerRegion* CurrentRegion = new FarEndSearchPerRegion(Regions[RegionIndex].getChromosome(), PD_size, std::max(1, (int)Regions[RegionIndex].getSize()/4));
-		const std::string & chromosome = Regions[RegionIndex].getChromosome()->getSeq();
+        unsigned PD_size = Temp_One_Read.getTOTAL_SNP_ERROR_CHECKED();
+        bool hasN = _mm_popcnt_u32(_mm_extract_epi32(forwardMaskSIMD, 0)) < InitExtend;
 
-		int Start = Regions[RegionIndex].getStart();
-		int End = std::min((unsigned) Regions[RegionIndex].getEnd(), (unsigned) chromosome.size());
+        for (std::vector<SearchWindow>::const_iterator it_r = Regions.begin(); it_r != Regions.end(); it_r++) {
+                const Chromosome* Chr = it_r->getChromosome();
+		const std::string & chromosome = Chr->getSeq();
+
+		int Start = it_r->getStart();
+		int End = std::min((unsigned) it_r->getEnd(), (unsigned) chromosome.size());
 		if (Start < 0) Start = End -1;
 
                 const unsigned int* Plus_s, * Plus_e;
                 const unsigned int* Minus_s, * Minus_e;
                 Chr->getPositions(CurrentBaseNum, Start, End, &Plus_s, &Plus_e);
                 Chr->getPositions(CurrentBaseRCNum, Start, End, &Minus_s, &Minus_e);
-                for (const unsigned int * it = Plus_s; it != Plus_e; it++) {
-			int pos = *it;
-			__m128i chromosSIMD = _mm_lddqu_si128((__m128i* const) &chromosome[pos]);
-			__m128i cmpres = _mm_and_si128(forwardMaskSIMD, _mm_cmpestrm(forwardSIMD, InitExtend, chromosSIMD, InitExtend, cmpestrmflag));
-			unsigned nMismatches = _mm_popcnt_u32(_mm_extract_epi32(cmpres, 0)); 
-			CurrentRegion->PD_Plus[nMismatches].push_back(pos + InitExtend - 1); // else
-		}
-                for (const unsigned int * it = Minus_s; it != Minus_e; it++) {
-			int pos = *it;
-			__m128i chromosSIMD = _mm_lddqu_si128((__m128i* const) &chromosome[pos + 1 - InitExtend]);
-			__m128i cmpres = _mm_and_si128(reverseMaskSIMD, _mm_cmpestrm(reverseSIMD, InitExtend, chromosSIMD, InitExtend, cmpestrmflag));
-			unsigned nMismatches = _mm_popcnt_u32(_mm_extract_epi32(cmpres, 0)); 
-			CurrentRegion->PD_Minus[nMismatches].push_back(pos - InitExtend + 1); // else
+                FarEndSearchPerRegion* CurrentRegion = new FarEndSearchPerRegion(Chr, PD_size, std::max(1L, std::max(Plus_e - Plus_s, Minus_e - Minus_s)));
+		if (hasN) {
+			for (const unsigned int * it = Plus_s; it != Plus_e; it++) {
+				unsigned int pos = *it;
+				__m128i chromosSIMD = _mm_lddqu_si128((__m128i* const) &chromosome[pos]);
+				__m128i cmpres = _mm_and_si128(forwardMaskSIMD, _mm_cmpestrm(forwardSIMD, InitExtend, chromosSIMD, InitExtend, cmpestrmflag));
+				unsigned nMismatches = _mm_popcnt_u32(_mm_extract_epi32(cmpres, 0));
+				if (nMismatches < PD_size)  
+					CurrentRegion->PD_Plus[nMismatches].push_back(pos + InitExtend - 1); // else
+			}
+			for (const unsigned int * it = Minus_s; it != Minus_e; it++) {
+				unsigned int pos = *it;
+				__m128i chromosSIMD = _mm_lddqu_si128((__m128i* const) &chromosome[pos + 1 - InitExtend]);
+				__m128i cmpres = _mm_and_si128(reverseMaskSIMD, _mm_cmpestrm(reverseSIMD, InitExtend, chromosSIMD, InitExtend, cmpestrmflag));
+				unsigned nMismatches = _mm_popcnt_u32(_mm_extract_epi32(cmpres, 0));
+				if (nMismatches < PD_size) 
+					CurrentRegion->PD_Minus[nMismatches].push_back(pos - InitExtend + 1); // else
+			}
+		} else {
+			for (const unsigned int * it = Plus_s; it != Plus_e; it++) {
+				unsigned int pos = *it;
+				__m128i chromosSIMD = _mm_lddqu_si128((__m128i* const) &chromosome[pos]);
+				__m128i cmpres = _mm_cmpestrm(forwardSIMD, InitExtend, chromosSIMD, InitExtend, cmpestrmflag);
+				unsigned nMismatches = _mm_popcnt_u32(_mm_extract_epi32(cmpres, 0));
+				if (nMismatches < PD_size)  
+					CurrentRegion->PD_Plus[nMismatches].push_back(pos + InitExtend - 1); // else
+			}
+			for (const unsigned int * it = Minus_s; it != Minus_e; it++) {
+				unsigned int pos = *it;
+				__m128i chromosSIMD = _mm_lddqu_si128((__m128i* const) &chromosome[pos + 1 - InitExtend]);
+				__m128i cmpres = _mm_cmpestrm(reverseSIMD, InitExtend, chromosSIMD, InitExtend, cmpestrmflag);
+				unsigned nMismatches = _mm_popcnt_u32(_mm_extract_epi32(cmpres, 0));
+				if (nMismatches < PD_size) 
+					CurrentRegion->PD_Minus[nMismatches].push_back(pos - InitExtend + 1); // else
+			}
 		}
                 for (unsigned i = 0; i < Temp_One_Read.getTOTAL_SNP_ERROR_CHECKED(); i++) {
 			NumberOfHits += CurrentRegion->PD_Plus[i].size();
-                }
-                for (unsigned i = 0; i < Temp_One_Read.getTOTAL_SNP_ERROR_CHECKED(); i++) {
 			NumberOfHits += CurrentRegion->PD_Minus[i].size();
                 }
 		WholeGenomeSearchResult.push_back(CurrentRegion);
@@ -176,12 +197,12 @@ void SearchFarEndAtPos(const Chromosome* chrom, const std::string& chromosome, S
 			Temp_One_Read.UP_Far.swap(UP);
 		}
 	}
-        for (unsigned RegionIndex = 0; RegionIndex < WholeGenomeSearchResult.size(); RegionIndex++) {
-		delete WholeGenomeSearchResult[ RegionIndex ];
-	}
+        for (std::vector<FarEndSearchPerRegion*>::iterator it = WholeGenomeSearchResult.begin(); it != WholeGenomeSearchResult.end(); it++) {
+		delete *it;
+        }
 }
 
-void SearchFarEndAtPosPerfect( const std::string& chromosome, SPLIT_READ& Temp_One_Read, const std::vector <SearchWindow> & Regions )
+void SearchFarEndAtPosPerfect(SPLIT_READ& Temp_One_Read, const std::vector <SearchWindow> & Regions )
 {
 	// step 1 find out which chromosomes in Regions: set? linear pass of regions
 	// step 2 for each identified chromsome, for each regions on the chromosme, do the business.
