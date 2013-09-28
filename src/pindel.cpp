@@ -871,7 +871,7 @@ void createProbTable(const double seqErrorRate, const double sensitivity)
 			if (totalErrorProb > sensitivity ) {
 				g_maxMismatch[ length ] = numberOfErrors + 1;
 				//g_maxMisMatch.push_back( numberOfErrors );
-				//std::cout << length << " bases has max errors \t" << g_maxMismatch[length] << "\n";
+				std::cout << length << " bases has max errors \t" << g_maxMismatch[length] << "\n";
 				break; // break out of this length, up to the next
 			}
 		}
@@ -1085,7 +1085,7 @@ void SearchFarEnd( const std::string& chromosome, SPLIT_READ& read, const Chromo
 		//std::cout << "Breakdancer input is not empty " << searchCluster.size() << std::endl;
 		//for (unsigned index = 0; index < searchCluster.size(); index++)
 		//	searchCluster[index].display();
-		SearchFarEndAtPos(&currentChromosome, chromosome, read, searchCluster); // SearchFarEndAtPos
+		SearchFarEndAtPos(read, searchCluster); // SearchFarEndAtPos
 		//std::cout << "finished" << std::endl;
 		if (read.goodFarEndFound()) {
 			//read.Investigated = true;
@@ -1132,7 +1132,7 @@ void SearchFarEnd( const std::string& chromosome, SPLIT_READ& read, const Chromo
 		aroundCESearchCluster.clear();
 		aroundCESearchCluster.push_back( regularWindow );
 		//std::cout << rangeIndex << "\tSearchFarEndAtPos" << std::endl;
-		SearchFarEndAtPos(&currentChromosome, chromosome, read, aroundCESearchCluster ); // SearchFarEndAtPosPerfect
+		SearchFarEndAtPos(read, aroundCESearchCluster ); // SearchFarEndAtPosPerfect
 		//std::cout << "end\tSearchFarEndAtPos" << std::endl;
 		if (read.goodFarEndFound()) {
 			//read.Investigated = true;
@@ -2661,14 +2661,14 @@ void GetCloseEnd(const Chromosome& CurrentChr, SPLIT_READ & Temp_One_Read)
 		Temp_One_Read.setUnmatchedSeq(Temp_One_Read.getUnmatchedSeqRev() );
 		GetCloseEndInner(CurrentChr, Temp_One_Read);
 	}
-	if (Temp_One_Read.UP_Close.size()==0) {
+	/*if (Temp_One_Read.UP_Close.size()==0) {
 		GetCloseEndInnerPerfectMatch(CurrentChr, Temp_One_Read);
 	}
 
 	if (Temp_One_Read.UP_Close.size()==0) { // no good close ends found
 		Temp_One_Read.setUnmatchedSeq(Temp_One_Read.getUnmatchedSeqRev());
 		GetCloseEndInnerPerfectMatch(CurrentChr, Temp_One_Read);
-	}
+	}*/
 }
 
 
