@@ -45,7 +45,7 @@ extern std::set<std::string> g_sampleNames; // EWL: could make this a singleton 
 extern std::map<std::string,unsigned> g_SameName2Index;
 extern std::map<std::string,unsigned> g_ChrName2Ploidy;
 
-extern std::map <std::string, unsigned> g_ReadSeq2Index;
+//extern std::map <std::string, unsigned> g_ReadSeq2Index;
 
 /*
  * Global variables defined in pindel.cpp

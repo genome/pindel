@@ -98,7 +98,7 @@ std::vector <RefCoveragePerPosition> g_RefCoverageRegion;
 short Before, After;
 BDData g_bdData;
 
-std::map <std::string, unsigned> g_ReadSeq2Index;
+//std::map <std::string, unsigned> g_ReadSeq2Index;
 
 
 //extern BDData g_bdData;
@@ -871,7 +871,6 @@ void createProbTable(const double seqErrorRate, const double sensitivity)
 			if (totalErrorProb > sensitivity ) {
 				g_maxMismatch[ length ] = numberOfErrors + 1;
 				//g_maxMisMatch.push_back( numberOfErrors );
-				std::cout << length << " bases has max errors \t" << g_maxMismatch[length] << "\n";
 				break; // break out of this length, up to the next
 			}
 		}
@@ -1077,7 +1076,7 @@ void init(int argc, char *argv[], ControlState& currentState )
 void SearchFarEnd( const std::string& chromosome, SPLIT_READ& read, const Chromosome& currentChromosome)
 {
 	//std::cout << "entering SearchFarEnd" << std::endl;
-	const int START_SEARCH_SPAN = 32;
+	const int START_SEARCH_SPAN = 64;
 	//std::cout << "getting searchCluster" << std::endl;
 	const std::vector< SearchWindow>& searchCluster =  g_bdData.getCorrespondingSearchWindowCluster( read );
 	//std::cout << "searchCluster size: " << searchCluster.size() << std::endl;
@@ -1877,10 +1876,10 @@ int main(int argc, char *argv[])
 			//std::cout << "test 6" << std::endl;
           		//std::cout << "g_bdData.size() " << g_bdData.GetBDSize() << std::endl;
           		//std::cout << "Before" << std::endl;
-			g_ReadSeq2Index.clear();
+			//g_ReadSeq2Index.clear();
          		get_SR_Reads(currentState, currentWindow );
-			std::cout << "g_ReadSeq2Index.size(): " << g_ReadSeq2Index.size() << std::endl;
-			g_ReadSeq2Index.clear();
+			//std::cout << "g_ReadSeq2Index.size(): " << g_ReadSeq2Index.size() << std::endl;
+			//g_ReadSeq2Index.clear();
          		std::cout << "There are " << currentState.RefSupportingReads.size() << " reads supporting the reference allele." << std::endl;
          		//if (userSettings->bamFilesAsInput())
              		UpdateRefReadCoverage(currentState, currentWindow);
