@@ -26,15 +26,15 @@ test:	pindel $(addprefix cppcheck-result-,$(SOURCES:.cpp=.xml))
 
 # Debug version of pindel
 pindel-debug: $(SOURCES:.cpp=-debug.o)
-#	$(CXX) $(LDFLAGS) $^ -fopenmp -g -pg -fprofile-arcs -ftest-coverage \
-#	  -lm -lz -L$(SAMTOOLS) -lbam -o $@
 	$(CXX) $(LDFLAGS) $^ -fopenmp -g -pg -fprofile-arcs -ftest-coverage \
-	-static-libgcc -Bstatic -static -lm -lz -L$(SAMTOOLS) -lbam -o $@
+	  -lm -lz -L$(SAMTOOLS) -lbam -o $@
+#	$(CXX) $(LDFLAGS) $^ -fopenmp -g -pg -fprofile-arcs -ftest-coverage \
+#	-static-libgcc -Bstatic -static -lm -lz -L$(SAMTOOLS) -lbam -o $@
 
 # Normal version of pindel	
 pindel:	$(SOURCES:.cpp=.o)
-#	$(CXX) $(LDFLAGS) $^ -O3 -fopenmp -lm -lz -L$(SAMTOOLS) -lbam -o $@
-	$(CXX) $(LDFLAGS) $^ -O3 -fopenmp -Bstatic -static-libgcc -static  -lm -lz -L$(SAMTOOLS) -lbam -o $@
+	$(CXX) $(LDFLAGS) $^ -O3 -fopenmp -lm -lz -L$(SAMTOOLS) -lbam -o $@
+#	$(CXX) $(LDFLAGS) $^ -O3 -fopenmp -Bstatic -static-libgcc -static  -lm -lz -L$(SAMTOOLS) -lbam -o $@
 
 clean:
 	$(RM) pindel pindel-debug $(OBJECTS) $(OBJECTS_DEBUG) $(CPPCHECKS) \
@@ -42,13 +42,14 @@ clean:
 
 # Pattern rule to create normal .o files	
 %.o: %.cpp
-	$(CXX) $(CXXFLAGS) -Wall -g -c -O3 -Bstatic -static-libgcc -static -fopenmp -I$(SAMTOOLS) $< -o $@
+	$(CXX) $(CXXFLAGS) -Wall -g -c -O3 -fopenmp -I$(SAMTOOLS) $< -o $@
+#	$(CXX) $(CXXFLAGS) -Wall -g -c -O3 -Bstatic -static-libgcc -static -fopenmp -I$(SAMTOOLS) $< -o $@
 
 # Pattern rule to create debug version of .o files
 %-debug.o: %.cpp
-#	$(CXX) $(CXXFLAGS) -Wall -g -c -fopenmp -g -pg \
+	$(CXX) $(CXXFLAGS) -Wall -g -c -fopenmp -g -pg \
 	  -fprofile-arcs -ftest-coverage -I$(SAMTOOLS) $< -o $@
-	$(CXX) $(CXXFLAGS) -Wall -Bstatic -static-libgcc -static -g -c -fopenmp -g -pg \
+#	$(CXX) $(CXXFLAGS) -Wall -Bstatic -static-libgcc -static -g -c -fopenmp -g -pg \
 	  -fprofile-arcs -ftest-coverage -I$(SAMTOOLS) $< -o $@
 
 # Pattern rule to create cppcheck files	
