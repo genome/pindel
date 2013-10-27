@@ -37,6 +37,9 @@ clean:
 	$(RM) pindel pindel-debug $(OBJECTS) $(OBJECTS_DEBUG) $(CPPCHECKS) \
 	    *.gcov *.gcda *.gcno gmon.out *.d *.o *.d.*
 
+clean-temp:
+	$(RM) *.gcov *.gcda *.gcno *.d *.o *.d.*
+
 # Pattern rule to create normal .o files	
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -pg -static -Wall -g -c -O3 -funroll-loops -fopenmp -I$(SAMTOOLS) $< -o $@

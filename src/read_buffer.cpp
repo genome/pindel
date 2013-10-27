@@ -43,7 +43,7 @@ void ReadBuffer::flush()
        
 		//if (it == g_ReadSeq2Index.end()) 
 		{
-			GetCloseEnd(chr/*m_CHROMOSOME*/, m_rawreads[i]);
+			GetCloseEnd(/*chr*/ m_CHROMOSOME, m_rawreads[i]);
 			if (m_rawreads[i].hasCloseEnd()) {
  				updateReadAfterCloseEndMapping(m_rawreads[i]);
                

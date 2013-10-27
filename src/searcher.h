@@ -22,13 +22,20 @@
 #define	SEARCHER_H
 
 bool CheckMismatches (const std::string & TheInput, const std::string & CurrentReadSeq, const std::string& CurrentReadSeqRev, const UniquePoint & UP, short & numberOfMismatch);
-void ExtendInPlace(char currentChar,
+void ExtendInPlace(int currentChar,
                    const std::string& chromosomeSeq,
                    std::vector<PosVector>& positions,
                    PosVector* scratch,
 		   int direction,
                    int minMismatches,
                    int maxMismatches);
+void ExtendInPlace2(int char1, int char2,
+                   const std::string& chromosomeSeq,
+                   std::vector<PosVector>& positions,
+                   PosVector* TmpPositions,
+		   int direction,
+                   int minMismatches,
+		   int maxMismatches);
 void CategorizePositionsNormal(const char readBase,
 		const std::string & chromosomeSeq,
 		const PosVector & PD_Input,
