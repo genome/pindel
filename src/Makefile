@@ -33,7 +33,7 @@ pindel-debug: $(SOURCES:.cpp=-debug.o)
 
 # Normal version of pindel	
 pindel:	$(SOURCES:.cpp=.o)
-	$(CXX) $(LDFLAGS) -pg -static $^ -O3 -fopenmp -lm -lz -L$(SAMTOOLS) -Llibs -ltcmalloc_minimal -lbam -o $@
+	$(CXX) $(LDFLAGS) -pg -static $^ -O3 -fopenmp -lm -lz -L$(SAMTOOLS) -lbam -o $@
 
 clean:
 	$(RM) pindel pindel-debug $(OBJECTS) $(OBJECTS_DEBUG) $(CPPCHECKS) \
