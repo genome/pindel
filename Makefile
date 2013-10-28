@@ -2,7 +2,7 @@
 # Include the local configuration
 -include Makefile.local
 
-default: pindel
+default: pindel pindel-debug
 
 all: pindel cppcheck functional-tests coverage-tests acceptance-tests \
 	regression-tests
