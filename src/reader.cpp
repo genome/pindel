@@ -245,7 +245,7 @@ short ReadInRead (PindelReadReader & inf_ReadSeq, const std::string & FragName,
 					#pragma omp for
 					// openMP 2.5 requires signed loop index
 					for (int BufferReadsIndex = 0;  BufferReadsIndex < (int)NumberOfReadsPerBuffer; BufferReadsIndex++) {
-						GetCloseEnd(/* *currentWindow.getChromosome()*/ CurrentChr, BufferReads[BufferReadsIndex] );
+						GetCloseEnd( *currentWindow.getChromosome() /*CurrentChr*/, BufferReads[BufferReadsIndex] );
 					}
 				}
 				// EW: would it be useful to fuse this loop with the previous one?
@@ -297,7 +297,7 @@ short ReadInRead (PindelReadReader & inf_ReadSeq, const std::string & FragName,
 	{
 	#pragma omp for
 		for (int BufferReadsIndex = 0; BufferReadsIndex < (int)BufferReads.size (); BufferReadsIndex++) { // signed type required by OpenMP 2.5
-			GetCloseEnd (/* *currentWindow.getChromosome()*/ CurrentChr, BufferReads[BufferReadsIndex]);
+			GetCloseEnd ( *currentWindow.getChromosome() /*CurrentChr*/, BufferReads[BufferReadsIndex]);
 		}
 	}
 	for (unsigned int BufferReadsIndex = 0; BufferReadsIndex < BufferReads.size (); BufferReadsIndex++) {

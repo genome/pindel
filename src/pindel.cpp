@@ -63,7 +63,7 @@
 //#include "genotyping.h"
 #include "ifstream_line_reader.h"
 #include "gz_line_reader.h"
-
+#include "sse_helpers.h"
 
 /*v Kai Ye update 0.2.4h, Oct 31 2011, update for MOSAIK */
 /*v EW update 0.2.4j, Pindel will now abort when insert size is set too small. */
@@ -2258,9 +2258,9 @@ std::vector<Region> Merge(const std::vector<Region> &AllRegions)
 void GetCloseEndInner(const std::string & CurrentChrSeq, SPLIT_READ & Temp_One_Read)
 {
     std::string CurrentReadSeq;
-	std::vector<PosVector> PD;
-	PosVector emptyPosVector;
-   PD.assign( Temp_One_Read.getTOTAL_SNP_ERROR_CHECKED(), emptyPosVector);
+    std::vector<PosVector> PD;
+    PosVector emptyPosVector;
+    PD.assign( Temp_One_Read.getTOTAL_SNP_ERROR_CHECKED(), emptyPosVector);
     g_maxInsertSize = std::max((int)Temp_One_Read.InsertSize, g_maxInsertSize);
     for (int CheckIndex = 0; CheckIndex < Temp_One_Read.getTOTAL_SNP_ERROR_CHECKED(); CheckIndex++) {
         PD[CheckIndex].reserve(3 * Temp_One_Read.InsertSize);
@@ -2274,29 +2274,18 @@ void GetCloseEndInner(const std::string & CurrentChrSeq, SPLIT_READ & Temp_One_R
     BP_Start = g_MinClose;
     BP_End = Temp_One_Read.getReadLengthMinus();
     const int InitExtend = std::min((int)8, (int)BP_Start);
-    const uint32_t cmpestrmflag       = _SIDD_UBYTE_OPS | _SIDD_CMP_EQUAL_EACH | _SIDD_NEGATIVE_POLARITY;
     if (Temp_One_Read.MatchedD == Plus) {
         CurrentReadSeq = Temp_One_Read.getUnmatchedSeqRev();
         Start = Temp_One_Read.MatchedRelPos + g_SpacerBeforeAfter;
         End = Start + 3 * Temp_One_Read.InsertSize;
         char LeftChar = CurrentReadSeq[0];
 
-        __m128i forwardSIMD = _mm_lddqu_si128((__m128i* const) &CurrentReadSeq[0]);
-        __m128i dontcarSIMD = _mm_set1_epi8('N');
-	__m128i forwardMaskSIMD = _mm_cmpestrm(forwardSIMD, InitExtend, dontcarSIMD, InitExtend, cmpestrmflag);
-       
-	if (LeftChar != 'N') {
-		for (int pos = Start; pos < End; pos++) {
-			if (CurrentChrSeq[pos] == LeftChar) {
-                                /*__m128i chromosSIMD = _mm_lddqu_si128((__m128i* const) &CurrentChrSeq[pos]);
-                                __m128i cmpres = _mm_and_si128(forwardMaskSIMD, _mm_cmpestrm(forwardSIMD, InitExtend, chromosSIMD, InitExtend, cmpestrmflag));
-				int nMismatches = _mm_popcnt_u32(_mm_extract_epi32(cmpres, 0)); 
-				if (nMismatches < PD.size()) { 
-					PD[nMismatches].push_back(pos + InitExtend - 1); // else
-				}*/
-                                PD[0].push_back(pos);
-			}
-		}
+        if (LeftChar != 'N') {
+            for (int pos = Start; pos < End; pos++) {
+                if (CurrentChrSeq[pos] == LeftChar) {
+                    PD[0].push_back(pos);
+                }
+            }
         }
 
         CheckLeft_Close(Temp_One_Read, CurrentChrSeq, CurrentReadSeq, PD, BP_Start, BP_End, 1/*InitExtend*/, UP); // LengthStr
@@ -2309,35 +2298,20 @@ void GetCloseEndInner(const std::string & CurrentChrSeq, SPLIT_READ & Temp_One_R
         const int seqLength = CurrentReadSeq.size();
         char RightChar = CurrentReadSeq[Temp_One_Read.getReadLengthMinus()];
 
-	__m128i reverseSIMD = _mm_setzero_si128();
-        for (int i = 0; i < InitExtend; i++) {
-            reverseSIMD = _mm_slli_si128(reverseSIMD, 1);
-            reverseSIMD = _mm_insert_epi8(reverseSIMD, CurrentReadSeq[seqLength - 1 - i], 0);
+        if (RightChar != 'N') {
+            for (int pos = Start; pos < End; pos++) {
+                if (CurrentChrSeq[pos] == RightChar) {
+                    PD[0].push_back(pos);
+                }
+            }
         }
- 
-	//__m128i reverseSIMD = _mm_lddqu_si128((__m128i* const) &CurrentReadSeq[seqLength - InitExtend]);
-        __m128i dontcarSIMD = _mm_set1_epi8('N');
-	__m128i reverseMaskSIMD = _mm_cmpestrm(reverseSIMD, InitExtend, dontcarSIMD, InitExtend, cmpestrmflag);
-	if (RightChar != 'N') {
-		for (int pos = Start; pos < End; pos++) {
-			if (CurrentChrSeq[pos] == RightChar) {
-				/*__m128i chromosSIMD = _mm_lddqu_si128((__m128i* const) &CurrentChrSeq[pos + 1 - InitExtend]);
-				__m128i cmpres = _mm_and_si128(reverseMaskSIMD, _mm_cmpestrm(reverseSIMD, InitExtend, chromosSIMD, InitExtend, cmpestrmflag));
-				int nMismatches = _mm_popcnt_u32(_mm_extract_epi32(cmpres, 0)); 
-				if (nMismatches < PD.size()) {
-					PD[nMismatches].push_back(pos - InitExtend + 1);
-				}*/
-                                PD[0].push_back(pos);
-			}
-		}
-	}
         CheckRight_Close(Temp_One_Read, CurrentChrSeq, CurrentReadSeq, PD, BP_Start, BP_End, 1/*InitExtend*/, UP);
     }
     if (UP.empty()) {}
     else {
-	    Temp_One_Read.Used = false;
-	    Temp_One_Read.UP_Close.swap(UP);
-	    UP.clear();
+        Temp_One_Read.Used = false;
+        Temp_One_Read.UP_Close.swap(UP);
+        UP.clear();
     }
     return;
 }
@@ -2486,9 +2460,8 @@ void GetCloseEnd(const std::string & CurrentChrSeq, SPLIT_READ & Temp_One_Read)
 
 void GetCloseEndInner(const Chromosome& CurrentChr, SPLIT_READ & Temp_One_Read) {
     const std::string& CurrentChrSeq = CurrentChr.getSeq();
-	std::vector<PosVector> PD;
-	PosVector emptyPosVector;
-   PD.assign( Temp_One_Read.getTOTAL_SNP_ERROR_CHECKED(), emptyPosVector);
+    std::vector<PosVector> PD;
+    PD.resize(Temp_One_Read.getTOTAL_SNP_ERROR_CHECKED());
     g_maxInsertSize = std::max((int)Temp_One_Read.InsertSize, g_maxInsertSize);
     for (int CheckIndex = 0; CheckIndex < Temp_One_Read.getTOTAL_SNP_ERROR_CHECKED(); CheckIndex++) {
         PD[CheckIndex].reserve(3 * Temp_One_Read.InsertSize);
@@ -2498,179 +2471,86 @@ void GetCloseEndInner(const Chromosome& CurrentChr, SPLIT_READ & Temp_One_Read) 
     Temp_One_Read.UP_Close.clear();
     int BP_Start = g_MinClose;
     int BP_End = Temp_One_Read.getReadLengthMinus();
-    const int InitExtend = std::min((int)8, (int)BP_Start);
-    const uint32_t cmpestrmflag       = _SIDD_UBYTE_OPS | _SIDD_CMP_EQUAL_EACH | _SIDD_NEGATIVE_POLARITY;
+
     if (Temp_One_Read.MatchedD == Plus) {
         const std::string& CurrentReadSeq = Temp_One_Read.getUnmatchedSeqRev();
         int Start = Temp_One_Read.MatchedRelPos + g_SpacerBeforeAfter;
         int End = Start + 3 * Temp_One_Read.InsertSize;
-        char LeftChar = CurrentReadSeq[0];
 
-        __m128i forwardSIMD = _mm_lddqu_si128((__m128i* const) &CurrentReadSeq[0]);
-        __m128i dontcarSIMD = _mm_set1_epi8('N');
-	__m128i forwardMaskSIMD = _mm_cmpestrm(forwardSIMD, InitExtend, dontcarSIMD, InitExtend, cmpestrmflag);
-
-	if (LeftChar != 'N') {
-		const unsigned int* pos_s, * pos_e;
-		CurrentChr.getPositions(Convert2Num[LeftChar], Start, End, &pos_s, &pos_e);
-		for (const unsigned int * it = pos_s; it != pos_e; it++) {
-			unsigned int pos = *it;
-			__m128i chromosSIMD = _mm_lddqu_si128((__m128i* const) &CurrentChrSeq[pos]);
-			__m128i cmpres = _mm_and_si128(forwardMaskSIMD, _mm_cmpestrm(forwardSIMD, InitExtend, chromosSIMD, InitExtend, cmpestrmflag));
-			int nMismatches = _mm_popcnt_u32(_mm_extract_epi32(cmpres, 0)); 
-			if (nMismatches < PD.size()) { 
-				PD[nMismatches].push_back(pos + InitExtend - 1); // else
-			}
-		}
-	}
-
-        CheckLeft_Close(Temp_One_Read, CurrentChrSeq, CurrentReadSeq, PD, BP_Start, BP_End, InitExtend, UP); // LengthStr
+        int InitExtend = DoInitialSeedAndExtendForward(CurrentChr, Start, End, BP_Start, CurrentReadSeq, PD.size() - 1, &PD[0]);
+        CheckLeft_Close(Temp_One_Read, CurrentChrSeq, CurrentReadSeq, PD, BP_Start, BP_End, InitExtend, UP);
     }
     else if (Temp_One_Read.MatchedD == Minus) {
         const std::string& CurrentReadSeq = Temp_One_Read.getUnmatchedSeq();
         int End = Temp_One_Read.MatchedRelPos + g_SpacerBeforeAfter;
         int Start = End - 3 * Temp_One_Read.InsertSize;
-        const int seqLength = CurrentReadSeq.size();
-        char RightChar = CurrentReadSeq[Temp_One_Read.getReadLengthMinus()];
 
-	__m128i reverseSIMD = _mm_setzero_si128();
-        for (int i = 0; i < InitExtend; i++) {
-            reverseSIMD = _mm_slli_si128(reverseSIMD, 1);
-            reverseSIMD = _mm_insert_epi8(reverseSIMD, CurrentReadSeq[seqLength - 1 - i], 0);
-        }
- 
-        __m128i dontcarSIMD = _mm_set1_epi8('N');
-	__m128i reverseMaskSIMD = _mm_cmpestrm(reverseSIMD, InitExtend, dontcarSIMD, InitExtend, cmpestrmflag);
-	if (RightChar != 'N') {
-		const unsigned int* pos_s, * pos_e;
-		CurrentChr.getPositions(Convert2Num[RightChar], Start, End, &pos_s, &pos_e);
-		for (const unsigned int * it = pos_s; it != pos_e; it++) {
-			unsigned int pos = *it;
-			__m128i chromosSIMD = _mm_lddqu_si128((__m128i* const) &CurrentChrSeq[pos + 1 - InitExtend]);
-			__m128i cmpres = _mm_and_si128(reverseMaskSIMD, _mm_cmpestrm(reverseSIMD, InitExtend, chromosSIMD, InitExtend, cmpestrmflag));
-			int nMismatches = _mm_popcnt_u32(_mm_extract_epi32(cmpres, 0)); 
-			if (nMismatches < PD.size()) {
-				PD[nMismatches].push_back(pos - InitExtend + 1);
-			}
-		}
-	}
+        int InitExtend = DoInitialSeedAndExtendReverse(CurrentChr, Start, End, BP_Start, CurrentReadSeq, PD.size() - 1, &PD[0]);
         CheckRight_Close(Temp_One_Read, CurrentChrSeq, CurrentReadSeq, PD, BP_Start, BP_End, InitExtend, UP);
     }
     if (!UP.empty()) {
-	    Temp_One_Read.Used = false;
-	    Temp_One_Read.UP_Close.swap(UP);
-	    UP.clear();
+        Temp_One_Read.Used = false;
+        Temp_One_Read.UP_Close.swap(UP);
     }
     return;
 }
 
 void GetCloseEndInnerPerfectMatch(const Chromosome& CurrentChr, SPLIT_READ & Temp_One_Read)
 {
-        const std::string& CurrentChrSeq = CurrentChr.getSeq();
-	std::string CurrentReadSeq;
-	std::vector<PosVector> PD;
-	PosVector emptyPosVector;
-	PD.assign( Temp_One_Read.getTOTAL_SNP_ERROR_CHECKED(), emptyPosVector);
-	g_maxInsertSize = std::max((int)Temp_One_Read.InsertSize, g_maxInsertSize);
-	for (int CheckIndex = 0; CheckIndex < Temp_One_Read.getTOTAL_SNP_ERROR_CHECKED(); CheckIndex++) {
-		PD[CheckIndex].reserve(3 * Temp_One_Read.InsertSize);
-	}
-	SortedUniquePoints UP;
-	int Start, End;
-	short BP_Start; // = MinClose;
-	short BP_End; // = ReadLength - MinClose;
+    const std::string& CurrentChrSeq = CurrentChr.getSeq();
+    std::string CurrentReadSeq;
+    std::vector<PosVector> PD;
+    PosVector emptyPosVector;
+    PD.assign( Temp_One_Read.getTOTAL_SNP_ERROR_CHECKED(), emptyPosVector);
+    g_maxInsertSize = std::max((int)Temp_One_Read.InsertSize, g_maxInsertSize);
+    for (int CheckIndex = 0; CheckIndex < Temp_One_Read.getTOTAL_SNP_ERROR_CHECKED(); CheckIndex++) {
+        PD[CheckIndex].reserve(3 * Temp_One_Read.InsertSize);
+    }
+    SortedUniquePoints UP;
 
-	Temp_One_Read.UP_Close.clear();
-	BP_Start = g_MinClose;
-	BP_End = Temp_One_Read.getReadLengthMinus();
-	const int InitExtend = std::min((int)8, (int)BP_Start);
-	const uint32_t cmpestrmflag       = _SIDD_UBYTE_OPS | _SIDD_CMP_EQUAL_EACH | _SIDD_NEGATIVE_POLARITY;
-	if (Temp_One_Read.MatchedD == Plus) {
-		CurrentReadSeq = Temp_One_Read.getUnmatchedSeqRev();
-		Start = Temp_One_Read.MatchedRelPos + g_SpacerBeforeAfter;
-		End = Start + 3 * Temp_One_Read.InsertSize;
-		char LeftChar = CurrentReadSeq[0];
+    Temp_One_Read.UP_Close.clear();
+    int BP_Start = g_MinClose;
+    int BP_End = Temp_One_Read.getReadLengthMinus();
 
-		__m128i forwardSIMD = _mm_lddqu_si128((__m128i* const) &CurrentReadSeq[0]);
-		__m128i dontcarSIMD = _mm_set1_epi8('N');
-		__m128i forwardMaskSIMD = _mm_cmpestrm(forwardSIMD, InitExtend, dontcarSIMD, InitExtend, cmpestrmflag);
-		if (LeftChar != 'N') {
-			const unsigned int* pos_s, * pos_e;
-			CurrentChr.getPositions(Convert2Num[LeftChar], Start, End, &pos_s, &pos_e);
-			for (const unsigned int * it = pos_s; it != pos_e; it++) {
-				unsigned int pos = *it;
-				__m128i chromosSIMD = _mm_lddqu_si128((__m128i* const) &CurrentChrSeq[pos]);
-				__m128i cmpres = _mm_and_si128(forwardMaskSIMD, _mm_cmpestrm(forwardSIMD, InitExtend, chromosSIMD, InitExtend, cmpestrmflag));
-				int nMismatches = _mm_popcnt_u32(_mm_extract_epi32(cmpres, 0)); 
-				if (nMismatches < PD.size()) { 
-					PD[nMismatches].push_back(pos + InitExtend - 1); // else
-				}
-			}
+    if (Temp_One_Read.MatchedD == Plus) {
+        const std::string& CurrentReadSeq = Temp_One_Read.getUnmatchedSeqRev();
+        int Start = Temp_One_Read.MatchedRelPos + g_SpacerBeforeAfter;
+        int End = Start + 3 * Temp_One_Read.InsertSize;
 
-		}
-		if (PD[0].size()) {
-			CheckLeft_Close_Perfect(Temp_One_Read, CurrentChrSeq, CurrentReadSeq, PD, BP_Start, BP_End, InitExtend, UP); // LengthStr
-		}
-	}
-	else if (Temp_One_Read.MatchedD == Minus) {
+        int InitExtend = DoInitialSeedAndExtendForward(CurrentChr, Start, End, BP_Start, CurrentReadSeq, PD.size() - 1, &PD[0]);
+        if (PD[0].size()) {
+            CheckLeft_Close(Temp_One_Read, CurrentChrSeq, CurrentReadSeq, PD, BP_Start, BP_End, InitExtend, UP);
+        }
+    }
+    else if (Temp_One_Read.MatchedD == Minus) {
+        const std::string& CurrentReadSeq = Temp_One_Read.getUnmatchedSeq();
+        int End = Temp_One_Read.MatchedRelPos + g_SpacerBeforeAfter;
+        int Start = End - 3 * Temp_One_Read.InsertSize;
 
-		CurrentReadSeq = Temp_One_Read.getUnmatchedSeq();
-		End = Temp_One_Read.MatchedRelPos + g_SpacerBeforeAfter;
-		Start = End - 3 * Temp_One_Read.InsertSize;
-		char RightChar = CurrentReadSeq[Temp_One_Read.getReadLengthMinus()];
-        
-		const int seqLength = CurrentReadSeq.size();
-		__m128i reverseSIMD = _mm_setzero_si128();
-		for (int i = 0; i < InitExtend; i++) {
-			reverseSIMD = _mm_slli_si128(reverseSIMD, 1);
-			reverseSIMD = _mm_insert_epi8(reverseSIMD, CurrentReadSeq[seqLength - 1 - i], 0);
-		}
- 
-;
-		__m128i dontcarSIMD = _mm_set1_epi8('N');
-		__m128i reverseMaskSIMD = _mm_cmpestrm(reverseSIMD, InitExtend, dontcarSIMD, InitExtend, cmpestrmflag);
-		if (RightChar != 'N') {
-			const unsigned int* pos_s, * pos_e;
-			CurrentChr.getPositions(Convert2Num[RightChar], Start, End, &pos_s, &pos_e);
-			for (const unsigned int * it = pos_s; it != pos_e; it++) {
-				unsigned int pos = *it;
-				__m128i chromosSIMD = _mm_lddqu_si128((__m128i* const) &CurrentChrSeq[pos + 1 - InitExtend]);
-				__m128i cmpres = _mm_and_si128(reverseMaskSIMD, _mm_cmpestrm(reverseSIMD, InitExtend, chromosSIMD, InitExtend, cmpestrmflag));
-				int nMismatches = _mm_popcnt_u32(_mm_extract_epi32(cmpres, 0)); 
-				if (nMismatches < PD.size()) {
-					PD[nMismatches].push_back(pos - InitExtend + 1);
-				}
-			}
-		}
-		if (PD[0].size()) {
-			CheckRight_Close_Perfect(Temp_One_Read, CurrentChrSeq, CurrentReadSeq, PD, BP_Start, BP_End, InitExtend, UP);
-		}
-	}
-	if (UP.empty()) {}
-	else {
-		Temp_One_Read.Used = false;
-		Temp_One_Read.UP_Close.swap(UP);
-		UP.clear();
-	}
-	return;
+        int InitExtend = DoInitialSeedAndExtendReverse(CurrentChr, Start, End, BP_Start, CurrentReadSeq, PD.size() - 1, &PD[0]);
+        if (PD[0].size()) {
+            CheckRight_Close(Temp_One_Read, CurrentChrSeq, CurrentReadSeq, PD, BP_Start, BP_End, InitExtend, UP);
+        }
+    }
+    if (UP.empty()) {}
+    else {
+        Temp_One_Read.Used = false;
+        Temp_One_Read.UP_Close.swap(UP);
+    }
+    return;
 }
 
-void GetCloseEnd(const Chromosome& CurrentChr, SPLIT_READ & Temp_One_Read)
-{
-        Temp_One_Read.FragId = g_genome.getChrID(Temp_One_Read.FragName);
-	GetCloseEndInner(CurrentChr, Temp_One_Read);
-	if (Temp_One_Read.UP_Close.size()==0) { // no good close ends found
-		Temp_One_Read.setUnmatchedSeq(Temp_One_Read.getUnmatchedSeqRev() );
-		GetCloseEndInner(CurrentChr, Temp_One_Read);
-	}
-	if (Temp_One_Read.UP_Close.size()==0) {
-		GetCloseEndInnerPerfectMatch(CurrentChr, Temp_One_Read);
-	}
+void GetCloseEnd(const Chromosome& CurrentChr, SPLIT_READ & Temp_One_Read) {
+    Temp_One_Read.FragId = g_genome.getChrID(Temp_One_Read.FragName);
+    GetCloseEndInner(CurrentChr, Temp_One_Read);
+    if (Temp_One_Read.UP_Close.size()==0) { // no good close ends found
+        Temp_One_Read.setUnmatchedSeq(Temp_One_Read.getUnmatchedSeqRev() );
+        GetCloseEndInner(CurrentChr, Temp_One_Read);
+    }
 
-	if (Temp_One_Read.UP_Close.size()==0) { // no good close ends found
-		Temp_One_Read.setUnmatchedSeq(Temp_One_Read.getUnmatchedSeqRev());
-		GetCloseEndInnerPerfectMatch(CurrentChr, Temp_One_Read);
-	}
+    if (Temp_One_Read.UP_Close.size()==0) { // no good close ends found
+        Temp_One_Read.setUnmatchedSeq(Temp_One_Read.getUnmatchedSeqRev());
+    }
 }
 
 
@@ -2877,75 +2757,75 @@ void CheckBothPerfect(SPLIT_READ & read,
 }
 
 void CheckBoth(SPLIT_READ & read,
-		const std::string & readSeq, const std::string& readSeqRev,
-		std::vector <FarEndSearchPerRegion*> & WholeGenomeSearchResult_input,
-		const short minimumLengthToReportMatch,
-		const short BP_End,
-		short CurrentLength,
-		SortedUniquePoints &UP)
+        const std::string & readSeq, const std::string& readSeqRev,
+        std::vector <FarEndSearchPerRegion*> & WholeGenomeSearchResult_input,
+        const short minimumLengthToReportMatch,
+        const short BP_End,
+        short CurrentLength,
+        SortedUniquePoints &UP)
 {
-        if (userSettings->ADDITIONAL_MISMATCH == 0) {
-           return;
-        }
+    if (userSettings->ADDITIONAL_MISMATCH == 0) {
+        return;
+    }
 
-        int minMismatches = 0;
-        while (getNumPositionsForMismatches(WholeGenomeSearchResult_input, minMismatches) == 0 && minMismatches <= read.getMAX_SNP_ERROR()) {
+    int minMismatches = 0;
+    while (getNumPositionsForMismatches(WholeGenomeSearchResult_input, minMismatches) == 0 && minMismatches <= read.getMAX_SNP_ERROR()) {
+        minMismatches++;
+    }
+
+    int matchRunLength = BP_End; //CurrentLength - minMismatches;
+    PosVector TmpPositions[3];
+    for ( ; CurrentLength < minimumLengthToReportMatch && WholeGenomeSearchResult_input.size() > 0 && minMismatches <= read.getMAX_SNP_ERROR(); CurrentLength++) {
+        ExtendWholeGenomeInPlace(readSeq[CurrentLength], minMismatches, read.getTOTAL_SNP_ERROR_CHECKED_Minus(), read.getTOTAL_SNP_ERROR_CHECKED(), WholeGenomeSearchResult_input, TmpPositions); 
+
+        if (getNumPositionsForMismatches(WholeGenomeSearchResult_input, minMismatches) == 0) {
             minMismatches++;
+            matchRunLength = 1;
+        } else {
+            matchRunLength++;
+        }
+    }
+
+    for ( ; CurrentLength <= BP_End && WholeGenomeSearchResult_input.size() > 0 && minMismatches <= read.getMAX_SNP_ERROR(); CurrentLength++) {
+        if (minMismatches > g_maxMismatch[CurrentLength]) {
+            return;
         }
 
-        int matchRunLength = BP_End; //CurrentLength - minMismatches;
-        PosVector TmpPositions[3];
-        for ( ; CurrentLength < minimumLengthToReportMatch && WholeGenomeSearchResult_input.size() > 0 && minMismatches <= read.getMAX_SNP_ERROR(); CurrentLength++) {
-		ExtendWholeGenomeInPlace(readSeq[CurrentLength], minMismatches, read.getTOTAL_SNP_ERROR_CHECKED_Minus(), read.getTOTAL_SNP_ERROR_CHECKED(), WholeGenomeSearchResult_input, TmpPositions); 
+        if (minMismatches <= CurrentLength - minimumLengthToReportMatch /*&& matchRunLength >= userSettings->Min_Perfect_Match_Around_BP*/
+                && getNumPositionsForMismatches(WholeGenomeSearchResult_input, minMismatches) == 1) {
+            if (getNumCompetingPositions(WholeGenomeSearchResult_input, minMismatches + 1, minMismatches + userSettings->ADDITIONAL_MISMATCH) == 0) {
+                AddUniquePoint(read, readSeq, readSeqRev, GetHitRegion(WholeGenomeSearchResult_input, minMismatches), CurrentLength, minMismatches, UP);
+            } 
+        } 
 
+        int ExtendsLeft = BP_End - CurrentLength;
+        int ExtendsNeeded = (getNumPositionsForMismatches(WholeGenomeSearchResult_input, minMismatches) > 1)? (1 + userSettings->ADDITIONAL_MISMATCH): 1;
+        if (ExtendsNeeded <= ExtendsLeft) {
+            if (ExtendsNeeded == 1 || minMismatches+1 > g_maxMismatch[CurrentLength+1]) 
+                ExtendWholeGenomeInPlace(readSeq[CurrentLength], minMismatches, read.getTOTAL_SNP_ERROR_CHECKED_Minus(), read.getTOTAL_SNP_ERROR_CHECKED(), WholeGenomeSearchResult_input, TmpPositions); 
+            else {
+                ExtendWholeGenomeInPlace2(readSeq[CurrentLength], readSeq[CurrentLength+1], minMismatches, read.getTOTAL_SNP_ERROR_CHECKED_Minus(), read.getTOTAL_SNP_ERROR_CHECKED(), WholeGenomeSearchResult_input, TmpPositions); 
                 if (getNumPositionsForMismatches(WholeGenomeSearchResult_input, minMismatches) == 0) {
-                  minMismatches++;
-                  matchRunLength = 1;
+                    minMismatches++;
+                    matchRunLength = 1;
                 } else {
-                  matchRunLength++;
+                    matchRunLength++;
                 }
+                CurrentLength++;
+                if (minMismatches > g_maxMismatch[CurrentLength]) {
+                    return;
+                }
+            }
+        } else { // Extension wouldn't give a unique match point, so exit the search
+            break;
         }
-
-	for ( ; CurrentLength <= BP_End && WholeGenomeSearchResult_input.size() > 0 && minMismatches <= read.getMAX_SNP_ERROR(); CurrentLength++) {
-		if (minMismatches > g_maxMismatch[CurrentLength]) {
-			return;
-                }
-
-                if (minMismatches <= CurrentLength - minimumLengthToReportMatch /*&& matchRunLength >= userSettings->Min_Perfect_Match_Around_BP*/
-                    && getNumPositionsForMismatches(WholeGenomeSearchResult_input, minMismatches) == 1) {
-			if (getNumCompetingPositions(WholeGenomeSearchResult_input, minMismatches + 1, minMismatches + userSettings->ADDITIONAL_MISMATCH) == 0) {
-                                AddUniquePoint(read, readSeq, readSeqRev, GetHitRegion(WholeGenomeSearchResult_input, minMismatches), CurrentLength, minMismatches, UP);
-			} 
-		} 
-
-                int ExtendsLeft = BP_End - CurrentLength;
-                int ExtendsNeeded = (getNumPositionsForMismatches(WholeGenomeSearchResult_input, minMismatches) > 1)? (1 + userSettings->ADDITIONAL_MISMATCH): 1;
-		if (ExtendsNeeded <= ExtendsLeft) {
-                        if (ExtendsNeeded == 1 || minMismatches+1 > g_maxMismatch[CurrentLength+1]) 
-				ExtendWholeGenomeInPlace(readSeq[CurrentLength], minMismatches, read.getTOTAL_SNP_ERROR_CHECKED_Minus(), read.getTOTAL_SNP_ERROR_CHECKED(), WholeGenomeSearchResult_input, TmpPositions); 
-			else {
-				ExtendWholeGenomeInPlace2(readSeq[CurrentLength], readSeq[CurrentLength+1], minMismatches, read.getTOTAL_SNP_ERROR_CHECKED_Minus(), read.getTOTAL_SNP_ERROR_CHECKED(), WholeGenomeSearchResult_input, TmpPositions); 
-				if (getNumPositionsForMismatches(WholeGenomeSearchResult_input, minMismatches) == 0) {
-					minMismatches++;
-					matchRunLength = 1;
-				} else {
-					matchRunLength++;
-				}
-                                CurrentLength++;
-				if (minMismatches > g_maxMismatch[CurrentLength]) {
-					return;
-				}
-			}
-		} else { // Extension wouldn't give a unique match point, so exit the search
-                  break;
-                }
-                if (getNumPositionsForMismatches(WholeGenomeSearchResult_input, minMismatches) == 0) {
-                  minMismatches++;
-                  matchRunLength = 1;
-                } else {
-                  matchRunLength++;
-                }
-	}
+        if (getNumPositionsForMismatches(WholeGenomeSearchResult_input, minMismatches) == 0) {
+            minMismatches++;
+            matchRunLength = 1;
+        } else {
+            matchRunLength++;
+        }
+    }
 }
 
 void CleanUniquePoints(SortedUniquePoints &Input_UP)
