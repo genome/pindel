@@ -91,7 +91,7 @@ void SearchFarEndAtPos(SPLIT_READ& Temp_One_Read, const std::vector <SearchWindo
 		const std::string & chromosome = Chr->getSeq();
 
 		int Start = it_r->getStart();
-		int End = std::min((unsigned) it_r->getEnd(), (unsigned) chromosome.size());
+		int End = it_r->getEnd();
 		if (Start < 0) Start = End -1;
 
                 const unsigned int* Plus_s, * Plus_e;
@@ -140,7 +140,6 @@ void SearchFarEndAtPos(SPLIT_READ& Temp_One_Read, const std::vector <SearchWindo
                 }
 		WholeGenomeSearchResult.push_back(CurrentRegion);
 	}
-
 	if (NumberOfHits>0) {
 		short BP_Start = 10; // perhaps use global constant like "g_MinimumLengthToReportMatch"
 		short BP_End = Temp_One_Read.getReadLengthMinus(); // matched far end should be between BP_Start and BP_End bases long (including BP_Start and End)
@@ -151,9 +150,9 @@ void SearchFarEndAtPos(SPLIT_READ& Temp_One_Read, const std::vector <SearchWindo
 			Temp_One_Read.UP_Far.swap(UP);
 		}
 	}
-        for (std::vector<FarEndSearchPerRegion*>::iterator it = WholeGenomeSearchResult.begin(); it != WholeGenomeSearchResult.end(); it++) {
-		delete *it;
-        }
+    for (std::vector<FarEndSearchPerRegion*>::iterator it = WholeGenomeSearchResult.begin(); it != WholeGenomeSearchResult.end(); it++) {
+        delete *it;
+    }
 }
 
 void SearchFarEndAtPosPerfect(SPLIT_READ& Temp_One_Read, const std::vector <SearchWindow> & Regions )
@@ -205,9 +204,9 @@ void SearchFarEndAtPosPerfect(SPLIT_READ& Temp_One_Read, const std::vector <Sear
 			Temp_One_Read.UP_Far.swap(UP);
 		}
 	}
-        for (unsigned RegionIndex = 0; RegionIndex < WholeGenomeSearchResult.size(); RegionIndex++) {
-		delete WholeGenomeSearchResult[ RegionIndex ];
-	}
+    for (unsigned RegionIndex = 0; RegionIndex < WholeGenomeSearchResult.size(); RegionIndex++) {
+    	delete WholeGenomeSearchResult[ RegionIndex ];
+    }
 }
 
 

@@ -79,7 +79,7 @@
 /* EW: update 0.2.4s: bugfix for -p option of Pindel0.2.4r */
 /* EW: update 0.2.4t, updates now shown in RELEASE document in trunk directory */
 
-const std::string Pindel_Version_str = "Pindel version 0.2.5a1, July 23 2013.";
+const std::string Pindel_Version_str = "Pindel version 0.2.5a3, Oct 24 2013.";
 
 const Chromosome g_dummyChromosome("","");
 Genome g_genome;
@@ -125,6 +125,7 @@ char Cap2LowArray[256];
 bool FirstChr = true;
 unsigned int DSizeArray[15];
 int g_maxInsertSize=0;
+unsigned g_NumberOfGapAlignedReads = 0;
 std::string CurrentChrMask;
 std::vector<Parameter *> parameters;
 
@@ -1143,12 +1144,6 @@ void SearchFarEnd( const std::string& chromosome, SPLIT_READ& read, const Chromo
 			//read.Investigated = true;
 			return;
 		}
-		/*else SearchFarEndAtPosPerfect( chromosome, read, searchCluster);
-		if (read.goodFarEndFound()) {
-			//read.Investigated = true;
-			//std::cout << "SearchFarEnd	found ###################3" << std::endl;
-			return;
-		}*/
 		searchSpan *= 4;
 	}
 	//std::cout << std::endl;
@@ -1201,13 +1196,16 @@ void SearchFarEnds( const std::string & chromosomeSeq, std::vector<SPLIT_READ>& 
 	{
 		#pragma omp for schedule(dynamic, 1000)
 		for (int readIndex= 0; readIndex < (int)reads.size(); readIndex++ ) {
+			//std::cout << "readIndex: " << readIndex << std::endl;
 			//if (readIndex % 1000 == 0) 
 			//	std::cout << "readIndex: " << readIndex << std::endl;
 			//	std::cout << "readIndex: " << readIndex << "\t" << reads[readIndex].Name << "\t" 
 			//		<< reads[readIndex].FragName << "\t" <<  reads[readIndex].MatchedD << "\t" 
 			//		<< reads[readIndex].MatchedRelPos << "\t" << reads[readIndex].MS << "\t" 
 			//		<< reads[readIndex].UnmatchedSeq << std::endl;
-			SearchFarEnd( chromosomeSeq, reads[readIndex], currentChromosome );
+            		if (reads[readIndex].MapperSplit == false)
+                		SearchFarEnd( chromosomeSeq, reads[readIndex], currentChromosome );
+			//else std::cout << "skip far end search" << std::endl;
 			//std::cout << reads[readIndex] << std::endl;
 		}
 	}
@@ -1899,7 +1897,8 @@ int main(int argc, char *argv[])
          		Time_Mine_E = time(NULL);
          		if (currentState.Reads_SR.size() ) {
             			*logStream << "There are " << currentState.Reads_SR.size() << " split-reads for this chromosome region.\n" << std::endl; // what region?
-
+				std::cout << "There are " << g_NumberOfGapAlignedReads << " split-reads mapped by aligner." << std::endl;
+				g_NumberOfGapAlignedReads = 0;
             			if (userSettings->reportCloseMappedReads() ) {
 					*logStream << "report closeMappedReads" << std::endl;
 			 		ReportCloseMappedReads( currentState.Reads_SR );       
@@ -1917,11 +1916,8 @@ int main(int argc, char *argv[])
 					*logStream << "update FarFragName done" << std::endl;
 /*
                 			for (unsigned index = 0; index < currentState.Reads_SR.size(); index++) {
-				
-                			    if (currentState.Reads_SR[index].Name == "@HWI-ST568:267:C1BD9ACXX:4:2101:18037:80445/1" || currentState.Reads_SR[index].Name == "@HWI-ST568:267:C1BD9ACXX:4:2101:18037:80445/2") {
-                			        std::cout << currentState.Reads_SR[index].Name << std::endl;
-                			        std::cout << currentState.Reads_SR[index];
-                			    }
+						//if (currentState.Reads_SR[index].Name.substr(1, currentState.Reads_SR[index].Name.length() - 3) == "1_112673_113350_0_1_0_0_0:0:0_0:0:0_c9d04")
+                			        	std::cout << currentState.Reads_SR[index];
                 			}
 */
                     			//std::cout << "before currentState.InterChromosome_SR size " << currentState.InterChromosome_SR.size() << std::endl;

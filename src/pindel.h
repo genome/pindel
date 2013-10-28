@@ -89,6 +89,7 @@ extern const int g_MAX_RANGE_INDEX; // 5 or 6 or 7 or maximum 8      //# // user
 extern std::vector<unsigned int> g_maxMismatch;
 extern unsigned g_RegionStart;
 extern unsigned g_RegionEnd;
+extern unsigned g_NumberOfGapAlignedReads;
 
 extern UserDefinedSettings* userSettings;
 
@@ -275,7 +276,9 @@ struct SPLIT_READ {
         CloseEndMismatch = 0;
         FarEndMismatch = 0;
         read_group = "";
+        MapperSplit = false;
 	}
+    bool MapperSplit;
 	std::string FragName;
    	std::string FarFragName;
         int FragId, FarFragId;

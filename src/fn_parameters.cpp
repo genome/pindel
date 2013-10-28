@@ -229,7 +229,7 @@ void defineParameters(std::vector<Parameter *>& parameters)
             "--balance_cutoff",
             "the number of bases of a SV above which a more stringent filter is applied which demands "
             "that both sides of the SV are mapped with sufficiently long strings of bases "
-            "(default 100)", false, 100));
+            "(default 0)", false, 0));
     parameters.push_back(
         new UIntParameter(
             &userSettings->minimalAnchorQuality,
@@ -237,7 +237,7 @@ void defineParameters(std::vector<Parameter *>& parameters)
             "--anchor_quality",
             "the minimal mapping quality of the reads Pindel uses as anchor "
             "If you only need high confident calls, set to 30 or higher"
-            "(default 20)", false, 20));
+            "(default 0)", false, 0));
     parameters.push_back(
         new UIntParameter(
             &userSettings->NumRead2ReportCutOff,

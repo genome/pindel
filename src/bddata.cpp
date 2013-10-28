@@ -301,9 +301,9 @@ void ProcessSameChromosomeSameStrandFlipped(RP_READ & Current_first, const RP_RE
 
 void UpdateFirstBasedOnSecondIntraChromosome(RP_READ & Current_first, const RP_READ & Current_second)
 {
-    //if (Current_first.DA == Current_second.DA && Current_first.DB == Current_second.DB) { // coordinate already sorted so that do not exchange
+    if (Current_first.DA == Current_second.DA && Current_first.DB == Current_second.DB) { // coordinate already sorted so that do not exchange
         ProcessSameChromosomeSameStrand(Current_first, Current_second);
-    //}
+    }
 }
 
 void UpdateFirstBasedOnSecondInterChromosome(RP_READ & Current_first, const RP_READ & Current_second)
@@ -409,7 +409,6 @@ void ModifyRP(std::vector <RP_READ> & Reads_RP) {
 				//unsigned secondMax = std::max(Current_second.PosA1, Current_second.PosB1);
                                 //if (secondMin > firstMax) { break; }	
 				if (RecipicalOverlap(Current_first, Current_second)) {
-					//ProcessSameChromosomeSameStrand(Current_first, Current_second);				
 					UpdateFirstBasedOnSecondIntraChromosome(Current_first, Current_second);
 				}
 			}

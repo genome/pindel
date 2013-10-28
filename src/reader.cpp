@@ -545,12 +545,12 @@ bool isGoodAnchor( const flags_hit *read, const bam1_t * bamOfRead ) //bam1_qnam
 {
 //return true;
 	const bam1_core_t *bamCore = &bamOfRead->core;
-		
+	//std::cout << "1";
 	if (bamCore->flag & BAM_FSECONDARY || bamCore->flag & BAM_FQCFAIL || bamCore->flag & BAM_FDUP) return false;
-
+	//std::cout << "2";
 	//UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
 	if (userSettings->minimalAnchorQuality == 0) return true;
-
+	//std::cout << "3";
 		//std::string NR = bam1_qname(bamOfRead);
 		//std::string seq;
 		//GetReadSeq(bamOfRead, seq);
@@ -581,8 +581,9 @@ bool isGoodAnchor( const flags_hit *read, const bam1_t * bamOfRead ) //bam1_qnam
 	//unsigned int mappingQuality = bamCore->qual;
 
 	if (!read->mapped) return false;
-
+	//std::cout << "4";
 	if (bamCore->qual < userSettings->minimalAnchorQuality) return false;
+	//std::cout << "5";
 	return true;
 /*
 	if (read->unique || read->sw) return false;
@@ -651,7 +652,7 @@ if (bamCore->flag & BAM_FSECONDARY || bamCore->flag & BAM_FQCFAIL || bamCore->fl
 		//GetReadSeq(bamOfRead, seq);
 		//if (NR == "HWI-ST568:267:C1BD9ACXX:4:2101:18037:80445")
 		//	std::cout << "isWeirdRead " << nm_value << " " << userSettings->NM << " " << seq << std::endl;
-		if (nm_value >= userSettings->NM) return true;
+		if (nm_value) return true;
 	}
 	
 	
@@ -677,10 +678,85 @@ if (bamCore->flag & BAM_FSECONDARY || bamCore->flag & BAM_FQCFAIL || bamCore->fl
 	if (bamCore->flag & BAM_CSOFT_CLIP) return true;
 	if (bamCore->flag & BAM_CHARD_CLIP) return true;
 	if (bamCore->flag & BAM_CPAD) return true;
-
+//http://samtools.sourceforge.net/samtools/bam/PDefines/PDefines.html
 	return false;
 }
 
+bool WhetherSimpleCigar(const bam1_t * unmapped_read, const bam1_core_t * c, const uint32_t * cigar, SPLIT_READ & SR_Read, int & indelsize) {
+	//std::cout << "entering WhetherSimpleCigar" << std::endl;
+	const uint8_t *nm = bam_aux_get(unmapped_read, "NM");
+	if (nm) {
+		int32_t nm_value = bam_aux2i(nm);
+		if (nm_value) return false;
+	}
+        uint32_t k;
+        unsigned CountNonM = 0;
+        unsigned CountIndel = 0;
+        unsigned CountM = 0;
+//	if (SR_Read.Name == "@1_13911_14618_0_1_0_0_1:0:0_1:0:0_2e3d0/1" || SR_Read.Name == "@1_13911_14618_0_1_0_0_1:0:0_1:0:0_2e3d0/2")
+//		std::cout << "Standard: \tMatch " << BAM_CMATCH << "\tINS " << BAM_CINS << "\tDEL " << BAM_CDEL << std::endl;
+        
+        for (k = 0; k < c->n_cigar; ++k) {
+		
+            int op = cigar[k] & BAM_CIGAR_MASK;
+//		if (SR_Read.Name == "@1_13911_14618_0_1_0_0_1:0:0_1:0:0_2e3d0/1" || SR_Read.Name == "@1_13911_14618_0_1_0_0_1:0:0_1:0:0_2e3d0/2")
+//			std::cout << k << "\t" << op << "\t" << (cigar[k] >> BAM_CIGAR_SHIFT) << std::endl;
+            if (op == BAM_CMATCH) CountM++;
+            else CountNonM++;
+            if (op == BAM_CINS || op == BAM_CDEL) CountIndel++;
+        }
+//	if (SR_Read.Name == "@1_13911_14618_0_1_0_0_1:0:0_1:0:0_2e3d0/1" || SR_Read.Name == "@1_13911_14618_0_1_0_0_1:0:0_1:0:0_2e3d0/2")
+//		std::cout << "##################\t" << CountM << " " << CountNonM << " " << CountIndel << std::endl;
+        if (CountM == 2 && CountNonM == 1 && CountIndel == 1) {
+//		std::cout << "good splitmapper" << std::endl;
+		int op = cigar[1] & BAM_CIGAR_MASK;
+		if (op == BAM_CDEL)
+			indelsize = (cigar[1] >> BAM_CIGAR_SHIFT) * (-1);
+		else if (op == BAM_CINS)
+			indelsize = (cigar[1] >> BAM_CIGAR_SHIFT);
+		return true; // this read just contains one indel mapped by the aligner
+	}
+        else return false;
+}
+
+void AddUniquePoint(const bam1_t * unmapped_read, const bam1_core_t * c, const uint32_t * cigar, SPLIT_READ & SR_Read, const int & IndelSize) {
+    //unsigned LeftLength, RightLength, MiddleLength;
+    std::string IndelType;
+    if (c->n_cigar != 3) return;
+    int32_t LeftLength = cigar[0] >> BAM_CIGAR_SHIFT;
+    //int32_t VariantLength = cigar[1] >> BAM_CIGAR_SHIFT;
+    int32_t RightLength = cigar[2] >> BAM_CIGAR_SHIFT;
+    int op = cigar[1] & BAM_CIGAR_MASK;
+    if (op == BAM_CINS) IndelType = "I";
+    else if (op == BAM_CDEL) IndelType = "D";
+    else return;
+	if (c -> qual < (short)userSettings->minimalAnchorQuality) return;
+    if (SR_Read.MatchedD == '+') {
+        UniquePoint TempOneClose(g_genome.getChr(SR_Read.FragName), LeftLength, c->pos + LeftLength + g_SpacerBeforeAfter - 1, FORWARD, ANTISENSE, 0);
+        UniquePoint TempOneFar(g_genome.getChr(SR_Read.FragName), RightLength, c->pos + SR_Read.getReadLength() - RightLength + g_SpacerBeforeAfter - IndelSize, BACKWARD, ANTISENSE, 0);
+        SR_Read.UP_Close.push_back(TempOneClose);
+        SR_Read.UP_Far.push_back(TempOneFar);
+    }
+    else { // -
+        UniquePoint TempOneFar(g_genome.getChr(SR_Read.FragName), LeftLength, c->pos + LeftLength + g_SpacerBeforeAfter - 1, FORWARD, SENSE, 0);
+        UniquePoint TempOneClose(g_genome.getChr(SR_Read.FragName), RightLength, c->pos + SR_Read.getReadLength() - RightLength + g_SpacerBeforeAfter - IndelSize, BACKWARD, SENSE, 0);
+        SR_Read.UP_Close.push_back(TempOneClose);
+        SR_Read.UP_Far.push_back(TempOneFar);
+    }
+
+	//if (SR_Read.Name == "@GAIIX-599_0004:5:118:12447:21053/2") {
+	//	std::cout << "IndelSize " << IndelSize << std::endl;
+	//	std::cout << SR_Read;
+	//}
+
+
+    SR_Read.MapperSplit = true;
+	g_NumberOfGapAlignedReads++;
+	//std::cout << "mapper split" << std::endl;
+    //UniquePoint
+    //SortedUniquePoints UP_Close
+    //SortedUniquePoints UP_Far;
+}
 
 void build_record_SR (const bam1_t * mapped_read, const bam1_t * unmapped_read, void *data)
 {   // userSettings->minimalAnchorQuality
@@ -749,12 +825,13 @@ void build_record_SR (const bam1_t * mapped_read, const bam1_t * unmapped_read, 
         Temp_One_Read.setUnmatchedSeq( c_sequence );
     }
     Temp_One_Read.MatchedRelPos = mapped_core->pos;
+    uint32_t *cigar_pointer_mapped = bam1_cigar (mapped_read);
+    uint32_t *cigar_pointer_unmapped = bam1_cigar (unmapped_read);
     if (mapped_core->flag & BAM_FREVERSE) {
         Temp_One_Read.MatchedD = '-';
-        uint32_t *cigar_pointer = bam1_cigar (mapped_read);
-        //reusing length to be something else now. eat it.
-        length = bam_cigar2len (mapped_core, cigar_pointer);
-        Temp_One_Read.MatchedRelPos += length + InsertSize;
+        
+        int Rlength = bam_cigar2len (mapped_core, cigar_pointer_mapped);
+        Temp_One_Read.MatchedRelPos += Rlength + InsertSize;
     }
     else {
         Temp_One_Read.MatchedD = '+';
@@ -764,7 +841,7 @@ void build_record_SR (const bam1_t * mapped_read, const bam1_t * unmapped_read, 
     //FIXME pass these through from the command line with a struct
     Temp_One_Read.InsertSize = InsertSize;
 	if (InsertSize <= length ) {
-		*logStream << "Error: the insert size is only " << InsertSize << " while the read length is " << Temp_One_Read.getReadLength() << std::endl;
+		*logStream << "Error: the insert size is only " << InsertSize << " while the read length is " << length << " " << Temp_One_Read.getReadLength() << std::endl;
         *logStream << "in paired end sequencing, the insert size is the total size of the fragment to be sequenced, with a read length of 100 bp the entire fragment may for example look like\n\n";
 		*logStream << "|----100 bp: first read of the read pair--|-------------------300 bp: unsequenced DNA---------------------|----100 bp: second read of the read pair--|\n";
         *logStream << "<-----------------------------------------------------------insert size=500 ------------------------------------------------------------------------->\n\n";
@@ -802,6 +879,10 @@ void build_record_SR (const bam1_t * mapped_read, const bam1_t * unmapped_read, 
     //if (Temp_One_Read.Name == "@DD7DT8Q1:4:1106:17724:13906#GTACCT/1") {
     //    std::cout << "I am there." << std::endl;
     //}
+	int IndelSize;
+    if (WhetherSimpleCigar(unmapped_read, unmapped_core, cigar_pointer_unmapped, Temp_One_Read, IndelSize)) {
+        AddUniquePoint(unmapped_read, unmapped_core, cigar_pointer_unmapped, Temp_One_Read, IndelSize);
+    }
 
     data_for_bam->readBuffer->addRead(Temp_One_Read);
     return;
@@ -1029,12 +1110,13 @@ static int fetch_func_SR (const bam1_t * b1, void *data)
       kh_del (read_name, read_to_map_qual, key);
       //std::string c_sequence;
    }
-	
-	//std::string RN = bam1_qname(b1);
+	/*
+	std::string RN = bam1_qname(b1);
 	//std::cout << "|" << RN << "|" << std::endl;
-
-	//if (RN == "HWI-ST568:267:C1BD9ACXX:4:2101:18037:80445")
-	//		std::cout << "################################################## found HWI-ST568:267:C1BD9ACXX:4:2101:18037:80445" << std::endl;
+	std::string query = "1_112673_113350_0_1_0_0_0:0:0_0:0:0_c9d04"; 
+	if (RN == query)
+			std::cout << "################################################## found " << query << std::endl;
+	*/
 
    parse_flags_and_tags (b1, b1_flags);
    parse_flags_and_tags (b2, b2_flags);
@@ -1042,62 +1124,34 @@ static int fetch_func_SR (const bam1_t * b1, void *data)
 //std::cout << "isGoodAnchor( b1_flags, b1)" << std::endl;
 
 	if (isGoodAnchor( b1_flags, b1)) {
+	//	if (RN == query) std::cout << "isGoodAnchor" << std::endl;
 		if (isWeirdRead( b2_flags, b2 )) {
-/*
-			if (RN == "HWI-ST568:267:C1BD9ACXX:4:2101:18037:80445") {
-				
-				std::string c_sequence;
-				GetReadSeq(b2, c_sequence);
-	
-				std::cout << "################################################## building b2 HWI-ST568:267:C1BD9ACXX:4:2101:18037:80445 " << c_sequence << std::endl;
-				
-			}
-*/
+	//		if (RN == query) std::cout << "################################################## found b1 b2 " << query << std::endl;
 			build_record_SR (b1, b2, data);
 		}
+		if (isRefRead( b2_flags, b2 )) {
+	//		if (RN == query) std::cout << "################################################## found ref b2 b1 " << query << std::endl;
+	        	build_record_RefRead (b1, b2, data);
+			//std::cout << "refread 1" << std::endl;
+		}
 	}
-//std::cout << "isRefRead( b2_flags, b2 )" << std::endl;
-	if (isRefRead( b2_flags, b2 )) {
-/*
-			if (RN == "HWI-ST568:267:C1BD9ACXX:4:2101:18037:80445") {
-				std::string c_sequence;
-				GetReadSeq(b2, c_sequence);
-				std::cout << "################################################## building r2 HWI-ST568:267:C1BD9ACXX:4:2101:18037:80445 " << c_sequence << std::endl;
-			}
-*/
-	        build_record_RefRead (b1, b2, data);
-		//std::cout << "refread 1" << std::endl;
-	}
+
+
 
 //std::cout << "isGoodAnchor( b2_flags, b2)" << std::endl;
 	if (isGoodAnchor( b2_flags, b2) ) {
+	//	if (RN == query) std::cout << "isGoodAnchor" << std::endl;
 		if (isWeirdRead( b1_flags, b1 )) {
-/*
-			if (RN == "HWI-ST568:267:C1BD9ACXX:4:2101:18037:80445") {
-				
-				std::string c_sequence;
-				GetReadSeq(b2, c_sequence);
-				std::cout << "################################################## building b1 HWI-ST568:267:C1BD9ACXX:4:2101:18037:80445 " << c_sequence << std::endl;
-
-			}
-*/
+	//		if (RN == query) std::cout << "################################################## found b2 b1 " << query << std::endl;
 			build_record_SR (b2, b1, data);
 		}
+		if (isRefRead(b1_flags, b1 )) {
+	//		if (RN == query) std::cout << "################################################## found ref b1 b2 " << query << std::endl;
+			build_record_RefRead(b2, b1, data);
+		}
 	}
-//std::cout << "isRefRead( b1_flags, b1 )" << std::endl;
-	if (isRefRead(b1_flags, b1 )) {
-		build_record_RefRead(b2, b1, data);
-/*
-			if (RN == "HWI-ST568:267:C1BD9ACXX:4:2101:18037:80445") {
-				
-				std::string c_sequence;
-				GetReadSeq(b2, c_sequence);
-				std::cout << "################################################## building b1 HWI-ST568:267:C1BD9ACXX:4:2101:18037:80445 " << c_sequence << std::endl;
 
-			}
-*/
-		//std::cout << "refread 2" << std::endl;
-	}
+
 //std::cout << "before bam_destroy" << std::endl;
 	bam_destroy1 (b2);
 	//std::cout << "existing fetch_func_SR " << std::endl;
