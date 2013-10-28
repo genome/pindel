@@ -5,6 +5,9 @@
 #include <vector>
 #include "pindel.h"
 
+int CountMismatches(const char* read,
+                    const char* reference,
+                    int length);
 int DoInitialSeedAndExtendForward(const Chromosome& chromosome,
                                   int start,
                                   int end,

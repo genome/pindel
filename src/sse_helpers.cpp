@@ -9,6 +9,31 @@
 #include <x86intrin.h>
 #endif
 
+int CountMismatches(const char* __restrict__ read,
+        const char* __restrict__ reference,
+        int length) {
+    int NumMismatches = 0;
+    int i = 0;
+/*#ifdef USE_SSE
+    const uint32_t cmpestrmflag = _SIDD_UBYTE_OPS | _SIDD_CMP_EQUAL_EACH | _SIDD_NEGATIVE_POLARITY;
+    __m128i dontcarSIMD = _mm_set1_epi8('N');
+
+    int length_a = length - (length % 16);
+    for (; i < length_a; i+=16) {
+        int toProcess = 16;
+        __m128i readSIMD = _mm_lddqu_si128((__m128i* const) &read[i]);
+        __m128i inputSIMD = _mm_lddqu_si128((__m128i* const) &reference[i]);
+        __m128i readMaskSIMD = _mm_cmpestrm(readSIMD, toProcess, dontcarSIMD, toProcess, cmpestrmflag);
+        __m128i cmpres = _mm_and_si128(readMaskSIMD, _mm_cmpestrm(readSIMD, toProcess, inputSIMD, toProcess, cmpestrmflag));
+        NumMismatches += _mm_popcnt_u32(_mm_extract_epi32(cmpres, 0));
+    }
+#endif*/
+    for (; i < length; i++) {
+        NumMismatches += MismatchPair[(int) read[i]][(int) reference[i]];
+    }
+    return NumMismatches;
+}
+
 int DoInitialSeedAndExtendForward(const Chromosome& chromosome,
                                   int start,
                                   int end,
@@ -22,6 +47,10 @@ int DoInitialSeedAndExtendForward(const Chromosome& chromosome,
 
     char initBase = readSeq[0];
     int initBaseNum = Convert2Num[(int) initBase];
+
+    if (initBase == 'N') {
+      return 0;
+    }
 
     const unsigned int *posS, *posE;
     chromosome.getPositions(initBaseNum, start, end, &posS, &posE);
@@ -89,6 +118,10 @@ int DoInitialSeedAndExtendReverse(const Chromosome& chromosome,
 
     char initBase = readSeq[readLength - 1];
     int initBaseNum = Convert2Num[(int) initBase];
+
+    if (initBase == 'N') {
+      return 0;
+    }
 
     const unsigned int *posS, *posE;
     chromosome.getPositions(initBaseNum, start, end, &posS, &posE);
