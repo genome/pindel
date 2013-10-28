@@ -1098,7 +1098,6 @@ void SearchFarEnd( const std::string& chromosome, SPLIT_READ& read, const Chromo
 			//std::cout << "return" << std::endl;
 			return;
 		}
-		//else SearchFarEndAtPosPerfect( chromosome, read, searchCluster);
 	}
 	//std::cout << "SearchFarEnd	2" << std::endl;
 	//UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
