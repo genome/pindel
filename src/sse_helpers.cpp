@@ -14,7 +14,7 @@ int CountMismatches(const char* __restrict__ read,
         int length) {
     int NumMismatches = 0;
     int i = 0;
-/*#ifdef USE_SSE
+#ifdef USE_SSE
     const uint32_t cmpestrmflag = _SIDD_UBYTE_OPS | _SIDD_CMP_EQUAL_EACH | _SIDD_NEGATIVE_POLARITY;
     __m128i dontcarSIMD = _mm_set1_epi8('N');
 
@@ -27,7 +27,7 @@ int CountMismatches(const char* __restrict__ read,
         __m128i cmpres = _mm_and_si128(readMaskSIMD, _mm_cmpestrm(readSIMD, toProcess, inputSIMD, toProcess, cmpestrmflag));
         NumMismatches += _mm_popcnt_u32(_mm_extract_epi32(cmpres, 0));
     }
-#endif*/
+#endif
     for (; i < length; i++) {
         NumMismatches += MismatchPair[(int) read[i]][(int) reference[i]];
     }
