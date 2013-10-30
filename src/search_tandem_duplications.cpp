@@ -51,7 +51,7 @@ int searchTandemDuplications(ControlState& currentState, unsigned NumBoxes, cons
              //std::cout << "std1c" << std::endl;
             for (unsigned int CloseIndex = 0; CloseIndex < currentRead.UP_Close.size(); CloseIndex++) {
                 //std::cout << "std1d" << std::endl;
-               if (currentRead.Used  || currentRead. BPLeft == 0) {
+               if (currentRead.Used /* || currentRead. BPLeft == 0*/) {
                   break;
                }
                if (currentRead.UP_Close[CloseIndex].Mismatches > MAX_SNP_ERROR_index) {
@@ -83,6 +83,7 @@ int searchTandemDuplications(ControlState& currentState, unsigned NumBoxes, cons
                         currentRead.IndelSize = currentRead.UP_Close[CloseIndex].AbsLoc - currentRead. UP_Far[FarIndex].AbsLoc + 1;
                         currentRead.BPRight = currentRead.UP_Close[CloseIndex].AbsLoc - g_SpacerBeforeAfter;
                         currentRead.BPLeft = currentRead.UP_Far[FarIndex].AbsLoc - g_SpacerBeforeAfter;
+                         if (currentRead. BPLeft == 0) continue;
                          LeftMostTD(currentState, currentRead, window);
                         if (readTransgressesBinBoundaries( currentRead, window.getEnd())) {
                            saveReadForNextCycle( currentRead, currentState.FutureReads_SR);
@@ -108,7 +109,7 @@ int searchTandemDuplications(ControlState& currentState, unsigned NumBoxes, cons
             //std::cout << "in Minus 1" << std::endl;
             for (int CloseIndex = currentRead.UP_Close.size() - 1; CloseIndex >= 0; CloseIndex--) {
                 //std::cout << "in Minus 2" << std::endl;
-               if (currentRead.Used || currentRead. BPLeft == 0) {
+               if (currentRead.Used /*|| currentRead. BPLeft == 0*/) {
                   break;
                }
                if (currentRead.UP_Close[CloseIndex].Mismatches > MAX_SNP_ERROR_index) {
@@ -137,6 +138,7 @@ int searchTandemDuplications(ControlState& currentState, unsigned NumBoxes, cons
                         currentRead.IndelSize = currentRead. UP_Far[FarIndex].AbsLoc - currentRead.UP_Close[CloseIndex].AbsLoc + 1;
                         currentRead.BPRight = currentRead.UP_Far[FarIndex].AbsLoc - g_SpacerBeforeAfter;
                         currentRead.BPLeft = currentRead.UP_Close[CloseIndex].AbsLoc - g_SpacerBeforeAfter;
+                         if (currentRead. BPLeft == 0) continue;
                          LeftMostTD(currentState, currentRead, window);
                         if (readTransgressesBinBoundaries( currentRead, window.getEnd())) {
                            saveReadForNextCycle( currentRead, currentState.FutureReads_SR);
