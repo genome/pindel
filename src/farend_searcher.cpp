@@ -97,6 +97,7 @@ void SearchFarEndAtPos(SPLIT_READ& Temp_One_Read, const std::vector <SearchWindo
     }
 }
 
+/*
 void SearchFarEndAtPosPerfect(SPLIT_READ& Temp_One_Read, const std::vector <SearchWindow> & Regions )
 {
     // step 1 find out which chromosomes in Regions: set? linear pass of regions
@@ -150,7 +151,7 @@ void SearchFarEndAtPosPerfect(SPLIT_READ& Temp_One_Read, const std::vector <Sear
         delete WholeGenomeSearchResult[ RegionIndex ];
     }
 }
-
+*/
 
 /*void SearchFarEndAtPos( const std::string& chromosome, SPLIT_READ& Temp_One_Read, const std::vector <SearchWindow> & Regions )
 {
