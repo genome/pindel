@@ -19,10 +19,6 @@
  */
 
 // Pindel header files
-#include <emmintrin.h>
-#include <pmmintrin.h>
-#include <smmintrin.h>
-#include <x86intrin.h>
 #include <assert.h>
 #include "pindel.h"
 #include "searcher.h"
@@ -327,9 +323,9 @@ void CheckLeft_Close (SPLIT_READ & read,
         const std::string & chromosomeSeq,
         const std::string & readSeq,
         std::vector< PosVector >& Left_PD,
-        const short &BP_Left_Start,
-        const short &BP_Left_End,
-        short CurrentLength, SortedUniquePoints &LeftUP)
+        int BP_Left_Start,
+        int BP_Left_End,
+        int CurrentLength, SortedUniquePoints &LeftUP)
 {
     int minMismatches = 0;
     int maxMismatches = read.getMAX_SNP_ERROR();
@@ -375,9 +371,9 @@ void CheckLeft_Close_Perfect (SPLIT_READ & read,
         const std::string & chromosomeSeq,
         const std::string & readSeq,
         std::vector< PosVector >& Left_PD,
-        const short &BP_Left_Start,
-        const short &BP_Left_End,
-        short CurrentLength, SortedUniquePoints &LeftUP)
+        int BP_Left_Start,
+        int BP_Left_End,
+        int CurrentLength, SortedUniquePoints &LeftUP)
 {
     PosVector TmpPositions[2];
     for ( ; CurrentLength < BP_Left_Start && Left_PD[0].size() > 0; CurrentLength++) {
@@ -406,9 +402,9 @@ void CheckRight_Close (SPLIT_READ & read,
         const std::string & chromosomeSeq,
         const std::string & readSeq,
         std::vector < PosVector >& Right_PD,
-        const short &BP_Right_Start,
-        const short &BP_Right_End,
-        short CurrentLength, SortedUniquePoints &RightUP)
+        int BP_Right_Start,
+        int BP_Right_End,
+        int CurrentLength, SortedUniquePoints &RightUP)
 {
     PosVector TmpPositions[2];
     int minMismatches = 0;
@@ -452,9 +448,9 @@ void CheckRight_Close_Perfect (SPLIT_READ & read,
         const std::string & chromosomeSeq,
         const std::string & readSeq,
         std::vector < PosVector >& Right_PD,
-        const short &BP_Right_Start,
-        const short &BP_Right_End,
-        short CurrentLength, SortedUniquePoints &RightUP)
+        int BP_Right_Start,
+        int BP_Right_End,
+        int CurrentLength, SortedUniquePoints &RightUP)
 {
     PosVector TmpPositions[2];
     for ( ; CurrentLength < BP_Right_Start && Right_PD[0].size() > 0; CurrentLength++) {

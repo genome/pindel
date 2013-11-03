@@ -50,56 +50,38 @@ void CategorizePositionsBoundary(const char readBase,
 void CategorizePositions(const char readBase, const std::string & chromosomeSeq, const std::vector<PosVector>& PD_Plus, std::vector<PosVector>& PD_Plus_Output, const int numMisMatches, 	
 	const int searchDirection,	const int maxNumMismatches );
 
-/*void CheckLeft_Far (SPLIT_READ & OneRead,
-										const std::string & TheInput,
-										const std::string & CurrentReadSeq,
-										const std::vector < unsigned int >Left_PD[],
-										const short &BP_Left_Start,
-										const short &BP_Left_End,
-										const short &CurrentLength,
-										SortedUniquePoints &LeftUP);*/
-
-/*void CheckRight_Far (SPLIT_READ & OneRead,
-										 const std::string & TheInput,
-										 const std::string & CurrentReadSeq,
-										 const std::vector < unsigned int >Right_PD[],
-										 const short &BP_Right_Start,
-										 const short &BP_Right_End,
-										 const short &CurrentPos,
-										 SortedUniquePoints &RightUP);*/
-
 void CheckLeft_Close (SPLIT_READ & OneRead,
 											const std::string & TheInput,
 											const std::string & CurrentReadSeq,
 											std::vector < PosVector >& Left_PD,
-											const short &BP_Left_Start,
-											const short &BP_Left_End,
-											short CurrentLength,
+											int BP_Left_Start,
+											int BP_Left_End,
+											int CurrentLength,
 											SortedUniquePoints &LeftUP);
 
 void CheckRight_Close (SPLIT_READ & OneRead,
 											 const std::string & TheInput,
 											 const std::string & CurrentReadSeq,
 											 std::vector < PosVector >& Right_PD,
-											 const short &BP_Right_Start,
-											 const short &BP_Right_End,
-											 short CurrentPos,
+											 int BP_Right_Start,
+											 int BP_Right_End,
+											 int CurrentPos,
 											 SortedUniquePoints &RightUP);
 void CheckLeft_Close_Perfect (SPLIT_READ & OneRead,
                       const std::string & TheInput,
                       const std::string & CurrentReadSeq,
                       std::vector < PosVector >& Left_PD,
-                      const short &BP_Left_Start,
-                      const short &BP_Left_End,
-                      short CurrentLength,
+                      int BP_Left_Start,
+                      int BP_Left_End,
+                      int CurrentLength,
                       SortedUniquePoints &LeftUP);
 
 void CheckRight_Close_Perfect (SPLIT_READ & OneRead,
                        const std::string & TheInput,
                        const std::string & CurrentReadSeq,
                        std::vector < PosVector >& Right_PD,
-                       const short &BP_Right_Start,
-                       const short &BP_Right_End,
-                       short CurrentPos,
+                       int BP_Right_Start,
+                       int BP_Right_End,
+                       int CurrentPos,
                        SortedUniquePoints &RightUP);
 #endif /* SEARCHER_H */
