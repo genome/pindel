@@ -228,6 +228,7 @@ void Chromosome::buildIndex() {
    unsigned int total_size = 0;
    char_pos_start[0] = 0;  
    for (int i = 0; i < 4; i++) {
+     TmpPos[i].push_back(0xffffffff); // sentinel to avoid calling upper_bound
      total_size += TmpPos[i].size();
      char_pos_start[i+1] = total_size;
    }
@@ -239,17 +240,9 @@ void Chromosome::buildIndex() {
 }
 
 // Return the pointers to the list of locations in [start, end) which match refchar
-void Chromosome::getPositions(char refchar,
-		unsigned int start,
-		unsigned int end,
-		const unsigned int** start_p,
-		const unsigned int** end_p) const {
-	*start_p = std::lower_bound(&index[char_pos_start[refchar]], &index[char_pos_start[refchar+1]], start);
-	*end_p = *start_p;
-	if (&index[char_pos_start[refchar+1]] != *start_p) {
-		const unsigned int* it_end = std::upper_bound(*start_p, &index[char_pos_start[refchar+1]], end - 1);
-		*end_p = it_end;
-	}
+const unsigned int* Chromosome::getPositions(char refchar,
+		unsigned int start) const {
+	return std::lower_bound(&index[char_pos_start[refchar]], &index[char_pos_start[refchar+1]-1], start);
 }
 
 const Chromosome* Genome::addChromosome( Chromosome* newChromosome ) 
@@ -2466,7 +2459,6 @@ void GetCloseEndInner(const Chromosome& CurrentChr, SPLIT_READ & Temp_One_Read) 
     for (int CheckIndex = 0; CheckIndex < Temp_One_Read.getTOTAL_SNP_ERROR_CHECKED(); CheckIndex++) {
         PD[CheckIndex].reserve(3 * Temp_One_Read.InsertSize);
     }
-    SortedUniquePoints UP;
 
     Temp_One_Read.UP_Close.clear();
     int BP_Start = g_MinClose;
@@ -2478,7 +2470,7 @@ void GetCloseEndInner(const Chromosome& CurrentChr, SPLIT_READ & Temp_One_Read) 
         int End = Start + 3 * Temp_One_Read.InsertSize;
 
         int InitExtend = DoInitialSeedAndExtendForward(CurrentChr, Start, End, BP_Start, CurrentReadSeq, PD.size() - 1, &PD[0]);
-        CheckLeft_Close(Temp_One_Read, CurrentChrSeq, CurrentReadSeq, PD, BP_Start, BP_End, InitExtend, UP);
+        CheckLeft_Close(Temp_One_Read, CurrentChrSeq, CurrentReadSeq, PD, BP_Start, BP_End, InitExtend, Temp_One_Read.UP_Close);
     }
     else if (Temp_One_Read.MatchedD == Minus) {
         const std::string& CurrentReadSeq = Temp_One_Read.getUnmatchedSeq();
@@ -2486,11 +2478,10 @@ void GetCloseEndInner(const Chromosome& CurrentChr, SPLIT_READ & Temp_One_Read) 
         int Start = End - 3 * Temp_One_Read.InsertSize;
 
         int InitExtend = DoInitialSeedAndExtendReverse(CurrentChr, Start, End, BP_Start, CurrentReadSeq, PD.size() - 1, &PD[0]);
-        CheckRight_Close(Temp_One_Read, CurrentChrSeq, CurrentReadSeq, PD, BP_Start, BP_End, InitExtend, UP);
+        CheckRight_Close(Temp_One_Read, CurrentChrSeq, CurrentReadSeq, PD, BP_Start, BP_End, InitExtend, Temp_One_Read.UP_Close);
     }
-    if (!UP.empty()) {
+    if (!Temp_One_Read.UP_Close.empty()) {
         Temp_One_Read.Used = false;
-        Temp_One_Read.UP_Close.swap(UP);
     }
     return;
 }
@@ -2500,13 +2491,11 @@ void GetCloseEndInnerPerfectMatch(const Chromosome& CurrentChr, SPLIT_READ & Tem
     const std::string& CurrentChrSeq = CurrentChr.getSeq();
     std::string CurrentReadSeq;
     std::vector<PosVector> PD;
-    PosVector emptyPosVector;
-    PD.assign( Temp_One_Read.getTOTAL_SNP_ERROR_CHECKED(), emptyPosVector);
+    PD.resize(Temp_One_Read.getTOTAL_SNP_ERROR_CHECKED());
     g_maxInsertSize = std::max((int)Temp_One_Read.InsertSize, g_maxInsertSize);
     for (int CheckIndex = 0; CheckIndex < Temp_One_Read.getTOTAL_SNP_ERROR_CHECKED(); CheckIndex++) {
         PD[CheckIndex].reserve(3 * Temp_One_Read.InsertSize);
     }
-    SortedUniquePoints UP;
 
     Temp_One_Read.UP_Close.clear();
     int BP_Start = g_MinClose;
@@ -2519,7 +2508,7 @@ void GetCloseEndInnerPerfectMatch(const Chromosome& CurrentChr, SPLIT_READ & Tem
 
         int InitExtend = DoInitialSeedAndExtendForward(CurrentChr, Start, End, BP_Start, CurrentReadSeq, PD.size() - 1, &PD[0]);
         if (PD[0].size()) {
-            CheckLeft_Close(Temp_One_Read, CurrentChrSeq, CurrentReadSeq, PD, BP_Start, BP_End, InitExtend, UP);
+            CheckLeft_Close_Perfect(Temp_One_Read, CurrentChrSeq, CurrentReadSeq, PD, BP_Start, BP_End, InitExtend, Temp_One_Read.UP_Close);
         }
     }
     else if (Temp_One_Read.MatchedD == Minus) {
@@ -2529,13 +2518,11 @@ void GetCloseEndInnerPerfectMatch(const Chromosome& CurrentChr, SPLIT_READ & Tem
 
         int InitExtend = DoInitialSeedAndExtendReverse(CurrentChr, Start, End, BP_Start, CurrentReadSeq, PD.size() - 1, &PD[0]);
         if (PD[0].size()) {
-            CheckRight_Close(Temp_One_Read, CurrentChrSeq, CurrentReadSeq, PD, BP_Start, BP_End, InitExtend, UP);
+            CheckRight_Close_Perfect(Temp_One_Read, CurrentChrSeq, CurrentReadSeq, PD, BP_Start, BP_End, InitExtend, Temp_One_Read.UP_Close);
         }
     }
-    if (UP.empty()) {}
-    else {
+    if (!Temp_One_Read.UP_Close.empty()) {
         Temp_One_Read.Used = false;
-        Temp_One_Read.UP_Close.swap(UP);
     }
     return;
 }
