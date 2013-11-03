@@ -27,13 +27,13 @@ test:	pindel $(addprefix cppcheck-result-,$(SOURCES:.cpp=.xml))
 # Debug version of pindel
 pindel-debug: $(SOURCES:.cpp=-debug.o)
 	$(CXX) $(LDFLAGS) $^ -fopenmp -g -pg -static -fprofile-arcs -ftest-coverage \
-	  -lm -lz -L$(SAMTOOLS) -lbam -o $@
+	  -lm -L$(SAMTOOLS) -lbam -lz -o $@
 #	$(CXX) $(LDFLAGS) $^ -fopenmp -g -pg -fprofile-arcs -ftest-coverage \
 #	-static-libgcc -Bstatic -static -lm -lz -L$(SAMTOOLS) -lbam -o $@
 
 # Normal version of pindel	
 pindel:	$(SOURCES:.cpp=.o)
-	$(CXX) $(LDFLAGS) -pg -static $^ -O3 -fopenmp -lm -lz -L$(SAMTOOLS) -lbam -o $@
+	$(CXX) $(LDFLAGS) -pg -static $^ -O3 -fopenmp -lm -L$(SAMTOOLS) -lbam -lz -o $@
 
 clean:
 	$(RM) pindel pindel-debug $(OBJECTS) $(OBJECTS_DEBUG) $(CPPCHECKS) \
