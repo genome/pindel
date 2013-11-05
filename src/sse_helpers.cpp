@@ -12,7 +12,7 @@
 #include <x86intrin.h>
 
 const uint32_t cmpestrmFlag = _SIDD_UBYTE_OPS | _SIDD_CMP_EQUAL_EACH | _SIDD_NEGATIVE_POLARITY;
-
+const uint32_t cmpestrmMatchFlag = _SIDD_UBYTE_OPS | _SIDD_CMP_EQUAL_EACH | _SIDD_POSITIVE_POLARITY; 
 #endif
 
 int CountMismatches(const char* __restrict__ read,
@@ -20,7 +20,7 @@ int CountMismatches(const char* __restrict__ read,
         int length) {
     int NumMismatches = 0;
     int i = 0;
-#ifdef USE_SSE
+/*#ifdef USE_SSE
     __m128i dontcarSIMD = _mm_set1_epi8('N');
 
     int length_a = length - (length % 16);
@@ -32,7 +32,7 @@ int CountMismatches(const char* __restrict__ read,
         __m128i cmpres = _mm_and_si128(readMaskSIMD, _mm_cmpestrm(readSIMD, toProcess, inputSIMD, toProcess, cmpestrmFlag));
         NumMismatches += _mm_popcnt_u32(_mm_extract_epi32(cmpres, 0));
     }
-#endif
+#endif*/
     for (; i < length; i++) {
         NumMismatches += MismatchPair[(int) read[i]][(int) reference[i]];
     }
@@ -64,16 +64,18 @@ int DoInitialSeedAndExtendForward(const Chromosome& chromosome,
     __m128i readSIMD = _mm_lddqu_si128((__m128i* const) &readSeq[0]);
     __m128i dontCareSIMD = _mm_set1_epi8('N');
     __m128i dontCareMaskSIMD = _mm_cmpestrm(readSIMD, initExtend, dontCareSIMD, initExtend, cmpestrmFlag);
+    //__m128i readNMatchMask = _mm_cmpestrm(readSIMD, initExtend, dontCareSIMD, initExtend, cmpestrmMatchFlag);
 #endif
 
 #ifdef USE_INDEX
     for (const unsigned int *it = chromosome.getPositions(initBaseNum, start); *it < end; it++) {
         unsigned int pos = *it;
         unsigned int nMismatches = 0;
-        if (initBase != chromosomeSeq[pos]) continue;
 #ifdef USE_SSE
         __m128i chromosSIMD = _mm_lddqu_si128((__m128i* const) &chromosomeSeq[pos]);
+        //__m128i chromosNMatchMask = _mm_cmpestrm(chromosSIMD, initExtend, dontCareSIMD, initExtend, cmpestrmMatchFlag);
         __m128i cmpres = _mm_and_si128(dontCareMaskSIMD, _mm_cmpestrm(readSIMD, initExtend, chromosSIMD, initExtend, cmpestrmFlag));
+        //cmpres = _mm_or_si128(cmpres, _mm_and_si128(chromosNMatchMask, readNMatchMask));
         nMismatches = _mm_popcnt_u32(_mm_extract_epi32(cmpres, 0));
 #else
         for (unsigned int i = 1; i < initExtend; i++) {
@@ -87,7 +89,7 @@ int DoInitialSeedAndExtendForward(const Chromosome& chromosome,
 #else
     for (unsigned int pos = start; pos < end; pos++) {
         if (initBase != chromosomeSeq[pos]) continue;
-         unsigned int nMismatches = 0;
+        unsigned int nMismatches = 0;
 #ifdef USE_SSE
         __m128i chromosSIMD = _mm_lddqu_si128((__m128i* const) &chromosomeSeq[pos]);
         __m128i cmpres = _mm_and_si128(dontCareMaskSIMD, _mm_cmpestrm(readSIMD, initExtend, chromosSIMD, initExtend, cmpestrmFlag));

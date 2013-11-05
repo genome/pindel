@@ -563,7 +563,7 @@ public:
 	const unsigned int getCompSize() const { return m_sequence.size(); }
 	const unsigned int getBiolSize() const { return m_sequence.size() - 2 * g_SpacerBeforeAfter; }
     void buildIndex();
-    const unsigned int* getPositions(char refchar, unsigned int start) const;
+    const unsigned int* getPositions(int refchar, unsigned int start) const;
 private:
 	std::string m_name;
 	std::string m_sequence;

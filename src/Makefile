@@ -19,7 +19,7 @@ SOURCES=pindel.cpp reader.cpp reporter.cpp searcher.cpp parameter.cpp \
 
 #   bddata.cpp shifted_vector.cpp read_buffer.cpp assembly.cpp genotyping.cpp\
  
-all:	pindel pindel-debug
+all:	pindel
 -include $(SOURCES:.cpp=.d)
 -include $(SOURCES:.cpp=-debug.d)
 test:	pindel $(addprefix cppcheck-result-,$(SOURCES:.cpp=.xml))

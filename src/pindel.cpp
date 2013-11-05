@@ -214,14 +214,14 @@ void SPLIT_READ::setUnmatchedSeq( const std::string & unmatchedSeq )
 
 void Chromosome::buildIndex() {
    PosVector TmpPos[6];
-   char Convert2Num[256];
+   int Convert2Num[256];
    Convert2Num['A'] = 0;
    Convert2Num['C'] = 1;
    Convert2Num['G'] = 2;
    Convert2Num['T'] = 3;
    for (unsigned int pos = 0; pos < m_sequence.size(); pos++) {
      if (m_sequence[pos] != 'N') {
-        TmpPos[Convert2Num[m_sequence[pos]]].push_back(pos);
+        TmpPos[Convert2Num[(int) m_sequence[pos]]].push_back(pos);
      }
    }
 
@@ -240,7 +240,7 @@ void Chromosome::buildIndex() {
 }
 
 // Return the pointers to the list of locations in [start, end) which match refchar
-const unsigned int* Chromosome::getPositions(char refchar,
+const unsigned int* Chromosome::getPositions(int refchar,
 		unsigned int start) const {
 	return std::lower_bound(&index[char_pos_start[refchar]], &index[char_pos_start[refchar+1]-1], start);
 }

@@ -57,7 +57,7 @@ inline void CategorizePositionsNormal(int readBase,
         int searchDirection) {
     for (PosVector::const_iterator it = Input.begin(); it != Input.end(); it++) {
         unsigned int pos = *it + searchDirection;
-        Output[MismatchPair[readBase][chromosomeSeq[pos]]].push_back(pos);
+        Output[(int) MismatchPair[readBase][(int) chromosomeSeq[pos]]].push_back(pos);
     }
 }
 
@@ -69,7 +69,7 @@ void CategorizePositionsBoundary(int readBase,
 {
     for (PosVector::const_iterator it = Input.begin(); it != Input.end(); it++) {
         unsigned int pos = *it + searchDirection;
-        if (!MismatchPair[readBase][chromosomeSeq[pos]]) {
+        if (!MismatchPair[readBase][(int) chromosomeSeq[pos]]) {
             Output[0].push_back(pos);
         }
     }
@@ -134,7 +134,7 @@ inline void CategorizePositions2Normal(int readBase1,
     for (PosVector::const_iterator it = Input.begin(); it != Input.end(); it++) {
         unsigned int pos1 = *it + searchDirection;
         unsigned int pos2 = pos1 + searchDirection;
-        int index = MismatchPair[readBase1][chromosomeSeq[pos1]] + MismatchPair[readBase2][chromosomeSeq[pos2]];
+        int index = MismatchPair[readBase1][(int) chromosomeSeq[pos1]] + MismatchPair[readBase2][(int) chromosomeSeq[pos2]];
         Output[index].push_back(pos2);
     }
 }
@@ -149,7 +149,7 @@ inline void CategorizePositions2Boundary1(int readBase1,
     for (PosVector::const_iterator it = Input.begin(); it != Input.end(); it++) {
         unsigned int pos1 = *it + searchDirection;
         unsigned int pos2 = pos1 + searchDirection;
-        int index = MismatchPair[readBase1][chromosomeSeq[pos1]] + MismatchPair[readBase2][chromosomeSeq[pos2]];
+        int index = MismatchPair[readBase1][(int) chromosomeSeq[pos1]] + MismatchPair[readBase2][(int) chromosomeSeq[pos2]];
         if (index < 2) Output[index].push_back(pos2);
     }
 }
@@ -164,7 +164,7 @@ inline void CategorizePositions2Boundary2(int readBase1,
     for (PosVector::const_iterator it = Input.begin(); it != Input.end(); it++) {
         unsigned int pos1 = *it + searchDirection;
         unsigned int pos2 = pos1 + searchDirection;
-        int index = MismatchPair[readBase1][chromosomeSeq[pos1]] + MismatchPair[readBase2][chromosomeSeq[pos2]];
+        int index = MismatchPair[readBase1][(int) chromosomeSeq[pos1]] + MismatchPair[readBase2][(int) chromosomeSeq[pos2]];
         if (index == 0) Output[index].push_back(pos2);
     }
 }
@@ -185,7 +185,7 @@ void CategorizePositions(const char readBase, const std::string & chromosomeSeq,
     } else {
         for (int j = 0; j < SizeOfCurrent; j++) {
             unsigned int pos = PD_Plus_current[j] + searchDirection;
-            if ( !MismatchPair[readBase][chromosomeSeq[pos]] ) {
+            if ( !MismatchPair[readBase][(int) chromosomeSeq[pos]] ) {
                 PD_Plus_Output_current->push_back(pos);
             }
         }
