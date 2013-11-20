@@ -2760,16 +2760,12 @@ void CheckBoth(SPLIT_READ & read,
         minMismatches++;
     }
 
-    int matchRunLength = BP_End; //CurrentLength - minMismatches;
     PosVector TmpPositions[3];
     for ( ; CurrentLength < minimumLengthToReportMatch && WholeGenomeSearchResult_input.size() > 0 && minMismatches <= read.getMAX_SNP_ERROR(); CurrentLength++) {
         ExtendWholeGenomeInPlace(readSeq[CurrentLength], minMismatches, read.getTOTAL_SNP_ERROR_CHECKED_Minus(), read.getTOTAL_SNP_ERROR_CHECKED(), WholeGenomeSearchResult_input, TmpPositions); 
 
         if (getNumPositionsForMismatches(WholeGenomeSearchResult_input, minMismatches) == 0) {
             minMismatches++;
-            matchRunLength = 1;
-        } else {
-            matchRunLength++;
         }
     }
 
@@ -2778,8 +2774,7 @@ void CheckBoth(SPLIT_READ & read,
             return;
         }
 
-        if (minMismatches <= CurrentLength - minimumLengthToReportMatch /*&& matchRunLength >= userSettings->Min_Perfect_Match_Around_BP*/
-                && getNumPositionsForMismatches(WholeGenomeSearchResult_input, minMismatches) == 1) {
+        if (minMismatches <= CurrentLength - minimumLengthToReportMatch && getNumPositionsForMismatches(WholeGenomeSearchResult_input, minMismatches) == 1) {
             if (getNumCompetingPositions(WholeGenomeSearchResult_input, minMismatches + 1, minMismatches + userSettings->ADDITIONAL_MISMATCH) == 0) {
                 AddUniquePoint(read, readSeq, readSeqRev, GetHitRegion(WholeGenomeSearchResult_input, minMismatches), CurrentLength, minMismatches, UP);
             } 
@@ -2794,9 +2789,6 @@ void CheckBoth(SPLIT_READ & read,
                 ExtendWholeGenomeInPlace2(readSeq[CurrentLength], readSeq[CurrentLength+1], minMismatches, read.getTOTAL_SNP_ERROR_CHECKED_Minus(), read.getTOTAL_SNP_ERROR_CHECKED(), WholeGenomeSearchResult_input, TmpPositions); 
                 if (getNumPositionsForMismatches(WholeGenomeSearchResult_input, minMismatches) == 0) {
                     minMismatches++;
-                    matchRunLength = 1;
-                } else {
-                    matchRunLength++;
                 }
                 CurrentLength++;
                 if (minMismatches > g_maxMismatch[CurrentLength]) {
@@ -2808,9 +2800,6 @@ void CheckBoth(SPLIT_READ & read,
         }
         if (getNumPositionsForMismatches(WholeGenomeSearchResult_input, minMismatches) == 0) {
             minMismatches++;
-            matchRunLength = 1;
-        } else {
-            matchRunLength++;
         }
     }
 }

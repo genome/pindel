@@ -142,16 +142,10 @@ int SearchVariant::Search(BDData & g_bdData, ControlState& currentState, const u
       else if (currentRead.MatchedD == Minus) {
          for (short MAX_SNP_ERROR_index = 0; MAX_SNP_ERROR_index <= currentRead.getMAX_SNP_ERROR() && !currentRead.Used; MAX_SNP_ERROR_index++) {
             for (int CloseIndex = currentRead.UP_Close.size() - 1; CloseIndex >= 0 && !currentRead.Used; CloseIndex--) {
-               //if (currentRead.Used) {
-               //   break;
-               //}
                if (currentRead.UP_Close[CloseIndex]. Mismatches > MAX_SNP_ERROR_index) {
                   continue;
                }
                for (int FarIndex = currentRead.UP_Far.size() - 1; FarIndex >= 0 && !currentRead.Used; FarIndex--) {
-                  //if (currentRead.Used) {
-                  //   break;
-                  //}
                   if (currentRead.UP_Far[FarIndex]. Mismatches > MAX_SNP_ERROR_index) {
                      continue;
                   }

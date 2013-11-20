@@ -667,18 +667,7 @@ if (bamCore->flag & BAM_FSECONDARY || bamCore->flag & BAM_FQCFAIL || bamCore->fl
 	if ( read->edits + cigarMismatchedBases > 0) {
 		return true;
 	}
-	else {
-		return false;
-	}
 
-	// check speed here!
-	if (bamCore->flag & BAM_CINS) return true;
-	if (bamCore->flag & BAM_CDEL) return true;
-	if (bamCore->flag & BAM_CREF_SKIP) return true;
-	if (bamCore->flag & BAM_CSOFT_CLIP) return true;
-	if (bamCore->flag & BAM_CHARD_CLIP) return true;
-	if (bamCore->flag & BAM_CPAD) return true;
-//http://samtools.sourceforge.net/samtools/bam/PDefines/PDefines.html
 	return false;
 }
 
