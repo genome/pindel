@@ -21,60 +21,67 @@
 #ifndef SEARCHER_H
 #define	SEARCHER_H
 
-bool CheckMismatches (const std::string & TheInput, const std::string & CurrentReadSeq, const UniquePoint & UP, short & numberOfMismatch);
+bool CheckMismatches (const std::string & TheInput, const std::string & CurrentReadSeq, const std::string& CurrentReadSeqRev, const UniquePoint & UP, short & numberOfMismatch);
+void ExtendInPlace(int currentChar,
+                   const std::string& chromosomeSeq,
+                   std::vector<PosVector>& positions,
+                   PosVector* scratch,
+		   int direction,
+                   int minMismatches,
+                   int maxMismatches);
+void ExtendInPlace2(int char1, int char2,
+                   const std::string& chromosomeSeq,
+                   std::vector<PosVector>& positions,
+                   PosVector* TmpPositions,
+		   int direction,
+                   int minMismatches,
+		   int maxMismatches);
+void CategorizePositionsNormal(const char readBase,
+		const std::string & chromosomeSeq,
+		const PosVector & PD_Input,
+		PosVector* PD_Output,
+		const int searchDirection);
+void CategorizePositionsBoundary(const char readBase,
+		const std::string & chromosomeSeq,
+		const PosVector & PD_Input,
+		PosVector* PD_Output,
+		const int searchDirection);
+
 void CategorizePositions(const char readBase, const std::string & chromosomeSeq, const std::vector<PosVector>& PD_Plus, std::vector<PosVector>& PD_Plus_Output, const int numMisMatches, 	
 	const int searchDirection,	const int maxNumMismatches );
-
-/*void CheckLeft_Far (SPLIT_READ & OneRead,
-										const std::string & TheInput,
-										const std::string & CurrentReadSeq,
-										const std::vector < unsigned int >Left_PD[],
-										const short &BP_Left_Start,
-										const short &BP_Left_End,
-										const short &CurrentLength,
-										SortedUniquePoints &LeftUP);*/
-
-/*void CheckRight_Far (SPLIT_READ & OneRead,
-										 const std::string & TheInput,
-										 const std::string & CurrentReadSeq,
-										 const std::vector < unsigned int >Right_PD[],
-										 const short &BP_Right_Start,
-										 const short &BP_Right_End,
-										 const short &CurrentPos,
-										 SortedUniquePoints &RightUP);*/
 
 void CheckLeft_Close (SPLIT_READ & OneRead,
 											const std::string & TheInput,
 											const std::string & CurrentReadSeq,
-											const std::vector < PosVector >& Left_PD,
-											const short &BP_Left_Start,
-											const short &BP_Left_End,
-											const short &CurrentLength,
+											std::vector < PosVector >& Left_PD,
+											int BP_Left_Start,
+											int BP_Left_End,
+											int CurrentLength,
 											SortedUniquePoints &LeftUP);
 
 void CheckRight_Close (SPLIT_READ & OneRead,
 											 const std::string & TheInput,
 											 const std::string & CurrentReadSeq,
-											 const std::vector < PosVector >& Right_PD,
-											 const short &BP_Right_Start,
-											 const short &BP_Right_End,
-											 const short &CurrentPos,
+											 std::vector < PosVector >& Right_PD,
+											 int BP_Right_Start,
+											 int BP_Right_End,
+											 int CurrentPos,
 											 SortedUniquePoints &RightUP);
 void CheckLeft_Close_Perfect (SPLIT_READ & OneRead,
                       const std::string & TheInput,
                       const std::string & CurrentReadSeq,
-                      const std::vector < PosVector >& Left_PD,
-                      const short &BP_Left_Start,
-                      const short &BP_Left_End,
-                      const short &CurrentLength,
+                      std::vector < PosVector >& Left_PD,
+                      int BP_Left_Start,
+                      int BP_Left_End,
+                      int CurrentLength,
                       SortedUniquePoints &LeftUP);
 
 void CheckRight_Close_Perfect (SPLIT_READ & OneRead,
                        const std::string & TheInput,
                        const std::string & CurrentReadSeq,
-                       const std::vector < PosVector >& Right_PD,
-                       const short &BP_Right_Start,
-                       const short &BP_Right_End,
-                       const short &CurrentPos,
+                       std::vector < PosVector >& Right_PD,
+                       int BP_Right_Start,
+                       int BP_Right_End,
+                       int CurrentPos,
                        SortedUniquePoints &RightUP);
 #endif /* SEARCHER_H */

@@ -19,18 +19,19 @@
  */
 
 #include <math.h>
+#include <assert.h>
 
 #include "pindel.h"
 #include "searcher.h"
 #include "farend_searcher.h"
-
+#include "sse_helpers.h"
 
 
 
 bool NewUPFarIsBetter(const SortedUniquePoints & UP, const SPLIT_READ& Read) {
 
     if (UP.MaxLen() < Read.MaxLenFarEnd()) {
-       return false;
+        return false;
     }
     if (UP.NumMismatch() < Read.UP_Far.NumMismatch()){
         return true;
@@ -40,113 +41,117 @@ bool NewUPFarIsBetter(const SortedUniquePoints & UP, const SPLIT_READ& Read) {
     }
 }
 
-void SearchFarEndAtPos( const std::string& chromosome, SPLIT_READ& Temp_One_Read, const std::vector <SearchWindow> & Regions )
+
+
+void SearchFarEndAtPos(SPLIT_READ& Temp_One_Read, const std::vector <SearchWindow> & Regions )
 {
+    const std::string& forwardSeq = Temp_One_Read.getUnmatchedSeq();
+    const std::string& reverseSeq = Temp_One_Read.getUnmatchedSeqRev();
+    const unsigned readLength = forwardSeq.size();
 
-   // step 1 find out which chromosomes in Regions: set? linear pass of regions
-   // step 2 for each identified chromsome, for each regions on the chromosme, do the business.
-   char CurrentBase = Temp_One_Read.getUnmatchedSeq()[0];
-   char CurrentBaseRC = Convert2RC4N[(short) CurrentBase];
-    
-   if (CurrentBase == 'N' || Temp_One_Read.MaxLenCloseEnd() == 0) return;
-   //int CurrentReadLength = Temp_One_Read.getReadLength();
-    
-   std::vector <FarEndSearchPerRegion*> WholeGenomeSearchResult;
-   unsigned NumberOfHits = 0;
-   //if (Regions.size() > 1)
-   //std::cout << "Regions.size():\t" << Regions.size() << "\t";
-   for (unsigned RegionIndex = 0; RegionIndex < Regions.size(); RegionIndex++) {
-       
-       FarEndSearchPerRegion* CurrentRegion = new FarEndSearchPerRegion(Regions[RegionIndex].getChromosome(), Temp_One_Read.getTOTAL_SNP_ERROR_CHECKED(), Regions[RegionIndex].getSize());
+    // step 1 find out which chromosomes in Regions: set? linear pass of regions
+    // step 2 for each identified chromsome, for each regions on the chromosme, do the business.
+    const char CurrentBase = forwardSeq[0];
+    const char CurrentBaseRC = reverseSeq[readLength - 1];
 
-       int Start = Regions[RegionIndex].getStart();
-       int End = Regions[RegionIndex].getEnd();
-       if (Start < 0) Start = End -1;
-       const std::string & chromosome = Regions[RegionIndex].getChromosome()->getSeq();
-       //if (Regions.size() > 1)
-       //		std::cout << RegionIndex << "\t" << Regions[RegionIndex].getChromosome()->getName() << " " << End - Start << " " << Start - g_SpacerBeforeAfter << " " << End - g_SpacerBeforeAfter << "\t";
-       for (int pos = Start; pos < End; pos++) {
-           if (chromosome.at(pos) == CurrentBase) {
-               CurrentRegion->PD_Plus[0].push_back(pos); // else
-           }
-           else if (chromosome.at(pos) == CurrentBaseRC) {
-               CurrentRegion->PD_Minus[0].push_back(pos);
-           }
-       }
-       NumberOfHits += CurrentRegion->PD_Plus[0].size() + CurrentRegion->PD_Minus[0].size();
-       WholeGenomeSearchResult.push_back(CurrentRegion);
-	 
-   }
-  // if (Regions.size() > 1)
-  // std::cout << std::endl;
+    if (CurrentBase == 'N' || Temp_One_Read.MaxLenCloseEnd() == 0) return;
+    std::vector <FarEndSearchPerRegion*> WholeGenomeSearchResult;
+    unsigned BP_Start = 10;
+    unsigned NumberOfHits = 0;
+    const int InitExtend = BP_Start; // should be equal to BP_start
 
-	if (NumberOfHits>0) {
-      short BP_Start = 10; // perhaps use global constant like "g_MinimumLengthToReportMatch"
-      short BP_End = Temp_One_Read.getReadLengthMinus(); // matched far end should be between BP_Start and BP_End bases long (including BP_Start and End)
-      SortedUniquePoints UP; // temporary container for unique far ends
-      CheckBoth(Temp_One_Read, Temp_One_Read.getUnmatchedSeq(), WholeGenomeSearchResult, BP_Start, BP_End, 1, UP);
-        
-	  	if ( NewUPFarIsBetter(UP, Temp_One_Read)) { // UP.MaxLen() > Temp_One_Read.MaxLenFarEnd()
-	 		Temp_One_Read.UP_Far.swap(UP);
-      }
-      UP.clear(); // may not be necessary as this is deleted from the stack anyway
-	}
-   for (unsigned RegionIndex = 0; RegionIndex < WholeGenomeSearchResult.size(); RegionIndex++) {
-    	delete WholeGenomeSearchResult[ RegionIndex ];
-   }
+    if (forwardSeq.size() < InitExtend) {
+        return;
+    }
+    unsigned PD_size = Temp_One_Read.getTOTAL_SNP_ERROR_CHECKED();
+
+    for (std::vector<SearchWindow>::const_iterator it_r = Regions.begin(); it_r != Regions.end(); it_r++) {
+        const Chromosome* Chr = it_r->getChromosome();
+        const std::string & chromosome = Chr->getSeq();
+
+        int Start = it_r->getStart();
+        int End = it_r->getEnd();
+        if (Start < 0) Start = End -1;
+
+        FarEndSearchPerRegion* CurrentRegion = new FarEndSearchPerRegion(Chr, PD_size, std::max(1, End - Start));
+
+        DoInitialSeedAndExtendForward(*Chr, Start, End, InitExtend, forwardSeq, PD_size-1, &(CurrentRegion->PD_Plus[0]));
+        DoInitialSeedAndExtendReverse(*Chr, Start, End, InitExtend, reverseSeq, PD_size-1, &(CurrentRegion->PD_Minus[0]));
+        for (unsigned i = 0; i < Temp_One_Read.getTOTAL_SNP_ERROR_CHECKED(); i++) {
+            NumberOfHits += CurrentRegion->PD_Plus[i].size();
+            NumberOfHits += CurrentRegion->PD_Minus[i].size();
+        }
+        WholeGenomeSearchResult.push_back(CurrentRegion);
+    }
+    if (NumberOfHits>0) {
+        short BP_End = Temp_One_Read.getReadLengthMinus(); // matched far end should be between BP_Start and BP_End bases long (including BP_Start and End)
+        SortedUniquePoints UP; // temporary container for unique far ends
+        CheckBoth(Temp_One_Read, forwardSeq, reverseSeq, WholeGenomeSearchResult, BP_Start, BP_End, InitExtend, UP);
+
+        if ( NewUPFarIsBetter(UP, Temp_One_Read)) { // UP.MaxLen() > Temp_One_Read.MaxLenFarEnd()
+            Temp_One_Read.UP_Far.swap(UP);
+        }
+    }
+    for (std::vector<FarEndSearchPerRegion*>::iterator it = WholeGenomeSearchResult.begin(); it != WholeGenomeSearchResult.end(); it++) {
+        delete *it;
+    }
 }
 
-void SearchFarEndAtPosPerfect( const std::string& chromosome, SPLIT_READ& Temp_One_Read, const std::vector <SearchWindow> & Regions )
+/*
+void SearchFarEndAtPosPerfect(SPLIT_READ& Temp_One_Read, const std::vector <SearchWindow> & Regions )
 {
     // step 1 find out which chromosomes in Regions: set? linear pass of regions
     // step 2 for each identified chromsome, for each regions on the chromosme, do the business.
-    char CurrentBase = Temp_One_Read.getUnmatchedSeq()[0];
-    char CurrentBaseRC = Convert2RC4N[(short) CurrentBase];
-    
+    const char CurrentBase = Temp_One_Read.getUnmatchedSeq()[0];
+    const char CurrentBaseRC = Convert2RC4N[(short) CurrentBase];
+
     if (CurrentBase == 'N' || Temp_One_Read.MaxLenCloseEnd() == 0) return;
     //int CurrentReadLength = Temp_One_Read.getReadLength();
-    
+
     std::vector <FarEndSearchPerRegion*> WholeGenomeSearchResult;
     unsigned NumberOfHits = 0;
 
-    
+    int CurrentBaseNum = Convert2Num[CurrentBase];
+    int CurrentBaseRCNum = Convert2Num[CurrentBaseRC];
+
     for (unsigned RegionIndex = 0; RegionIndex < Regions.size(); RegionIndex++) {
-        
+        const Chromosome* Chr = Regions[RegionIndex].getChromosome();
         FarEndSearchPerRegion* CurrentRegion = new FarEndSearchPerRegion(Regions[RegionIndex].getChromosome(), Temp_One_Read.getTOTAL_SNP_ERROR_CHECKED(), Regions[RegionIndex].getSize());
-        
-        int Start = Regions[RegionIndex].getStart();
-        int End = Regions[RegionIndex].getEnd();
-        if (Start < 0) Start = End -1;
         const std::string & chromosome = Regions[RegionIndex].getChromosome()->getSeq();
-        //std::cout << Regions[RegionIndex].getChromosome()->getName() << " " << chromosome.size() - g_SpacerBeforeAfter * 2 << " " << Start - g_SpacerBeforeAfter << " " << End - g_SpacerBeforeAfter << std::endl;
-        for (int pos = Start; pos < End; pos++) {
-            if (chromosome.at(pos) == CurrentBase) {
-                CurrentRegion->PD_Plus[0].push_back(pos); // else
-            }
-            else if (chromosome.at(pos) == CurrentBaseRC) {
-                CurrentRegion->PD_Minus[0].push_back(pos);
-            }
+
+        int Start = Regions[RegionIndex].getStart();
+        int End = std::min((unsigned) Regions[RegionIndex].getEnd(), (unsigned) chromosome.size());
+        if (Start < 0) Start = End -1;
+
+        const unsigned int* Plus_s, * Plus_e;
+        const unsigned int* Minus_s, * Minus_e;
+        Chr->getPositions(CurrentBaseNum, Start, End, &Plus_s, &Plus_e);
+        Chr->getPositions(CurrentBaseRCNum, Start, End, &Minus_s, &Minus_e);
+        for (const unsigned int* it = Plus_s; it != Plus_e; it++) {
+            CurrentRegion->PD_Plus[0].push_back(*it);
+        }
+        for (const unsigned int* it = Minus_s; it != Minus_e; it++) {
+            CurrentRegion->PD_Minus[0].push_back(*it);
         }
         NumberOfHits += CurrentRegion->PD_Plus[0].size() + CurrentRegion->PD_Minus[0].size();
         WholeGenomeSearchResult.push_back(CurrentRegion);
     }
-    
-	if (NumberOfHits>0) {
+
+    if (NumberOfHits>0) {
         short BP_Start = 10; // perhaps use global constant like "g_MinimumLengthToReportMatch"
         short BP_End = Temp_One_Read.getReadLengthMinus(); // matched far end should be between BP_Start and BP_End bases long (including BP_Start and End)
         SortedUniquePoints UP; // temporary container for unique far ends
-        CheckBothPerfect(Temp_One_Read, Temp_One_Read.getUnmatchedSeq(), WholeGenomeSearchResult, BP_Start, BP_End, 1, UP);
-        
-	  	if ( NewUPFarIsBetter(UP, Temp_One_Read)) { // UP.MaxLen() > Temp_One_Read.MaxLenFarEnd()
-	 		Temp_One_Read.UP_Far.swap(UP);
+        CheckBothPerfect(Temp_One_Read, Temp_One_Read.getUnmatchedSeq(), Temp_One_Read.getUnmatchedSeqRev(), WholeGenomeSearchResult, BP_Start, BP_End, 1, UP);
+
+        if ( NewUPFarIsBetter(UP, Temp_One_Read)) { // UP.MaxLen() > Temp_One_Read.MaxLenFarEnd()
+            Temp_One_Read.UP_Far.swap(UP);
         }
-        UP.clear(); // may not be necessary as this is deleted from the stack anyway
-	}
+    }
     for (unsigned RegionIndex = 0; RegionIndex < WholeGenomeSearchResult.size(); RegionIndex++) {
-    	delete WholeGenomeSearchResult[ RegionIndex ];
+        delete WholeGenomeSearchResult[ RegionIndex ];
     }
 }
-
+*/
 
 /*void SearchFarEndAtPos( const std::string& chromosome, SPLIT_READ& Temp_One_Read, const std::vector <SearchWindow> & Regions )
 {

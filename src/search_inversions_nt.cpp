@@ -66,7 +66,7 @@ int searchInversionsNT(ControlState& currentState, unsigned NumBoxes, const Sear
                   currentRead.IndelSize = currentRead.UP_Far[FarIndex].AbsLoc - currentRead.UP_Close[CloseIndex].AbsLoc;
 
                   currentRead.NT_size = currentRead.getReadLength() - currentRead.UP_Far[FarIndex].LengthStr - currentRead.UP_Close[CloseIndex].LengthStr; // NT_2str
-                  currentRead.NT_str = ReverseComplement( currentRead. getUnmatchedSeq()).substr(currentRead.BP + 1, currentRead.NT_size);
+                  currentRead.NT_str = currentRead.getUnmatchedSeqRev().substr(currentRead.BP + 1, currentRead.NT_size);
                   currentRead.BPLeft = currentRead.UP_Close[CloseIndex].AbsLoc + 1 - g_SpacerBeforeAfter;
                   currentRead.BPRight = currentRead.UP_Far[FarIndex].AbsLoc - g_SpacerBeforeAfter;
                   if (readTransgressesBinBoundaries( currentRead, window.getEnd())) {
@@ -157,7 +157,7 @@ int searchInversionsNT(ControlState& currentState, unsigned NumBoxes, const Sear
                   currentRead.IndelSize = currentRead.UP_Far[FarIndex].AbsLoc - currentRead.UP_Close[CloseIndex].AbsLoc;
 
                   currentRead.NT_size = currentRead.getReadLength() - currentRead.UP_Far[FarIndex].LengthStr - currentRead.UP_Close[CloseIndex].LengthStr;
-                  currentRead.NT_str = ReverseComplement( currentRead. getUnmatchedSeq()). substr( currentRead.BP + 1, currentRead.NT_size);
+                  currentRead.NT_str = currentRead.getUnmatchedSeqRev(). substr( currentRead.BP + 1, currentRead.NT_size);
                   currentRead.BPLeft = currentRead.UP_Close[CloseIndex].AbsLoc - g_SpacerBeforeAfter;
                   currentRead.BPRight = currentRead.UP_Far[FarIndex].AbsLoc - 1 - g_SpacerBeforeAfter;
 

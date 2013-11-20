@@ -137,7 +137,7 @@ static int get_split_reads_for_cluster(std::vector<bam_info>& bam_sources, char 
         std::vector<SPLIT_READ> HangingReads; // Kai: those are reads without closed end mapped, or hanging reads.
         std::vector<REF_READ> Ref_Supporting_Reads; // Kai: those reads support the reference allele;
         // Read split reads in defined window.
-        ReadBuffer read_buffer(SPLIT_READ_BUFFER_SIZE, split_reads, HangingReads, chromosome->getSeq());
+        ReadBuffer read_buffer(SPLIT_READ_BUFFER_SIZE, split_reads, HangingReads, chromosome->getSeq(), *chromosome);
 
         ReadInBamReads_SR(source.BamFile.c_str(), chromosome->getName(), &chromosome->getSeq(), split_reads, 
                           HangingReads, Ref_Supporting_Reads, source.InsertSize, source.Tag, search_window, 
@@ -267,7 +267,7 @@ static void get_breakpoints(std::vector<simple_read*>& cluster, std::vector<bam_
         std::string mapped_part;
         std::string unmapped_part;
         if (anchor_strand == Plus) {
-            whole_sequence = ReverseComplement(read.getUnmatchedSeq());
+            whole_sequence = read.getUnmatchedSeqRev();
             mapped_part = whole_sequence.substr(0, read.CloseEndLength);
             unmapped_part = whole_sequence.substr(read.CloseEndLength, whole_sequence.length());
         } else {

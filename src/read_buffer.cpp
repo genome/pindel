@@ -9,8 +9,8 @@
 #include "pindel.h"
 
 /* 'ReadBuffer' constructor: sets the capacity of the buffer */
-ReadBuffer::ReadBuffer( int capacity, std::vector<SPLIT_READ> &referenceToFilteredReads, std::vector<SPLIT_READ> &referenceToOneEndMappedReads, const std::string& chromosome)
-   : m_filteredReads(referenceToFilteredReads), m_OneEndMappedReads(referenceToOneEndMappedReads), m_CAPACITY( capacity), m_CHROMOSOME( chromosome )
+ReadBuffer::ReadBuffer( int capacity, std::vector<SPLIT_READ> &referenceToFilteredReads, std::vector<SPLIT_READ> &referenceToOneEndMappedReads, const std::string& chromosome, const Chromosome& chr)
+   : m_filteredReads(referenceToFilteredReads), m_OneEndMappedReads(referenceToOneEndMappedReads), m_CAPACITY( capacity), m_CHROMOSOME( chromosome ), chr(chr)
 {
    m_currentsize = 0;
    m_rawreads.reserve( m_CAPACITY );
@@ -47,7 +47,7 @@ void ReadBuffer::flush()
 		//	std::cout << "skip close end search" << std::endl;
 		//}
             if (m_rawreads[i].MapperSplit == false)
-                GetCloseEnd(m_CHROMOSOME, m_rawreads[i]);
+                GetCloseEnd(/*m_CHROMOSOME*/ chr, m_rawreads[i]);
 		
 			if (m_rawreads[i].hasCloseEnd()) {
  				updateReadAfterCloseEndMapping(m_rawreads[i]);

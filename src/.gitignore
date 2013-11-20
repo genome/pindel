@@ -1,0 +1,6 @@
+*.d
+*.o
+*.d.*
+*.gcno
+pindel
+pindel-debug

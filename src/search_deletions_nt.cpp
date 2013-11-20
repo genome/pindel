@@ -63,7 +63,7 @@ int searchIndels(ControlState& currentState, unsigned NumBoxes, const SearchWind
                currentRead.BP = currentRead.UP_Close[CloseIndex].LengthStr - 1;
                currentRead.NT_size = currentRead.getReadLength() - currentRead.UP_Far[FarIndex].LengthStr - currentRead.UP_Close[CloseIndex].LengthStr;
 
-               currentRead.NT_str = ReverseComplement( currentRead. getUnmatchedSeq()). substr( currentRead.BP + 1, currentRead.NT_size);
+               currentRead.NT_str = currentRead.getUnmatchedSeqRev(). substr( currentRead.BP + 1, currentRead.NT_size);
                currentRead.IndelSize = (currentRead.Right - currentRead.Left) + currentRead.NT_size - currentRead.getReadLengthMinus();
 
                currentRead.BPLeft = currentRead.UP_Close[CloseIndex].AbsLoc - g_SpacerBeforeAfter;

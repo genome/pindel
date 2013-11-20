@@ -61,8 +61,11 @@ struct RefCoveragePerPosition {
 extern std::vector <RefCoveragePerPosition> g_RefCoverageRegion;
 extern char Match[256];
 extern char Match2N[256];
+extern char MatchPair[256][256];
+extern char MismatchPair[256][256];
 extern char Convert2RC[256];
 extern char Convert2RC4N[256];
+extern char Convert2Num[256];
 extern char Cap2LowArray[256];
 extern unsigned int DSizeArray[15];
 extern short g_reportLength;
@@ -216,6 +219,8 @@ struct RP_READ {
     std::string ChrNameB;
     char DA;
     char DB;
+    unsigned ChrIdA;
+    unsigned ChrIdB;
     unsigned PosA;
     unsigned PosB;
     unsigned OriginalPosA;
@@ -238,8 +243,11 @@ struct SPLIT_READ {
 	SPLIT_READ() {
 	FragName = "";
         FarFragName = "";
+        FragId = -1;
+        FarFragId = -1;
 	Name = "";
 	UnmatchedSeq = "";
+        UnmatchedSeqRev = "";
 	MatchedD = 0;
         MatchedFarD = 0;
 	MatchedRelPos = 0;
@@ -273,10 +281,12 @@ struct SPLIT_READ {
     bool MapperSplit;
 	std::string FragName;
    	std::string FarFragName;
+        int FragId, FarFragId;
 	std::string Name;
 
 	void setUnmatchedSeq( const std::string & unmatchedSeq );
 	const std::string& getUnmatchedSeq() const { return UnmatchedSeq; }	
+        const std::string& getUnmatchedSeqRev() const { return UnmatchedSeqRev; }
 
 
 	char MatchedD; // rename AnchorStrand?
@@ -323,7 +333,8 @@ struct SPLIT_READ {
 	bool hasCloseEnd() const;
 	unsigned int MaxLenCloseEnd() const;
 	unsigned int MaxLenFarEnd() const;
-    std::string UnmatchedSeq;
+        std::string UnmatchedSeq;
+        std::string UnmatchedSeqRev;
 	friend std::ostream& operator<<(std::ostream& os, const SPLIT_READ& splitRead);
     
 private:
@@ -468,7 +479,8 @@ void GetRealStart4Insertion(const std::string & TheInput,
 		unsigned int &RealEnd);
 void GetRealStart4Deletion(const std::string & TheInput,	unsigned int &RealStart, unsigned int &RealEnd);
 bool ReportEvent(const std::vector<SPLIT_READ> &Deletions, const unsigned int &Pre_S, const unsigned int &Pre_E);
-void GetCloseEnd(const std::string & CurrentChr, SPLIT_READ & Temp_One_Read);
+void GetCloseEnd(const std::string & CurrentChrSeq, SPLIT_READ & Temp_One_Read);
+void GetCloseEnd(const Chromosome& CurrentChr, SPLIT_READ & Temp_One_Read);
 void GetFarEnd_OtherStrand(const std::string & CurrentChr, SPLIT_READ & Temp_One_Read, const short &RangeIndex);
 void GetFarEnd_SingleStrandDownStream(const std::string & CurrentChr, SPLIT_READ & Temp_One_Read, const short &RangeIndex);
 void GetFarEnd_SingleStrandUpStream(const std::string & CurrentChr, SPLIT_READ & Temp_One_Read, const short &RangeIndex);
@@ -506,18 +518,18 @@ std::string Cap2Low(const std::string & input);
 		SortedUniquePoints &UP);*/
 class FarEndSearchPerRegion;
 void CheckBoth(SPLIT_READ & read,
-               const std::string & readSeq,
-               const std::vector <FarEndSearchPerRegion*> & WholeGenomeSearchResult_input,
+               const std::string & readSeq, const std::string& readSeqRev,
+               std::vector <FarEndSearchPerRegion*> & WholeGenomeSearchResult_input,
                const short minimumLengthToReportMatch,
                const short BP_End,
-               const short CurrentLength,
+               short CurrentLength,
                SortedUniquePoints &UP);
 void CheckBothPerfect(SPLIT_READ & read,
-               const std::string & readSeq,
-               const std::vector <FarEndSearchPerRegion*> & WholeGenomeSearchResult_input,
+               const std::string & readSeq, const std::string& readSeqRev,
+               std::vector <FarEndSearchPerRegion*> & WholeGenomeSearchResult_input,
                const short minimumLengthToReportMatch,
                const short BP_End,
-               const short CurrentLength,
+               short CurrentLength,
                SortedUniquePoints &UP);
 void GetIndelTypeAndRealStart(const std::string & TheInput,
 		const unsigned int &BPLeft, const unsigned int &IndelSize,
@@ -545,15 +557,18 @@ class Chromosome {
 friend class Genome;
 
 public:
-	Chromosome( const std::string& name, const std::string& sequence ) { m_name = name; m_sequence = sequence; };
+	Chromosome( const std::string& name, const std::string& sequence ) { m_name = name; m_sequence = sequence; buildIndex();};
 	const std::string& getName() const { return m_name; }
     const std::string & getSeq() const { return m_sequence; }
 	const unsigned int getCompSize() const { return m_sequence.size(); }
 	const unsigned int getBiolSize() const { return m_sequence.size() - 2 * g_SpacerBeforeAfter; }
-
+    void buildIndex();
+    const unsigned int* getPositions(int refchar, unsigned int start) const;
 private:
 	std::string m_name;
 	std::string m_sequence;
+        PosVector index;
+        unsigned int char_pos_start[5];
 };
 
 extern const Chromosome g_dummyChromosome;

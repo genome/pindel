@@ -254,7 +254,7 @@ void OutputTDs (std::vector < SPLIT_READ > &TDs,
          TDOutf << TDs[GoodIndex].getUnmatchedSeq() << std::endl;
       }
       else {
-         TDOutf << ReverseComplement (TDs[GoodIndex].getUnmatchedSeq()) << std::endl;
+         TDOutf << TDs[GoodIndex].getUnmatchedSeqRev() << std::endl;
       }
       TDOutf << "\t" << TDs[GoodIndex].MatchedD << "\t"
              << TDs[GoodIndex].MatchedRelPos
@@ -403,11 +403,11 @@ void OutputDeletions (std::vector < SPLIT_READ > &Deletions,
          DeletionOutf << Deletions[GoodIndex].getUnmatchedSeq().substr (Deletions[GoodIndex].BP + 1, Deletions[GoodIndex].getReadLength() - Deletions[GoodIndex].BP);	// << endl;
       }
       else {
-         DeletionOutf << ReverseComplement (Deletions[GoodIndex].getUnmatchedSeq()).substr (0, Deletions[GoodIndex].BP + 1);	// << endl;
+         DeletionOutf << Deletions[GoodIndex].getUnmatchedSeqRev().substr (0, Deletions[GoodIndex].BP + 1);	// << endl;
          for (int i = 0; i < GapSize; i++) {
             DeletionOutf << " ";
          }
-         DeletionOutf << ReverseComplement (Deletions[GoodIndex].getUnmatchedSeq()).substr (Deletions[GoodIndex].BP + 1, Deletions[GoodIndex].getReadLength() - Deletions[GoodIndex].BP);	// << endl;
+         DeletionOutf << Deletions[GoodIndex].getUnmatchedSeqRev().substr (Deletions[GoodIndex].BP + 1, Deletions[GoodIndex].getReadLength() - Deletions[GoodIndex].BP);	// << endl;
       }
       for (int i = 0; i < SpaceBeforeD; i++) {
          DeletionOutf << " ";
@@ -558,7 +558,7 @@ void OutputInversions (std::vector < SPLIT_READ > &Inv,
          InvOutf << std::string( SpaceBeforeReadSeq, ' ' );
          if (Inv[GoodIndex].UP_Close[0].AbsLoc < Inv[GoodIndex].UP_Far[0].AbsLoc ) {
 
-            InvOutf << ReverseComplement (Inv[GoodIndex].getUnmatchedSeq());
+            InvOutf << Inv[GoodIndex].getUnmatchedSeqRev();
              
             InvOutf << std::string( Inv[GoodIndex].BP, ' ' );
          }
@@ -597,7 +597,7 @@ void OutputInversions (std::vector < SPLIT_READ > &Inv,
             InvOutf << std::string( Inv[GoodIndex].BP, ' ');
          }
          else {
-            InvOutf << ReverseComplement (Inv[GoodIndex].getUnmatchedSeq());
+            InvOutf << Inv[GoodIndex].getUnmatchedSeqRev();
          }
          InvOutf  << "\t" << Inv[GoodIndex].MatchedD << "\t"
                   << Inv[GoodIndex].MatchedRelPos
@@ -722,7 +722,7 @@ void OutputSIs (std::vector < SPLIT_READ > &SIs,
          SIsOutf << SIs[GoodIndex].getUnmatchedSeq();
       }
       else {
-         SIsOutf << ReverseComplement (SIs[GoodIndex].getUnmatchedSeq());
+         SIsOutf << SIs[GoodIndex].getUnmatchedSeqRev();
       }
       short SpaceBeforeD =
          g_reportLength + g_reportLength - SpaceBeforeReadSeq -
@@ -850,7 +850,7 @@ void OutputDI (std::vector < SPLIT_READ > &DI,
          DeletionOutf << DI[GoodIndex].getUnmatchedSeq() << "\t";
       }
       else {
-         DeletionOutf << ReverseComplement (DI[GoodIndex].getUnmatchedSeq()) << "\t";
+         DeletionOutf << DI[GoodIndex].getUnmatchedSeqRev() << "\t";
       }
       DeletionOutf << "\t" << DI[GoodIndex].MatchedD << "\t" << DI[GoodIndex].
                    MatchedRelPos << "\t" << DI[GoodIndex].MS << "\t" << DI[GoodIndex].
@@ -1628,7 +1628,7 @@ void OutputShortInversion (std::vector < SPLIT_READ > &supportingReads,
          InversionOutF << supportingReads[GoodIndex].getUnmatchedSeq() << "\t";
       }
       else {
-         InversionOutF << ReverseComplement (supportingReads[GoodIndex].getUnmatchedSeq()) << "\t";
+         InversionOutF << supportingReads[GoodIndex].getUnmatchedSeqRev() << "\t";
       }
       InversionOutF << "\t" << supportingReads[GoodIndex].MatchedD << "\t" << supportingReads[GoodIndex].MatchedRelPos << "\t" << supportingReads[GoodIndex].MS << "\t"
                     << supportingReads[GoodIndex].Tag << "\t" << supportingReads[GoodIndex].Name << std::endl;
@@ -2032,7 +2032,7 @@ void SortOutputLI (ControlState& currentState, const std::string & CurrentChr, s
                for (int j = 0; j < g_reportLength - temp_LengthStr; j++) {
                   LargeInsertionOutf << " ";
                }
-               LargeInsertionOutf << ReverseComplement (temp_Plus_Reads[i].getUnmatchedSeq()) << "\t"
+               LargeInsertionOutf << temp_Plus_Reads[i].getUnmatchedSeqRev() << "\t"
                                   << temp_Plus_Reads[i].MatchedD << "\t"
                                   << temp_Plus_Reads[i].MatchedRelPos << "\t"
                                   << temp_Plus_Reads[i].MS << "\t"
@@ -2235,8 +2235,7 @@ void SortOutputRest (ControlState& currentState, const std::string & CurrentChr,
                for (int j = 0; j < g_reportLength - temp_LengthStr; j++) {
                   Outf_Rest << " ";
                }
-               Outf_Rest << ReverseComplement (CurrentSupportingRead.
-                                               getUnmatchedSeq()) << "\t" <<
+               Outf_Rest << CurrentSupportingRead.getUnmatchedSeqRev() << "\t" <<
                          CurrentSupportingRead.MatchedD << "\t" << CurrentSupportingRead.
                          MatchedRelPos << "\t" << CurrentSupportingRead.
                          MS << "\t" << CurrentSupportingRead.

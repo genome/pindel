@@ -161,7 +161,7 @@ short AssembleOneSV(std::map<std::string,int> &ChrName2Index, ControlState & Cur
 	for (unsigned ReadIndex = 0; ReadIndex < First.size(); ReadIndex++) {
       First[ReadIndex].FarFragName = OneSV.ChrB;
       //SearchFarEndAtPos(AllChromosomes[ChrName2Index.find(OneSV.ChrB)->second].ChrSeq, First[ReadIndex], SearchCenter, SearchRange);
-		SearchFarEndAtPos(SecondChrSeq, First[ReadIndex], searchCluster);
+		SearchFarEndAtPos(First[ReadIndex], searchCluster);
     }
     //std::cout << "AssembleOneSV 7" << std::endl;
 
@@ -212,7 +212,7 @@ short AssembleOneSV(std::map<std::string,int> &ChrName2Index, ControlState & Cur
    for (unsigned ReadIndex = 0; ReadIndex < Second.size(); ReadIndex++) {
       Second[ReadIndex].FarFragName = OneSV.ChrA;
       //SearchFarEndAtPos(AllChromosomes[ChrName2Index.find(OneSV.ChrA)->second].ChrSeq, Second[ReadIndex], SearchCenter, SearchRange);
-		SearchFarEndAtPos(FirstChrSeq, Second[ReadIndex], searchCluster);
+		SearchFarEndAtPos(Second[ReadIndex], searchCluster);
    }
 
     CleanUpFarEnd(Second, Left, Right);
@@ -531,7 +531,7 @@ void TryLI(std::map<std::string,int> & ChrName2Index, ControlState & CurrentStat
             if (Second[ReadIndex_Minus].MatchedD == '+') continue;
             MaximumOverlap = std::min(First[ReadIndex_Plus].getReadLength(), Second[ReadIndex_Minus].getReadLength());
             std::cout << MaximumOverlap << std::endl;
-            FirstOne = ReverseComplement(First[ReadIndex_Plus].getUnmatchedSeq());
+            FirstOne = First[ReadIndex_Plus].getUnmatchedSeqRev();
             SecondOne = Second[ReadIndex_Minus].getUnmatchedSeq();
             FirstLength = FirstOne.size();
             SecondLength = SecondOne.size();

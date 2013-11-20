@@ -12,42 +12,43 @@ SOURCES=pindel.cpp reader.cpp reporter.cpp searcher.cpp parameter.cpp \
     line_reader.cpp ifstream_line_reader.cpp gz_line_reader.cpp\
     pindel_read_reader.cpp user_defined_settings.cpp \
     fn_parameters.cpp logstream.cpp search_MEI_util.cpp \
-    search_MEI.cpp assembly.cpp genotyping.cpp
+    search_MEI.cpp assembly.cpp genotyping.cpp sse_helpers.cpp
 
 #search_MEI.cpp
 
 
 #   bddata.cpp shifted_vector.cpp read_buffer.cpp assembly.cpp genotyping.cpp\
  
-all:	pindel pindel-debug
+all:	pindel
 -include $(SOURCES:.cpp=.d)
 -include $(SOURCES:.cpp=-debug.d)
 test:	pindel $(addprefix cppcheck-result-,$(SOURCES:.cpp=.xml))
 
 # Debug version of pindel
 pindel-debug: $(SOURCES:.cpp=-debug.o)
-	$(CXX) $(LDFLAGS) $^ -fopenmp -g -pg -fprofile-arcs -ftest-coverage \
-	  -lm -lz -L$(SAMTOOLS) -lbam -o $@
+	$(CXX) $(LDFLAGS) $^ -fopenmp -g -pg -static -fprofile-arcs -ftest-coverage \
+	  -lm -L$(SAMTOOLS) -lbam -lz -o $@
 #	$(CXX) $(LDFLAGS) $^ -fopenmp -g -pg -fprofile-arcs -ftest-coverage \
 #	-static-libgcc -Bstatic -static -lm -lz -L$(SAMTOOLS) -lbam -o $@
 
 # Normal version of pindel	
 pindel:	$(SOURCES:.cpp=.o)
-	$(CXX) $(LDFLAGS) $^ -O3 -fopenmp -lm -lz -L$(SAMTOOLS) -lbam -o $@
-#	$(CXX) $(LDFLAGS) $^ -O3 -fopenmp -Bstatic -static-libgcc -static  -lm -lz -L$(SAMTOOLS) -lbam -o $@
+	$(CXX) $(LDFLAGS) -pg -static $^ -O3 -fopenmp -lm -L$(SAMTOOLS) -lbam -lz -o $@
 
 clean:
 	$(RM) pindel pindel-debug $(OBJECTS) $(OBJECTS_DEBUG) $(CPPCHECKS) \
-	    *.gcov *.gcda *.gcno gmon.out *.d *.o
+	    *.gcov *.gcda *.gcno gmon.out *.d *.o *.d.*
+
+clean-temp:
+	$(RM) *.gcov *.gcda *.gcno *.d *.o *.d.*
 
 # Pattern rule to create normal .o files	
 %.o: %.cpp
-	$(CXX) $(CXXFLAGS) -Wall -g -c -O3 -fopenmp -I$(SAMTOOLS) $< -o $@
-#	$(CXX) $(CXXFLAGS) -Wall -g -c -O3 -Bstatic -static-libgcc -static -fopenmp -I$(SAMTOOLS) $< -o $@
+	$(CXX) $(CXXFLAGS) -msse2 -msse3 -msse4.1 -msse4.2 -mpopcnt -D_GNU_SOURCE -pg -static -Wall -g -c -O3 -funroll-loops -fopenmp -I$(SAMTOOLS) $< -o $@
 
 # Pattern rule to create debug version of .o files
 %-debug.o: %.cpp
-	$(CXX) $(CXXFLAGS) -Wall -g -c -fopenmp -g -pg \
+	$(CXX) $(CXXFLAGS) -msse2 -msse3 -msse4.1 -msse4.2 -mpopcnt -D_GNU_SOURCE -Wall -g -c -fopenmp -g -pg -static \
 	  -fprofile-arcs -ftest-coverage -I$(SAMTOOLS) $< -o $@
 #	$(CXX) $(CXXFLAGS) -Wall -Bstatic -static-libgcc -static -g -c -fopenmp -g -pg \
 	  -fprofile-arcs -ftest-coverage -I$(SAMTOOLS) $< -o $@
