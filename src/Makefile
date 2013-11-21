@@ -39,7 +39,7 @@ pindel:	$(SOURCES:.cpp=.o)
 	$(CXX) -O3 vcfcreator.cpp -o pindel2vcf
 
 clean:
-	$(RM) pindel pindel-debug $(OBJECTS) $(OBJECTS_DEBUG) $(CPPCHECKS) \
+	$(RM) pindel pindel2vcf pindel-debug $(OBJECTS) $(OBJECTS_DEBUG) $(CPPCHECKS) \
 	    *.gcov *.gcda *.gcno gmon.out *.d *.o
 
 # Pattern rule to create normal .o files	
