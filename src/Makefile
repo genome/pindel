@@ -35,6 +35,8 @@ pindel-debug: $(SOURCES:.cpp=-debug.o)
 pindel:	$(SOURCES:.cpp=.o)
 	$(CXX) $(LDFLAGS) $^ -O3 -fopenmp -lm -lz -L$(SAMTOOLS) -lbam -o $@
 #	$(CXX) $(LDFLAGS) $^ -O3 -fopenmp -Bstatic -static-libgcc -static  -lm -lz -L$(SAMTOOLS) -lbam -o $@
+	$(CXX) -O3 SAM_2_PINDEL_cin_2011Sept26.cpp -o sam2pindel
+	$(CXX) -O3 vcfcreator.cpp -o pindel2vcf
 
 clean:
 	$(RM) pindel pindel-debug $(OBJECTS) $(OBJECTS_DEBUG) $(CPPCHECKS) \
