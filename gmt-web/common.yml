@@ -20,8 +20,8 @@ module_details:
     pkg_name: pindel
     icon_16: res/images/genome_pindel_16.png
     icon: res/images/genome_pindel_48.png
-    gmt_pkg_name: pindel0.2.4t
-    debian_pkg_name: pindel0.2.4t
+    gmt_pkg_name: pindel0.2.5
+    debian_pkg_name: pindel0.2.5
 
 download_link: install.html
 github_url: https://github.com/genome/pindel
