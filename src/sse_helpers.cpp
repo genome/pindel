@@ -7,8 +7,6 @@
 
 #ifdef USE_SSE
 #include <emmintrin.h>
-#include <pmmintrin.h>
-#include <smmintrin.h>
 #include <x86intrin.h>
 
 const uint32_t cmpestrmFlag = _SIDD_UBYTE_OPS | _SIDD_CMP_EQUAL_EACH | _SIDD_NEGATIVE_POLARITY;

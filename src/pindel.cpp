@@ -31,8 +31,6 @@
 #include <sstream>
 
 #include <emmintrin.h>
-#include <pmmintrin.h>
-#include <smmintrin.h>
 #include <x86intrin.h>
 
 // Pindel header files

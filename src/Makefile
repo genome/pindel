@@ -44,11 +44,11 @@ clean-temp:
 
 # Pattern rule to create normal .o files	
 %.o: %.cpp
-	$(CXX) $(CXXFLAGS) -msse2 -msse3 -msse4.1 -msse4.2 -mpopcnt -D_GNU_SOURCE -pg -static -Wall -g -c -O3 -funroll-loops -fopenmp -I$(SAMTOOLS) $< -o $@
+	$(CXX) $(CXXFLAGS) -msse2 -msse3 -msse4.2 -mpopcnt -D_GNU_SOURCE -pg -static -Wall -g -c -O3 -funroll-loops -fopenmp -I$(SAMTOOLS) $< -o $@
 
 # Pattern rule to create debug version of .o files
 %-debug.o: %.cpp
-	$(CXX) $(CXXFLAGS) -msse2 -msse3 -msse4.1 -msse4.2 -mpopcnt -D_GNU_SOURCE -Wall -g -c -fopenmp -g -pg -static \
+	$(CXX) $(CXXFLAGS) -msse2 -msse3 -msse4.2 -mpopcnt -D_GNU_SOURCE -Wall -g -c -fopenmp -g -pg -static \
 	  -fprofile-arcs -ftest-coverage -I$(SAMTOOLS) $< -o $@
 #	$(CXX) $(CXXFLAGS) -Wall -Bstatic -static-libgcc -static -g -c -fopenmp -g -pg \
 	  -fprofile-arcs -ftest-coverage -I$(SAMTOOLS) $< -o $@
