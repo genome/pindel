@@ -39,7 +39,8 @@ Makefile.local:
 	@echo "SAMTOOLS=$(realpath $(SAMTOOLS))" >> $@
 	@echo '' >> $@
 	@echo '# Number of threads for functional tests, set to 2 or more, recommended to match number of cores' >> $@
-	@(if [ -e /proc/cpuinfo ] ; then THREADS=`fgrep -c processor /proc/cpuinfo` ; echo "THREADS=${THREADS}" ; else echo 'THREADS=2' ; fi) >> $@
+	@(if [ -e /proc/cpuinfo ] ; then THREADS=`fgrep -c processor /proc/cpuinfo` ; echo "THREADS=$$THREADS" ; else echo 'THREADS=2' ; fi) >> $@
+	@(if [ -e /proc/cpuinfo ] ; then CPUFLAGCHECK=`grep sse4_2 /proc/cpuinfo|grep sse2|grep popcnt|head -n 1` ; [ -n "$$CPUFLAGCHECK" ] && echo "CXXFLAGS=-static -msse2 -msse4.2 -mpopcnt -D_GNU_SOURCE -DUSE_SSE -funroll-loops"; else echo "CXXFLAGS=" ; fi) >> $@
 	@echo '' >> $@
 	@echo '# Acceptance test tuning variables (seconds), set to realistic values for your system' >> $@
 	@echo '# Numbers based on running in CI on Intel i7 2.8GHz, 8 cores, 24GB RAM' >> $@

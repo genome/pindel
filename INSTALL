@@ -52,7 +52,7 @@ if [ "$?" -ne 0 ]; then
 else
     echo "  "
     echo "Creating pindel2vcf utility..."
-    g++ -O3 src/vcfcreator.cpp -o pindel2vcf
+    g++ -O3 -static src/vcfcreator.cpp -o pindel2vcf
     echo "pindel2vcf created."
     echo " "
     echo "Creating sam2pindel utility..."
