@@ -2,7 +2,6 @@
 #include <assert.h>
 #include "sse_helpers.h"
 
-#define USE_SSE
 #define USE_INDEX
 
 #ifdef USE_SSE

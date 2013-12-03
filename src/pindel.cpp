@@ -2327,26 +2327,16 @@ void GetCloseEndInnerPerfectMatch(const std::string & CurrentChrSeq, SPLIT_READ 
 	BP_Start = g_MinClose;
 	BP_End = Temp_One_Read.getReadLengthMinus();
 	const int InitExtend = std::min((int)8, (int)BP_Start);
-	const uint32_t cmpestrmflag       = _SIDD_UBYTE_OPS | _SIDD_CMP_EQUAL_EACH | _SIDD_NEGATIVE_POLARITY;
 	if (Temp_One_Read.MatchedD == Plus) {
 		CurrentReadSeq = Temp_One_Read.getUnmatchedSeqRev();
 		Start = Temp_One_Read.MatchedRelPos + g_SpacerBeforeAfter;
 		End = Start + 3 * Temp_One_Read.InsertSize;
 		char LeftChar = CurrentReadSeq[0];
 
-		__m128i forwardSIMD = _mm_lddqu_si128((__m128i* const) &CurrentReadSeq[0]);
-		__m128i dontcarSIMD = _mm_set1_epi8('N');
-		__m128i forwardMaskSIMD = _mm_cmpestrm(forwardSIMD, InitExtend, dontcarSIMD, InitExtend, cmpestrmflag);
 		if (LeftChar != 'N') {
 			for (int pos = Start; pos < End; pos++) {
 				if (CurrentChrSeq[pos] == LeftChar) {
-					/*__m128i chromosSIMD = _mm_lddqu_si128((__m128i* const) &CurrentChrSeq[pos]);
-					__m128i cmpres = _mm_and_si128(forwardMaskSIMD, _mm_cmpestrm(forwardSIMD, InitExtend, chromosSIMD, InitExtend, cmpestrmflag));
-					int nMismatches = _mm_popcnt_u32(_mm_extract_epi32(cmpres, 0)); 
-					if (nMismatches < PD.size()) { 
-						PD[nMismatches].push_back(pos + InitExtend - 1); // else
-					}*/
-                                        PD[0].push_back(pos);
+                    PD[0].push_back(pos);
 				}
 			}
 		}
@@ -2362,25 +2352,10 @@ void GetCloseEndInnerPerfectMatch(const std::string & CurrentChrSeq, SPLIT_READ 
 		char RightChar = CurrentReadSeq[Temp_One_Read.getReadLengthMinus()];
         
 		const int seqLength = CurrentReadSeq.size();
-		__m128i reverseSIMD = _mm_setzero_si128();
-		for (int i = 0; i < InitExtend; i++) {
-			reverseSIMD = _mm_slli_si128(reverseSIMD, 1);
-			reverseSIMD = _mm_insert_epi8(reverseSIMD, CurrentReadSeq[seqLength - 1 - i], 0);
-		}
- 
-;
-		__m128i dontcarSIMD = _mm_set1_epi8('N');
-		__m128i reverseMaskSIMD = _mm_cmpestrm(reverseSIMD, InitExtend, dontcarSIMD, InitExtend, cmpestrmflag);
 		if (RightChar != 'N') {
 			for (int pos = Start; pos < End; pos++) {
 				if (CurrentChrSeq[pos] == RightChar) {
-					/*__m128i chromosSIMD = _mm_lddqu_si128((__m128i* const) &CurrentChrSeq[pos + 1 - InitExtend]);
-					__m128i cmpres = _mm_and_si128(reverseMaskSIMD, _mm_cmpestrm(reverseSIMD, InitExtend, chromosSIMD, InitExtend, cmpestrmflag));
-					int nMismatches = _mm_popcnt_u32(_mm_extract_epi32(cmpres, 0)); 
-					if (nMismatches < PD.size()) {
-						PD[nMismatches].push_back(pos - InitExtend + 1);
-					}*/
-                                        PD[0].push_back(pos);
+                    PD[0].push_back(pos);
 				}
 			}
 		}
