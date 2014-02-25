@@ -19,6 +19,9 @@ void defineParameters(std::vector<Parameter *>& parameters)
    parameters.push_back(
         new StringParameter(&userSettings->referenceFilename, "-f", "--fasta",
                             "the reference genome sequences in fasta format", true, ""));
+
+    parameters.push_back(
+        new BoolParameter(&userSettings->useIndex, "-U", "--use-index", "Build and use an in-memory index for better speed (default false)", false, false));
     parameters.push_back(
         new StringParameter(
             &(userSettings->pindelFilename),

@@ -14,6 +14,7 @@ int DoInitialSeedAndExtendForward(const Chromosome& chromosome,
                                   size_t initExtend,
                                   const std::string& readSeq,
                                   size_t maxMismatches,
+                                  bool useIndex,
                                   std::vector<unsigned int>* PD);
 
 int DoInitialSeedAndExtendReverse(const Chromosome& chromosome,
@@ -22,5 +23,6 @@ int DoInitialSeedAndExtendReverse(const Chromosome& chromosome,
                                   size_t initExtend,
                                   const std::string& readSeq,
                                   size_t maxMismatches,
+                                  bool useIndex,
                                   std::vector<unsigned int>* PD);
 #endif

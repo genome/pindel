@@ -79,7 +79,7 @@
 
 const std::string Pindel_Version_str = "Pindel version 0.2.5a3, Oct 24 2013.";
 
-const Chromosome g_dummyChromosome("","");
+const Chromosome g_dummyChromosome("","", false);
 Genome g_genome;
 std::ofstream g_logFile;
 
@@ -333,7 +333,7 @@ const Chromosome* Genome::getNextChromosome()
 			// there is a previous chromosome
 			const std::string oldName = m_chromosomes[ m_currentChromosomeIndex ]->getName();
 			delete m_chromosomes[ m_currentChromosomeIndex ];
-			m_chromosomes[ m_currentChromosomeIndex ] = new Chromosome( oldName, "");
+			m_chromosomes[ m_currentChromosomeIndex ] = new Chromosome( oldName, "", userSettings->useIndex);
 		}
 		m_currentChromosomeIndex++;
 		return loadChromosome();
@@ -381,7 +381,7 @@ const Chromosome* Genome::loadChromosome()
       Spacer += "N";
    }
    chromosomeSeq = Spacer + chromosomeSeq + Spacer;
-	Chromosome* newChromosome= new Chromosome( chromosomeName, chromosomeSeq );
+	Chromosome* newChromosome= new Chromosome( chromosomeName, chromosomeSeq, userSettings->useIndex );
 	return addChromosome( newChromosome );
 }
 
@@ -2442,7 +2442,7 @@ void GetCloseEndInner(const Chromosome& CurrentChr, SPLIT_READ & Temp_One_Read) 
         int Start = Temp_One_Read.MatchedRelPos + g_SpacerBeforeAfter;
         int End = Start + 3 * Temp_One_Read.InsertSize;
 
-        int InitExtend = DoInitialSeedAndExtendForward(CurrentChr, Start, End, BP_Start, CurrentReadSeq, PD.size() - 1, &PD[0]);
+        int InitExtend = DoInitialSeedAndExtendForward(CurrentChr, Start, End, BP_Start, CurrentReadSeq, PD.size() - 1, userSettings->useIndex, &PD[0]);
         CheckLeft_Close(Temp_One_Read, CurrentChrSeq, CurrentReadSeq, PD, BP_Start, BP_End, InitExtend, Temp_One_Read.UP_Close);
     }
     else if (Temp_One_Read.MatchedD == Minus) {
@@ -2450,7 +2450,7 @@ void GetCloseEndInner(const Chromosome& CurrentChr, SPLIT_READ & Temp_One_Read) 
         int End = Temp_One_Read.MatchedRelPos + g_SpacerBeforeAfter;
         int Start = End - 3 * Temp_One_Read.InsertSize;
 
-        int InitExtend = DoInitialSeedAndExtendReverse(CurrentChr, Start, End, BP_Start, CurrentReadSeq, PD.size() - 1, &PD[0]);
+        int InitExtend = DoInitialSeedAndExtendReverse(CurrentChr, Start, End, BP_Start, CurrentReadSeq, PD.size() - 1, userSettings->useIndex, &PD[0]);
         CheckRight_Close(Temp_One_Read, CurrentChrSeq, CurrentReadSeq, PD, BP_Start, BP_End, InitExtend, Temp_One_Read.UP_Close);
     }
     if (!Temp_One_Read.UP_Close.empty()) {
@@ -2479,7 +2479,7 @@ void GetCloseEndInnerPerfectMatch(const Chromosome& CurrentChr, SPLIT_READ & Tem
         int Start = Temp_One_Read.MatchedRelPos + g_SpacerBeforeAfter;
         int End = Start + 3 * Temp_One_Read.InsertSize;
 
-        int InitExtend = DoInitialSeedAndExtendForward(CurrentChr, Start, End, BP_Start, CurrentReadSeq, PD.size() - 1, &PD[0]);
+        int InitExtend = DoInitialSeedAndExtendForward(CurrentChr, Start, End, BP_Start, CurrentReadSeq, PD.size() - 1, userSettings->useIndex, &PD[0]);
         if (PD[0].size()) {
             CheckLeft_Close_Perfect(Temp_One_Read, CurrentChrSeq, CurrentReadSeq, PD, BP_Start, BP_End, InitExtend, Temp_One_Read.UP_Close);
         }
@@ -2489,7 +2489,7 @@ void GetCloseEndInnerPerfectMatch(const Chromosome& CurrentChr, SPLIT_READ & Tem
         int End = Temp_One_Read.MatchedRelPos + g_SpacerBeforeAfter;
         int Start = End - 3 * Temp_One_Read.InsertSize;
 
-        int InitExtend = DoInitialSeedAndExtendReverse(CurrentChr, Start, End, BP_Start, CurrentReadSeq, PD.size() - 1, &PD[0]);
+        int InitExtend = DoInitialSeedAndExtendReverse(CurrentChr, Start, End, BP_Start, CurrentReadSeq, PD.size() - 1, userSettings->useIndex, &PD[0]);
         if (PD[0].size()) {
             CheckRight_Close_Perfect(Temp_One_Read, CurrentChrSeq, CurrentReadSeq, PD, BP_Start, BP_End, InitExtend, Temp_One_Read.UP_Close);
         }

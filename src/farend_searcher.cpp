@@ -75,8 +75,8 @@ void SearchFarEndAtPos(SPLIT_READ& Temp_One_Read, const std::vector <SearchWindo
 
         FarEndSearchPerRegion* CurrentRegion = new FarEndSearchPerRegion(Chr, PD_size, std::max(1, End - Start));
 
-        DoInitialSeedAndExtendForward(*Chr, Start, End, InitExtend, forwardSeq, PD_size-1, &(CurrentRegion->PD_Plus[0]));
-        DoInitialSeedAndExtendReverse(*Chr, Start, End, InitExtend, reverseSeq, PD_size-1, &(CurrentRegion->PD_Minus[0]));
+        DoInitialSeedAndExtendForward(*Chr, Start, End, InitExtend, forwardSeq, PD_size-1, userSettings->useIndex, &(CurrentRegion->PD_Plus[0]));
+        DoInitialSeedAndExtendReverse(*Chr, Start, End, InitExtend, reverseSeq, PD_size-1, userSettings->useIndex, &(CurrentRegion->PD_Minus[0]));
         for (unsigned i = 0; i < Temp_One_Read.getTOTAL_SNP_ERROR_CHECKED(); i++) {
             NumberOfHits += CurrentRegion->PD_Plus[i].size();
             NumberOfHits += CurrentRegion->PD_Minus[i].size();

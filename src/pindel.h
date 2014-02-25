@@ -557,7 +557,10 @@ class Chromosome {
 friend class Genome;
 
 public:
-	Chromosome( const std::string& name, const std::string& sequence ) { m_name = name; m_sequence = sequence; buildIndex();};
+	Chromosome( const std::string& name, const std::string& sequence, bool useIndex ) {
+        m_name = name; m_sequence = sequence;
+        if (useIndex) buildIndex();
+    };
 	const std::string& getName() const { return m_name; }
     const std::string & getSeq() const { return m_sequence; }
 	const unsigned int getCompSize() const { return m_sequence.size(); }

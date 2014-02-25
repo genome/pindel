@@ -129,6 +129,7 @@ public:
 	std::string userDefinedRegion;
 	double Seq_Error_Rate;
 	bool showHelp;
+    bool useIndex;
     
     // DD detection: max distance of breakpoints for same event.
     int MAX_DD_BREAKPOINT_DISTANCE;
