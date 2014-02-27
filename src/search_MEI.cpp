@@ -555,7 +555,13 @@ static void report_split_read_support(Genome& genome, MEI_breakpoint& breakpoint
     }
     
     // Sort on length of mapped part.
-    sort(breakpoint.associated_split_reads.begin(), breakpoint.associated_split_reads.end(), comp_simple_read_mapsize);
+    if (fiveprime_end) {
+        sort(breakpoint.associated_split_reads.begin(), breakpoint.associated_split_reads.end(),
+             comp_simple_read_mapsize);
+    } else {
+        sort(breakpoint.associated_split_reads.rbegin(), breakpoint.associated_split_reads.rend(),
+             comp_simple_read_unmapped_seqsize);
+    }
     
     // Compute on-screen distances.
     int base;
