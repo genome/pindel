@@ -375,7 +375,6 @@ bool ReadInBamReads_RP (const char *bam_path, const std::string & FragName,
     int tid;
     tid = bam_get_tid (header, FragName.c_str ());
 
-    //kai does the below line in readinreads. dunno why yet  
     fetch_func_data_RP data( CurrentChrSeq );
     data.header = header;
     //data.CurrentChrSeq = CurrentChrSeq;
@@ -684,18 +683,22 @@ if (bamCore->flag & BAM_FSECONDARY || bamCore->flag & BAM_FQCFAIL || bamCore->fl
 
 bool WhetherSimpleCigar(const bam1_t * unmapped_read, const bam1_core_t * c, const uint32_t * cigar, SPLIT_READ & SR_Read, int & indelsize) {
 	//std::cout << "entering WhetherSimpleCigar" << std::endl;
-	const uint8_t *nm = bam_aux_get(unmapped_read, "NM");
+/*	const uint8_t *nm = bam_aux_get(unmapped_read, "NM");
 	if (nm) {
 		int32_t nm_value = bam_aux2i(nm);
-		if (nm_value) return false;
+		if (nm_value) {
+			//std::cout << "nm" << std::endl;
+			return false;
+		}
 	}
+*/
         uint32_t k;
         unsigned CountNonM = 0;
         unsigned CountIndel = 0;
         unsigned CountM = 0;
 //	if (SR_Read.Name == "@1_13911_14618_0_1_0_0_1:0:0_1:0:0_2e3d0/1" || SR_Read.Name == "@1_13911_14618_0_1_0_0_1:0:0_1:0:0_2e3d0/2")
 //		std::cout << "Standard: \tMatch " << BAM_CMATCH << "\tINS " << BAM_CINS << "\tDEL " << BAM_CDEL << std::endl;
-        
+        //std::cout << "here" << std::endl;
         for (k = 0; k < c->n_cigar; ++k) {
 		
             int op = cigar[k] & BAM_CIGAR_MASK;
@@ -706,14 +709,18 @@ bool WhetherSimpleCigar(const bam1_t * unmapped_read, const bam1_core_t * c, con
             if (op == BAM_CINS || op == BAM_CDEL) CountIndel++;
         }
 //	if (SR_Read.Name == "@1_13911_14618_0_1_0_0_1:0:0_1:0:0_2e3d0/1" || SR_Read.Name == "@1_13911_14618_0_1_0_0_1:0:0_1:0:0_2e3d0/2")
-//		std::cout << "##################\t" << CountM << " " << CountNonM << " " << CountIndel << std::endl;
-        if (CountM == 2 && CountNonM == 1 && CountIndel == 1) {
-//		std::cout << "good splitmapper" << std::endl;
+		//std::cout << "##################\t" << CountM << " " << CountNonM << " " << CountIndel << std::endl;
+        //if (CountNonM + CountIndel) std::cout << "##################\t" << CountM << " " << CountNonM << " " << CountIndel << std::endl;
+	if (CountM == 2 && CountNonM == 1 && CountIndel == 1) {
+		//std::cout << "##################\t" << CountM << " " << CountNonM << " " << CountIndel << std::endl;
+		//std::cout << "########################good splitmapper" << std::endl;
 		int op = cigar[1] & BAM_CIGAR_MASK;
 		if (op == BAM_CDEL)
 			indelsize = (cigar[1] >> BAM_CIGAR_SHIFT) * (-1);
 		else if (op == BAM_CINS)
 			indelsize = (cigar[1] >> BAM_CIGAR_SHIFT);
+			//std::cout << "sr" << std::endl;
+		g_NumberOfGapAlignedReads++;
 		return true; // this read just contains one indel mapped by the aligner
 	}
         else return false;
@@ -878,11 +885,13 @@ void build_record_SR (const bam1_t * mapped_read, const bam1_t * unmapped_read, 
     }
     //if (Temp_One_Read.Name == "@DD7DT8Q1:4:1106:17724:13906#GTACCT/1") {
     //    std::cout << "I am there." << std::endl;
-    //}
+    //}	
+	/*
 	int IndelSize;
     if (WhetherSimpleCigar(unmapped_read, unmapped_core, cigar_pointer_unmapped, Temp_One_Read, IndelSize)) {
         AddUniquePoint(unmapped_read, unmapped_core, cigar_pointer_unmapped, Temp_One_Read, IndelSize);
     }
+	*/
 
     data_for_bam->readBuffer->addRead(Temp_One_Read);
     return;
@@ -960,6 +969,7 @@ void build_record_RP (const bam1_t * r1, void *data)
             Temp_One_Read.InsertSize = data_for_bam->InsertSize;
             //FIXME pass these through from the command line with a struct
             Temp_One_Read.Tag = Tag;
+            Temp_One_Read.Tags.push_back(Tag);
             
             data_for_bam->LeftReads->push_back(Temp_One_Read);
         }
@@ -1035,6 +1045,8 @@ void build_record_RP_Discovery (const bam1_t * r1, void *data) {
 			Temp_One_Read.InsertSize = data_for_bam->InsertSize;
 			//FIXME pass these through from the command line with a struct
 			Temp_One_Read.Tag = Tag;
+			Temp_One_Read.Tags.clear();
+			Temp_One_Read.Tags.push_back(Temp_One_Read.Tag);
 			Temp_One_Read.ReadLength = r1_core->l_qseq;
 			//std::cout << Temp_One_Read.ReadName << " " << Temp_One_Read.DA << " " << Temp_One_Read.PosA << " " << Temp_One_Read.DB << " " << Temp_One_Read.PosB << std::endl;
 			if (r1_core->tid == r1_core->mtid) {

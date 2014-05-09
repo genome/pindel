@@ -210,6 +210,7 @@ struct RP_READ {
         Report = false;
         Visited = false;
         Experimental_InsertSize = 0;
+	Tags.clear();
     }
     std::string ReadName;
     std::string ChrNameA;
@@ -226,6 +227,7 @@ struct RP_READ {
     short MQA;
     short MQB;
     std::string Tag;
+	std::vector <std::string> Tags;
     unsigned InsertSize;
     unsigned Experimental_InsertSize; // ex
     short ReadLength;
