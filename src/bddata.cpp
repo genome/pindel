@@ -518,7 +518,7 @@ void Summarize_InterChr(std::vector <RP_READ> & Reads_RP) {
         if (Reads_RP[first].Visited == true) continue;
         Reads_RP[first].NumberOfIdentical = 0;
         for (unsigned second = first + 1; second < Reads_RP.size(); second++) {
-		std::cout << second << " " << Reads_RP[second].Tags.size() << std::endl;
+		//std::cout << second << " " << Reads_RP[second].Tags.size() << std::endl;
             if (Reads_RP[second].Visited == true) continue;
             if (Reads_RP[first].ChrNameA == Reads_RP[second].ChrNameA
                 && Reads_RP[first].ChrNameB == Reads_RP[second].ChrNameB

@@ -1184,9 +1184,9 @@ void SearchSVs(ControlState& currentState, const int NumBoxes, const SearchWindo
 //std::cout << "6" << std::endl;
 	ReportCloseAndFarEndCounts( currentState.Reads_SR );                 
 //std::cout << "7" << std::endl;
-   //if (userSettings->Analyze_LI) {
-   	//SortOutputLI(currentState, currentWindow.getChromosome()->getSeq(), currentState.Reads_SR, currentWindow, userSettings->getLIOutputFilename());
-   //}
+   if (userSettings->Analyze_LI) {
+   	SortOutputLI(currentState, currentWindow.getChromosome()->getSeq(), currentState.Reads_SR, currentWindow, userSettings->getLIOutputFilename());
+   }
 //std::cout << "8" << std::endl;
    //if (userSettings->Analyze_BP) {
    	//SortOutputRest(currentState, currentWindow.getChromosome()->getSeq(), currentState.Reads_SR, currentWindow, userSettings->getBPOutputFilename());

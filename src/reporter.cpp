@@ -1796,6 +1796,7 @@ void SortOutputDI (ControlState& currentState, const unsigned &NumBoxes, const s
 
 void SortOutputLI (ControlState& currentState, const std::string & CurrentChr, std::vector < SPLIT_READ > &Reads, const SearchWindow& window, const std::string& filename)
 {
+	//std::cout << "entering SortOutputLI" << std::endl;
    unsigned UP_Close_index;
    unsigned temp_AbsLoc;
    unsigned int LI_BORDER_BUFFER = 4 * g_maxInsertSize;
@@ -1813,6 +1814,7 @@ void SortOutputLI (ControlState& currentState, const std::string & CurrentChr, s
       absEndLIWindow = CurrentChr.size() - g_SpacerBeforeAfter;
    }
 
+	//std::cout << "SortOutputLI:1" << std::endl;
    unsigned int absStartBuffered = absStartLIWindow - LI_BORDER_BUFFER;
    unsigned int absEndBuffered = absEndLIWindow + LI_BORDER_BUFFER;
 
@@ -1837,12 +1839,17 @@ void SortOutputLI (ControlState& currentState, const std::string & CurrentChr, s
          }
       }
    }
+
+	
+	//std::cout << "SortOutputLI:2" << std::endl;
+
    std::vector < LI_Pos > LI_Positions;
    LI_Pos temp_LI_pos;
    bool SkipThis;
    int LI_Positions_Size = 0;
    bool SkipPlus;
 
+	//std::cout << "SortOutputLI:3" << std::endl;
    for (unsigned int Index_Minus = absStartBuffered; Index_Minus < absEndBuffered; Index_Minus++) {
       SkipPlus = false;
       for (unsigned int MaskedPosIndexMinus = Index_Minus + 10;
@@ -1877,6 +1884,10 @@ void SortOutputLI (ControlState& currentState, const std::string & CurrentChr, s
          }
       }
    }
+
+
+	//std::cout << "SortOutputLI:4" << std::endl;
+
    LOG_DEBUG(*logStream << "LI: " << LI_Positions.size() << std::endl);
    static int Count_LI = 0;
    // find LI supporting reads
@@ -1902,6 +1913,7 @@ void SortOutputLI (ControlState& currentState, const std::string & CurrentChr, s
       }
    }
 
+	//std::cout << "SortOutputLI:4" << std::endl;
    std::vector < SPLIT_READ > temp_Plus_Reads, temp_Minus_Reads;
 
    bool temp_BalancedPlus_Plus, temp_BalancedPlus_Minus,
@@ -1976,6 +1988,7 @@ void SortOutputLI (ControlState& currentState, const std::string & CurrentChr, s
          NumSupportPerTagPlus[tagIndex]++;
       }
 
+	//std::cout << "SortOutputLI:6" << std::endl;
       bool SupportedByOneSample = false;
       for (unsigned short j = 0; j < g_sampleNames.size (); j++) {
          LOG_DEBUG(*logStream << NumSupportPerTagPlus[j] << "\t" << NumSupportPerTagMinus[j] << std::endl);
@@ -1985,6 +1998,7 @@ void SortOutputLI (ControlState& currentState, const std::string & CurrentChr, s
          }
       }
 
+	//std::cout << "SortOutputLI:7" << std::endl;
       short PositiveBool = 0;
       if (temp_BalancedPlus_Plus) {
          PositiveBool++;
@@ -1999,7 +2013,8 @@ void SortOutputLI (ControlState& currentState, const std::string & CurrentChr, s
          PositiveBool++;
       }
 
-      if (SupportedByOneSample && PositiveBool >= 3) {
+	//std::cout << "SortOutputLI:8" << std::endl;
+      if (SupportedByOneSample && PositiveBool >= 1) {
          {
             reportBreakDancerEvent(temp_Plus_Reads[0].FragName, LI_Positions[LI_index].
                                    Plus_Pos - g_SpacerBeforeAfter + 1, LI_Positions[LI_index].Minus_Pos -
