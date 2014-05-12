@@ -7,6 +7,7 @@
 	e.m.w.lameijer@gmail.com
 	+31(0)71-5 125 831
 
+	Version 0.6.0 [April 21nd, 2014] automatic warning when finding oversized SVs - and set -co by default as a safeguard. Thanks to user Hong Ching Lee for reporting this problem. 
     Version 0.5.9 -ho -he for cutoffs
 	Version 0.5.8 [April 28th, 2013] Added "-co" option for compact output; -co followed by an integer indicates
  		the longest variation displayed with full base sequence. If, for example, the user gives as command line parameter 
@@ -89,10 +90,11 @@ const int FIRST_SAMPLE_INDEX = 32; // index of first sample name
 
 using namespace std;
 
-string g_versionString = "0.5.8";
+string g_versionString = "0.6.0";
 string g_programName = "pindel2vcf";
 
 bool g_normalBaseArray[256];
+int g_sizeToWarnFor = 1000000;
 
 /* the global parameter g_par stores the values of all parameters set by the user; the Parameter class, in contrast, is for user-friendly IO. */
 struct ParameterSettings {
@@ -1055,11 +1057,23 @@ string SVData::getReference() const
 	}
 }
 
+void reportProblematicSVSize( int size, const string& chromosome, int position )
+{
+	if ( size >= g_sizeToWarnFor ) {
+		cout << "Warning! The SV at chromosome " << chromosome << ", position " << position << " is of size " << size << ".";
+		cout << " It won't be put in the VCF in base sequence detail, but in the format";
+		cout << " 'chrom pos firstrefbase <SVType>'.";
+		cout << " This behaviour can be overridden by setting the -co parameter to -1 or to a larger" ;
+		cout << " value than the current SV size.\n";
+	} 
+}
+ 
 string SVData::getOutputFormattedReference() const
 {
    string defaultRef = getReference();
 	string defaultAlt = getAlternative();
-   if (defaultAlt == "<INS>" ) {
+	reportProblematicSVSize( defaultRef.size(), getChromosome(), getPosition() );   
+if (defaultAlt == "<INS>" ) {
 		return defaultRef;
 	} 
 	else {
@@ -1076,6 +1090,8 @@ string SVData::getOutputFormattedAlternative() const
 {
 	string defaultRef = getReference();
 	string defaultAlt = getAlternative();
+
+	reportProblematicSVSize( defaultAlt.size(), getChromosome(), getPosition() );   
 	if (defaultAlt == "<INS>" ) {
 		return defaultAlt;
 	}
@@ -1759,8 +1775,8 @@ void createParameters()
       new IntParameter( &g_par.regionEnd, "-er", "--region_end", "The end of the region of which events are to be reported (default infinite)", false, -1 ) );
    parameters.push_back(
       new IntParameter( &g_par.maxInterRepeatNo, "-ir", "--max_internal_repeats", "Filters out all indels where the inserted/deleted sequence is a homopolymer/microsatellite of more than X repetitions (default infinite). For example: T->TCACACA has CACACA as insertion, which is a microsattelite of 3 repeats; this would be filtered out by setting -ir to 2", false, -1 ) );
-   parameters.push_back(
-		new IntParameter( &g_par.compactOutput, "-co", "--compact_output_limit", "Puts all structural variations of which either the ref allele or the alt allele exceeds the specified size (say 10 in '-co 10') in the format 'chrom pos first_base <SVType>'", false, -1 ) );
+ parameters.push_back(
+		new IntParameter( &g_par.compactOutput, "-co", "--compact_output_limit", "Puts all structural variations of which either the ref allele or the alt allele exceeds the specified size (say 10 in '-co 10') in the format 'chrom pos first_base <SVType>'", false, g_sizeToWarnFor ) );
    parameters.push_back(
 	   new IntParameter( &g_par.maxInterRepeatLength, "-il", "--max_internal_repeatlength", "Filters out all indels where the inserted/deleted sequence is a homopolymers/microsatellite with an unit size of more than Y, combine with the option -ir. Default value of -il is infinite. For example: T->TCAGCAG has CAGCAG as insertion, which has the fundamental repetitive unit CAG of length 3. This would be filtered out if -il has been set to 3 or above, but would be deemed 'sufficiently unrepetitive' if -il is 2", false, -1 ) );
 	parameters.push_back(
