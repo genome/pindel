@@ -545,10 +545,7 @@ bool isGoodAnchor( const flags_hit *read, const bam1_t * bamOfRead ) //bam1_qnam
 //return true;
 	const bam1_core_t *bamCore = &bamOfRead->core;
 	//std::cout << "1";
-	if (bamCore->flag & BAM_FSECONDARY || bamCore->flag & BAM_FQCFAIL || bamCore->flag & BAM_FDUP) return false;
-	//std::cout << "2";
-	//UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
-	if (userSettings->minimalAnchorQuality == 0) return true;
+
 	//std::cout << "3";
 		//std::string NR = bam1_qname(bamOfRead);
 		//std::string seq;
@@ -582,6 +579,14 @@ bool isGoodAnchor( const flags_hit *read, const bam1_t * bamOfRead ) //bam1_qnam
 	if (!read->mapped) return false;
 	//std::cout << "4";
 	if (bamCore->qual < userSettings->minimalAnchorQuality) return false;
+    
+    if (userSettings->minimalAnchorQuality == 0) return true;
+    
+    if (bamCore->flag & BAM_FSECONDARY || bamCore->flag & BAM_FQCFAIL || bamCore->flag & BAM_FDUP) return false;
+	//std::cout << "2";
+	//UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
+	
+    
 	//std::cout << "5";
 	return true;
 /*
@@ -634,10 +639,11 @@ if (bamCore->flag & BAM_FSECONDARY || bamCore->flag & BAM_FQCFAIL || bamCore->fl
 
 bool isWeirdRead( const flags_hit *read, const bam1_t * bamOfRead )
 {
+    //return true;
 
 const bam1_core_t *bamCore = &bamOfRead->core;
 
-if (bamCore->flag & BAM_FSECONDARY || bamCore->flag & BAM_FQCFAIL || bamCore->flag & BAM_FDUP) return false;
+
 
 	if (!(read->mapped)) return true;
 
@@ -666,9 +672,9 @@ if (bamCore->flag & BAM_FSECONDARY || bamCore->flag & BAM_FQCFAIL || bamCore->fl
 	if ( read->edits + cigarMismatchedBases > 0) {
 		return true;
 	}
-	else {
-		return false;
-	}
+	//else {
+	//	return false;
+	//}
 
 	// check speed here!
 	if (bamCore->flag & BAM_CINS) return true;
@@ -677,6 +683,8 @@ if (bamCore->flag & BAM_FSECONDARY || bamCore->flag & BAM_FQCFAIL || bamCore->fl
 	if (bamCore->flag & BAM_CSOFT_CLIP) return true;
 	if (bamCore->flag & BAM_CHARD_CLIP) return true;
 	if (bamCore->flag & BAM_CPAD) return true;
+    
+    //if (bamCore->flag & BAM_FSECONDARY || bamCore->flag & BAM_FQCFAIL || bamCore->flag & BAM_FDUP) return false;
 //http://samtools.sourceforge.net/samtools/bam/PDefines/PDefines.html
 	return false;
 }
@@ -838,11 +846,11 @@ void build_record_SR (const bam1_t * mapped_read, const bam1_t * unmapped_read, 
         Temp_One_Read.MatchedD = '-';
         
         int Rlength = bam_cigar2len (mapped_core, cigar_pointer_mapped);
-        Temp_One_Read.MatchedRelPos += Rlength + InsertSize;
+        Temp_One_Read.MatchedRelPos += Rlength;// + InsertSize;
     }
     else {
         Temp_One_Read.MatchedD = '+';
-        Temp_One_Read.MatchedRelPos -= InsertSize;
+        //Temp_One_Read.MatchedRelPos -= InsertSize;
     }
 
     //FIXME pass these through from the command line with a struct

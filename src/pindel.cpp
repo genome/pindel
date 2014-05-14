@@ -1833,11 +1833,11 @@ int main(int argc, char *argv[])
              		UpdateRefReadCoverage(currentState, currentWindow);
 
 			//std::cout << "test 7" << std::endl;
-          		/*
-          		for (unsigned index = 0; index < currentState.Reads_SR.size(); index++) {
-              			if (currentState.Reads_SR[index].Name == "@@HWI-EAS138_4_FC30GP8:3:41:246:959/1")
-                  			std::cout << "after get_SR_Reads @@HWI-EAS138_4_FC30GP8:3:41:246:959/1" << std::endl;
-          		}*/
+          		
+          		//for (unsigned index = 0; index < currentState.Reads_SR.size(); index++) {
+              			//if (currentState.Reads_SR[index].Name == "@M01144:44:000000000-A6N99:1:1101:18676:4723/1")
+                //  			std::cout << currentState.Reads_SR[index].Name << std::endl;
+          		//}
          		Time_Mine_E = time(NULL);
          		if (currentState.Reads_SR.size() ) {
             			*logStream << "There are " << currentState.Reads_SR.size() << " split-reads for this chromosome region.\n" << std::endl; // what region?
@@ -2197,7 +2197,7 @@ std::vector<Region> Merge(const std::vector<Region> &AllRegions)
     return AllRegions;
 }
 
-void GetCloseEndInner(const std::string & CurrentChrSeq, SPLIT_READ & Temp_One_Read)
+void GetCloseEndInner(const std::string & CurrentChrSeq, SPLIT_READ & Temp_One_Read, unsigned RangeIndex)
 {
     std::string CurrentReadSeq;
     //std::vector<unsigned int> PD[Temp_One_Read.getTOTAL_SNP_ERROR_CHECKED()];
@@ -2220,8 +2220,10 @@ void GetCloseEndInner(const std::string & CurrentChrSeq, SPLIT_READ & Temp_One_R
     BP_End = Temp_One_Read.getReadLengthMinus();
     if (Temp_One_Read.MatchedD == Plus) {
         CurrentReadSeq = ReverseComplement(Temp_One_Read.getUnmatchedSeq());
-        Start = Temp_One_Read.MatchedRelPos + g_SpacerBeforeAfter;
-        End = Start + 3 * Temp_One_Read.InsertSize;
+        Start = Temp_One_Read.MatchedRelPos + g_SpacerBeforeAfter - RangeIndex * Temp_One_Read.InsertSize; /////////////
+        End = Start + (RangeIndex + 1) * Temp_One_Read.InsertSize;
+        //Start = Temp_One_Read.MatchedRelPos + g_SpacerBeforeAfter - RangeIndex * Temp_One_Read.getReadLength(); /////////////
+        //End = Start + (RangeIndex + 1) * Temp_One_Read.getReadLength();
         char LeftChar;
         LeftChar = CurrentReadSeq[0];
         if (LeftChar != 'N') {
@@ -2245,8 +2247,10 @@ void GetCloseEndInner(const std::string & CurrentChrSeq, SPLIT_READ & Temp_One_R
     else if (Temp_One_Read.MatchedD == Minus) {
 
         CurrentReadSeq = Temp_One_Read.getUnmatchedSeq();
-        End = Temp_One_Read.MatchedRelPos + g_SpacerBeforeAfter;
-        Start = End - 3 * Temp_One_Read.InsertSize;
+        End = Temp_One_Read.MatchedRelPos + g_SpacerBeforeAfter + (RangeIndex) * Temp_One_Read.InsertSize; /////////
+        Start = End - (RangeIndex + 1) * Temp_One_Read.InsertSize;
+        //End = Temp_One_Read.MatchedRelPos + g_SpacerBeforeAfter + (RangeIndex) * Temp_One_Read.getReadLength(); /////////
+        //Start = End - (RangeIndex + 1) * Temp_One_Read.getReadLength();
         char RightChar;
         RightChar = CurrentReadSeq[Temp_One_Read.getReadLengthMinus()];
 		//std::cout << "Starting to fit the close end with character" << RightChar << "\n";
@@ -2268,10 +2272,69 @@ void GetCloseEndInner(const std::string & CurrentChrSeq, SPLIT_READ & Temp_One_R
             UP.clear();
         }
     }
+    
+    if (Temp_One_Read.UP_Close.size() == 0) {
+        if (Temp_One_Read.MatchedD == Plus) {
+            CurrentReadSeq = ReverseComplement(Temp_One_Read.getUnmatchedSeq());
+            Start = Temp_One_Read.MatchedRelPos + g_SpacerBeforeAfter - (RangeIndex - 1) * Temp_One_Read.InsertSize; /////////////
+            End = Start + (RangeIndex + 1) * Temp_One_Read.InsertSize;
+            //Start = Temp_One_Read.MatchedRelPos + g_SpacerBeforeAfter - RangeIndex * Temp_One_Read.getReadLength(); /////////////
+            //End = Start + (RangeIndex + 1) * Temp_One_Read.getReadLength();
+            char LeftChar;
+            LeftChar = CurrentReadSeq[0];
+            if (LeftChar != 'N') {
+                {
+                    for (int pos = Start; pos < End; pos++) {
+                        if (CurrentChrSeq[pos] == LeftChar) {
+                            PD[0].push_back(pos);
+                        }
+                    }
+                }
+            }
+            
+            CheckLeft_Close(Temp_One_Read, CurrentChrSeq, CurrentReadSeq, PD, BP_Start, BP_End, 1, UP); // LengthStr
+            if (UP.empty()) {}
+            else {
+                Temp_One_Read.Used = false;
+                Temp_One_Read.UP_Close.swap(UP);
+                UP.clear();
+            }
+        }
+        else if (Temp_One_Read.MatchedD == Minus) {
+            
+            CurrentReadSeq = Temp_One_Read.getUnmatchedSeq();
+            End = Temp_One_Read.MatchedRelPos + g_SpacerBeforeAfter + (RangeIndex - 1) * Temp_One_Read.InsertSize; /////////
+            Start = End - (RangeIndex + 1) * Temp_One_Read.InsertSize;
+            //End = Temp_One_Read.MatchedRelPos + g_SpacerBeforeAfter + (RangeIndex) * Temp_One_Read.getReadLength(); /////////
+            //Start = End - (RangeIndex + 1) * Temp_One_Read.getReadLength();
+            char RightChar;
+            RightChar = CurrentReadSeq[Temp_One_Read.getReadLengthMinus()];
+            //std::cout << "Starting to fit the close end with character" << RightChar << "\n";
+            if (RightChar != 'N') {
+                for (int pos = Start; pos < End; pos++) {
+                    if (CurrentChrSeq[pos] == RightChar) {
+                        PD[0].push_back(pos);
+                    }
+                }
+            }
+            //std::cout << "1\t" << PD[0].size() << "\t" << PD[1].size() << std::endl;
+            //        LOG_DEBUG(*logStream << "1\t" << PD[0].size() << "\t" << PD[1].size() << std::endl);
+            CheckRight_Close(Temp_One_Read, CurrentChrSeq, CurrentReadSeq, PD, BP_Start, BP_End, 1, UP);
+            //        LOG_DEBUG(*logStream << UP.size() << std::endl);
+            if (UP.empty()) {}
+            else {
+                Temp_One_Read.Used = false;
+                Temp_One_Read.UP_Close.swap(UP);
+                UP.clear();
+            }
+        }
+    }
+
+    
     return;
 }
 
-void GetCloseEndInnerPerfectMatch(const std::string & CurrentChrSeq, SPLIT_READ & Temp_One_Read)
+void GetCloseEndInnerPerfectMatch(const std::string & CurrentChrSeq, SPLIT_READ & Temp_One_Read, unsigned RangeIndex)
 {
     std::string CurrentReadSeq;
     //std::vector<unsigned int> PD[Temp_One_Read.getTOTAL_SNP_ERROR_CHECKED()];
@@ -2294,8 +2357,8 @@ void GetCloseEndInnerPerfectMatch(const std::string & CurrentChrSeq, SPLIT_READ 
     BP_End = Temp_One_Read.getReadLengthMinus();
     if (Temp_One_Read.MatchedD == Plus) {
         CurrentReadSeq = ReverseComplement(Temp_One_Read.getUnmatchedSeq());
-        Start = Temp_One_Read.MatchedRelPos + g_SpacerBeforeAfter;
-        End = Start + 3 * Temp_One_Read.InsertSize;
+        Start = Temp_One_Read.MatchedRelPos + g_SpacerBeforeAfter - RangeIndex * Temp_One_Read.InsertSize; /////////////
+        End = Start + (RangeIndex + 1) * Temp_One_Read.InsertSize;
         char LeftChar;
         LeftChar = CurrentReadSeq[0];
         if (LeftChar != 'N') {
@@ -2321,8 +2384,8 @@ void GetCloseEndInnerPerfectMatch(const std::string & CurrentChrSeq, SPLIT_READ 
     else if (Temp_One_Read.MatchedD == Minus) {
         
         CurrentReadSeq = Temp_One_Read.getUnmatchedSeq();
-        End = Temp_One_Read.MatchedRelPos + g_SpacerBeforeAfter;
-        Start = End - 3 * Temp_One_Read.InsertSize;
+        End = Temp_One_Read.MatchedRelPos + g_SpacerBeforeAfter + (RangeIndex) * Temp_One_Read.InsertSize; /////////
+        Start = End - (RangeIndex + 1) * Temp_One_Read.InsertSize;
         char RightChar;
         RightChar = CurrentReadSeq[Temp_One_Read.getReadLengthMinus()];
 		//std::cout << "Starting to fit the close end with character" << RightChar << "\n";
@@ -2346,31 +2409,112 @@ void GetCloseEndInnerPerfectMatch(const std::string & CurrentChrSeq, SPLIT_READ 
             UP.clear();
         }
     }
+    
+    if (Temp_One_Read.UP_Close.size()) {
+        if (Temp_One_Read.MatchedD == Plus) {
+            CurrentReadSeq = ReverseComplement(Temp_One_Read.getUnmatchedSeq());
+            Start = Temp_One_Read.MatchedRelPos + g_SpacerBeforeAfter - (RangeIndex - 1) * Temp_One_Read.InsertSize; /////////////
+            End = Start + (RangeIndex + 1) * Temp_One_Read.InsertSize;
+            char LeftChar;
+            LeftChar = CurrentReadSeq[0];
+            if (LeftChar != 'N') {
+                {
+                    for (int pos = Start; pos < End; pos++) {
+                        if (CurrentChrSeq[pos] == LeftChar) {
+                            PD[0].push_back(pos);
+                        }
+                    }
+                }
+            }
+            
+            if (PD[0].size()) {
+                CheckLeft_Close_Perfect(Temp_One_Read, CurrentChrSeq, CurrentReadSeq, PD, BP_Start, BP_End, 1, UP); // LengthStr
+            }
+            if (UP.empty()) {}
+            else {
+                Temp_One_Read.Used = false;
+                Temp_One_Read.UP_Close.swap(UP);
+                UP.clear();
+            }
+        }
+        else if (Temp_One_Read.MatchedD == Minus) {
+            
+            CurrentReadSeq = Temp_One_Read.getUnmatchedSeq();
+            End = Temp_One_Read.MatchedRelPos + g_SpacerBeforeAfter + (RangeIndex - 1) * Temp_One_Read.InsertSize; /////////
+            Start = End - (RangeIndex + 1) * Temp_One_Read.InsertSize;
+            char RightChar;
+            RightChar = CurrentReadSeq[Temp_One_Read.getReadLengthMinus()];
+            //std::cout << "Starting to fit the close end with character" << RightChar << "\n";
+            if (RightChar != 'N') {
+                for (int pos = Start; pos < End; pos++) {
+                    if (CurrentChrSeq[pos] == RightChar) {
+                        PD[0].push_back(pos);
+                    }
+                }
+            }
+            //std::cout << "1\t" << PD[0].size() << "\t" << PD[1].size() << std::endl;
+            //        LOG_DEBUG(*logStream << "1\t" << PD[0].size() << "\t" << PD[1].size() << std::endl);
+            if (PD[0].size()) {
+                CheckRight_Close_Perfect(Temp_One_Read, CurrentChrSeq, CurrentReadSeq, PD, BP_Start, BP_End, 1, UP);
+            }
+            //        LOG_DEBUG(*logStream << UP.size() << std::endl);
+            if (UP.empty()) {}
+            else {
+                Temp_One_Read.Used = false;
+                Temp_One_Read.UP_Close.swap(UP);
+                UP.clear();
+            }
+        }
+    }
     return;
 }
 
 void GetCloseEnd(const std::string & CurrentChrSeq, SPLIT_READ & Temp_One_Read)
 {
-
-    GetCloseEndInner( CurrentChrSeq, Temp_One_Read );
-	//std::cout << "\nfirst: " << Temp_One_Read.Name << " " << Temp_One_Read.UP_Close.size() << std::endl;
-    if (Temp_One_Read.UP_Close.size()==0) { // no good close ends found
-	//std::cout << Temp_One_Read.Name << " " << Temp_One_Read.UP_Close.size() << std::endl;
-        Temp_One_Read.setUnmatchedSeq( ReverseComplement( Temp_One_Read.getUnmatchedSeq() ) );
-        GetCloseEndInner( CurrentChrSeq, Temp_One_Read );
-	//std::cout << "second: " << Temp_One_Read.Name << " " << Temp_One_Read.UP_Close.size() << std::endl;
-    }
-    if (Temp_One_Read.UP_Close.size()==0) {
-       GetCloseEndInnerPerfectMatch( CurrentChrSeq, Temp_One_Read );
-	//std::cout << "third: " << Temp_One_Read.Name << " " << Temp_One_Read.UP_Close.size() << std::endl;
-	}
-    
-    if (Temp_One_Read.UP_Close.size()==0) { // no good close ends found
-        Temp_One_Read.setUnmatchedSeq( ReverseComplement( Temp_One_Read.getUnmatchedSeq() ) );
+    const unsigned MaxRange = 5; // 3 insert size away
+    //if (Temp_One_Read.Name == "@M01144:44:000000000-A6N99:1:1104:14364:9012/2") {
+    //    std::cout << "found @M01144:44:000000000-A6N99:1:1104:14364:9012/2" << std::endl;
+    //}
+    for (unsigned RangeIndex = 0; RangeIndex < MaxRange; RangeIndex++) {
+        GetCloseEndInner( CurrentChrSeq, Temp_One_Read, RangeIndex);
+        //std::cout << "\nfirst: " << Temp_One_Read.Name << " " << Temp_One_Read.UP_Close.size() << std::endl;
+        if (Temp_One_Read.UP_Close.size()==0) { // no good close ends found
+            //if (Temp_One_Read.Name == "@M01144:44:000000000-A6N99:1:1104:14364:9012/2") {
+            //    std::cout << "found step 1 @M01144:44:000000000-A6N99:1:1104:14364:9012/2" << std::endl;
+            //}
+            //std::cout << Temp_One_Read.Name << " " << Temp_One_Read.UP_Close.size() << std::endl;
+            Temp_One_Read.setUnmatchedSeq( ReverseComplement( Temp_One_Read.getUnmatchedSeq() ) );
+            GetCloseEndInner( CurrentChrSeq, Temp_One_Read, RangeIndex );
+            //std::cout << "second: " << Temp_One_Read.Name << " " << Temp_One_Read.UP_Close.size() << std::endl;
+        }
+        if (Temp_One_Read.UP_Close.size()==0) {
+            /*if (Temp_One_Read.Name == "@M01144:44:000000000-A6N99:1:1104:14364:9012/2") {
+                std::cout << "found step 2 @M01144:44:000000000-A6N99:1:1104:14364:9012/2" << std::endl;
+            }
+             */
+            GetCloseEndInnerPerfectMatch( CurrentChrSeq, Temp_One_Read, RangeIndex );
+            //std::cout << "third: " << Temp_One_Read.Name << " " << Temp_One_Read.UP_Close.size() << std::endl;
+        }
         
-        GetCloseEndInnerPerfectMatch( CurrentChrSeq, Temp_One_Read );
-        //std::cout << "fourth: " << Temp_One_Read.Name << " " << Temp_One_Read.UP_Close.size() << "\n" <<  std::endl;
+        if (Temp_One_Read.UP_Close.size()==0) { // no good close ends found
+            /*if (Temp_One_Read.Name == "@M01144:44:000000000-A6N99:1:1104:14364:9012/2") {
+                std::cout << "found step 3 @M01144:44:000000000-A6N99:1:1104:14364:9012/2" << std::endl;
+            }
+             */
+            Temp_One_Read.setUnmatchedSeq( ReverseComplement( Temp_One_Read.getUnmatchedSeq() ) );
+            
+            GetCloseEndInnerPerfectMatch( CurrentChrSeq, Temp_One_Read, RangeIndex );
+            //std::cout << "fourth: " << Temp_One_Read.Name << " " << Temp_One_Read.UP_Close.size() << "\n" <<  std::endl;
+        }
+        /*
+        if (Temp_One_Read.Name == "@M01144:44:000000000-A6N99:1:1104:14364:9012/2") {
+            std::cout << "found step 4 @M01144:44:000000000-A6N99:1:1104:14364:9012/2" << std::endl;
+        }
+         */
+        if (Temp_One_Read.hasCloseEnd()) break;
     }
+
+
 
 /*
 	GetCloseEndInnerPerfectMatch( CurrentChrSeq, Temp_One_Read );

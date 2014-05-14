@@ -48,6 +48,8 @@ void ReadBuffer::flush()
 		//}
             if (m_rawreads[i].MapperSplit == false)
                 GetCloseEnd(m_CHROMOSOME, m_rawreads[i]);
+            
+            //std::cout << "before mapping closed end: " << m_rawreads[i].Name << std::endl;
 		
 			if (m_rawreads[i].hasCloseEnd()) {
  				updateReadAfterCloseEndMapping(m_rawreads[i]);
@@ -57,6 +59,7 @@ void ReadBuffer::flush()
 		//			g_ReadSeq2Index.insert(std::pair<std::string, unsigned> (m_rawreads[i].UnmatchedSeq, m_filteredReads.size()));
 					m_rawreads[i].SampleName2Number.insert(std::pair <std::string, unsigned> (m_rawreads[i].Tag, 1));
 					m_filteredReads.push_back(m_rawreads[i]);
+                    //std::cout << "with closed end: " << m_rawreads[i].Name << std::endl;
 				}
                
 			}
