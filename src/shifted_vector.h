@@ -39,6 +39,8 @@ ShiftedVector<T>::ShiftedVector(unsigned int start, unsigned int end, T fillValu
 template< class T >
 T& ShiftedVector<T>::operator[]( unsigned int position )
 {
+	if (position>m_end) position=m_end;
+	if (position<m_start) position=m_start;
 	if ( (position>m_end) || (position<m_start) ) {
 		std::cout << "ShiftedVector out-of-range error: position " << position << " falls outside range " << 
 				m_start << "-" << m_end << std::endl;
