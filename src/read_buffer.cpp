@@ -95,6 +95,7 @@ void ReadBuffer::flush()
     	//std::cout << "end of flush " << std::endl;
    	m_rawreads.clear();
    	m_currentsize = 0;
+    std::cout << "The number of one end mapped read: " << m_filteredReads.size() << std::endl;
     	//std::cout << "existing flush " << std::endl;
 }
 

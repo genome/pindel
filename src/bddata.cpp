@@ -126,7 +126,7 @@ void BDData::loadBDFile(const std::string& filename) {
 		}
 	}
 	sort( m_bdEvents_external.begin(), m_bdEvents_external.end(), sortOnFirstBDCoordinate ); 
-	std::cout << "BreakDancer events: " << m_bdEvents_external.size()/2 << std::endl;
+	std::cout << "BD events: " << m_bdEvents_external.size()/2 << std::endl;
 }
 
 bool Compare2Str (const std::string & first, const std::string & second) {
@@ -635,7 +635,7 @@ void BDData::UpdateBD(ControlState & currentState) {
 						RPoutputfile << std::endl;
 						std::cout << "adding " << firstChrName << " " << ( (firstPos > g_SpacerBeforeAfter) ? firstPos - g_SpacerBeforeAfter : 1) << "\t" << firstPos2 - g_SpacerBeforeAfter << "\t" << currentState.Reads_RP_Discovery[read_index].DA << "\t" << firstPos2 - firstPos << "\t"
 							<< "\t" << secondChrName << " " << ( (secondPos > g_SpacerBeforeAfter) ? secondPos - g_SpacerBeforeAfter : 1)  << "\t" << secondPos2 - g_SpacerBeforeAfter << "\t" << currentState.Reads_RP_Discovery[read_index].DB << "\t" << secondPos2 - secondPos << "\t"
-							<< " to breakdancer events. " << abs((int)secondPos - (int)firstPos) << " Support: " << currentState.Reads_RP_Discovery[read_index].NumberOfIdentical << std::endl;
+							<< " to BD events. " << abs((int)secondPos - (int)firstPos) << " Support: " << currentState.Reads_RP_Discovery[read_index].NumberOfIdentical << std::endl;
 					}
 				}
         
@@ -696,7 +696,7 @@ void BDData::UpdateBD(ControlState & currentState) {
 						            DisplayBDSupportPerSample(currentState.Reads_RP_Discovery_InterChr[read_index], RPoutputfile);
                                                 RPoutputfile << std::endl;
 						std::cout << "adding interchr " << firstChrName << " " << ((firstPos > g_SpacerBeforeAfter) ? firstPos - g_SpacerBeforeAfter : 1) << " " << firstPos2 - g_SpacerBeforeAfter << "\t" << firstPos2 - firstPos << "\t"
-							<< secondChrName << " " << ((secondPos > g_SpacerBeforeAfter) ? secondPos - g_SpacerBeforeAfter : 1) << " " << secondPos2 - g_SpacerBeforeAfter <<  "\t" << secondPos2 - secondPos << "\t" << " to breakdancer events. " 								<< " Support: " << currentState.Reads_RP_Discovery_InterChr[read_index].NumberOfIdentical << "\t" << currentState.Reads_RP_Discovery_InterChr[read_index].Tags.size()  << std::endl;
+							<< secondChrName << " " << ((secondPos > g_SpacerBeforeAfter) ? secondPos - g_SpacerBeforeAfter : 1) << " " << secondPos2 - g_SpacerBeforeAfter <<  "\t" << secondPos2 - secondPos << "\t" << " to BD events. " 								<< " Support: " << currentState.Reads_RP_Discovery_InterChr[read_index].NumberOfIdentical << "\t" << currentState.Reads_RP_Discovery_InterChr[read_index].Tags.size()  << std::endl;
 					}
 
 				}

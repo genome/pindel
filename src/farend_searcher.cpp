@@ -61,7 +61,7 @@ void SearchFarEndAtPos( const std::string& chromosome, SPLIT_READ& Temp_One_Read
 
        int Start = Regions[RegionIndex].getStart();
        int End = Regions[RegionIndex].getEnd();
-       if (Start < 0) Start = End -1;
+       if (Start < 0) Start = End - 1;
        const std::string & chromosome = Regions[RegionIndex].getChromosome()->getSeq();
        //if (Regions.size() > 1)
        //		std::cout << RegionIndex << "\t" << Regions[RegionIndex].getChromosome()->getName() << " " << End - Start << " " << Start - g_SpacerBeforeAfter << " " << End - g_SpacerBeforeAfter << "\t";
