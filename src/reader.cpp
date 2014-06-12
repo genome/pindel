@@ -639,13 +639,20 @@ if (bamCore->flag & BAM_FSECONDARY || bamCore->flag & BAM_FQCFAIL || bamCore->fl
 
 bool isWeirdRead( const flags_hit *read, const bam1_t * bamOfRead )
 {
+
     //return true;
 
-const bam1_core_t *bamCore = &bamOfRead->core;
-
-
+	const bam1_core_t *bamCore = &bamOfRead->core;
+	uint32_t *cigar_pointer = bam1_cigar (bamOfRead);
 
 	if (!(read->mapped)) return true;
+
+        uint32_t k;
+        for (k = 0; k < bamCore->n_cigar; ++k) {
+                int op = cigar_pointer[k] & BAM_CIGAR_MASK;
+                if (op == BAM_CINS || op == BAM_CDEL || op == BAM_CREF_SKIP || op == BAM_CSOFT_CLIP || op == BAM_CHARD_CLIP || op == BAM_CPAD)
+                        return true;
+        }
 
 	const uint8_t *nm = bam_aux_get(bamOfRead, "NM");
 	//UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
@@ -660,13 +667,8 @@ const bam1_core_t *bamCore = &bamOfRead->core;
 		if (nm_value) return true;
 	}
 	
-	
-	//const bam1_core_t *bamCore;
-	bamCore = &bamOfRead->core; 
-
 	//int maxEdits = int (bamCore->l_qseq * userSettings->MaximumAllowedMismatchRate) + 1;
 
-	uint32_t *cigar_pointer = bam1_cigar (bamOfRead);
 	int cigarMismatchedBases = bam_cigar2mismatch (&bamOfRead->core, cigar_pointer);
 
 	if ( read->edits + cigarMismatchedBases > 0) {
@@ -677,16 +679,8 @@ const bam1_core_t *bamCore = &bamOfRead->core;
 	//}
 
 	// check speed here!
-    /*
-	if (bamCore->flag & BAM_CINS) return true;
-	if (bamCore->flag & BAM_CDEL) return true;
-	if (bamCore->flag & BAM_CREF_SKIP) return true;
-	if (bamCore->flag & BAM_CSOFT_CLIP) return true;
-	if (bamCore->flag & BAM_CHARD_CLIP) return true;
-	if (bamCore->flag & BAM_CPAD) return true;
-     */
-    
-    if (bamCore->flag & BAM_FSECONDARY || bamCore->flag & BAM_FQCFAIL || bamCore->flag & BAM_FDUP) return false;
+
+    //if (bamCore->flag & BAM_FSECONDARY || bamCore->flag & BAM_FQCFAIL || bamCore->flag & BAM_FDUP) return false;
 //http://samtools.sourceforge.net/samtools/bam/PDefines/PDefines.html
 	return false;
 }
