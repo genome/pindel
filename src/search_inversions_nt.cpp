@@ -34,7 +34,7 @@ int searchInversionsNT(ControlState& currentState, unsigned NumBoxes, const Sear
 
    int CloseIndex = 0;
    int FarIndex = 0;
-
+	unsigned TempBoxIndex;
 	//UserDefinedSettings *userSettings = UserDefinedSettings::Instance();
     
    LOG_INFO(*logStream << "Searching inversions with non-template sequence ... "
@@ -75,10 +75,14 @@ int searchInversionsNT(ControlState& currentState, unsigned NumBoxes, const Sear
                   else {
                      if ( 1 ) {
                         if (readInSpecifiedRegion( currentRead, userSettings->getRegion())) {
-                           Inv_NT[(int) currentRead. BPLeft / BoxSize]. push_back(ReadIndex);
-                           currentRead.Used = true;
-                           Count_Inv_NT++;
-                           Count_Inv_NT_Plus++;
+                                TempBoxIndex = (int) (currentRead. BPLeft) / BoxSize;
+                                if (TempBoxIndex < NumBoxes) {
+
+                           		Inv_NT[TempBoxIndex]. push_back(ReadIndex);
+                           		currentRead.Used = true;
+                           		Count_Inv_NT++;
+                           		Count_Inv_NT_Plus++;
+				}
                         }
                      }
                   }
@@ -105,10 +109,14 @@ int searchInversionsNT(ControlState& currentState, unsigned NumBoxes, const Sear
                   }
                   else {
                      if ( readInSpecifiedRegion( currentRead, userSettings->getRegion())) {
-                        Inv_NT[(int) currentRead. BPLeft / BoxSize]. push_back(ReadIndex);
-                        currentRead.Used = true;
-                        Count_Inv_NT++;
-                        Count_Inv_NT_Plus++;
+                                TempBoxIndex = (int) (currentRead. BPLeft) / BoxSize;
+                                if (TempBoxIndex < NumBoxes) {
+
+                        		Inv_NT[TempBoxIndex]. push_back(ReadIndex);
+                        		currentRead.Used = true;
+                        		Count_Inv_NT++;
+                        		Count_Inv_NT_Plus++;
+				}
                      }
                   }
                }
@@ -137,11 +145,15 @@ int searchInversionsNT(ControlState& currentState, unsigned NumBoxes, const Sear
                   }
                   else {
                      if ( readInSpecifiedRegion( currentRead, userSettings->getRegion())) {
-                        Inv_NT[(int) currentRead. BPLeft / BoxSize]. push_back(ReadIndex);
-                        currentRead.Used = true;
+                                TempBoxIndex = (int) (currentRead. BPLeft) / BoxSize;
+                                if (TempBoxIndex < NumBoxes) {
 
-                        Count_Inv_NT++;
-                        Count_Inv_NT_Minus++;
+                        		Inv_NT[TempBoxIndex]. push_back(ReadIndex);
+                        		currentRead.Used = true;
+
+                        		Count_Inv_NT++;
+                        		Count_Inv_NT_Minus++;
+				}
                      }
                   }
                }
@@ -166,12 +178,15 @@ int searchInversionsNT(ControlState& currentState, unsigned NumBoxes, const Sear
                   }
                   else {
                      if ( readInSpecifiedRegion( currentRead, userSettings->getRegion())) {
+                                TempBoxIndex = (int) (currentRead. BPLeft) / BoxSize;
+                                if (TempBoxIndex < NumBoxes) {
 
-                        Inv_NT[(int) currentRead. BPLeft / BoxSize]. push_back(ReadIndex);
-                        currentRead.Used = true;
+                        		Inv_NT[TempBoxIndex]. push_back(ReadIndex);
+                        		currentRead.Used = true;
 
-                        Count_Inv_NT++;
-                        Count_Inv_NT_Minus++;
+                        		Count_Inv_NT++;
+                        		Count_Inv_NT_Minus++;
+				}
                      }
                   }
                }

@@ -34,6 +34,7 @@ int searchInversions(ControlState& currentState, unsigned NumBoxes, const Search
    static int Count_Inv_Minus = 0;
 
    std::vector<unsigned> Inv[NumBoxes];
+	unsigned TempBoxIndex;
 
 	//UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
 	int MIN_IndelSize_Inversion = userSettings->MIN_IndelSize_Inversion;
@@ -88,10 +89,13 @@ int searchInversions(ControlState& currentState, unsigned NumBoxes, const Search
                               }
                               else {
                                  if (readInSpecifiedRegion( currentRead,userSettings->getRegion())) {
-                                    Inv[(int) (currentRead. BPLeft + currentRead. BPRight) / BoxSize]. push_back( ReadIndex);
-                                    currentRead.Used = true;
-                                    Count_Inv++;
-                                    Count_Inv_Plus++;
+					TempBoxIndex = (int) (currentRead. BPLeft) / BoxSize;
+					if (TempBoxIndex < NumBoxes) {
+						Inv[TempBoxIndex]. push_back( ReadIndex);
+                                    		currentRead.Used = true;
+                                    		Count_Inv++;
+                                    		Count_Inv_Plus++;
+					}
                                  }
                               }
                            }
@@ -141,10 +145,13 @@ int searchInversions(ControlState& currentState, unsigned NumBoxes, const Search
                               }
                               else {
                                  if (readInSpecifiedRegion( currentRead, userSettings->getRegion())) {
-                                    Inv[(int) (currentRead. BPLeft + currentRead. BPRight) / BoxSize]. push_back( ReadIndex);
-                                    currentRead.Used = true;
-                                    Count_Inv++;
-                                    Count_Inv_Plus++;
+                                        TempBoxIndex = (int) (currentRead. BPLeft) / BoxSize;
+                                        if (TempBoxIndex < NumBoxes) {
+                                    		Inv[TempBoxIndex]. push_back( ReadIndex);
+                                    		currentRead.Used = true;
+                                    		Count_Inv++;
+                                    		Count_Inv_Plus++;
+					}
                                  }
                               }
                            }
@@ -192,10 +199,14 @@ int searchInversions(ControlState& currentState, unsigned NumBoxes, const Search
                               currentRead.BPRight = currentRead.UP_Close[CloseIndex].AbsLoc - 1 - g_SpacerBeforeAfter;
                                LeftMostINV(currentState, currentRead, window);
                               if (readInSpecifiedRegion( currentRead, userSettings->getRegion())) {
-                                 Inv[(int) (currentRead. BPLeft + currentRead. BPRight) / BoxSize]. push_back( ReadIndex);
-                                 currentRead. Used = true;
-                                 Count_Inv++;
-                                 Count_Inv_Minus++;
+                                 TempBoxIndex = (int) (currentRead. BPLeft) / BoxSize;
+                                 if (TempBoxIndex < NumBoxes) {
+
+                                 	Inv[TempBoxIndex]. push_back( ReadIndex);
+                                 	currentRead. Used = true;
+                                 	Count_Inv++;
+                                 	Count_Inv_Minus++;
+				}
                               }
                            }
                         }
@@ -240,11 +251,14 @@ int searchInversions(ControlState& currentState, unsigned NumBoxes, const Search
                               currentRead.BPRight = currentRead.UP_Far[FarIndex].AbsLoc - 1 - g_SpacerBeforeAfter;
                                LeftMostINV(currentState, currentRead, window);
                               if (readInSpecifiedRegion( currentRead, userSettings->getRegion())) {
-                                 Inv[(int) (currentRead. BPLeft + currentRead. BPRight) / BoxSize]. push_back( ReadIndex);
-                                 currentRead. Used = true;
+                                 TempBoxIndex = (int) (currentRead. BPLeft) / BoxSize;
+                                 if (TempBoxIndex < NumBoxes) {
+                                 	Inv[TempBoxIndex]. push_back( ReadIndex);
+                                 	currentRead. Used = true;
 
-                                 Count_Inv++;
-                                 Count_Inv_Minus++;
+                                 	Count_Inv++;
+                                 	Count_Inv_Minus++;
+				}
                               }
                            }
                              

@@ -34,7 +34,7 @@ int searchIndels(ControlState& currentState, unsigned NumBoxes, const SearchWind
    unsigned CloseIndex, FarIndex;
 
    std::vector<unsigned> DI[NumBoxes];
-
+	unsigned TempBoxIndex;
    LOG_INFO(*logStream << "Searching deletion-insertions ... " << std::endl);
 
 	//UserDefinedSettings *userSettings = UserDefinedSettings::Instance();
@@ -76,10 +76,14 @@ int searchIndels(ControlState& currentState, unsigned NumBoxes, const SearchWind
                   }
                   else {
                      if (readInSpecifiedRegion( currentRead, userSettings->getRegion() ) ) {
-                        DI[(int) currentRead. BPLeft / BoxSize]. push_back(ReadIndex);
-                        currentRead.Used = true;
-                        Count_DI++;
-                        Count_DI_Plus++;
+                                TempBoxIndex = (int) (currentRead. BPLeft) / BoxSize;
+                                if (TempBoxIndex < NumBoxes) {
+
+                        	DI[TempBoxIndex]. push_back(ReadIndex);
+                        	currentRead.Used = true;
+                        	Count_DI++;
+                        	Count_DI_Plus++;
+			}
                      }
                   }
                }
@@ -109,10 +113,14 @@ int searchIndels(ControlState& currentState, unsigned NumBoxes, const SearchWind
                      }
                      else {
                         if (readInSpecifiedRegion( currentRead, userSettings->getRegion())) {
-                           DI[(int) currentRead. BPLeft / BoxSize]. push_back(ReadIndex);
-                           currentRead.Used = true;
-                           Count_DI++;
-                           Count_DI_Minus++;
+                                TempBoxIndex = (int) (currentRead. BPLeft) / BoxSize;
+                                if (TempBoxIndex < NumBoxes) {
+
+                           		DI[TempBoxIndex]. push_back(ReadIndex);
+                           		currentRead.Used = true;
+                           		Count_DI++;
+                           		Count_DI_Minus++;
+				}
                         }
                      }
                   }

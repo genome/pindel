@@ -35,7 +35,7 @@ int searchTandemDuplicationsNT(ControlState& currentState, unsigned NumBoxes, co
 
    int CloseIndex = 0;
    int FarIndex = 0;
-
+	unsigned TempBoxIndex;
 	//UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
 
    LOG_INFO(*logStream << "Searching tandem duplication events with non-template sequence ... " << std::endl);
@@ -73,10 +73,14 @@ int searchTandemDuplicationsNT(ControlState& currentState, unsigned NumBoxes, co
                }
                else {
                   if ( readInSpecifiedRegion( currentRead, userSettings->getRegion())) {
-                     TD_NT[(int) currentRead. BPLeft / BoxSize]. push_back(ReadIndex);
-                     currentRead.Used = true;
-                     Count_TD_NT++;
-                     Count_TD_NT_Plus++;
+                                TempBoxIndex = (int) (currentRead. BPLeft) / BoxSize;
+                                if (TempBoxIndex < NumBoxes) {
+
+                     			TD_NT[TempBoxIndex]. push_back(ReadIndex);
+                     			currentRead.Used = true;
+                     			Count_TD_NT++;
+                     			Count_TD_NT_Plus++;
+				}
                   }
                }
             }
@@ -103,11 +107,15 @@ int searchTandemDuplicationsNT(ControlState& currentState, unsigned NumBoxes, co
                }
                else {
                   if ( readInSpecifiedRegion( currentRead, userSettings->getRegion())) {
-                     TD_NT[(int) currentRead. BPLeft / BoxSize]. push_back(ReadIndex);
-                     currentRead.Used = true;
+                                TempBoxIndex = (int) (currentRead. BPLeft) / BoxSize;
+                                if (TempBoxIndex < NumBoxes) {
 
-                     Count_TD_NT++;
-                     Count_TD_NT_Minus++;
+                     			TD_NT[TempBoxIndex]. push_back(ReadIndex);
+                     			currentRead.Used = true;
+
+                     			Count_TD_NT++;
+                     			Count_TD_NT_Minus++;
+				}
                   }
                }
             }

@@ -74,7 +74,7 @@
 /* EW: update 0.2.4s: bugfix for -p option of Pindel0.2.4r */
 /* EW: update 0.2.4t, updates now shown in RELEASE document in trunk directory */
 
-const std::string Pindel_Version_str = "Pindel version 0.2.5a4, May 2 2014.";
+const std::string Pindel_Version_str = "Pindel version 0.2.5a5, July 8 2014.";
 
 const Chromosome g_dummyChromosome("","");
 Genome g_genome;
@@ -1526,7 +1526,7 @@ void MergeInterChr(ControlState& currentState, UserDefinedSettings *usersettings
 	while (INT_input >> tempstr >> one.AnchorD >> one.FirstChrName >> one.FirstPos >> one.FirstD >> one.SecondChrName >> one.SecondPos >> one.SecondD >> one.InsertedSequence >> tempstr >> one.NumSupport) {
 		//if (one.FirstPos != 0 && one.SecondPos != 0)
 		All.push_back(one);
-		std::cout << "getting " << one.FirstChrName << "\t" << one.FirstPos << "\t" << one.SecondChrName << "\t" << one.SecondPos << "\t" << one.NumSupport << std::endl;
+		//std::cout << "getting " << one.FirstChrName << "\t" << one.FirstPos << "\t" << one.SecondChrName << "\t" << one.SecondPos << "\t" << one.NumSupport << std::endl;
 	}
 	std::ofstream INToutputfile((usersettings->getINTOutputFilename() + "_final").c_str());
 	if (All.size() == 0) return;

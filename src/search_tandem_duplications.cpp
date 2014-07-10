@@ -34,7 +34,7 @@ int searchTandemDuplications(ControlState& currentState, unsigned NumBoxes, cons
 
    std::vector<unsigned> TD[NumBoxes];
 	//UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
-
+	unsigned TempBoxIndex;
 
    LOG_INFO(*logStream << "Searching tandem duplication events ... " << std::endl);
     //std::cout << "std1" << std::endl;
@@ -90,10 +90,14 @@ int searchTandemDuplications(ControlState& currentState, unsigned NumBoxes, cons
                         }
                         else {
                            if (readInSpecifiedRegion( currentRead, userSettings->getRegion())) {
-                              TD[(int) currentRead. BPLeft / BoxSize]. push_back(ReadIndex);
-                              currentRead.Used = true;
-                              Count_TD++;
-                              Count_TD_Plus++;
+                                TempBoxIndex = (int) (currentRead. BPLeft) / BoxSize;
+                                if (TempBoxIndex < NumBoxes) {
+					//std::cout << currentRead << std::endl;
+                              		TD[TempBoxIndex]. push_back(ReadIndex);
+                              		currentRead.Used = true;
+                              		Count_TD++;
+                              		Count_TD_Plus++;
+				}
                            }
                         }
                      }
@@ -145,11 +149,16 @@ int searchTandemDuplications(ControlState& currentState, unsigned NumBoxes, cons
                         }
                         else {
                            if (readInSpecifiedRegion( currentRead, userSettings->getRegion())) {
-                              TD[(int) currentRead. BPLeft / BoxSize]. push_back(ReadIndex);
-                              currentRead.Used = true;
+                                TempBoxIndex = (int) (currentRead. BPLeft) / BoxSize;
+                                if (TempBoxIndex < NumBoxes) {
 
-                              Count_TD++;
-                              Count_TD_Minus++;
+					//std::cout << currentRead << std::endl;
+                              		TD[TempBoxIndex]. push_back(ReadIndex);
+                              		currentRead.Used = true;
+
+                              		Count_TD++;
+                              		Count_TD_Minus++;
+				}
                            }
                         }
                      }

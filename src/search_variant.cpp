@@ -44,9 +44,10 @@ SearchVariant::~SearchVariant()
 
 }
 
-int SearchVariant::Search(BDData & g_bdData, ControlState& currentState, const unsigned numBoxes, const SearchWindow& window)
+int SearchVariant::Search(BDData & g_bdData, ControlState& currentState, const unsigned NumBoxes, const SearchWindow& window)
 {
-   std::vector<unsigned> Vars[numBoxes];
+   std::vector<unsigned> Vars[NumBoxes];
+	unsigned TempBoxIndex;
     
    unsigned int farEndExists = 0;
    unsigned int readsUsed = 0;
@@ -134,10 +135,14 @@ int SearchVariant::Search(BDData & g_bdData, ControlState& currentState, const u
                         }
                         else {
                            if (readInSpecifiedRegion( currentRead, userSettings->getRegion())) {
-                              Vars[(int) currentRead. BPLeft / BoxSize]. push_back(ReadIndex);
-                              currentRead.Used = true;
-                              Count_Var_Plus++;
-                              Count_Var++;
+                                TempBoxIndex = (int) (currentRead. BPLeft) / BoxSize;
+                                if (TempBoxIndex < NumBoxes) {
+
+                              		Vars[TempBoxIndex].push_back(ReadIndex);
+                              		currentRead.Used = true;
+                              		Count_Var_Plus++;
+                              		Count_Var++;
+				}
                            }
                         }
                      }
@@ -200,10 +205,14 @@ int SearchVariant::Search(BDData & g_bdData, ControlState& currentState, const u
                         }
                         else {
                            if (readInSpecifiedRegion( currentRead, userSettings->getRegion())) {
-                              Vars[(int) currentRead. BPLeft / BoxSize]. push_back(ReadIndex);
-                              currentRead.Used = true;
-                              Count_Var++;
-                              Count_Var_Minus++;
+                                TempBoxIndex = (int) (currentRead. BPLeft) / BoxSize;
+                                if (TempBoxIndex < NumBoxes) {
+
+                              		Vars[TempBoxIndex]. push_back(ReadIndex);
+                              		currentRead.Used = true;
+                              		Count_Var++;
+                              		Count_Var_Minus++;
+				}
                            }
                         }
                      }
@@ -216,9 +225,9 @@ int SearchVariant::Search(BDData & g_bdData, ControlState& currentState, const u
    LOG_INFO(*logStream << "Total: " << Count_Var << "\t+" << Count_Var_Plus << "\t-" << Count_Var_Minus << std::endl);
 
 
-   outputResults(g_bdData, currentState, Vars, numBoxes, window);
+   outputResults(g_bdData, currentState, Vars, NumBoxes, window);
 
-   for (unsigned int i = 0; i < numBoxes; i++) {
+   for (unsigned int i = 0; i < NumBoxes; i++) {
       Vars[i].clear();
    }
 
