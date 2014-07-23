@@ -141,7 +141,7 @@ int SearchVariant::Search(BDData & g_bdData, ControlState& currentState, const u
                          }
                          short DIFF = currentRead.BPLeft - RealBP_left;
                          DIFF = !((currentRead.BP - 1)<DIFF)?DIFF:(currentRead.BP - 1); // min(DIFF, currentRead.BP - 1);
-                         if (DIFF) {
+                         if (DIFF > 0)  {
                              //std::cout << "DIFF " << DIFF << std::endl;
                              currentRead.BP -= DIFF;
                              currentRead.BPLeft -= DIFF;
@@ -224,7 +224,7 @@ int SearchVariant::Search(BDData & g_bdData, ControlState& currentState, const u
                          }
                          short DIFF = currentRead.BPLeft - RealBP_left;
                          DIFF = !((currentRead.BP - 1)<DIFF)?DIFF:(currentRead.BP - 1);
-                         if (DIFF) {
+                         if (DIFF > 0) {
                              // std::cout << DIFF << std::endl;
                              //std::cout << "DIFF " << DIFF << std::endl;
                              currentRead.BP -= DIFF;

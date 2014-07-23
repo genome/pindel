@@ -177,7 +177,7 @@ int OutputSorter::DoSortAndOutputInversions (ControlState& currentState, std::ve
                      //*logStream << "Skip one inversion 1!" << std::endl;
                      break;
                   }
-                  // if (MaxSize < GoodIndels[i].IndelSize)
+                  if (MaxSize < GoodIndels[i].IndelSize) std::cout << "something is wrong here! MaxSize < GoodIndels[i].IndelSize " << std::endl;
                    short Diff = (MaxSize - GoodIndels[i].IndelSize) / 2;
                   GoodIndels[i].IndelSize = MaxSize;
                   GoodIndels[i].BPLeft = GoodIndels[i].BPLeft - Diff;
@@ -224,6 +224,7 @@ int OutputSorter::DoSortAndOutputInversions (ControlState& currentState, std::ve
                OneIndelEvent.WhetherReport = false;
                break;
             }
+		if (MaxSize < GoodIndels[i].IndelSize) std::cout << "something is wrong: MaxSize < GoodIndels[i].IndelSize" << std::endl;
             short Diff = (MaxSize - GoodIndels[i].IndelSize) / 2;
             GoodIndels[i].IndelSize = MaxSize;
             GoodIndels[i].BPLeft = GoodIndels[i].BPLeft - Diff;

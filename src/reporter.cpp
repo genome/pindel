@@ -271,6 +271,7 @@ void OutputDeletions (std::vector < SPLIT_READ > &Deletions,
                  const unsigned int &RealEnd, std::ofstream & DeletionOutf)
 {  //if (!(Deletions[C_S].BPLeft + 2 >= g_RegionStart &&  Deletions[C_S].BPRight + 2 < g_RegionEnd)) return;
    //std::cout << "Start " << g_RegionStart << "\tEnd " << g_RegionEnd << std::endl;
+	//std::cout << "OutputDeletions" << " " << TheInput.size() << " " << RealStart << " " << RealEnd << std::endl;
    LOG_DEBUG(*logStream << "d_1" << std::endl);
    unsigned int NumberOfReads = 0;//C_E - C_S + 1;
    unsigned int LeftS = 1;
@@ -329,6 +330,8 @@ void OutputDeletions (std::vector < SPLIT_READ > &Deletions,
    LOG_DEBUG(*logStream << "d_5d" << std::endl);
    CurrentChrMask[RealEnd + g_SpacerBeforeAfter] = 'B';
    LOG_DEBUG(*logStream << "d_5e" << std::endl);
+
+	//std::cout << "d_5e" << std::endl; // #############################3
    reportBreakDancerEvent(Deletions[C_S].FragName, Deletions[C_S].BPLeft+1, Deletions[C_S].BPRight+1, Deletions[C_S].IndelSize, "D", deletionFileData.getSvIndex());
    DeletionOutf <<
                 "####################################################################################################"
@@ -378,13 +381,23 @@ void OutputDeletions (std::vector < SPLIT_READ > &Deletions,
 
    DeletionOutf << TheInput.substr (Deletions[C_S].Left - g_reportLength + Deletions[C_S].BP + 1, g_reportLength);	// << endl;// g_reportLength
    if (Deletions[C_S].IndelSize >= 14) {
-      DeletionOutf << Cap2Low (TheInput.substr (Deletions[C_S].Left + Deletions[C_S].BP + 1, 5)) << "<" << Deletions[C_S].IndelSize - 10 << ">" << 
-										 Cap2Low (TheInput.substr (Deletions[C_S].Right - Deletions[C_S].getReadLength() + Deletions[C_S].BP - 3, 5));
+	
+	//std::cout << "d_5f" << std::endl; // #############################3
+	DeletionOutf << Cap2Low (TheInput.substr (Deletions[C_S].Left + Deletions[C_S].BP + 1, 5)) << "<" << Deletions[C_S].IndelSize - 10 << ">" << 
+		 Cap2Low (TheInput.substr (Deletions[C_S].Right - Deletions[C_S].getReadLength() + Deletions[C_S].BP - 3, 5));
+	//std::cout << "d_5fe" << std::endl; // #############################3
    }
    else {
-      DeletionOutf << Cap2Low (TheInput.substr (Deletions[C_S].Left + Deletions[C_S].BP + 1, GapSize));
-	}
+	
+	//std::cout << "d_5g" << std::endl; // #############################3
+	DeletionOutf << Cap2Low (TheInput.substr (Deletions[C_S].Left + Deletions[C_S].BP + 1, GapSize));
+	//std::cout << "d_5ge" << std::endl; // #############################3
+   }
+
+	
+	//std::cout << "d_6ha ###############33" << std::endl; // #############################3
    DeletionOutf << TheInput.substr (Deletions[C_S].Left + Deletions[C_S].BP + 1 + Deletions[C_S].IndelSize, g_reportLength - GapSize) << std::endl;	// g_reportLength
+	//std::cout << "d_6hb" << std::endl; // #############################3
    short SpaceBeforeReadSeq;
    for (unsigned int GoodIndex = C_S; GoodIndex <= C_E; GoodIndex++) {
       SpaceBeforeReadSeq = g_reportLength - Deletions[GoodIndex].BP - 1;
@@ -395,15 +408,22 @@ void OutputDeletions (std::vector < SPLIT_READ > &Deletions,
       short SpaceBeforeD =
          g_reportLength + g_reportLength - SpaceBeforeReadSeq -
          Deletions[GoodIndex].getReadLength();
-      if (Deletions[GoodIndex].MatchedD == Minus) {
+      if (Deletions[GoodIndex].MatchedD == Minus /*&& Deletions[GoodIndex].getReadLength() > Deletions[GoodIndex].BP*/) {
+	//std::cout << "d_7ha ###############33" << std::endl; // #############################3
          DeletionOutf << Deletions[GoodIndex].getUnmatchedSeq().substr (0, Deletions[GoodIndex].BP + 1);	// << endl;
+	//std::cout << "d_7hb ###############33" << std::endl; // #############################3
          for (int i = 0; i < GapSize; i++) {
             DeletionOutf << " ";
          }
+	//std::cout << "d_8ha ###############33" << std::endl; // #############################3
+	//std::cout << Deletions[GoodIndex].getUnmatchedSeq() << " " << Deletions[GoodIndex].BP << " " << Deletions[GoodIndex].getReadLength() << std::endl;
          DeletionOutf << Deletions[GoodIndex].getUnmatchedSeq().substr (Deletions[GoodIndex].BP + 1, Deletions[GoodIndex].getReadLength() - Deletions[GoodIndex].BP);	// << endl;
+	//std::cout << "d_8hb ###############33" << std::endl; // #############################3
       }
-      else {
+      else /*if (Deletions[GoodIndex].getReadLength() > Deletions[GoodIndex].BP) */ {
+	//std::cout << "d_9ha ###############33" << std::endl; // #############################3
          DeletionOutf << ReverseComplement (Deletions[GoodIndex].getUnmatchedSeq()).substr (0, Deletions[GoodIndex].BP + 1);	// << endl;
+	//std::cout << "d_9hb ###############33" << std::endl; // #############################3
          for (int i = 0; i < GapSize; i++) {
             DeletionOutf << " ";
          }
@@ -412,11 +432,13 @@ void OutputDeletions (std::vector < SPLIT_READ > &Deletions,
       for (int i = 0; i < SpaceBeforeD; i++) {
          DeletionOutf << " ";
       }
+	//std::cout << "d_10ha ###############33" << std::endl; // #############################3
       DeletionOutf << "\t" << Deletions[GoodIndex].MatchedD << "\t"
                    << Deletions[GoodIndex].MatchedRelPos
                    << "\t" << Deletions[GoodIndex].MS
                    << "\t" << Deletions[GoodIndex].Tag
                    << "\t" << Deletions[GoodIndex].Name << std::endl;
+	//std::cout << "d_10hb ###############33" << std::endl; // #############################3
    }
 }
 
@@ -1359,6 +1381,7 @@ void SortOutputD (ControlState& currentState, const unsigned &NumBoxes, const st
     //std::cout << "here" << std::endl;
    for (unsigned Box_index = 0; Box_index < NumBoxes; Box_index++) {
       LOG_DEBUG(*logStream << Box_index << "\t" << NumBoxes << "\t" << Deletions[Box_index].size() << std::endl);
+	//std::cout << "Box_index" << "\t" << Box_index << std::endl;
       if (Deletions[Box_index].size () >= userSettings->NumRead2ReportCutOff) {
          //std::cout << "S2" << std::endl;
          DeletionsNum = Deletions[Box_index].size ();
@@ -1407,9 +1430,13 @@ void SortOutputD (ControlState& currentState, const unsigned &NumBoxes, const st
                OneIndelEvent.RealEnd = OneIndelEvent.BPRight;
                OneIndelEvent.Support =
                   OneIndelEvent.End - OneIndelEvent.Start + 1;
+		//std::cout << "before: " << CurrentChr.size() << " " << OneIndelEvent.RealStart << " " << OneIndelEvent.RealEnd << std::endl;
+		
                GetRealStart4Deletion (CurrentChr, OneIndelEvent.RealStart,
                                       OneIndelEvent.RealEnd);
-               IndelEvents.push_back (OneIndelEvent);
+		//std::cout << "after: " << CurrentChr.size() << " " << OneIndelEvent.RealStart << " " << OneIndelEvent.RealEnd << std::endl;
+               	
+		IndelEvents.push_back (OneIndelEvent);
             /*    std::cout << OneIndelEvent.RealStart << " "
                           << OneIndelEvent.Start << " "
                           << OneIndelEvent.End << " "
@@ -1428,8 +1455,10 @@ void SortOutputD (ControlState& currentState, const unsigned &NumBoxes, const st
          OneIndelEvent.RealEnd = OneIndelEvent.BPRight;
          // std::cout << OneIndelEvent.RealStart << " " << OneIndelEvent.RealEnd << std::endl;
          OneIndelEvent.Support = OneIndelEvent.End - OneIndelEvent.Start + 1;
+		//std::cout << "before: " << CurrentChr.size() << " " << OneIndelEvent.RealStart << " " << OneIndelEvent.RealEnd << std::endl;
          GetRealStart4Deletion (CurrentChr, OneIndelEvent.RealStart,
                                 OneIndelEvent.RealEnd);
+		//std::cout << "after: " << CurrentChr.size() << " " << OneIndelEvent.RealStart << " " << OneIndelEvent.RealEnd << std::endl;
          IndelEvents.push_back (OneIndelEvent);
          LOG_DEBUG(*logStream << "IndelEvent: " << IndelEvents.size() << std::endl);
 
@@ -1477,20 +1506,20 @@ void SortOutputD (ControlState& currentState, const unsigned &NumBoxes, const st
                      // std::cout << "aa" << std::endl;
                      if (GoodIndels[IndelEvents[EventIndex].Start].IndelSize < userSettings->BalanceCutoff) {
                         LOG_DEBUG(*logStream << "ba" << std::endl);
-                       //  std::cout << "ba" << std::endl;
+                         //std::cout << "ba" << std::endl;
                         OutputDeletions (GoodIndels, CurrentChr, IndelEvents[EventIndex].Start, IndelEvents[EventIndex].End, RealStart,
 									RealEnd, DeletionOutf);
                         deletionFileData.increaseTemplateSvCounter();
                         LOG_DEBUG(*logStream << "bb" << std::endl);
-                         //std::cout << "bb" << std::endl;
+                        //std::cout << "bb" << std::endl;
                      }
                      else if (ReportEvent( GoodIndels, IndelEvents[EventIndex].Start, IndelEvents[EventIndex].End)) {
                         LOG_DEBUG(*logStream << "ca" << std::endl);
-                         //std::cout << "ca" << std::endl;
+                        //std::cout << "ca" << std::endl;
                         //std::cout << "there 1" << std::endl;
                         OutputDeletions (GoodIndels, CurrentChr, IndelEvents[EventIndex].Start, IndelEvents[EventIndex].End, RealStart, RealEnd,
                                          DeletionOutf);
-                         //std::cout << "there 2" << std::endl;
+                        //std::cout << "there 2" << std::endl;
                         deletionFileData.increaseTemplateSvCounter();
                         LOG_DEBUG(*logStream << "cb" << std::endl);
                          //std::cout << "cb" << std::endl;

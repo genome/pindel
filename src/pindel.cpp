@@ -74,7 +74,7 @@
 /* EW: update 0.2.4s: bugfix for -p option of Pindel0.2.4r */
 /* EW: update 0.2.4t, updates now shown in RELEASE document in trunk directory */
 
-const std::string Pindel_Version_str = "Pindel version 0.2.5a5, July 8 2014.";
+const std::string Pindel_Version_str = "Pindel version 0.2.5a6, July 23 2014.";
 
 const Chromosome g_dummyChromosome("","");
 Genome g_genome;
