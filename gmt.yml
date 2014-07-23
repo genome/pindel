@@ -1,7 +1,7 @@
 name: Pindel
 short_name: pindel
 icon_16: gmt/genome_pindel_16.png
-icon_48: gmt/genome_pindel.48.png
+icon_48: gmt/genome_pindel_48.png
 biostars_tag: Pindel
 
 menu:
