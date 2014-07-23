@@ -2052,6 +2052,7 @@ bool ReportEvent(const std::vector<SPLIT_READ> &Deletions,
 void GetRealStart4Deletion(const std::string & TheInput,
                            unsigned int &RealStart, unsigned int &RealEnd)
 {
+	if (TheInput.size() < RealStart || TheInput.size() < RealEnd) return;	
     unsigned int PosIndex = RealStart + g_SpacerBeforeAfter;
     unsigned int Start = PosIndex + 1;
     unsigned int End = RealEnd + g_SpacerBeforeAfter - 1;
@@ -2087,6 +2088,7 @@ void GetRealStart4Insertion(const std::string & chromosomeSeq,
                             unsigned int &RealEnd)
 {
 
+	if (chromosomeSeq.size() < RealStart || chromosomeSeq.size() < RealEnd) return;	
 	unsigned int lastPosAfterInsertion_comp = RealEnd + g_SpacerBeforeAfter;
 	//std::cout << "AInsertedStr: " << InsertedStr << ", start= " << RealStart  << chromosomeSeq[ g_SpacerBeforeAfter + RealStart] << ", end= " << RealEnd << chromosomeSeq[ g_SpacerBeforeAfter + RealEnd] << std::endl;
 	//for (int x=-5; x<5; x++ ) { std::cout << chromosomeSeq[ g_SpacerBeforeAfter + RealStart + x] ; }

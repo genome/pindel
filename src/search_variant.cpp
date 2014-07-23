@@ -44,6 +44,7 @@ SearchVariant::~SearchVariant()
 
 }
 
+	//			std::cout << currentRead.BPLeft << " " << BoxSize << " " << NumBoxes << " " << TempBoxIndex << std::endl;
 int SearchVariant::Search(BDData & g_bdData, ControlState& currentState, const unsigned NumBoxes, const SearchWindow& window)
 {
    std::vector<unsigned> Vars[NumBoxes];
@@ -71,8 +72,13 @@ int SearchVariant::Search(BDData & g_bdData, ControlState& currentState, const u
 
 	//UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
    LOG_INFO(*logStream << "Searching " << typeOfVariant << " ... " << std::endl);
+	const std::string ChrSeq = window.getChromosome()->getSeq();
    for (unsigned ReadIndex = 0; ReadIndex < currentState.Reads_SR.size(); ReadIndex++) {
+
 		SPLIT_READ& currentRead = currentState.Reads_SR[ReadIndex];
+	//std::cout << ReadIndex << std::endl;
+	//std::cout << currentRead << std::endl;
+
        if (currentRead.FragName != currentRead.FarFragName) {
            //std::cout << "inter-chromosome split-read" << std::endl;
            continue;
@@ -83,6 +89,7 @@ int SearchVariant::Search(BDData & g_bdData, ControlState& currentState, const u
       }
       if (currentRead.MatchedD == Plus) {
          for (short MAX_SNP_ERROR_index = 0; MAX_SNP_ERROR_index <= currentRead.getMAX_SNP_ERROR(); MAX_SNP_ERROR_index++) {
+		if (currentRead.Used) break;
             for (unsigned int CloseIndex = 0; CloseIndex
                   < currentRead.UP_Close.size(); CloseIndex++) {
                if (currentRead.Used) {
@@ -116,16 +123,26 @@ int SearchVariant::Search(BDData & g_bdData, ControlState& currentState, const u
                         currentRead.BPRight = currentRead.UP_Far[FarIndex]. AbsLoc - g_SpacerBeforeAfter;
                          unsigned RealBP_left= currentRead.BPLeft;
                          unsigned RealBP_right = currentRead.BPRight;//, DIFF;
+			if (ChrSeq.size() < RealBP_left || ChrSeq.size() < RealBP_right) {
+				currentRead.Used = true;
+				break;
+			}
                          if (currentRead.NT_str.size()) {
-                             GetRealStart4Insertion(window.getChromosome()->getSeq(), currentRead.NT_str, RealBP_left, RealBP_right);
+				//std::cout << "ns i currentRead.NT_str.size()" << std::endl;
+				//std::cout << currentRead.NT_str << " " << RealBP_left << " " << RealBP_right << std::endl;
+                             GetRealStart4Insertion(ChrSeq, currentRead.NT_str, RealBP_left, RealBP_right);
+				//std::cout << "ne i currentRead.NT_str.size()" << std::endl;
                          }
                          else {
-                             GetRealStart4Deletion(window.getChromosome()->getSeq(), RealBP_left, RealBP_right);
+				//std::cout << "no_ns d currentRead.NT_str.size()" << std::endl;
+				//std::cout << RealBP_left << " " << RealBP_right << std::endl;
+                             GetRealStart4Deletion(ChrSeq, RealBP_left, RealBP_right);
+				//std::cout << "no_ns d currentRead.NT_str.size()" << std::endl;
                          }
                          short DIFF = currentRead.BPLeft - RealBP_left;
                          DIFF = !((currentRead.BP - 1)<DIFF)?DIFF:(currentRead.BP - 1); // min(DIFF, currentRead.BP - 1);
                          if (DIFF) {
-                             //std::cout << DIFF << std::endl;
+                             //std::cout << "DIFF " << DIFF << std::endl;
                              currentRead.BP -= DIFF;
                              currentRead.BPLeft -= DIFF;
                              currentRead.BPRight  -= DIFF;
@@ -136,6 +153,7 @@ int SearchVariant::Search(BDData & g_bdData, ControlState& currentState, const u
                         else {
                            if (readInSpecifiedRegion( currentRead, userSettings->getRegion())) {
                                 TempBoxIndex = (int) (currentRead. BPLeft) / BoxSize;
+				//std::cout << currentRead.BPLeft << " " << BoxSize << " " << NumBoxes << " " << TempBoxIndex << std::endl;
                                 if (TempBoxIndex < NumBoxes) {
 
                               		Vars[TempBoxIndex].push_back(ReadIndex);
@@ -153,6 +171,7 @@ int SearchVariant::Search(BDData & g_bdData, ControlState& currentState, const u
       }
       else if (currentRead.MatchedD == Minus) {
          for (short MAX_SNP_ERROR_index = 0; MAX_SNP_ERROR_index <= currentRead.getMAX_SNP_ERROR(); MAX_SNP_ERROR_index++) {
+		if (currentRead.Used) break;
             for (int CloseIndex = currentRead.UP_Close.size() - 1; CloseIndex >= 0; CloseIndex--) {
                if (currentRead.Used) {
                   break;
@@ -186,16 +205,28 @@ int SearchVariant::Search(BDData & g_bdData, ControlState& currentState, const u
                         currentRead.BPRight = currentRead.UP_Close[CloseIndex].AbsLoc - g_SpacerBeforeAfter;
                          unsigned RealBP_left= currentRead.BPLeft;
                          unsigned RealBP_right = currentRead.BPRight;//, DIFF;
+	
+			if (ChrSeq.size() < RealBP_left || ChrSeq.size() < RealBP_right) {
+				currentRead.Used = true;
+				break;
+			}
                          if (currentRead.NT_str.size()) {
-                             GetRealStart4Insertion(window.getChromosome()->getSeq(), currentRead.NT_str, RealBP_left, RealBP_right);
+				//std::cout << "ns i currentRead.NT_str.size()" << std::endl;
+				//std::cout << currentRead.NT_str << " " << RealBP_left << " " << RealBP_right << std::endl;
+                             GetRealStart4Insertion(ChrSeq, currentRead.NT_str, RealBP_left, RealBP_right);
+				//std::cout << "ne i currentRead.NT_str.size()" << std::endl;
                          }
                          else {
-                             GetRealStart4Deletion(window.getChromosome()->getSeq(), RealBP_left, RealBP_right);
+				//std::cout << "no_ns d currentRead.NT_str.size()" << std::endl;
+				//std::cout <<  RealBP_left << " " << RealBP_right << std::endl;
+                             GetRealStart4Deletion(ChrSeq, RealBP_left, RealBP_right);
+				//std::cout << "no_ne d currentRead.NT_str.size()" << std::endl;
                          }
                          short DIFF = currentRead.BPLeft - RealBP_left;
                          DIFF = !((currentRead.BP - 1)<DIFF)?DIFF:(currentRead.BP - 1);
                          if (DIFF) {
                              // std::cout << DIFF << std::endl;
+                             //std::cout << "DIFF " << DIFF << std::endl;
                              currentRead.BP -= DIFF;
                              currentRead.BPLeft -= DIFF;
                              currentRead.BPRight  -= DIFF;
@@ -206,6 +237,7 @@ int SearchVariant::Search(BDData & g_bdData, ControlState& currentState, const u
                         else {
                            if (readInSpecifiedRegion( currentRead, userSettings->getRegion())) {
                                 TempBoxIndex = (int) (currentRead. BPLeft) / BoxSize;
+				//std::cout << currentRead.BPLeft << " " << BoxSize << " " << NumBoxes << " " << TempBoxIndex << std::endl;
                                 if (TempBoxIndex < NumBoxes) {
 
                               		Vars[TempBoxIndex]. push_back(ReadIndex);
