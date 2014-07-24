@@ -284,11 +284,18 @@ int searchInversions(ControlState& currentState, unsigned NumBoxes, const Search
 
 void LeftMostINV(ControlState& currentState, SPLIT_READ & currentRead, const SearchWindow& window) {
     const std::string & TheInput = window.getChromosome()->getSeq();
-    
+ 	unsigned ChrLength = TheInput.size();   
     unsigned int PosIndex = currentRead.BPLeft + g_SpacerBeforeAfter + 1;
     unsigned int original_PosIndex = PosIndex;
     //unsigned int Start = PosIndex + 1;
     unsigned int End = currentRead.BPRight + g_SpacerBeforeAfter - 1;
+	if (ChrLength <= PosIndex + g_SpacerBeforeAfter || ChrLength <= original_PosIndex + g_SpacerBeforeAfter) {
+		currentRead.BPLeft = 1;
+		currentRead.BPRight = 1;
+		currentRead.BP = 1;
+		currentRead.Used = true;
+		return;
+	}
     while (TheInput[PosIndex] == Convert2RC4N[(short) TheInput[End]]) {
         ++PosIndex;
         --End;
