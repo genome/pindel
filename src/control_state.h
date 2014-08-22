@@ -102,6 +102,7 @@ public:
 	std::vector<BreakDancerEvent> External_BD, All_BD_events_WG, All_BD_events;
 
 	std::vector<BED> IncludeBed, ExcludeBed;
+	void CleanUPReads();
 };
 
 #endif /* CONTROLSTATE_H_ */

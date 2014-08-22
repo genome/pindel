@@ -136,6 +136,18 @@ ControlState::ControlState()
 	inf_Pindel_Reads = 0;
 }
 
+void ControlState::CleanUPReads() {
+        InputReads_SR.clear();
+	Reads_SR.clear();
+	FutureReads_SR.clear();
+	InterChromosome_SR.clear();
+	OneEndMappedReads.clear();
+        Reads_RP.clear();
+        Reads_RP_Discovery.clear();
+	Reads_RP_Discovery_InterChr.clear();
+        RefSupportingReads.clear();
+}
+
 ControlState::~ControlState()
 {
    // TODO Auto-generated destructor stub

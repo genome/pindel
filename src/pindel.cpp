@@ -1748,6 +1748,9 @@ int main(int argc, char *argv[])
 	std::string PreviousChrName = "";
 
 	for (unsigned bed_index = 0; bed_index < currentState.IncludeBed.size(); bed_index++) {
+		if (parameters[findParameter("-j",parameters)]->isSet()) {	
+			currentState.CleanUPReads();
+		}
 		//std::cout << "here" << std::endl;
 		timer.switchTo("Loading chromosomes");
 		//const Chromosome* currentChromosome = g_genome.getNextChromosome();
