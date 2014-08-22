@@ -58,6 +58,7 @@ public:
 		logFilename = "";	
 		MaximumAllowedMismatchRate = 0.0;
 		sensitivity = 0.0; // -E
+        minClose = 8;
 
 		MaxRangeIndex = 5;
 		minimalAnchorQuality = 30;
@@ -108,6 +109,7 @@ public:
 	std::string logFilename;	
 	double MaximumAllowedMismatchRate;
 	double sensitivity; // -E
+    int minClose;
 
 	int MaxRangeIndex;
 	unsigned int minimalAnchorQuality;

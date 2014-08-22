@@ -937,6 +937,8 @@ void init(int argc, char *argv[], ControlState& currentState )
 //std::cout << "13" << std::endl;
 
     omp_set_num_threads(userSettings->numThreads);
+    g_MinClose = userSettings->minClose;
+    //std::cout << "minClose = " << g_MinClose << std::endl;
 //std::cout << "14" << std::endl;
     if (userSettings->MaxRangeIndex > g_MAX_RANGE_INDEX) {
        LOG_ERROR(*logStream
@@ -1585,6 +1587,8 @@ int main(int argc, char *argv[])
 	std::cout << "Initializing parameters..." << std::endl;
 	init(argc, argv, currentState );
 	std::cout << "Initializing parameters done." << std::endl;
+    
+    
 
 	if (init_g_ChrNameAndSizeAndIndex(userSettings->getRefFilename() + ".fai") == 1) {
 		std::cout << "Please use samtools to index your reference file.\n .fai is missing.\n" << std::endl;

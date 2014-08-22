@@ -12,7 +12,8 @@
 /* 'defineParameters' defines the parameters to be used by Pindel. Takes the variables from the calling function as argument for those variables which
  do not need to be stored in the par structure. */
 // _________________________
-// ___D_FGH_K___O_____UVWX_Z
+// ___D_FG__K___O_____UVWX_Z
+//g_MinClose
 void defineParameters(std::vector<Parameter *>& parameters)
 {
 	//UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
@@ -57,10 +58,23 @@ void defineParameters(std::vector<Parameter *>& parameters)
             new BoolParameter(&userSettings->SearchDiscordantReadPair, "-R", "--RP",
                                            "search for discordant read-pair to improve sensitivity (default true)", false, true));
     
+
     parameters.push_back(
-        new IntParameter(&userSettings->numThreads, "-T", "--number_of_threads",
-                         "the number of threads Pindel will use (default 1).",
-                         false, 1));
+        new IntParameter(
+                        &userSettings->minClose,
+                         "-H",
+                         "--min_distance_to_the_end",
+                        "the minimum number of bases required to match reference (default 8).",
+                        false, 8));
+    
+    parameters.push_back(
+                         new IntParameter(
+                                          &userSettings->numThreads,
+                                          "-T",
+                                          "--number_of_threads",
+                                          "the number of threads Pindel will use (default 1).",
+                                          false, 1));
+    
 	std::stringstream ss;
 	ss << "the maximum size of structural variations to be detected; the higher this number, the greater "
             "the number of SVs reported, but the computational cost and memory requirements increase, as "
@@ -108,7 +122,7 @@ void defineParameters(std::vector<Parameter *>& parameters)
 
     parameters.push_back(
         new IntParameter(&userSettings->NM, "-n", "--NM",
-                         "the minimum number of edit distance between reads and reference genome (default 2). reads at least NM edit distance (>= NM) will be realigned",
+                         "the minimum number of edit distance between reads and reference genome (default 2)." " reads at least NM edit distance (>= NM) will be realigned",
                          false, 2));
 
     parameters.push_back(
