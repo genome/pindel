@@ -2652,6 +2652,7 @@ void ExtendMatch(SPLIT_READ & read,
          AllEmpty = false;
          WholeGenomeSearchResult_output.push_back(CurrentRegion_output);
       }
+	else delete CurrentRegion_output;
    }
 	/*std::cout << "Matching " << CurrentLength << " length and char " << CurrentChar << ", " << CurrentCharRC << std::endl;
 	for (unsigned IndexOfRegion = 0; IndexOfRegion < WholeGenomeSearchResult_input.size(); IndexOfRegion++) {
