@@ -1,2 +1,0 @@
-./pindel -f reference.fa -i config -o test -q 
-./pindel -f reference.fa -i config -o test -b bd.txt
