@@ -74,7 +74,7 @@
 /* EW: update 0.2.4s: bugfix for -p option of Pindel0.2.4r */
 /* EW: update 0.2.4t, updates now shown in RELEASE document in trunk directory */
 
-const std::string Pindel_Version_str = "Pindel version 0.2.5a7, Sept 16 2014.";
+const std::string Pindel_Version_str = "Pindel version 0.2.5a8, Oct. 14 2014.";
 
 const Chromosome g_dummyChromosome("","");
 Genome g_genome;
@@ -2059,17 +2059,18 @@ bool ReportEvent(const std::vector<SPLIT_READ> &Deletions,
 void GetRealStart4Deletion(const std::string & TheInput,
                            unsigned int &RealStart, unsigned int &RealEnd)
 {
+    
 	if (TheInput.size() < RealStart || TheInput.size() < RealEnd) return;	
     unsigned int PosIndex = RealStart + g_SpacerBeforeAfter;
     unsigned int Start = PosIndex + 1;
     unsigned int End = RealEnd + g_SpacerBeforeAfter - 1;
-    while (TheInput[PosIndex] == TheInput[End]) {
+    while (TheInput[PosIndex] == TheInput[End] && TheInput[PosIndex] != 'N') {
         --PosIndex;
         --End;
     }
     RealStart = PosIndex - g_SpacerBeforeAfter;
     PosIndex = RealEnd + g_SpacerBeforeAfter;
-    while (TheInput[PosIndex] == TheInput[Start]) {
+    while (TheInput[PosIndex] == TheInput[Start] && TheInput[PosIndex] != 'N') {
         ++PosIndex;
         ++Start;
     }
@@ -2100,7 +2101,7 @@ void GetRealStart4Insertion(const std::string & chromosomeSeq,
 	//std::cout << "AInsertedStr: " << InsertedStr << ", start= " << RealStart  << chromosomeSeq[ g_SpacerBeforeAfter + RealStart] << ", end= " << RealEnd << chromosomeSeq[ g_SpacerBeforeAfter + RealEnd] << std::endl;
 	//for (int x=-5; x<5; x++ ) { std::cout << chromosomeSeq[ g_SpacerBeforeAfter + RealStart + x] ; }
 	//std::cout << "\n";
-	while ( chromosomeSeq[ lastPosAfterInsertion_comp ] == InsertedStr[ 0 ] ) {
+	while ( chromosomeSeq[ lastPosAfterInsertion_comp ] == InsertedStr[ 0 ] && chromosomeSeq[ lastPosAfterInsertion_comp ] != 'N') {
 		rotateForward( InsertedStr );
 		lastPosAfterInsertion_comp++;
 	}
@@ -2109,7 +2110,7 @@ void GetRealStart4Insertion(const std::string & chromosomeSeq,
 	//for (int x=-5; x<5; x++ ) { std::cout << chromosomeSeq[ g_SpacerBeforeAfter + RealStart + x] ; }
 	//std::cout << "\n";
 	unsigned int lastPosBeforeInsertion_comp = lastPosAfterInsertion_comp-1;
-	while ( chromosomeSeq[ lastPosBeforeInsertion_comp ] == InsertedStr[ InsertedStr.size()-1 ] ) {
+	while ( chromosomeSeq[ lastPosBeforeInsertion_comp ] == InsertedStr[ InsertedStr.size()-1 ] && chromosomeSeq[ lastPosBeforeInsertion_comp ] != 'N') {
 		rotateBack( InsertedStr );
 		lastPosBeforeInsertion_comp--;
 	}
