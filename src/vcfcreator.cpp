@@ -1435,7 +1435,7 @@ unsigned int counter=0;
       do {
          line = pindelInput.getLine();
       }
-      while (!pindelInput.eof() && !isdigit(line[0]));   // skip ###-lines
+      while (!pindelInput.eof() && line[0] == '#');   // skip ###-lines
       if (pindelInput.eof()) {
          return;
       }
@@ -1503,7 +1503,7 @@ void convertIndelToSVdata( InputReader& pindelInput, map< string, int>& sampleMa
 	do {
 		line = pindelInput.getLine();
 	}
-	while (!pindelInput.eof() && !isdigit(line[0]));
+	while (!pindelInput.eof() && line[0] == '#');
 
 	if (pindelInput.eof()) {
 		 return;
