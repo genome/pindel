@@ -7,6 +7,7 @@
  e.m.w.lameijer@gmail.com
  +31(0)71-5 125 831
 
+ Version 0.6.3 [February 19th, 2014] Clearer text on usage of -P option
  Version 0.6.2 [December 12th, 2014] Now robust against fasta files that have non-standard line lengths (C++'s getline does not work well on lines of over a million characters)
  Version 0.6.1 [December 12th, 2014] Now has special code to recognize lines that contain SV-data, instead of relying on indirect establishment of their identity from context
 		(for example: seeing that the previous line starts with '#', which fails for a grepped Pindel output file.)  
@@ -93,7 +94,7 @@ const int FIRST_SAMPLE_INDEX = 32; // index of first sample name
 
 using namespace std;
 
-string g_versionString = "0.6.2";
+string g_versionString = "0.6.3";
 string g_programName = "pindel2vcf";
 
 bool g_normalBaseArray[256];
@@ -1804,8 +1805,10 @@ void createParameters()
     parameters.push_back(
                          new StringParameter( &g_par.pindelfile, "-p", "--pindel_output", "The name of the pindel output file containing the SVs", false, "" ) );
 	parameters.push_back(
-                         new StringParameter( &g_par.pindelroot, "-P", "--pindel_output_root", "The root-name of the pindel output file; this will result in one big output file containing\
-                                             deletions, short and long insertions, tandem duplications and inversions", false, "" ) );
+                         new StringParameter( &g_par.pindelroot, "-P", "--pindel_output_root", "The root-name of the pindel output file; this will result in\n"
+									 "one big output file containing deletions, short and long insertions, tandem duplications and inversions.\n"
+									 "For example, if the pindel output files are called sample1_D, sample1_SI, sample1_TD etc. then -P sample1 would combine the\n"
+									 "information in all those sample files into one big vcf file.", false, "" ) );
     parameters.push_back(
                          new StringParameter( &g_par.vcffile, "-v", "--vcf", "The name of the output vcf-file (default: name of pindel output file +\".vcf\"", false, "" ) );
     parameters.push_back(
@@ -1910,16 +1913,18 @@ void readParameters(int argc, char* argv[])
 /* 'printHelp' prints all parameters available. */
 void printHelp()
 {
-    cout << "\nProgram:   " << g_programName <<" (conversion of Pindel output to VCF format)\n";
-    cout << "Version:   " << g_versionString << endl;
-    cout << "Contact:   Eric-Wubbo Lameijer <e.m.w.lameijer@gmail.com>\n";
-    cout << "Usage:     " << g_programName << " -p <pindel_output_file> -r <reference_file>\n";
+    cout << "\nProgram:    " << g_programName <<" (conversion of Pindel output to VCF format)\n";
+    cout << "Version:    " << g_versionString << endl;
+    cout << "Contact:    Eric-Wubbo Lameijer <e.m.w.lameijer@gmail.com>\n";
+    cout << "Usage:      " << g_programName << " -p <pindel_output_file> -r <reference_file>\n";
     cout << "              -R <name_and_version_of_reference_genome> -d <date_of_reference_genome_version>\n";
     cout << "              [-v <vcf_output_file>]\n\n";
     cout << "           the -v parameter is optional; when no output file name is given, output is written\n";
     cout << "           to a file with the name <pindel_output_file>.vcf.\n\n";
-    cout << "Example:   " << g_programName << " -p sample3chr20_D -r human_g1k_v36.fasta -R 1000GenomesPilot-NCBI36\n";
-    cout << "              -d 20101123-v sample3chr20_D.vcf\n\n";
+    cout << "Example:    " << g_programName << " -p sample3chr20_D -r human_g1k_v36.fasta -R 1000GenomesPilot-NCBI36\n";
+    cout << "              -d 20101123 -v sample3chr20_D.vcf\n\n";
+    cout << "or (with -P): " << g_programName << " -P sample3chr20 -r human_g1k_v36.fasta -R 1000GenomesPilot-NCBI36\n";
+    cout << "              -d 20101123 -v sample3chr20_all.vcf\n\n";
     cout << "Note:      -is only guaranteed to work correctly on output files produced by pindel version 0.2.3 and above.\n";
     cout << "           -LI and BP files (long insertion and break point files) have a different type of header and\n";
     cout << "            are not supported yet.\n\n";
