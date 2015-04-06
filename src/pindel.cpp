@@ -680,6 +680,17 @@ bool fileExists(const std::string& filename )
     return exists;
 }
 
+/** 'convertToXBaiFileName' converts the name of the BAM file "bamFileName", for example x.bam, into x.bai 
+    (or at least returns "x.bai" as a result" **/
+//convertToXBaiFilename
+std::string convertToXBaiFilename( const std::string& bamFileName )
+{
+	std::string outputName = bamFileName;
+	int nameLength = outputName.length();
+	outputName[ nameLength - 1 ] = 'i'; // "x.bam" -> "x.bai"
+	return outputName;
+}
+
 void readBamConfigFile(std::string& bamConfigFilename, ControlState& currentState )
 {
     int sampleCounter=0;
@@ -700,7 +711,7 @@ void readBamConfigFile(std::string& bamConfigFilename, ControlState& currentStat
                 *logStream << "I cannot find the file '"<< tempBamInfo.BamFile << "'. referred to in configuration file '" << bamConfigFilename << "'. Please change the BAM configuration file.\n\n";
                 exit(EXIT_FAILURE);
             }
-            if (! fileExists( tempBamInfo.BamFile+".bai" )) {
+            if (! fileExists( tempBamInfo.BamFile+".bai" ) && ! fileExists( convertToXBaiFilename( tempBamInfo.BamFile ))) {
                 *logStream << "I cannot find the bam index-file '"<< tempBamInfo.BamFile << ".bai' that should accompany the file " << tempBamInfo.BamFile << " mentioned in the configuration file " << bamConfigFilename << ". Please run samtools index on " <<
                           tempBamInfo.BamFile << ".\n\n";
                 exit(EXIT_FAILURE);
