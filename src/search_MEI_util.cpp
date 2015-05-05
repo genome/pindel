@@ -105,7 +105,7 @@ std::string get_sequence(uint8_t* sam_seq, int sam_seq_len) {
     std::string sequence;
     for (int i = 0; i < sam_seq_len; ++i) {
         // Append base letter.
-        sequence.append(1, bam_nt16_rev_table[bam1_seqi(sam_seq, i)]);
+        sequence.append(1, seq_nt16_str[bam_seqi(sam_seq, i)]);
     }
     return sequence;
 }
@@ -338,7 +338,7 @@ bool contains_subseq_any_strand(const std::string& query, const std::string& db,
 
 
 // Set up map linking read group ids with sample names.
-std::map<std::string, std::string> get_sample_dictionary(bam_header_t* header) {
+std::map<std::string, std::string> get_sample_dictionary(bam_hdr_t* header) {
     std::map<std::string, std::string> sample_dict;
     int num_ids;
     int num_names;
