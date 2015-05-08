@@ -52,7 +52,7 @@ bool is_concordant(const bam1_t* read, unsigned int insert_size) {
         // Reads mapping to different chromosomes.
         return false;
     }
-    if (bam_is_rev(read) == bam_is_mrev(read)) {
+    if (bam1_strand(read) == bam1_mstrand(read)) {
         // Reads mapping to the same strand.
         return false;
     }
@@ -671,7 +671,11 @@ bool comp_breakpoint_pos(const MEI_breakpoint& bp1, const MEI_breakpoint& bp2) {
 // Return code for not being able to open a BAM file.
 const int ERROR_OPENING_ALIGNMENT_FILE = 100;
 
-static int fetch_disc_read_callback(const bam1_t* alignment, MEI_data* mei_data, UserDefinedSettings* userSettings) {
+static int fetch_disc_read_callback(const bam1_t* alignment, void* data) {
+    //    MEI_data* mei_data = static_cast<MEI_data*>(data);
+    std::pair<MEI_data*, UserDefinedSettings*>* env = static_cast<std::pair<MEI_data*, UserDefinedSettings*>*>(data);
+    MEI_data* mei_data = env->first;
+    UserDefinedSettings* userSettings = env->second;
     if (!(alignment->core.flag & BAM_FUNMAP || alignment->core.flag & BAM_FMUNMAP) && // Both ends are mapped.
         !is_concordant(alignment, mei_data->current_insert_size) &&                   // Ends map discordantly.
         // Extra check for (very) large mapping distance.  This is done beside the check for read
@@ -680,16 +684,16 @@ static int fetch_disc_read_callback(const bam1_t* alignment, MEI_data* mei_data,
          abs(alignment->core.pos - alignment->core.mpos) > userSettings->MIN_DD_MAP_DISTANCE)) {
             
             // Save alignment as simple_read object.
-            std::string read_name = enrich_read_name(bam_get_qname(alignment), alignment->core.flag & BAM_FREAD1);
-            char strand = bam_is_rev(alignment)? Minus : Plus;
-            char mate_strand = bam_is_mrev(alignment)? Minus : Plus;
+            std::string read_name = enrich_read_name(bam1_qname(alignment), alignment->core.flag & BAM_FREAD1);
+            char strand = bam1_strand(alignment)? Minus : Plus;
+            char mate_strand = bam1_mstrand(alignment)? Minus : Plus;
             std::string read_group;
             get_read_group(alignment, read_group);
             std::string sample_name;
             get_sample_name(read_group, mei_data->sample_names, sample_name);
             
             simple_read* read = new simple_read(read_name, alignment->core.tid, alignment->core.pos, strand, sample_name,
-                                                get_sequence(bam_get_seq(alignment), alignment->core.l_qseq),
+                                                get_sequence(bam1_seq(alignment), alignment->core.l_qseq),
                                                 alignment->core.mtid, alignment->core.mpos, mate_strand);
             mei_data->discordant_reads.push_back(read);
         }
@@ -707,8 +711,8 @@ static int load_discordant_reads(MEI_data& mei_data, std::vector<bam_info>& bam_
         LOG_DEBUG(*logStream << time_log() << "Loading discordant reads from " << source.BamFile << std::endl);
         
         // Setup link to bamfile, its index and header.
-        samFile* fp = sam_open(source.BamFile.c_str(), "r");
-        hts_idx_t *idx = sam_index_load(fp, source.BamFile.c_str());
+        bamFile fp = bam_open(source.BamFile.c_str(), "r");
+        bam_index_t *idx = bam_index_load(source.BamFile.c_str());
         
         if (idx == NULL) {
             LOG_WARN(*logStream << time_log() << "Failed to load index for " << source.BamFile.c_str() << std::endl);
@@ -717,8 +721,9 @@ static int load_discordant_reads(MEI_data& mei_data, std::vector<bam_info>& bam_
             continue;
         }
         
-        bam_hdr_t *header = sam_hdr_read(fp);
-        int tid = bam_name2id(header, chr_name.c_str());
+        bam_header_t *header = bam_header_read(fp);
+        bam_init_header_hash(header);
+        int tid = bam_get_tid(header, chr_name.c_str());
         
         if (tid < 0) {
             LOG_WARN(*logStream << time_log() << "Could not find sequence in alignment file: '" << chr_name <<
@@ -736,14 +741,12 @@ static int load_discordant_reads(MEI_data& mei_data, std::vector<bam_info>& bam_
         mei_data.current_insert_size = source.InsertSize;
         mei_data.current_chr_name = chr_name;
         
+        // Set up environment variable for callback function.
+        std::pair<MEI_data*, UserDefinedSettings*> env = std::make_pair(&mei_data, userSettings);
+        
         // Load discordant reads into mei_data.
-        hts_itr_t *iter = sam_itr_queryi(idx, tid, window.getStart(), window.getEnd());
-        bam1_t *b = bam_init1();
-        while (sam_itr_next(fp, iter, b) >= 0)
-                fetch_disc_read_callback(b, &mei_data, userSettings);
-        bam_destroy1(b);
-        hts_itr_destroy(iter);
-        hts_idx_destroy(idx);
+        bam_fetch(fp, idx, tid, window.getStart(), window.getEnd(), &env, fetch_disc_read_callback);
+        bam_index_destroy(idx);
     }
     return 0;
 }
@@ -927,8 +930,9 @@ std::map<int, std::string> get_sequence_name_dictionary(ControlState& state) {
     std::map<int, std::string> dict;
     std::vector<bam_info>::iterator bam_info_iter;
     for (bam_info_iter = state.bams_to_parse.begin(); bam_info_iter != state.bams_to_parse.end(); ++bam_info_iter) {
-        samFile* fp = sam_open((*bam_info_iter).BamFile.c_str(), "r");
-        bam_hdr_t *header = sam_hdr_read(fp);
+        bamFile fp = bam_open((*bam_info_iter).BamFile.c_str(), "r");
+        bam_header_t *header = bam_header_read(fp);
+        bam_init_header_hash(header);
         for (int tid = 0; tid < header->n_targets; tid++) {
             dict.insert(std::make_pair(tid, header->target_name[tid]));
         }

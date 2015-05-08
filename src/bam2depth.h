@@ -14,6 +14,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <vector>
+#include "bam.h"
 #include "control_state.h"
 #include "genotyping.h"
 

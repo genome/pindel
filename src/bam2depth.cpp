@@ -8,16 +8,15 @@
 #include <string.h>
 #include <stdio.h>
 #include <unistd.h>
-#include "htslib/sam.h"
+#include "bam.h"
 #include "bam2depth.h"
 #include "genotyping.h"
 
 
 
 typedef struct {     // auxiliary data structure
-	samFile* fp;     // the file handler
-	bam_hdr_t *hdr;  // the file headers
-	hts_itr_t* iter; // NULL if a region not specified
+	bamFile fp;      // the file handler
+	bam_iter_t iter; // NULL if a region not specified
 	int min_mapQ;    // mapQ filter
 } aux_t;
 
@@ -27,9 +26,19 @@ std::string Spaces(double input);
 static int read_bam(void *data, bam1_t *b) // read level filters better go here to avoid pileup
 {
 	aux_t *aux = (aux_t*)data; // data in fact is a pointer to an auxiliary structure
-	int ret = aux->iter? sam_itr_next(aux->fp, aux->iter, b) : sam_read1(aux->fp, aux->hdr, b);
+	int ret = aux->iter? bam_iter_read(aux->fp, aux->iter, b) : bam_read1(aux->fp, b);
 	if ((int)b->core.qual < aux->min_mapQ) b->core.flag |= BAM_FUNMAP;
 	return ret;
+}
+
+int getChromosomeID( bam_header_t *bamHeaderPtr, const std::string & chromosomeName, const int startPos, const int endPos )
+{
+    int dummyBegin, dummyEnd;
+    int chromosomeID;
+    std::stringstream region;
+    region << chromosomeName << ":" << startPos << "-" << endPos;
+    bam_parse_region(bamHeaderPtr, region.str().c_str(), &chromosomeID, &dummyBegin, &dummyEnd);
+    return chromosomeID;
 }
 
 int bam2depth(const std::string& chromosomeName, const int startPos, const int endPos, const int minBaseQuality, const int minMappingQuality, const std::vector <std::string> & listOfFiles,
@@ -40,6 +49,7 @@ int bam2depth(const std::string& chromosomeName, const int startPos, const int e
 	const bam_pileup1_t **plp;
 	char *reg = 0; // specified region
 	//void *bed = 0; // BED data structure
+	bam_header_t *h = 0; // BAM header of the 1st input
 	aux_t **data;
 	bam_mplp_t mplp;
 
@@ -50,15 +60,20 @@ int bam2depth(const std::string& chromosomeName, const int startPos, const int e
 	beg = startPos;
 	end = endPos;
 	for (i = 0; i < n; ++i) {
+		bam_header_t *htmp;
 		data[i] = (aux_t*)calloc(1, sizeof(aux_t));
-		data[i]->fp = sam_open(listOfFiles[i].c_str(), "r"); // open BAM
+		data[i]->fp = bam_open(listOfFiles[i].c_str(), "r"); // open BAM
 		data[i]->min_mapQ = mapQ;                    // set the mapQ filter
-		data[i]->hdr = sam_hdr_read(data[i]->fp);    // read the BAM header
-		tid = bam_name2id(data[i]->hdr, chromosomeName.c_str());
+		htmp = bam_header_read(data[i]->fp);         // read the BAM header
+		if (i == 0) {
+			h = htmp; // keep the header of the 1st BAM
+			//if (reg) bam_parse_region(h, reg, &tid, &beg, &end); // also parse the region
+			tid = getChromosomeID( h, chromosomeName, startPos, endPos );
+		} else bam_header_destroy(htmp); // if not the 1st BAM, trash the header
 		if (tid >= 0) { // if a region is specified and parsed successfully
-			hts_idx_t *idx = sam_index_load(data[i]->fp, listOfFiles[i].c_str());  // load the index
-			data[i]->iter = sam_itr_queryi(idx, tid, beg, end); // set the iterator
-			hts_idx_destroy(idx); // the index is not needed any more; phase out of the memory
+			bam_index_t *idx = bam_index_load(listOfFiles[i].c_str());  // load the index
+			data[i]->iter = bam_iter_query(idx, tid, beg, end); // set the iterator
+			bam_index_destroy(idx); // the index is not needed any more; phase out of the memory
 		}
 	}
 
@@ -74,7 +89,7 @@ int bam2depth(const std::string& chromosomeName, const int startPos, const int e
 			for (j = 0; j < n_plp[i]; ++j) {
 				const bam_pileup1_t *p = plp[i] + j; // DON'T modfity plp[][] unless you really know
 				if (p->is_del || p->is_refskip) ++m; // having dels or refskips at tid:pos
-				else if (bam_get_qual(p->b)[p->qpos] < baseQ) ++m; // low base quality
+				else if (bam1_qual(p->b)[p->qpos] < baseQ) ++m; // low base quality
 			}
 			sumOfReadDepths[ i ] += n_plp[i] - m;
 		}
@@ -86,10 +101,10 @@ int bam2depth(const std::string& chromosomeName, const int startPos, const int e
 	free(n_plp); free(plp);
 	bam_mplp_destroy(mplp);
 
+	bam_header_destroy(h);
 	for (i = 0; i < n; ++i) {
-		bam_hdr_destroy(data[i]->hdr);
-		sam_close(data[i]->fp);
-		if (data[i]->iter) hts_itr_destroy(data[i]->iter);
+		bam_close(data[i]->fp);
+		if (data[i]->iter) bam_iter_destroy(data[i]->iter);
 		free(data[i]);
 	}
 	free(data); free(reg);

@@ -11,7 +11,7 @@
 
 #include <vector>
 
-#include "htslib/sam.h"
+#include "sam.h"
 
 // Forward declarations.
 class ControlState;
