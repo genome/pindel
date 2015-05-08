@@ -11,7 +11,6 @@
 
 #include <string>
 #include <sstream>
-#include <zlib.h>
 #include "line_reader.h"
 
 

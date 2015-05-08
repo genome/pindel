@@ -30,9 +30,9 @@
 #include <set>
 #include <map>
 
-// HTSlib header files
-#include "htslib/khash.h"
-#include "htslib/sam.h"
+// Samtools header files
+#include "khash.h"
+#include "sam.h"
 
 #include "user_defined_settings.h"
 //#include "bddata.h"
@@ -452,6 +452,14 @@ void ReadInOneChr(std::ifstream & inf_Seq, std::string & TheInput, const std::st
 void parse_flags_and_tags(const bam1_t * b, flags_hit * flags);
 int32_t bam_cigar2len(const bam1_core_t * c, const uint32_t * cigar);
 void build_record(const bam1_t * mapped_read, const bam1_t * unmapped_read, void *data);
+
+#ifdef __cplusplus
+extern "C" {
+int32_t bam_get_tid(const bam_header_t * header, const char *seq_name);
+int32_t bam_aux2i(const uint8_t * s);
+void bam_init_header_hash(bam_header_t * header);
+}
+#endif
 
 std::vector<std::string>
 ReverseComplement(const std::vector<std::string> &input);

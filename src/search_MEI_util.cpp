@@ -19,6 +19,7 @@
  */
 
 #include "search_MEI_util.h"
+#include "sam_header.h"
 
 // Logging libraries.
 #include "logdef.h"
@@ -104,7 +105,7 @@ std::string get_sequence(uint8_t* sam_seq, int sam_seq_len) {
     std::string sequence;
     for (int i = 0; i < sam_seq_len; ++i) {
         // Append base letter.
-        sequence.append(1, seq_nt16_str[bam_seqi(sam_seq, i)]);
+        sequence.append(1, bam_nt16_rev_table[bam1_seqi(sam_seq, i)]);
     }
     return sequence;
 }
@@ -337,26 +338,35 @@ bool contains_subseq_any_strand(const std::string& query, const std::string& db,
 
 
 // Set up map linking read group ids with sample names.
-std::map<std::string, std::string> get_sample_dictionary(bam_hdr_t* header) {
+std::map<std::string, std::string> get_sample_dictionary(bam_header_t* header) {
     std::map<std::string, std::string> sample_dict;
-
-    std::istringstream header_stream(header->text);
-    std::string line;
-    while (getline(header_stream, line)) {
-        if (line.compare(0, 3, "@RG") == 0) {
-            size_t idpos = line.find("\tID:");
-            size_t smpos = line.find("\tSM:");
-            if (idpos != std::string::npos && smpos != std::string::npos) {
-                idpos += 4;
-                smpos += 4;
-                line += '\t';
-                std::string id(line, idpos, line.find('\t', idpos) - idpos);
-                std::string sm(line, smpos, line.find('\t', smpos) - smpos);
-                sample_dict.insert(std::make_pair(id, sm));
-            }
+    int num_ids;
+    int num_names;
+    char** tmp_ids;
+    if (header->dict == 0) header->dict = sam_header_parse2(header->text);
+    // Convert string literals to char* to feed into samtools api.
+    char* rg_tag = new char[3];
+    strncpy(rg_tag, "RG", 2); 
+    rg_tag[2] = '\0';
+    char* id_tag = new char[3];
+    strncpy(id_tag, "ID", 2);
+    id_tag[2] = '\0';
+    char* sm_tag = new char[3];
+    strncpy(sm_tag, "SM", 2);
+    id_tag[2] = '\0';
+    tmp_ids = sam_header2list(header->dict, rg_tag, id_tag, &num_ids);
+    char** tmp_names;
+    tmp_names = sam_header2list(header->dict, rg_tag, sm_tag, &num_names);
+    if (num_ids > 0 && num_ids == num_names) {
+        for (int i = 0; i < num_ids; i++) {
+            sample_dict.insert(std::make_pair(tmp_ids[i], tmp_names[i]));
         }
     }
-
+    free(tmp_ids);
+    free(tmp_names);
+    delete rg_tag;
+    delete id_tag;
+    delete sm_tag;
     return sample_dict;
 }
 
