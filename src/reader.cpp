@@ -26,12 +26,11 @@
 #include <assert.h>
 
 // Samtools header files
-#include "bam.h"
-#include "sam.h"
-#include "kstring.h"
-#include "kseq.h"
-#include "khash.h"
-#include "ksort.h"
+#include "htslib/sam.h"
+#include "htslib/kstring.h"
+#include "htslib/kseq.h"
+#include "htslib/khash.h"
+#include "htslib/ksort.h"
 
 // Pindel header files
 #include "logstream.h"
@@ -68,9 +67,9 @@ KSORT_INIT_GENERIC (uint32_t) KHASH_MAP_INIT_STR (read_name, bam1_t *)
 void GetReadSeq (const bam1_t* bamOfRead, std::string & c_sequence) {
 	//std::string c_sequence;
 	const bam1_core_t *bamCore = &bamOfRead->core;
-	uint8_t *s = bam1_seq (bamOfRead);
+	uint8_t *s = bam_get_seq (bamOfRead);
 	for (int i = 0; i < bamCore -> l_qseq; ++i) {
-		c_sequence.append (1, bam_nt16_rev_table[bam1_seqi (s, i)]);
+		c_sequence.append (1, seq_nt16_str[bam_seqi (s, i)]);
     	}	
 }
 
@@ -102,7 +101,7 @@ struct fetch_func_data_SR {
    std::vector < SPLIT_READ > *OneEndMappedReads;
    std::vector <REF_READ> *RefSupportingReads;
    khash_t (read_name) * read_to_map_qual;
-   bam_header_t *header;
+   bam_hdr_t *header;
    flags_hit *b1_flags;
    flags_hit *b2_flags;
    const std::string * CurrentChrSeq;
@@ -137,7 +136,7 @@ struct fetch_func_data_RP {
     std::vector < RP_READ > *LeftReads;
     std::vector < RP_READ > *LeftReads_InterChr;
     khash_t (read_name) * read_to_map_qual;
-    bam_header_t *header;
+    bam_hdr_t *header;
     flags_hit *b1_flags;
     flags_hit *b2_flags;
     const std::string * CurrentChrSeq;
@@ -362,18 +361,17 @@ bool ReadInBamReads_RP (const char *bam_path, const std::string & FragName,
                         const std::string * CurrentChrSeq, std::vector <RP_READ> &LeftReads, 
                         int InsertSize, std::string Tag, const SearchWindow& currentWindow ) 
 { 
-    bamFile fp;
-    fp = bam_open (bam_path, "r");
+    samFile* fp;
+    fp = sam_open (bam_path, "r");
     assert (fp);
-    bam_index_t *idx;
-    idx = bam_index_load (bam_path);	// load BAM index
+    hts_idx_t *idx;
+    idx = sam_index_load (fp, bam_path);	// load BAM index
     assert (idx);
-    bam_header_t *header = bam_header_read (fp);
-    bam_init_header_hash (header);
+    bam_hdr_t *header = sam_hdr_read (fp);
     assert (header);
     //need thing that converts "tid" to "chromosome name"
     int tid;
-    tid = bam_get_tid (header, FragName.c_str ());
+    tid = bam_name2id (header, FragName.c_str ());
 
     fetch_func_data_RP data( CurrentChrSeq );
     data.header = header;
@@ -386,7 +384,11 @@ bool ReadInBamReads_RP (const char *bam_path, const std::string & FragName,
     //data.b2_flags = &b2_flags;
     data.InsertSize = InsertSize;
     data.Tag = Tag;
-    bam_fetch (fp, idx, tid, currentWindow.getStart(), currentWindow.getEnd(), &data, fetch_func_RP);
+    hts_itr_t *iter = sam_itr_queryi(idx, tid, currentWindow.getStart(), currentWindow.getEnd());
+    bam1_t *b = bam_init1();
+    while (sam_itr_next(fp, iter, b) >= 0) fetch_func_RP(b, &data);
+    bam_destroy1(b);
+    hts_itr_destroy(iter);
     /*
     khint_t key;
     if (kh_size (data.read_to_map_qual) > 0) {
@@ -402,9 +404,9 @@ bool ReadInBamReads_RP (const char *bam_path, const std::string & FragName,
     kh_clear (read_name, data.read_to_map_qual);
     kh_destroy (read_name, data.read_to_map_qual);
     
-    bam_header_destroy (header);
-    bam_index_destroy (idx);
-    bam_close (fp);
+    bam_hdr_destroy (header);
+    hts_idx_destroy (idx);
+    sam_close (fp);
     return true;
 }
 
@@ -417,18 +419,17 @@ bool ReadInBamReads_RP_Discovery (const char *bam_path,
 				const SearchWindow& currentWindow ){
 
 	//std::cout << "Entering ReadInBamReads_RP_Discovery" << std::endl;
-	bamFile fp;
-	fp = bam_open (bam_path, "r");
+	samFile* fp;
+	fp = sam_open (bam_path, "r");
 	assert (fp);
-	bam_index_t *idx;
-	idx = bam_index_load (bam_path);	// load BAM index
+	hts_idx_t *idx;
+	idx = sam_index_load (fp, bam_path);	// load BAM index
 	assert (idx);
-	bam_header_t *header = bam_header_read (fp);
-	bam_init_header_hash (header);
+	bam_hdr_t *header = sam_hdr_read (fp);
 	assert (header);
 	//need thing that converts "tid" to "chromosome name"
 	int tid;
-	tid = bam_get_tid (header, FragName.c_str ());
+	tid = bam_name2id (header, FragName.c_str ());
     
 	fetch_func_data_RP data( CurrentChrSeq );
 	data.header = header;
@@ -443,7 +444,11 @@ bool ReadInBamReads_RP_Discovery (const char *bam_path,
 	data.InsertSize = InsertSize;
 	data.Tag = Tag;
 	//std::cout << "Before bam_fetch" << std::endl;
-	bam_fetch (fp, idx, tid, currentWindow.getStart(), currentWindow.getEnd(), &data, fetch_func_RP_Discovery);
+	hts_itr_t *iter = sam_itr_queryi (idx, tid, currentWindow.getStart(), currentWindow.getEnd());
+	bam1_t *b = bam_init1();
+	while (sam_itr_next(fp, iter, b) >= 0) fetch_func_RP_Discovery(b, &data);
+	bam_destroy1(b);
+	hts_itr_destroy(iter);
 	//std::cout << "After bam_fetch" << std::endl;
 	/*
 	khint_t key;
@@ -459,9 +464,9 @@ bool ReadInBamReads_RP_Discovery (const char *bam_path,
 	kh_clear (read_name, data.read_to_map_qual);
 	kh_destroy (read_name, data.read_to_map_qual);
 	
-	bam_header_destroy (header);
-	bam_index_destroy (idx);
-	bam_close (fp);
+	bam_hdr_destroy (header);
+	hts_idx_destroy (idx);
+	sam_close (fp);
 	//std::cout << "Leaving ReadInBamReads_RP_Discovery" << std::endl;
 	return true;
 }
@@ -479,18 +484,17 @@ bool ReadInBamReads_SR (const char *bam_path, const std::string & FragName,
                 bool verbose)
 {
    //std:: cout << " in ReadInBamReads_SR " << std::endl;
-   bamFile fp;
-   fp = bam_open (bam_path, "r");
+   samFile* fp;
+   fp = sam_open (bam_path, "r");
    assert (fp);
-   bam_index_t *idx;
-   idx = bam_index_load (bam_path);	// load BAM index
+   hts_idx_t *idx;
+   idx = sam_index_load (fp, bam_path);	// load BAM index
    assert (idx);
-   bam_header_t *header = bam_header_read (fp);
-   bam_init_header_hash (header);
+   bam_hdr_t *header = sam_hdr_read (fp);
    assert (header);
    //need thing that converts "tid" to "chromosome name"
    int tid;
-   tid = bam_get_tid (header, FragName.c_str ());
+   tid = bam_name2id (header, FragName.c_str ());
 
    //kai does the below line in readinreads. dunno why yet
    fetch_func_data_SR data( CurrentChrSeq );
@@ -509,7 +513,11 @@ bool ReadInBamReads_SR (const char *bam_path, const std::string & FragName,
    data.readBuffer=&readBuffer;
    // std:: cout << " before bam_fetch " << std::endl;
 	//g_ReadSeq2Index.clear();
-   bam_fetch (fp, idx, tid, window.getStart(), window.getEnd(), &data, fetch_func_SR);
+   hts_itr_t *iter = sam_itr_queryi (idx, tid, window.getStart(), window.getEnd());
+   bam1_t *b = bam_init1();
+   while (sam_itr_next(fp, iter, b) >= 0) fetch_func_SR(b, &data);
+   bam_destroy1(b);
+   hts_itr_destroy(iter);
    // std:: cout << " after bam_fetch " << std::endl;
    readBuffer.flush();
 	//g_ReadSeq2Index.clear();
@@ -533,21 +541,21 @@ bool ReadInBamReads_SR (const char *bam_path, const std::string & FragName,
    kh_clear (read_name, data.read_to_map_qual);
    kh_destroy (read_name, data.read_to_map_qual);
 
-   bam_header_destroy (header);
-   bam_index_destroy (idx);
-   bam_close (fp);
+   bam_hdr_destroy (header);
+   hts_idx_destroy (idx);
+   sam_close (fp);
    //std:: cout << " existing ReadInBamReads_SR " << std::endl;
    return true;
 }
 
-bool isGoodAnchor( const flags_hit *read, const bam1_t * bamOfRead ) //bam1_qname
+bool isGoodAnchor( const flags_hit *read, const bam1_t * bamOfRead ) //bam_get_qname
 {
 //return true;
 	const bam1_core_t *bamCore = &bamOfRead->core;
 	//std::cout << "1";
 
 	//std::cout << "3";
-		//std::string NR = bam1_qname(bamOfRead);
+		//std::string NR = bam_get_qname(bamOfRead);
 		//std::string seq;
 		//GetReadSeq(bamOfRead, seq);
 		//if (NR == "HWI-ST568:267:C1BD9ACXX:4:2101:18037:80445")
@@ -561,8 +569,8 @@ bool isGoodAnchor( const flags_hit *read, const bam1_t * bamOfRead ) //bam1_qnam
 	const uint8_t *nm = bam_aux_get(bamOfRead, "NM");
 	if (nm) {
 		int32_t nm_value = bam_aux2i(nm);
-		//std::cout << bam1_qname(bamOfRead) << std::endl;
-		std::string NR = bam1_qname(bamOfRead);
+		//std::cout << bam_get_qname(bamOfRead) << std::endl;
+		std::string NR = bam_get_qname(bamOfRead);
 		std::string seq;
 		GetReadSeq(bamOfRead, seq);
 		if (NR == "HWI-ST568:267:C1BD9ACXX:4:2101:18037:80445")
@@ -613,13 +621,13 @@ if (bamCore->flag & BAM_FSECONDARY || bamCore->flag & BAM_FQCFAIL || bamCore->fl
 	//const bam1_core_t *bamCore = &bamOfRead->core;
 	int maxEdits = int (bamCore->l_qseq * userSettings->MaximumAllowedMismatchRate) + 1;
 	//std::cout << "isRefRead 4" << std::endl;
-	uint32_t *cigar_pointer = bam1_cigar (bamOfRead);
+	uint32_t *cigar_pointer = bam_get_cigar (bamOfRead);
 	int cigarMismatchedBases = bam_cigar2mismatch (bamCore, cigar_pointer);
     	//std::cout << "isRefRead 5" << std::endl;
 
 	if (nm) {
 		int32_t nm_value = bam_aux2i(nm);
-		//std::string NR = bam1_qname(bamOfRead);
+		//std::string NR = bam_get_qname(bamOfRead);
 		//std::string seq;
 		//GetReadSeq(bamOfRead, seq);
 		//if (NR == "HWI-ST568:267:C1BD9ACXX:4:2101:18037:80445")
@@ -643,7 +651,7 @@ bool isWeirdRead( const flags_hit *read, const bam1_t * bamOfRead )
     //return true;
 
 	const bam1_core_t *bamCore = &bamOfRead->core;
-	uint32_t *cigar_pointer = bam1_cigar (bamOfRead);
+	uint32_t *cigar_pointer = bam_get_cigar (bamOfRead);
 
 	if (!(read->mapped)) return true;
 
@@ -659,7 +667,7 @@ bool isWeirdRead( const flags_hit *read, const bam1_t * bamOfRead )
 
 	if (nm) {
 		int32_t nm_value = bam_aux2i(nm);
-		//std::string NR = bam1_qname(bamOfRead);
+		//std::string NR = bam_get_qname(bamOfRead);
 		//std::string seq;
 		//GetReadSeq(bamOfRead, seq);
 		//if (NR == "HWI-ST568:267:C1BD9ACXX:4:2101:18037:80445")
@@ -774,7 +782,7 @@ void build_record_SR (const bam1_t * mapped_read, const bam1_t * unmapped_read, 
     //UserDefinedSettings *userSettings = UserDefinedSettings::Instance();
     SPLIT_READ Temp_One_Read;
     fetch_func_data_SR *data_for_bam = (fetch_func_data_SR *) data;
-    bam_header_t *header = (bam_header_t *) data_for_bam->header;
+    bam_hdr_t *header = (bam_hdr_t *) data_for_bam->header;
     //std::string & CurrentChrSeq = *(std::string *) data_for_bam->CurrentChrSeq; //
     std::string Tag = (std::string) data_for_bam->Tag;
     int InsertSize = (int) data_for_bam->InsertSize;
@@ -786,7 +794,7 @@ void build_record_SR (const bam1_t * mapped_read, const bam1_t * unmapped_read, 
     Temp_One_Read.MS = mapped_core->qual;
     if ((short)Temp_One_Read.MS < (short)userSettings->minimalAnchorQuality) return;
     Temp_One_Read.Name = "@";
-    Temp_One_Read.Name.append ((const char *) bam1_qname (unmapped_read));
+    Temp_One_Read.Name.append ((const char *) bam_get_qname (unmapped_read));
     if (unmapped_core->flag & BAM_FREAD1) {
         Temp_One_Read.Name.append ("/1");
     }
@@ -802,9 +810,9 @@ void build_record_SR (const bam1_t * mapped_read, const bam1_t * unmapped_read, 
     //}
     std::string c_sequence;
     int i;
-    uint8_t *s = bam1_seq (unmapped_read);
+    uint8_t *s = bam_get_seq (unmapped_read);
     for (i = 0; i < unmapped_core->l_qseq; ++i) {
-        c_sequence.append (1, bam_nt16_rev_table[bam1_seqi (s, i)]);
+        c_sequence.append (1, seq_nt16_str[bam_seqi (s, i)]);
     }
     //rudimentary n filter
     int length = unmapped_core->l_qseq;
@@ -836,8 +844,8 @@ void build_record_SR (const bam1_t * mapped_read, const bam1_t * unmapped_read, 
         Temp_One_Read.setUnmatchedSeq( c_sequence );
     }
     Temp_One_Read.MatchedRelPos = mapped_core->pos;
-    uint32_t *cigar_pointer_mapped = bam1_cigar (mapped_read);
-    uint32_t *cigar_pointer_unmapped = bam1_cigar (unmapped_read);
+    uint32_t *cigar_pointer_mapped = bam_get_cigar (mapped_read);
+    uint32_t *cigar_pointer_unmapped = bam_get_cigar (unmapped_read);
     if (mapped_core->flag & BAM_FREVERSE) {
         Temp_One_Read.MatchedD = '-';
         
@@ -907,7 +915,7 @@ void build_record_RefRead (const bam1_t * mapped_read, const bam1_t * ref_read, 
    // UserDefinedSettings *userSettings = UserDefinedSettings::Instance();
     REF_READ One_RefRead;
     fetch_func_data_SR *data_for_bam = (fetch_func_data_SR *) data;
-    bam_header_t *header = (bam_header_t *) data_for_bam->header;
+    bam_hdr_t *header = (bam_hdr_t *) data_for_bam->header;
     //std::string CurrentChrSeq = *(std::string *) data_for_bam->CurrentChrSeq;
     //std::string Tag = (std::string) data_for_bam->Tag;
     //int InsertSize = (int) data_for_bam->InsertSize;
@@ -942,14 +950,14 @@ void build_record_RP (const bam1_t * r1, void *data)
 
     RP_READ Temp_One_Read;
     fetch_func_data_RP *data_for_bam = (fetch_func_data_RP *) data;
-    bam_header_t *header = (bam_header_t *) data_for_bam->header;
+    bam_hdr_t *header = (bam_hdr_t *) data_for_bam->header;
     //std::string CurrentChrSeq = *(std::string *) data_for_bam->CurrentChrSeq;
     std::string Tag = (std::string) data_for_bam->Tag;
     
     if (!(r1_core->flag & BAM_FUNMAP || r1_core->flag & BAM_FMUNMAP)) { // both reads are mapped.
         if ((r1_core->tid != r1_core->mtid) || abs(r1_core->isize) > r1_core->l_qseq + 2 * data_for_bam->InsertSize) {
             Temp_One_Read.ReadName = "";
-            Temp_One_Read.ReadName.append ((const char *) bam1_qname (r1));
+            Temp_One_Read.ReadName.append ((const char *) bam_get_qname (r1));
             if (r1_core->flag & BAM_FREVERSE) {
                 Temp_One_Read.DA = '-';
             }
@@ -992,10 +1000,10 @@ void build_record_RP_Discovery (const bam1_t * r1, void *data) {
     
 	RP_READ Temp_One_Read;
 	fetch_func_data_RP *data_for_bam = (fetch_func_data_RP *) data;
-	bam_header_t *header = (bam_header_t *) data_for_bam->header;
+	bam_hdr_t *header = (bam_hdr_t *) data_for_bam->header;
 	//std::string CurrentChrSeq = *(std::string *) data_for_bam->CurrentChrSeq;
 	std::string Tag = (std::string) data_for_bam->Tag;
-	//std::string read_name = bam1_qname (r1);
+	//std::string read_name = bam_get_qname (r1);
     
 	if (!(r1_core->flag & BAM_FPAIRED)) return;
 
@@ -1036,7 +1044,7 @@ void build_record_RP_Discovery (const bam1_t * r1, void *data) {
 	            
 			Temp_One_Read.Experimental_InsertSize = data_for_bam->InsertSize;
 			Temp_One_Read.ReadName = "";
-			Temp_One_Read.ReadName.append ((const char *) bam1_qname (r1));
+			Temp_One_Read.ReadName.append ((const char *) bam_get_qname (r1));
 			//if ("read_10038" == Temp_One_Read.ReadName) {
 			//    std::cout << "print " << Temp_One_Read.ReadName << " is on line 881." << std::endl;
 			//}
@@ -1106,14 +1114,14 @@ static int fetch_func_SR (const bam1_t * b1, void *data)
    bam1_t *b2;
    bam1_core_t *b2_core;
    b1_core = &b1->core;
-   //std::string read_name = bam1_qname (b1);
+   //std::string read_name = bam_get_qname (b1);
    // if (read_name == "DD7DT8Q1:4:1106:17724:13906#GTACCT") std::cout << " +++++++ here ++++++++ " << std::endl;
-   khint_t key = kh_get (read_name, read_to_map_qual, bam1_qname (b1));
+   khint_t key = kh_get (read_name, read_to_map_qual, bam_get_qname (b1));
 
    if (key == kh_end (read_to_map_qual)) {
       int ret=0;
-      key = kh_put (read_name, read_to_map_qual, strdup (bam1_qname (b1)), &ret);
-	//	key = kh_put (read_name, read_to_map_qual, bam1_qname (b1), &ret);
+      key = kh_put (read_name, read_to_map_qual, strdup (bam_get_qname (b1)), &ret);
+	//	key = kh_put (read_name, read_to_map_qual, bam_get_qname (b1), &ret);
       kh_value (read_to_map_qual, key) = bam_dup1 (b1);
       return 0;
    }
@@ -1127,7 +1135,7 @@ static int fetch_func_SR (const bam1_t * b1, void *data)
       //std::string c_sequence;
    }
 	/*
-	std::string RN = bam1_qname(b1);
+	std::string RN = bam_get_qname(b1);
 	//std::cout << "|" << RN << "|" << std::endl;
 	std::string query = "1_112673_113350_0_1_0_0_0:0:0_0:0:0_c9d04"; 
 	if (RN == query)
@@ -1189,12 +1197,12 @@ static int fetch_func_RP (const bam1_t * b1, void *data)
     //bam1_t *b2;
     //bam1_core_t *b2_core;
     b1_core = &b1->core;
-    //std::string read_name = bam1_qname (b1);
+    //std::string read_name = bam_get_qname (b1);
     /*
-    khint_t key = kh_get (read_name, read_to_map_qual, bam1_qname (b1));
+    khint_t key = kh_get (read_name, read_to_map_qual, bam_get_qname (b1));
     if (key == kh_end (read_to_map_qual)) {
         int ret=0;
-        key = kh_put (read_name, read_to_map_qual, strdup (bam1_qname (b1)), &ret);
+        key = kh_put (read_name, read_to_map_qual, strdup (bam_get_qname (b1)), &ret);
         kh_value (read_to_map_qual, key) = bam_dup1 (b1);
         return 0;
     }
@@ -1233,15 +1241,15 @@ static int fetch_func_RP_Discovery (const bam1_t * b1, void *data)
     //bam1_t *b2;
     //bam1_core_t *b2_core;
     b1_core = &b1->core;
-    //std::string read_name = bam1_qname (b1);
+    //std::string read_name = bam_get_qname (b1);
     //if ("read_10038" == read_name) {
     //    std::cout << "see read_10038 in fetch_func_RP_Discovery" << std::endl;
     //}
     /*
-     khint_t key = kh_get (read_name, read_to_map_qual, bam1_qname (b1));
+     khint_t key = kh_get (read_name, read_to_map_qual, bam_get_qname (b1));
      if (key == kh_end (read_to_map_qual)) {
      int ret=0;
-     key = kh_put (read_name, read_to_map_qual, strdup (bam1_qname (b1)), &ret);
+     key = kh_put (read_name, read_to_map_qual, strdup (bam_get_qname (b1)), &ret);
      kh_value (read_to_map_qual, key) = bam_dup1 (b1);
      return 0;
      }
