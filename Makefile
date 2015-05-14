@@ -35,8 +35,21 @@ clean:
 
 Makefile.local:
 	@echo '# Local configuration' > $@
-	@echo '# Location of SAMTools' >> $@
-	@echo "SAMTOOLS=$(realpath $(SAMTOOLS))" >> $@
+	@echo '# Location of HTSlib' >> $@
+	@if [ -z "$(HTSLIB)" ]; then \
+	     echo "HTSLIB_CPPFLAGS=" >> $@; \
+	 elif [ -d $(HTSLIB)/include ]; then \
+	     echo "HTSLIB_CPPFLAGS=-I$(realpath $(HTSLIB)/include)" >> $@; \
+	 else \
+	     echo "HTSLIB_CPPFLAGS=-I$(realpath $(HTSLIB))" >> $@; \
+	 fi
+	@if [ -z "$(HTSLIB)" ]; then \
+	     echo "HTSLIB_LDFLAGS=" >> $@; \
+	 elif [ -d $(HTSLIB)/lib ]; then \
+	     echo "HTSLIB_LDFLAGS=-L$(realpath $(HTSLIB)/lib)" >> $@; \
+	 else \
+	     echo "HTSLIB_LDFLAGS=-L$(realpath $(HTSLIB))" >> $@; \
+	 fi
 	@echo '' >> $@
 	@echo '# Number of threads for functional tests, set to 2 or more, recommended to match number of cores' >> $@
 	@(if [ -e /proc/cpuinfo ] ; then THREADS=`fgrep -c processor /proc/cpuinfo` ; echo "THREADS=${THREADS}" ; else echo 'THREADS=2' ; fi) >> $@
