@@ -1,5 +1,5 @@
 #!/bin/sh
-# builds the pindel file, using the samtools directory as an argument
+# builds the pindel file, using the htslib directory as an argument
 # script adapted by Eric-Wubbo Lameijer, e.m.w.lameijer@lumc.nl, based on http://www.kingcomputerservices.com/unix_101/tips_on_good_shell_programming_practices.htm
 
 #  test if we have a argument on the command line
@@ -8,8 +8,8 @@ if [ "$#" != "1" ]; then
     echo " "
     echo "INSTALL"
     echo "    purpose:  builds the pindel executable "
-    echo "    usage:    ./INSTALL [samtoolsdirectory]"
-    echo "    example:  ./INSTALL /home/user/tools/samtools-0.1.18/"
+    echo "    usage:    ./INSTALL [htslibdirectory]"
+    echo "    example:  ./INSTALL /home/user/tools/samtools-1.2/htslib-1.2.1"
     echo " "
     exit 1
 fi
@@ -26,12 +26,12 @@ if [ -e "Makefile.local" ];
   then LATERRUN="1";
 fi 
 
-make SAMTOOLS=$ABSPATH
+make HTSLIB=$ABSPATH
 
 if [ "$LATERRUN" != "1" ]; then
    echo "If this is the first time you're running this install script please wait a moment as we create the Makefile.local"
    sleep 10
-   make SAMTOOLS=$ABSPATH
+   make HTSLIB=$ABSPATH
 fi
 
 if [ "$?" -ne 0 ]; then 
@@ -39,8 +39,8 @@ if [ "$?" -ne 0 ]; then
     echo "INSTALL failed" 
     echo "Possible reasons: "
     echo "1. 'cannot cd to [path]"
-    echo "->the samtools path provided was incorrect"
-    echo "(so '../samtools/' was used instead of '/home/user/samtools/')"
+    echo "->the htslib path provided was incorrect"
+    echo "(so '../htslib/' was used instead of '/home/user/samtools/htslib')"
     echo " "
     echo "2. 'cannot find -lbam'"
     echo "->samtools was not properly installed, in that case go to the samtools directory "
