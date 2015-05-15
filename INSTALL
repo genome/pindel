@@ -42,7 +42,7 @@ if [ "$?" -ne 0 ]; then
     echo "1. 'cannot cd to [path]"
     echo "->the htslib path provided was incorrect"
     echo " "
-    echo "2. 'cannot find -lbam'"
+    echo "2. 'cannot find -lhts'"
     echo "->htslib was not properly compiled/made, in that case, go to the htslib directory and follow the htslib installation instructions"
     echo "and run 'make'."
     echo " "
