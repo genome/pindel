@@ -4,7 +4,7 @@
 
 #  test if we have a argument on the command line
 
-if [ "$#" != "1" ]; then
+if [ $# -ne 1 ]; then
     echo " "
     echo "INSTALL"
     echo "    purpose:  builds the pindel executable "
@@ -18,23 +18,23 @@ fi
 
 # to make sure, convert relative path to absolute path
 
-ABSPATH=`cd $1; pwd`
+ABSPATH=$(cd "$1"; pwd)
 
-ABSPATH="$ABSPATH/"
+ABSPATH=$ABSPATH/
 echo "path is now: $ABSPATH"
-if [ -e "Makefile.local" ];
-  then LATERRUN="1";
+if [ -e Makefile.local ];
+  then LATERRUN=1;
 fi 
 
-make HTSLIB=$ABSPATH
+make HTSLIB="$ABSPATH"
 
-if [ "$LATERRUN" != "1" ]; then
+if [ $LATERRUN -ne 1 ]; then
    echo "If this is the first time you're running this install script please wait a moment as we create the Makefile.local"
    sleep 10
-   make HTSLIB=$ABSPATH
+   make HTSLIB="$ABSPATH"
 fi
 
-if [ "$?" -ne 0 ]; then 
+if [ $? -ne 0 ]; then 
     echo "  "
     echo "INSTALL failed" 
     echo "Possible reasons: "
@@ -62,4 +62,4 @@ else
     echo "For help and background information, see the pindel wiki and its FAQ on https://trac.nbic.nl/pindel/wiki/PindelFaq"
     echo "Or contact us on kye@genome.wustl.edu" 
     echo " "
-fi 
+fi
