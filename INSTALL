@@ -8,8 +8,9 @@ if [ "$#" != "1" ]; then
     echo " "
     echo "INSTALL"
     echo "    purpose:  builds the pindel executable "
+    echo "    purpose:  you should first download samtools and compile htslib and samtools separately before proceed to Pindel install. "
     echo "    usage:    ./INSTALL [htslibdirectory]"
-    echo "    example:  ./INSTALL /home/user/tools/samtools-1.2/htslib-1.2.1"
+    echo "    example:  ./INSTALL /home/user/tools/samtools-1.2/htslib-1.2.1/"
     echo " "
     exit 1
 fi
@@ -43,7 +44,7 @@ if [ "$?" -ne 0 ]; then
     echo "(so '../htslib/' was used instead of '/home/user/samtools/htslib')"
     echo " "
     echo "2. 'cannot find -lbam'"
-    echo "->samtools was not properly installed, in that case go to the samtools directory "
+    echo "->samtools or htslib was not properly compiled, in that case go to the samtools and htslib directory "
     echo "and run 'make'."
     echo " "
     echo "For futher help, see the pindel wiki and its FAQ on https://trac.nbic.nl/pindel/wiki/PindelFaq"
