@@ -32,12 +32,14 @@ bool NewUPFarIsBetter(const SortedUniquePoints & UP, const SPLIT_READ& Read) {
     if (UP.MaxLen() < Read.MaxLenFarEnd()) {
        return false;
     }
-    if (UP.NumMismatch() < Read.UP_Far.NumMismatch()){
+/*    if (UP.MaxLen() == Read.MaxLenFarEnd() && UP.NumMismatch() < Read.UP_Far.NumMismatch()){
         return true;
     }
     else {
         return false;
     }
+*/
+	return true;
 }
 
 void SearchFarEndAtPos( const std::string& chromosome, SPLIT_READ& Temp_One_Read, const std::vector <SearchWindow> & Regions )

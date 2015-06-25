@@ -946,6 +946,7 @@ void bubblesortReads(const std::vector < SPLIT_READ >& Reads, std::vector < unsi
 					// firstRead.LeftMostPos + firstRead.getReadLength() == secondRead.LeftMostPos + secondRead.getReadLength()) {
 void markDuplicates(std::vector < SPLIT_READ >& Reads, const std::vector < unsigned >& VariantIndices)
 {
+	return;
 	// mark reads that are not unique 
 	unsigned int Num = VariantIndices.size();
 
@@ -1395,10 +1396,11 @@ void SortOutputD (ControlState& currentState, const unsigned &NumBoxes, const st
           //std::cout << "S3" << std::endl;
           bubblesortReads( Reads, Deletions[ Box_index ] );
           //std::cout << "S4" << std::endl;
-          markDuplicates( Reads, Deletions[ Box_index ] );
+          //markDuplicates( Reads, Deletions[ Box_index ] );
           //std::cout << "S5" << std::endl;
          GoodIndels.clear ();
          IndelEvents.clear ();
+	 //GoodIndels.swap(Reads[Deletions[Box_index]);
          for (unsigned int First = 0; First < DeletionsNum; First++) {
             GoodIndels.push_back (Reads[Deletions[Box_index][First]]);
          }
@@ -1507,7 +1509,7 @@ void SortOutputD (ControlState& currentState, const unsigned &NumBoxes, const st
                      if (GoodIndels[IndelEvents[EventIndex].Start].IndelSize < userSettings->BalanceCutoff) {
                         LOG_DEBUG(*logStream << "ba" << std::endl);
                          //std::cout << "ba" << std::endl;
-                        OutputDeletions (GoodIndels, CurrentChr, IndelEvents[EventIndex].Start, IndelEvents[EventIndex].End, RealStart,
+                         (GoodIndels, CurrentChr, IndelEvents[EventIndex].Start, IndelEvents[EventIndex].End, RealStart,
 									RealEnd, DeletionOutf);
                         deletionFileData.increaseTemplateSvCounter();
                         LOG_DEBUG(*logStream << "bb" << std::endl);

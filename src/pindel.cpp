@@ -74,7 +74,7 @@
 /* EW: update 0.2.4s: bugfix for -p option of Pindel0.2.4r */
 /* EW: update 0.2.4t, updates now shown in RELEASE document in trunk directory */
 
-const std::string Pindel_Version_str = "Pindel version 0.2.5b, June 25 2015.";
+const std::string Pindel_Version_str = "Pindel version 0.2.5b, 20150625.";
 
 const Chromosome g_dummyChromosome("","");
 Genome g_genome;
@@ -513,7 +513,7 @@ unsigned int SPLIT_READ::getLastAbsLocCloseEnd() const
 
 bool SPLIT_READ::goodFarEndFound() const
 {
-    return ((UP_Far.MaxLen() + UP_Close.MaxLen() >= UnmatchedSeq.size()));
+    return ((UP_Far.MaxLen() + UP_Close.MaxLen() >= UnmatchedSeq.size()) );
 }
 
 bool SPLIT_READ::hasCloseEnd() const
@@ -1844,6 +1844,8 @@ int main(int argc, char *argv[])
           		//std::cout << "Before" << std::endl;
 			//g_ReadSeq2Index.clear();
          		get_SR_Reads(currentState, currentWindow );
+
+
 			//std::cout << "g_ReadSeq2Index.size(): " << g_ReadSeq2Index.size() << std::endl;
 			//g_ReadSeq2Index.clear();
          		std::cout << "There are " << currentState.RefSupportingReads.size() << " reads supporting the reference allele." << std::endl;
@@ -1873,9 +1875,14 @@ int main(int argc, char *argv[])
 					*logStream << "update FarFragName" << std::endl;
                     			UpdateFarFragName(currentState.Reads_SR);
 					*logStream << "update FarFragName done" << std::endl;
+
+                			for (unsigned index = 0; index < currentState.Reads_SR.size(); index++) {
+						if (currentState.Reads_SR[index].Name.substr(1, currentState.Reads_SR[index].Name.length() - 1) == "M02294:134:000000000-AEBFT:1:2107:22870:24838" || currentState.Reads_SR[index].Name.substr(1, currentState.Reads_SR[index].Name.length() - 1) == "M02294:134:000000000-AEBFT:1:2107:26950:22204" || currentState.Reads_SR[index].Name.substr(1, currentState.Reads_SR[index].Name.length() - 1) == "M02294:134:000000000-AEBFT:1:2107:22870:24838" || currentState.Reads_SR[index].Name.substr(1, currentState.Reads_SR[index].Name.length() - 1) == "M02294:134:000000000-AEBFT:1:2107:12036:24928" || currentState.Reads_SR[index].Name.substr(1, currentState.Reads_SR[index].Name.length() - 1) == "M02294:134:000000000-AEBFT:1:2110:3389:16550")
+                			        	std::cout << currentState.Reads_SR[index];
+                			}
 /*
                 			for (unsigned index = 0; index < currentState.Reads_SR.size(); index++) {
-						//if (currentState.Reads_SR[index].Name.substr(1, currentState.Reads_SR[index].Name.length() - 3) == "1_112673_113350_0_1_0_0_0:0:0_0:0:0_c9d04")
+						if (currentState.Reads_SR[index].Name.substr(1, currentState.Reads_SR[index].Name.length() - 1) == "M02294:134:000000000-AEBFT:1:2107:22870:24838")
                 			        	std::cout << currentState.Reads_SR[index];
                 			}
 */
