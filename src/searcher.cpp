@@ -32,14 +32,14 @@ unsigned int numberOfCompetingPositions( const std::vector < PosVector >& positi
 	return sum;
 }
 
-
+/*
 bool Matches( const char readBase, const char referenceBase )
 {
 	//std::cout << "read/ref: " << readBase << "," << referenceBase << "\n";
 	if (readBase!='N') { return referenceBase == readBase; }
 	else { return Match2N[(short) referenceBase] == 'N'; } 
 }
-
+*/
 
 /** "CategorizePositions" categorizes the positions in PD_Plus as being extended perfectly or with an (extra) mismatch */  
 void CategorizePositions(const char readBase, const std::string & chromosomeSeq, const std::vector<PosVector>& PD_Plus, std::vector<PosVector>& PD_Plus_Output, const int numMisMatches, 	
@@ -48,7 +48,7 @@ void CategorizePositions(const char readBase, const std::string & chromosomeSeq,
 	int SizeOfCurrent = PD_Plus[ numMisMatches ].size();
  	for (int j = 0; j < SizeOfCurrent; j++) {
       unsigned int pos = PD_Plus[ numMisMatches ][j] + searchDirection;
-      if ( Matches( readBase, chromosomeSeq[ pos ] ) ) {
+      if ( readBase == chromosomeSeq[ pos ] )  {
          PD_Plus_Output[ numMisMatches ].push_back(pos);
       }
       else {

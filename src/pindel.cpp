@@ -74,7 +74,7 @@
 /* EW: update 0.2.4s: bugfix for -p option of Pindel0.2.4r */
 /* EW: update 0.2.4t, updates now shown in RELEASE document in trunk directory */
 
-const std::string Pindel_Version_str = "Pindel version 0.2.5a8, Oct. 14 2014.";
+const std::string Pindel_Version_str = "Pindel version 0.2.5b, June 25 2015.";
 
 const Chromosome g_dummyChromosome("","");
 Genome g_genome;
@@ -513,7 +513,7 @@ unsigned int SPLIT_READ::getLastAbsLocCloseEnd() const
 
 bool SPLIT_READ::goodFarEndFound() const
 {
-    return ((UP_Far.MaxLen() + UP_Close.MaxLen() >= UnmatchedSeq.size()) && (UP_Far.NumMismatch() == 0));
+    return ((UP_Far.MaxLen() + UP_Close.MaxLen() >= UnmatchedSeq.size()));
 }
 
 bool SPLIT_READ::hasCloseEnd() const
