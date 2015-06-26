@@ -1875,11 +1875,12 @@ int main(int argc, char *argv[])
 					*logStream << "update FarFragName" << std::endl;
                     			UpdateFarFragName(currentState.Reads_SR);
 					*logStream << "update FarFragName done" << std::endl;
-
+/*
                 			for (unsigned index = 0; index < currentState.Reads_SR.size(); index++) {
 						if (currentState.Reads_SR[index].Name.substr(1, currentState.Reads_SR[index].Name.length() - 1) == "M02294:134:000000000-AEBFT:1:2107:22870:24838" || currentState.Reads_SR[index].Name.substr(1, currentState.Reads_SR[index].Name.length() - 1) == "M02294:134:000000000-AEBFT:1:2107:26950:22204" || currentState.Reads_SR[index].Name.substr(1, currentState.Reads_SR[index].Name.length() - 1) == "M02294:134:000000000-AEBFT:1:2107:22870:24838" || currentState.Reads_SR[index].Name.substr(1, currentState.Reads_SR[index].Name.length() - 1) == "M02294:134:000000000-AEBFT:1:2107:12036:24928" || currentState.Reads_SR[index].Name.substr(1, currentState.Reads_SR[index].Name.length() - 1) == "M02294:134:000000000-AEBFT:1:2110:3389:16550")
                 			        	std::cout << currentState.Reads_SR[index];
                 			}
+*/
 /*
                 			for (unsigned index = 0; index < currentState.Reads_SR.size(); index++) {
 						if (currentState.Reads_SR[index].Name.substr(1, currentState.Reads_SR[index].Name.length() - 1) == "M02294:134:000000000-AEBFT:1:2107:22870:24838")
@@ -2040,7 +2041,7 @@ std::string Cap2Low(const std::string & input)
 
 bool ReportEvent(const std::vector<SPLIT_READ> &Deletions,
                  const unsigned int &S, const unsigned int &E)
-{
+{	//return true;
     short ReadLength = Deletions[S].getReadLength() - Deletions[S].NT_size;
     short Min_Length = (short) ((ReadLength * Min_Filter_Ratio) + 0.5) - 1;
     short Max_Length = (short) (ReadLength * (1 - Min_Filter_Ratio) - 0.5) - 1;

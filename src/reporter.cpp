@@ -38,7 +38,11 @@
 //#include "genotyping.h"
 #include "bam2depth.h"
 
-
+bool compare(const SPLIT_READ & one, const SPLIT_READ & two) {
+	if (one.BPLeft < two.BPLeft) return true;
+	else if (one.BPRight < two.BPRight) return true;
+	return false;
+}
 
 OutputFileData deletionFileData;
 
@@ -990,9 +994,9 @@ void SortOutputSI (ControlState& currentState, const unsigned &NumBoxes, const s
          LOG_DEBUG(*logStream << "SIsNum " << SIsNum << std::endl);
 			//std::cout << "Number of reads in current box: " << SIsNum << "\n";
          //std::cout << "Bi 2" << std::endl;
-         bubblesortReads( Reads, SIs[ Box_index ] );
+         //bubblesortReads( Reads, SIs[ Box_index ] );
          //std::cout << "Bi 3" << std::endl;
-         markDuplicates( Reads, SIs[ Box_index ] );
+         //markDuplicates( Reads, SIs[ Box_index ] );
          //std::cout << "Bi 4" << std::endl;
          GoodIndels.clear ();
          IndelEvents.clear ();
@@ -1002,6 +1006,7 @@ void SortOutputSI (ControlState& currentState, const unsigned &NumBoxes, const s
          for (unsigned int index = 0; index < SIsNum; index++) {
             GoodIndels.push_back (Reads[SIs[Box_index][index]]);
          }
+	 sort(GoodIndels.begin(), GoodIndels.end(), compare); 
          //std::cout << "Bi 5" << std::endl;
          GoodNum = GoodIndels.size();
          LOG_DEBUG(*logStream << Box_index << " " << GoodNum << std::endl);
@@ -1171,7 +1176,7 @@ void SortAndOutputTandemDuplications (ControlState& currentState, const unsigned
          for (unsigned int First = 0; First < TDNum; First++) {
             GoodIndels.push_back (AllReads[TDs[Box_index][First]]);
          }
-
+	 sort(GoodIndels.begin(), GoodIndels.end(), compare);
          GoodNum = GoodIndels.size ();
          if (GoodNum == 0) {
             continue;
@@ -1302,7 +1307,7 @@ bool IsGoodDeletion(std::vector < SPLIT_READ > & GoodIndels, Indel4output & OneI
     //<< std::endl;
     
     //UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
-    
+    return true;
     if (RealEnd < RealStart) return false;
     if (RealStart == 0) return false;
     
@@ -1394,7 +1399,7 @@ void SortOutputD (ControlState& currentState, const unsigned &NumBoxes, const st
           }
           */
           //std::cout << "S3" << std::endl;
-          bubblesortReads( Reads, Deletions[ Box_index ] );
+          //bubblesortReads( Reads, Deletions[ Box_index ] );
           //std::cout << "S4" << std::endl;
           //markDuplicates( Reads, Deletions[ Box_index ] );
           //std::cout << "S5" << std::endl;
@@ -1404,6 +1409,7 @@ void SortOutputD (ControlState& currentState, const unsigned &NumBoxes, const st
          for (unsigned int First = 0; First < DeletionsNum; First++) {
             GoodIndels.push_back (Reads[Deletions[Box_index][First]]);
          }
+	 sort(GoodIndels.begin(), GoodIndels.end(), compare);
          //std::cout << "S6" << std::endl;
          GoodNum = GoodIndels.size ();
          LOG_DEBUG(*logStream << Box_index << " box read size " << GoodNum << std::endl);
@@ -1420,6 +1426,7 @@ void SortOutputD (ControlState& currentState, const unsigned &NumBoxes, const st
          OneIndelEvent.WhetherReport = true;
          LOG_DEBUG(*logStream << "here" << std::endl);
          //std::cout << "S7" << std::endl;
+	 //std::cout << OneIndelEvent.Start << " " << OneIndelEvent.End << " " << OneIndelEvent.ChrName << " " << OneIndelEvent.Support << " " << OneIndelEvent.BPLeft << " " << OneIndelEvent.BPRight << std::endl;
          for (unsigned int GoodIndex = 1; GoodIndex < GoodNum; GoodIndex++) {
             if (GoodIndels[GoodIndex].BPLeft == OneIndelEvent.BPLeft
                   && GoodIndels[GoodIndex].BPRight == OneIndelEvent.BPRight
@@ -1451,6 +1458,7 @@ void SortOutputD (ControlState& currentState, const unsigned &NumBoxes, const st
                OneIndelEvent.BPRight = GoodIndels[GoodIndex].BPRight;
                OneIndelEvent.ChrName = GoodIndels[GoodIndex].FragName;
             }
+	 	//std::cout << OneIndelEvent.Start << " " << OneIndelEvent.End << " " << OneIndelEvent.ChrName << " " << OneIndelEvent.Support << " " << OneIndelEvent.BPLeft << " " << OneIndelEvent.BPRight << std::endl;
          }
          //std::cout << "S8" << std::endl;
          OneIndelEvent.RealStart = OneIndelEvent.BPLeft;
@@ -1465,7 +1473,7 @@ void SortOutputD (ControlState& currentState, const unsigned &NumBoxes, const st
          LOG_DEBUG(*logStream << "IndelEvent: " << IndelEvents.size() << std::endl);
 
          if (IndelEvents.size ()) {
-            // std::cout << "IndelEvents.size ()" << IndelEvents.size () << std::endl;
+            //std::cout << "IndelEvents.size ()" << IndelEvents.size () << std::endl;
             //std::cout << "S8a" << std::endl;
             for (unsigned EventIndex = 0; EventIndex < IndelEvents.size ();
                   EventIndex++) {
@@ -1501,15 +1509,16 @@ void SortOutputD (ControlState& currentState, const unsigned &NumBoxes, const st
                   // report max one
                   LOG_DEBUG(*logStream << "max" << std::endl);
                    //std::cout << "current D " << RealStart << " " << RealEnd << " " << RealEnd - RealStart << " " << IndelEvents[EventIndex].Support << " " << IsGoodDeletion(GoodIndels, IndelEvents[EventIndex], RealStart, RealEnd, currentState) << std::endl;
-                  if (IndelEvents[EventIndex].Support >= userSettings->NumRead2ReportCutOff && IsGoodDeletion(GoodIndels, IndelEvents[EventIndex], RealStart, RealEnd, currentState))
+                std::cout << EventIndex << " " << IsGoodDeletion(GoodIndels, IndelEvents[EventIndex], RealStart, RealEnd, currentState) << std::endl;  
+		if (IndelEvents[EventIndex].Support >= userSettings->NumRead2ReportCutOff && IsGoodDeletion(GoodIndels, IndelEvents[EventIndex], RealStart, RealEnd, currentState))
                   {
-                      //std::cout << "passed IsGoodDeletion" << std::endl;
+                      std::cout << "passed IsGoodDeletion" << std::endl;
                      LOG_DEBUG(*logStream << "aa" << std::endl);
                      // std::cout << "aa" << std::endl;
                      if (GoodIndels[IndelEvents[EventIndex].Start].IndelSize < userSettings->BalanceCutoff) {
                         LOG_DEBUG(*logStream << "ba" << std::endl);
                          //std::cout << "ba" << std::endl;
-                         (GoodIndels, CurrentChr, IndelEvents[EventIndex].Start, IndelEvents[EventIndex].End, RealStart,
+                        OutputDeletions (GoodIndels, CurrentChr, IndelEvents[EventIndex].Start, IndelEvents[EventIndex].End, RealStart,
 									RealEnd, DeletionOutf);
                         deletionFileData.increaseTemplateSvCounter();
                         LOG_DEBUG(*logStream << "bb" << std::endl);
@@ -1756,7 +1765,7 @@ void SortOutputDI (ControlState& currentState, const unsigned &NumBoxes, const s
          for (unsigned int First = 0; First < DINum; First++) {
             GoodIndels.push_back (Reads[DI[Box_index][First]]);
          }
-
+	 sort(GoodIndels.begin(), GoodIndels.end(), compare);
          GoodNum = GoodIndels.size ();
          LOG_DEBUG(*logStream << Box_index << " " << GoodNum << std::endl);
          if (GoodNum == 0) {

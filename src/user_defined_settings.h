@@ -80,7 +80,7 @@ public:
 		userDefinedRegion = "";
 		Seq_Error_Rate = 0.0;
 		showHelp = false;
-
+		WhetherEnforeStrandBias = true;
 		NM = 2;
 	}
 
@@ -131,7 +131,7 @@ public:
 	std::string userDefinedRegion;
 	double Seq_Error_Rate;
 	bool showHelp;
-    
+ 	bool WhetherEnforeStrandBias;   
     // DD detection: max distance of breakpoints for same event.
     int MAX_DD_BREAKPOINT_DISTANCE;
     
