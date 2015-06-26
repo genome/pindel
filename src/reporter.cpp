@@ -1509,10 +1509,10 @@ void SortOutputD (ControlState& currentState, const unsigned &NumBoxes, const st
                   // report max one
                   LOG_DEBUG(*logStream << "max" << std::endl);
                    //std::cout << "current D " << RealStart << " " << RealEnd << " " << RealEnd - RealStart << " " << IndelEvents[EventIndex].Support << " " << IsGoodDeletion(GoodIndels, IndelEvents[EventIndex], RealStart, RealEnd, currentState) << std::endl;
-                std::cout << EventIndex << " " << IsGoodDeletion(GoodIndels, IndelEvents[EventIndex], RealStart, RealEnd, currentState) << std::endl;  
+                //std::cout << EventIndex << " " << IsGoodDeletion(GoodIndels, IndelEvents[EventIndex], RealStart, RealEnd, currentState) << std::endl;  
 		if (IndelEvents[EventIndex].Support >= userSettings->NumRead2ReportCutOff && IsGoodDeletion(GoodIndels, IndelEvents[EventIndex], RealStart, RealEnd, currentState))
                   {
-                      std::cout << "passed IsGoodDeletion" << std::endl;
+                      //std::cout << "passed IsGoodDeletion" << std::endl;
                      LOG_DEBUG(*logStream << "aa" << std::endl);
                      // std::cout << "aa" << std::endl;
                      if (GoodIndels[IndelEvents[EventIndex].Start].IndelSize < userSettings->BalanceCutoff) {
