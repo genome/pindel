@@ -994,7 +994,7 @@ void SortOutputSI (ControlState& currentState, const unsigned &NumBoxes, const s
          LOG_DEBUG(*logStream << "SIsNum " << SIsNum << std::endl);
 			//std::cout << "Number of reads in current box: " << SIsNum << "\n";
          //std::cout << "Bi 2" << std::endl;
-         //bubblesortReads( Reads, SIs[ Box_index ] );
+         bubblesortReads( Reads, SIs[ Box_index ] );
          //std::cout << "Bi 3" << std::endl;
          //markDuplicates( Reads, SIs[ Box_index ] );
          //std::cout << "Bi 4" << std::endl;
@@ -1006,7 +1006,7 @@ void SortOutputSI (ControlState& currentState, const unsigned &NumBoxes, const s
          for (unsigned int index = 0; index < SIsNum; index++) {
             GoodIndels.push_back (Reads[SIs[Box_index][index]]);
          }
-	 sort(GoodIndels.begin(), GoodIndels.end(), compare); 
+	 //sort(GoodIndels.begin(), GoodIndels.end(), compare); 
          //std::cout << "Bi 5" << std::endl;
          GoodNum = GoodIndels.size();
          LOG_DEBUG(*logStream << Box_index << " " << GoodNum << std::endl);
@@ -1168,7 +1168,7 @@ void SortAndOutputTandemDuplications (ControlState& currentState, const unsigned
          TDNum = TDs[Box_index].size ();
 
           bubblesortReads( AllReads, TDs[ Box_index ] );
-          markDuplicates( AllReads, TDs[ Box_index ] );
+          //markDuplicates( AllReads, TDs[ Box_index ] );
           
          GoodIndels.clear ();
          IndelEvents.clear ();
@@ -1176,7 +1176,7 @@ void SortAndOutputTandemDuplications (ControlState& currentState, const unsigned
          for (unsigned int First = 0; First < TDNum; First++) {
             GoodIndels.push_back (AllReads[TDs[Box_index][First]]);
          }
-	 sort(GoodIndels.begin(), GoodIndels.end(), compare);
+	 //sort(GoodIndels.begin(), GoodIndels.end(), compare);
          GoodNum = GoodIndels.size ();
          if (GoodNum == 0) {
             continue;
@@ -1399,7 +1399,7 @@ void SortOutputD (ControlState& currentState, const unsigned &NumBoxes, const st
           }
           */
           //std::cout << "S3" << std::endl;
-          //bubblesortReads( Reads, Deletions[ Box_index ] );
+          bubblesortReads( Reads, Deletions[ Box_index ] );
           //std::cout << "S4" << std::endl;
           //markDuplicates( Reads, Deletions[ Box_index ] );
           //std::cout << "S5" << std::endl;
@@ -1409,7 +1409,7 @@ void SortOutputD (ControlState& currentState, const unsigned &NumBoxes, const st
          for (unsigned int First = 0; First < DeletionsNum; First++) {
             GoodIndels.push_back (Reads[Deletions[Box_index][First]]);
          }
-	 sort(GoodIndels.begin(), GoodIndels.end(), compare);
+	 //sort(GoodIndels.begin(), GoodIndels.end(), compare);
          //std::cout << "S6" << std::endl;
          GoodNum = GoodIndels.size ();
          LOG_DEBUG(*logStream << Box_index << " box read size " << GoodNum << std::endl);
@@ -1765,7 +1765,7 @@ void SortOutputDI (ControlState& currentState, const unsigned &NumBoxes, const s
          for (unsigned int First = 0; First < DINum; First++) {
             GoodIndels.push_back (Reads[DI[Box_index][First]]);
          }
-	 sort(GoodIndels.begin(), GoodIndels.end(), compare);
+	 //sort(GoodIndels.begin(), GoodIndels.end(), compare);
          GoodNum = GoodIndels.size ();
          LOG_DEBUG(*logStream << Box_index << " " << GoodNum << std::endl);
          if (GoodNum == 0) {
