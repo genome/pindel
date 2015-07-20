@@ -1,0 +1,12 @@
+
+This is the initial implementation of somatic indel filtering for Pindel indel calls based on ICGC DREAM challenge round 3 test result. Please advice. contact kye@genome.wustl.edu
+
+step 1: extract indel summary lines using
+grep ChrID pindel_output_D > D.head
+grep ChrID pindel_output_SI > SI.head
+
+step 2: run provided the perl script with updated configure file
+perl somatic_indelfilter.pl  somatic.indel.filter.config
+
+Somatic indel calls will be stored as vcf in the file specificied in our configure file.
+
