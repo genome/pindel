@@ -10,3 +10,4 @@ perl somatic_indelfilter.pl  somatic.indel.filter.config
 
 Somatic indel calls will be stored as vcf in the file specificied in our configure file.
 
+We assume normal-tumor paired genome runs by pindel and normal sample come first in the pindel output file.
