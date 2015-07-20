@@ -46,9 +46,9 @@ Makefile.local:
 	@if [ -z "$(HTSLIB)" ]; then \
 	     echo "HTSLIB_LDFLAGS=" >> $@; \
 	 elif [ -d $(HTSLIB)/lib ]; then \
-	     echo "HTSLIB_LDFLAGS=-L$(realpath $(HTSLIB)/lib)" >> $@; \
+	     echo "HTSLIB_LDFLAGS=-L$(HTSLIB) -Wl,-rpath $(HTSLIB)/lib" >> $@; \
 	 else \
-	     echo "HTSLIB_LDFLAGS=-L$(realpath $(HTSLIB))" >> $@; \
+	     echo "HTSLIB_LDFLAGS=-L$(HTSLIB) -Wl,-rpath $(HTSLIB)" >> $@; \
 	 fi
 	@echo '' >> $@
 	@echo '# Number of threads for functional tests, set to 2 or more, recommended to match number of cores' >> $@
