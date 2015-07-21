@@ -1,0 +1,7 @@
+src/*.o
+src/*.d
+pindel
+pindel2vcf
+sam2pindel
+Makefile.local
+.gitignore
