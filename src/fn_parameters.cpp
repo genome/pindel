@@ -80,13 +80,13 @@ void defineParameters(std::vector<Parameter *>& parameters)
             "the number of SVs reported, but the computational cost and memory requirements increase, as "
             "does the rate of false "
             "positives. 1=128, 2=512, 3=2,048, 4=8,092, 5=32,368, 6=129,472, 7=517,888, 8=2,071,552, 9=8,286,208. "
-            "(maximum "<< g_MAX_RANGE_INDEX <<", default 4)";
+            "(maximum "<< g_MAX_RANGE_INDEX <<", default 2)";
     parameters.push_back(
         new IntParameter(
             &userSettings->MaxRangeIndex,
             "-x",
             "--max_range_index",
-            ss.str(), false, 4));
+            ss.str(), false, 2));
     parameters.push_back(
         new FloatParameter(
             &userSettings->FLOAT_WINDOW_SIZE,
@@ -243,7 +243,7 @@ void defineParameters(std::vector<Parameter *>& parameters)
             "--balance_cutoff",
             "the number of bases of a SV above which a more stringent filter is applied which demands "
             "that both sides of the SV are mapped with sufficiently long strings of bases "
-            "(default 0)", false, 0));
+            "(default 100)", false, 100));
     parameters.push_back(
         new UIntParameter(
             &userSettings->minimalAnchorQuality,
@@ -258,7 +258,7 @@ void defineParameters(std::vector<Parameter *>& parameters)
             "-M",
             "--minimum_support_for_event",
             "Pindel only calls events which have this number or more supporting reads "
-            "(default 3)", false, 3));
+            "(default 1)", false, 1));
     parameters.push_back(
         new StringParameter(
             &userSettings->inf_AssemblyInputFilename,
