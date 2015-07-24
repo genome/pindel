@@ -130,6 +130,7 @@ struct ParameterSettings {
 	int minimumStrandSupport;
 	int compactOutput;
     bool showHelp;
+	bool somatic;
 	bool gatkCompatible;
 } g_par;
 
@@ -1120,7 +1121,7 @@ SVData::SVData(const int genotypeTotal) // default settings
 {
     d_id=".";
     d_quality=".";
-    d_filter="PASS";
+    d_filter=".";
     d_replaceLen=0;
     d_homlen=0;
 	d_end = 0;
@@ -1350,19 +1351,22 @@ void SVData::fuse( SVData& otherSV )
     *this = otherSV;
 }
 
-int factorial(n) {
+int FACT(int n) {
+	
+	if (n == 0 || n == 1) return 1;
     int fact=1;
     int i;
     
     for (i=1; i<=n; i++)
         fact*=i;
-    
+    std::cout << n << " " << fact << std::endl;
     return fact;
 }
 
 double fisher_test(int a, int c, int b, int d) {
     double p = 0.0;
-    p = (factorial(a+b)*factorial(c+d)*factorial(a+c)*factorial(d+b)) / (double)(factorial(a)*factorial(b)*factorial(c)*factorial(d)*factorial(n));
+	int n = a + b + c + d;
+    p = (FACT(a+b)*FACT(c+d)*FACT(a+c)*FACT(d+b)) / (double)(FACT(a)*FACT(b)*FACT(c)*FACT(d)*FACT(n));
     std::cout << a << " " << c << " " << b << " " << d << " " << p << std::endl;
     return p;
 }
@@ -1370,7 +1374,7 @@ double fisher_test(int a, int c, int b, int d) {
 
 ostream& operator<<(ostream& os, const SVData& svd)
 {
-    double somatic_p_value = 0;
+    double somatic_p_value = 0.0;
     
 
     
@@ -1381,10 +1385,12 @@ ostream& operator<<(ostream& os, const SVData& svd)
     os << svd.getOutputFormattedAlternative() << "\t";
     os << svd.d_quality << "\t";
     if (svd.d_format.size() == 2 && g_par.somatic) {
-        somatic_p_value = fisher_test(svd.d_format[0].getTotalReads(), svd.d_format[0].d_totalRefSupport(), svd.d_format[1].getTotalReads(), svd.d_format[1].d_totalRefSupport());
-        if (somatic_p_value < 0.05) svd.d_filter = "PASS";
+	
+        somatic_p_value = fisher_test(svd.d_format[0].getTotalReads(), svd.d_format[0].getTotalRefSupport(), svd.d_format[1].getTotalReads(), svd.d_format[1].getTotalRefSupport());
+        //if (somatic_p_value < 0.05) svd.d_filter = "PASS";
     }
-    os << svd.d_filter << "\t";
+    if (somatic_p_value < 0.05) os << "PASS\t";
+    else os << svd.d_filter << "\t";
     
     
     os << "END=" << svd.getVCFPrintEnd() << ";";
