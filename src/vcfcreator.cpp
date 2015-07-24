@@ -989,6 +989,7 @@ private:
 	int d_svlen;
 	int d_replaceLen;
 	int d_replaceLenTwo; // for inversions
+    double p_somatic;
     
 	string d_nt;
 	string d_nt2; // for inversions
@@ -1349,16 +1350,42 @@ void SVData::fuse( SVData& otherSV )
     *this = otherSV;
 }
 
+int factorial(n) {
+    int fact=1;
+    int i;
+    
+    for (i=1; i<=n; i++)
+        fact*=i;
+    
+    return fact;
+}
+
+double fisher_test(int a, int c, int b, int d) {
+    double p = 0.0;
+    p = (factorial(a+b)*factorial(c+d)*factorial(a+c)*factorial(d+b)) / (double)(factorial(a)*factorial(b)*factorial(c)*factorial(d)*factorial(n));
+    std::cout << a << " " << c << " " << b << " " << d << " " << p << std::endl;
+    return p;
+}
+
 
 ostream& operator<<(ostream& os, const SVData& svd)
 {
+    double somatic_p_value = 0;
+    
+
+    
     os << svd.d_chromosome << "\t";
     os << svd.getPosition() << "\t";
     os << svd.d_id << "\t";
     os << svd.getOutputFormattedReference() << "\t";
     os << svd.getOutputFormattedAlternative() << "\t";
     os << svd.d_quality << "\t";
+    if (svd.d_format.size() == 2 && g_par.somatic) {
+        somatic_p_value = fisher_test(svd.d_format[0].getTotalReads(), svd.d_format[0].d_totalRefSupport(), svd.d_format[1].getTotalReads(), svd.d_format[1].d_totalRefSupport());
+        if (somatic_p_value < 0.05) svd.d_filter = "PASS";
+    }
     os << svd.d_filter << "\t";
+    
     
     os << "END=" << svd.getVCFPrintEnd() << ";";
     os << "HOMLEN=" << svd.d_homlen << ";";
@@ -1380,6 +1407,11 @@ ostream& operator<<(ostream& os, const SVData& svd)
     if ( svd.d_svtype.compare("INV")==0 ) {
         os << "," << svd.d_replaceLenTwo;
     }
+    
+    if (svd.d_format.size() == 2 && g_par.somatic) {
+        os << ";" << somatic_p_value;
+    }
+
     
 	if (pindel024uOrLater && svd.getAlternative()!="<INS>") {
         os << "\tGT:AD";
@@ -1850,6 +1882,9 @@ void createParameters()
                          new IntParameter( &g_par.maxPostRepeatLength, "-pl", "--max_postindel_repeatlength", "Filters out all indels where the inserted/deleted sequence is followed by a repetition of  the fundamental repeat unit of the inserted/deleted sequence; the maximum size of that 'fundamental unit' given by the value of -pl (default infinite) For example: TCAG->TCAGCAG has insertion CAG and post-insertion sequence CAG. This insertion would be filtered out if -pl has been set to 3 or above, but would be deemed 'sufficiently unrepetitive' if -pl is 2", false, -1 ) );
 	parameters.push_back(
                          new BoolParameter( &g_par.onlyBalancedSamples, "-sb", "--only_balanced_samples", "Only count a sample as supporting an event if it is supported by reads on both strands, minimum reads per strand given by the -ss parameter. (default false)", false, 0 ) );
+    parameters.push_back(
+                         new BoolParameter( &g_par.somatic, "-so", "--somatic_p", "compute somatic p value when two samples are present, assume the order is normal and tumor. (default false)", false, 0 ) );
+    
 	parameters.push_back(
                          new IntParameter( &g_par.minimumStrandSupport, "-ss", "--minimum_strand_support", "Only count a sample as supporting an event if at least one of its strands is supported by X reads (default 1)", false, 1 ) );
     parameters.push_back(
