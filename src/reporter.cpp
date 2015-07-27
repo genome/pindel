@@ -950,7 +950,8 @@ void bubblesortReads(const std::vector < SPLIT_READ >& Reads, std::vector < unsi
 					// firstRead.LeftMostPos + firstRead.getReadLength() == secondRead.LeftMostPos + secondRead.getReadLength()) {
 void markDuplicates(std::vector < SPLIT_READ >& Reads, const std::vector < unsigned >& VariantIndices)
 {
-	return;
+	
+	//return;
 	// mark reads that are not unique 
 	unsigned int Num = VariantIndices.size();
 
@@ -959,14 +960,15 @@ void markDuplicates(std::vector < SPLIT_READ >& Reads, const std::vector < unsig
 		if ( firstRead.UniqueRead == false ) { continue; }
       for (unsigned int Second = First + 1; Second < Num; Second++) {
 			SPLIT_READ& secondRead = Reads[VariantIndices[Second]];		
-
-         if ( firstRead.LeftMostPos == secondRead.LeftMostPos 
-					&& firstRead.Tag == secondRead.Tag
-					&& firstRead.MatchedD == secondRead.MatchedD
-					&& firstRead.getReadLength() == secondRead.getReadLength() 
+	//if (firstRead.Name == secondRead.Name) secondRead.UniqueRead = false;
+         if ( firstRead.Left == secondRead.Left
+					&& firstRead.Right == secondRead.Right
+					&& firstRead.Name == secondRead.Name
+					//&& firstRead.MatchedD == secondRead.MatchedD
+					//&& firstRead.getReadLength() == secondRead.getReadLength() 
 				 ) { // added EW210812
 
-             secondRead.UniqueRead = false;
+           secondRead.UniqueRead = false;
          }
       }
    }
@@ -996,7 +998,7 @@ void SortOutputSI (ControlState& currentState, const unsigned &NumBoxes, const s
          //std::cout << "Bi 2" << std::endl;
          bubblesortReads( Reads, SIs[ Box_index ] );
          //std::cout << "Bi 3" << std::endl;
-         //markDuplicates( Reads, SIs[ Box_index ] );
+         markDuplicates( Reads, SIs[ Box_index ] );
          //std::cout << "Bi 4" << std::endl;
          GoodIndels.clear ();
          IndelEvents.clear ();
@@ -1004,7 +1006,8 @@ void SortOutputSI (ControlState& currentState, const unsigned &NumBoxes, const s
 
 			// push all the reads of this box in the GoodIndels vector.
          for (unsigned int index = 0; index < SIsNum; index++) {
-            GoodIndels.push_back (Reads[SIs[Box_index][index]]);
+		if (Reads[SIs[Box_index][index]].UniqueRead)
+            		GoodIndels.push_back (Reads[SIs[Box_index][index]]);
          }
 	 //sort(GoodIndels.begin(), GoodIndels.end(), compare); 
          //std::cout << "Bi 5" << std::endl;
@@ -1168,13 +1171,14 @@ void SortAndOutputTandemDuplications (ControlState& currentState, const unsigned
          TDNum = TDs[Box_index].size ();
 
           bubblesortReads( AllReads, TDs[ Box_index ] );
-          //markDuplicates( AllReads, TDs[ Box_index ] );
+          markDuplicates( AllReads, TDs[ Box_index ] );
           
          GoodIndels.clear ();
          IndelEvents.clear ();
 
          for (unsigned int First = 0; First < TDNum; First++) {
-            GoodIndels.push_back (AllReads[TDs[Box_index][First]]);
+		if (AllReads[TDs[Box_index][First]].UniqueRead)
+            		GoodIndels.push_back (AllReads[TDs[Box_index][First]]);
          }
 	 //sort(GoodIndels.begin(), GoodIndels.end(), compare);
          GoodNum = GoodIndels.size ();
@@ -1401,13 +1405,14 @@ void SortOutputD (ControlState& currentState, const unsigned &NumBoxes, const st
           //std::cout << "S3" << std::endl;
           bubblesortReads( Reads, Deletions[ Box_index ] );
           //std::cout << "S4" << std::endl;
-          //markDuplicates( Reads, Deletions[ Box_index ] );
+          markDuplicates( Reads, Deletions[ Box_index ] );
           //std::cout << "S5" << std::endl;
          GoodIndels.clear ();
          IndelEvents.clear ();
 	 //GoodIndels.swap(Reads[Deletions[Box_index]);
          for (unsigned int First = 0; First < DeletionsNum; First++) {
-            GoodIndels.push_back (Reads[Deletions[Box_index][First]]);
+		if (Reads[Deletions[Box_index][First]].UniqueRead)
+            		GoodIndels.push_back (Reads[Deletions[Box_index][First]]);
          }
 	 //sort(GoodIndels.begin(), GoodIndels.end(), compare);
          //std::cout << "S6" << std::endl;
@@ -1763,7 +1768,8 @@ void SortOutputDI (ControlState& currentState, const unsigned &NumBoxes, const s
          IndelEvents.clear ();
 
          for (unsigned int First = 0; First < DINum; First++) {
-            GoodIndels.push_back (Reads[DI[Box_index][First]]);
+		if (Reads[DI[Box_index][First]].UniqueRead)
+            		GoodIndels.push_back (Reads[DI[Box_index][First]]);
          }
 	 //sort(GoodIndels.begin(), GoodIndels.end(), compare);
          GoodNum = GoodIndels.size ();

@@ -845,7 +845,7 @@ void build_record_SR (const bam1_t * mapped_read, const bam1_t * unmapped_read, 
     }
     Temp_One_Read.MatchedRelPos = mapped_core->pos;
     uint32_t *cigar_pointer_mapped = bam_get_cigar (mapped_read);
-    //uint32_t *cigar_pointer_unmapped = bam_get_cigar (unmapped_read);
+    uint32_t *cigar_pointer_unmapped = bam_get_cigar (unmapped_read);
     if (mapped_core->flag & BAM_FREVERSE) {
         Temp_One_Read.MatchedD = '-';
         
@@ -1100,95 +1100,56 @@ void build_record_RP_Discovery (const bam1_t * r1, void *data) {
 
 static int fetch_func_SR (const bam1_t * b1, void *data)
 {
-//	std::cout << "in fetch_func_SR " << std::endl;
    g_NumReadScanned++;
 
    fetch_func_data_SR *data_for_bam = (fetch_func_data_SR *) data;
-   //khash_t (read_name) * read_to_map_qual =
-   //   (khash_t (read_name) *) data_for_bam->read_to_map_qual;
+   khash_t (read_name) * read_to_map_qual =
+      (khash_t (read_name) *) data_for_bam->read_to_map_qual;
    flags_hit *b1_flags = data_for_bam->b1_flags;
-	 parse_flags_and_tags (b1, b1_flags);
+   flags_hit *b2_flags = data_for_bam->b2_flags;
+
+   khint_t key = kh_get (read_name, read_to_map_qual, bam_get_qname (b1));
+
+   if (key == kh_end (read_to_map_qual)) {// did not find it, send to map, push b1(b1) to vector
+      int ret=0;
+      key = kh_put (read_name, read_to_map_qual, strdup (bam_get_qname (b1)), &ret);
+      kh_value (read_to_map_qual, key) = bam_dup1 (b1);
+
+	parse_flags_and_tags (b1, b1_flags);
 	if (isWeirdRead( b1_flags, b1 )) {
 		build_record_SR (b1, b1, data);
 	}
-	if (isRefRead( b1_flags, b1 )) {
-		build_record_RefRead (b1, b1, data);
+   }
+   else { // found, push b2(b1), b2(b2), b1(b2) 
+   	bam1_t *b2;
+      b2 = bam_dup1 (kh_value (read_to_map_qual, key));
+      bam_destroy1 (kh_value (read_to_map_qual, key));
+      free ((char *) kh_key (read_to_map_qual, key));
+      kh_del (read_name, read_to_map_qual, key);
+
+	parse_flags_and_tags (b1, b1_flags);
+	parse_flags_and_tags (b2, b2_flags);
+	if (isWeirdRead( b2_flags, b2 )) {
+		build_record_SR (b2, b2, data);
 	}
-   //flags_hit *b2_flags = data_for_bam->b2_flags;
-   //const std::string CurrentChrSeq = *(std::string *) data_for_bam->CurrentChrSeq;
-   //SPLIT_READ Temp_One_Read;
-   //const bam1_core_t *b1_core;
-   //bam1_t *b2;
-   //bam1_core_t *b2_core;
-   //b1_core = &b1->core;
-   //std::string read_name = bam_get_qname (b1);
-   // if (read_name == "DD7DT8Q1:4:1106:17724:13906#GTACCT") std::cout << " +++++++ here ++++++++ " << std::endl;
-   //khint_t key = kh_get (read_name, read_to_map_qual, bam_get_qname (b1));
-
-//   if (key == kh_end (read_to_map_qual)) {
-//      int ret=0;
-//      key = kh_put (read_name, read_to_map_qual, strdup (bam_get_qname (b1)), &ret);
-	//	key = kh_put (read_name, read_to_map_qual, bam_get_qname (b1), &ret);
-//      kh_value (read_to_map_qual, key) = bam_dup1 (b1);
-//      parse_flags_and_tags (b1, b1_flags);
-//      if (isWeirdRead( b1_flags, b1 )) {
-//		build_record_SR (b1, b1, data);
- //     }
- //  }
-//   else {
- //     b2 = bam_dup1 (kh_value (read_to_map_qual, key));
- //     bam_destroy1 (kh_value (read_to_map_qual, key));
-      //b2_core = &b2->core;
-      //this seems stupid, but in order to manage the read names, necessary
-//      free ((char *) kh_key (read_to_map_qual, key));
-//      kh_del (read_name, read_to_map_qual, key);
-      //std::string c_sequence;
-   
-	/*
-	std::string RN = bam_get_qname(b1);
-	//std::cout << "|" << RN << "|" << std::endl;
-	std::string query = "1_112673_113350_0_1_0_0_0:0:0_0:0:0_c9d04"; 
-	if (RN == query)
-			std::cout << "################################################## found " << query << std::endl;
-	*/
-
-//   	parse_flags_and_tags (b1, b1_flags);
-//   	parse_flags_and_tags (b2, b2_flags);
-
-	//std::cout << "isGoodAnchor( b1_flags, b1)" << std::endl;
-
-//	if (isGoodAnchor( b1_flags, b1)) {
-	//	if (RN == query) std::cout << "isGoodAnchor" << std::endl;
-//		if (isWeirdRead( b2_flags, b2 )) {
-	//		if (RN == query) std::cout << "################################################## found b1 b2 " << query << std::endl;
-//			build_record_SR (b1, b2, data);
-//		}
-//		if (isRefRead( b2_flags, b2 )) {
-	//		if (RN == query) std::cout << "################################################## found ref b2 b1 " << query << std::endl;
-//	        	build_record_RefRead (b1, b2, data);
-			//std::cout << "refread 1" << std::endl;
-//		}
-//	}
-
-
-
-//std::cout << "isGoodAnchor( b2_flags, b2)" << std::endl;
-//	if (isGoodAnchor( b2_flags, b2) ) {
-	//	if (RN == query) std::cout << "isGoodAnchor" << std::endl;
-//		if (isWeirdRead( b1_flags, b1 )) {
-	//		if (RN == query) std::cout << "################################################## found b2 b1 " << query << std::endl;
-//			build_record_SR (b2, b1, data);
-//		}
-//		if (isRefRead(b1_flags, b1 )) {
-	//		if (RN == query) std::cout << "################################################## found ref b1 b2 " << query << std::endl;
-//			build_record_RefRead(b2, b1, data);
-//		}
-//	}
-
-//  }
-//std::cout << "before bam_destroy" << std::endl;
-//	bam_destroy1 (b2);
-	//std::cout << "existing fetch_func_SR " << std::endl;
+	if (isGoodAnchor( b1_flags, b1)) {
+                if (isWeirdRead( b2_flags, b2 )) {
+                        build_record_SR (b1, b2, data);
+                }
+                if (isRefRead( b2_flags, b2 )) {
+                        build_record_RefRead (b1, b2, data);
+                }
+        }
+        if (isGoodAnchor( b2_flags, b2) ) {
+                if (isWeirdRead( b1_flags, b1 )) {
+                        build_record_SR (b2, b1, data);
+                }
+                if (isRefRead(b1_flags, b1 )) {
+                        build_record_RefRead(b2, b1, data);
+                }
+        }
+	bam_destroy1 (b2);
+   }
 	return 0;
 }
 
@@ -1203,10 +1164,10 @@ static int fetch_func_RP (const bam1_t * b1, void *data)
     //const std::string CurrentChrSeq = *(std::string *) data_for_bam->CurrentChrSeq;
 
     RP_READ Temp_One_Read;
-    //const bam1_core_t *b1_core;
+    const bam1_core_t *b1_core;
     //bam1_t *b2;
     //bam1_core_t *b2_core;
-    //b1_core = &b1->core;
+    b1_core = &b1->core;
     //std::string read_name = bam_get_qname (b1);
     /*
     khint_t key = kh_get (read_name, read_to_map_qual, bam_get_qname (b1));
