@@ -193,7 +193,8 @@ double kt_fisher_exact(int n11, int n12, int n21, int n22, double *_left, double
 
 /* the global parameter g_par stores the values of all parameters set by the user; the Parameter class, in contrast, is for user-friendly IO. */
 struct ParameterSettings {
-    string reference;
+   string centerName;   
+ string reference;
     string referenceName;
     string referenceDate;
     string pindelfile;
@@ -689,7 +690,7 @@ const string* Genome::getChromosome( const string& id )
 void createHeader(ofstream &outFile, const string& sourceProgram, const string& reference, const set<string>& samples)
 {
     // file format
-    outFile << "##fileformat=VCFv4.0\n";
+    outFile << "##fileformat=VCFv4.1\n";
     
     // date of file creation
     time_t rawtime;
@@ -697,34 +698,37 @@ void createHeader(ofstream &outFile, const string& sourceProgram, const string& 
     time ( &rawtime );
     timeinfo = localtime ( &rawtime );
     outFile << "##fileDate=" << g_par.referenceDate << endl;
-    
-    // source
-    outFile << "##source=" << sourceProgram << endl;
-    
+    outFile << "##tcgaversion=1.2" << endl;  
     // reference
     outFile << "##reference=" << reference << endl;
-    
+    outFile << "##center=\"" << g_par.centerName << "\"" << endl;
+    outFile << "##phasing=none" << endl;
+    outFile << "##vcfProcessLog=<InputVCF=\"" << g_par.vcffile << "\";";
+    outFile << "InputVCFSource=\"" << g_programName << "\";" ; // TODO: something with Pindel instead...
+    outFile << "InputVCFVer=\"" << g_versionString << "\";";
+    outFile << "InputVCFParam=" << "\"d=" << g_par.referenceDate << "\">" << endl;
+ 
     // info fields (selected from http://www.1000genomes.org/wiki/Analysis/Variant%20Call%20Format/VCF%20%28Variant%20Call%20Format%29%20version%204.0/encoding-structural-variants)
+    outFile << "##FORMAT=<ID=GT,Number=1,Type=String,Description=\"Genotype\">" << endl;
+    outFile << "##FORMAT=<ID=DP,Number=1,Type=Integer,Description=\"Read depth at this position in the sample\">" << endl;
+    outFile << "##FORMAT=<ID=BQ,Number=.,Type=Integer,Description=\"Average base quality for reads supporting alleles\">" << endl;
+    outFile << "##FORMAT=<ID=SS,Number=1,Type=Integer,Description=\"Variant status relative to non-adjacent Normal,0=wildtype,1=germline," << 
+               "2=somatic,3=LOH,4=post-transcriptional modification,5=unknown\">" << endl;
+    outFile << "##FORMAT=<ID=AD,Number=.,Type=Integer,Description=\"Depth of reads supporting alleles 0/1/2/3...\">" << endl;   
+ 
     outFile << "##INFO=<ID=END,Number=1,Type=Integer,Description=\"End position of the variant described in this record\">" << endl;
-    outFile << "##INFO=<ID=HOMLEN,Number=1,Type=Integer,Description=\"Length of base pair identical micro-homology at event breakpoints\">" << endl;
+    outFile << "##INFO=<ID=HOMLEN,Number=.,Type=Integer,Description=\"Length of base pair identical micro-homology at event breakpoints\">" << endl;
     outFile << "##INFO=<ID=PF,Number=1,Type=Integer,Description=\"The number of samples carry the variant\">" << endl;
     outFile << "##INFO=<ID=HOMSEQ,Number=.,Type=String,Description=\"Sequence of base pair identical micro-homology at event breakpoints\">" << endl;
-    outFile << "##INFO=<ID=SVLEN,Number=1,Type=Integer,Description=\"Difference in length between REF and ALT alleles\">" << endl;
-    outFile << "##INFO=<ID=SVTYPE,Number=1,Type=String,Description=\"Type of structural variant\">" << endl;
+    outFile << "##INFO=<ID=SVLEN,Number=.,Type=Integer,Description=\"Difference in length between REF and ALT alleles\">" << endl;
+    outFile << "##INFO=<ID=TYPEOFSV,Number=1,Type=String,Description=\"Type of structural variant\">" << endl;
     outFile << "##INFO=<ID=NTLEN,Number=.,Type=Integer,Description=\"Number of bases inserted in place of deleted code\">" << endl;
-    outFile << "##FORMAT=<ID=PL,Number=3,Type=Integer,Description=\"Normalized, Phred-scaled likelihoods for genotypes as defined in the VCF specification\">" << endl;
-    //outFile << "##ALT=<ID=DEL,Description=\"Deletion\">" << endl; /*EWL040311: probably not needed, as our calls are precise so we should rather give the exact replacing sequence instead of a label. */
-    //outFile << "##ALT=<ID=DUP,Description=\"Duplication\">" << endl;
-    //outFile << "##ALT=<ID=DUP:TANDEM,Description=\"Tandem Duplication\">" << endl;
-    //outFile << "##ALT=<ID=INS,Description=\"Insertion of novel sequence\">" << endl;
-    //outFile << "##ALT=<ID=INV,Description=\"Inversion\">" << endl;
-    //outFile << "##ALT=<ID=CNV,Description=\"Copy number variable region\">" << endl;
-    outFile << "##FORMAT=<ID=GT,Number=1,Type=String,Description=\"Genotype\">" << endl;
-	if (pindel024uOrLater) {
-        outFile << "##FORMAT=<ID=RD,Number=1,Type=Integer,Description=\"Reference depth, how many reads support the reference\">" << endl;
-	}
-    outFile << "##FORMAT=<ID=AD,Number=2,Type=Integer,Description=\"Allele depth, how many reads support this allele\">" << endl;
-    
+    outFile << "##FORMAT=<ID=PL,Number=3,Type=Integer,Description=\"Normalized, Phred-scaled likelihoods for AA,AB,BB genotypes where A=ref and B=alt; "
+            << "not applicable if site is not biallelic\">" << endl;
+
+
+    //outFile << "##INFO=<ID=DP,Number=1,Type=Integer,Description=\"Total Depth across samples\">" << endl;
+    //outFile << "##INFO=<ID=DP,Number=1,Type=Integer,Description=\"Total Depth across samples\">" << endl;
     // headers of columns
     outFile << "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO";
     if (samples.size()>0) {
@@ -821,7 +825,7 @@ public:
 	int getTotalRefSupport() const {
 		return d_totalRefSupport;
 	}
-	const string getGTRDAD() const;
+	const string getSampleDataOfEvent() const;
 	const string getGTAD() const;
     
 private:
@@ -942,10 +946,16 @@ const string Genotype::getGTnew() const
 	return deriveGenotype( *this );
 }
 
-const string Genotype::getGTRDAD() const
+/** 'getSampleDataOfEvent' returns the data of a particular sample for an event, formatted as
+     required by the format field (kind of, kind of code duplication here) **/
+const string Genotype::getSampleDataOfEvent() const
 {
 	stringstream ss;
-	ss << getGTnew() << ":" << getTotalRefSupport() << "," << getTotalReads();
+	ss << getGTnew() << ":" // GT 
+           << getTotalRefSupport() + getTotalReads() << ":" // DP
+           << "." << ":" // BQ (TODO)
+           << 2 << ":" // SS (TODO)
+	   << getTotalRefSupport() << "," << getTotalReads(); // AD
 	return ss.str();
 }
 
@@ -1497,7 +1507,7 @@ ostream& operator<<(ostream& os, const SVData& svd)
         }
     }
     os << svd.d_svlen << ";";
-    os << "SVTYPE=" << svd.d_svtype;
+    os << "TYPEOFSV=" << svd.d_svtype;
     if ( svd.d_svtype.compare("RPL")==0 || svd.d_svtype.compare("DUP:TANDEM")==0 || svd.d_svtype.compare("INV")==0 ) {
         os << ";NTLEN=" << svd.d_replaceLen;
     }
@@ -1509,18 +1519,12 @@ ostream& operator<<(ostream& os, const SVData& svd)
         os << ";" << somatic_p_value;
     }
 
-    
-	if (pindel024uOrLater && svd.getAlternative()!="<INS>") {
-        os << "\tGT:AD";
-	}
-	else {
-		os << "\tGT:AD";
-	}
+    os << "\tGT:DP:BQ:SS:AD";
     
     for (int counter=0; counter<svd.d_format.size(); counter++ ) {
 		os << "\t";
 		if (pindel024uOrLater && svd.getAlternative()!="<INS>") {
-			os << svd.d_format[ counter ].getGTRDAD();
+			os << svd.d_format[ counter ].getSampleDataOfEvent();
 		}
         else {
 			os << svd.d_format[ counter ].getGTAD();
@@ -1927,6 +1931,8 @@ void createParameters()
 {
     parameters.push_back(
                          new StringParameter( &g_par.reference, "-r", "--reference", "The name of the file containing the reference genome", true, "" ) );
+    parameters.push_back(
+                         new StringParameter( &g_par.centerName, "-C", "--center", "The name of the center producing this file", true, "" ) );
     parameters.push_back(
                          new StringParameter( &g_par.referenceName, "-R", "--reference_name", "The name and version of the reference genome", true, "" ) );
     parameters.push_back(

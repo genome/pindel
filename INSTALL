@@ -55,6 +55,7 @@ else
     mv src/pindel .
     mv src/pindel2vcf .
     mv src/sam2pindel .
+    mv src/pindel2vcf4tcga .
     echo " "
     echo "Pindel successfully compiled. The pindel executable can be found in this directory."
     echo " "
