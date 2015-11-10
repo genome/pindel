@@ -74,7 +74,7 @@
 /* EW: update 0.2.4s: bugfix for -p option of Pindel0.2.4r */
 /* EW: update 0.2.4t, updates now shown in RELEASE document in trunk directory */
 
-const std::string Pindel_Version_str = "Pindel version 0.2.5b6, 20150915.";
+const std::string Pindel_Version_str = "Pindel version 0.2.5b7, 20151110.";
 
 const Chromosome g_dummyChromosome("","");
 Genome g_genome;
@@ -1656,7 +1656,9 @@ int main(int argc, char *argv[])
 						OneBedRecord.Start = OneBedRecord.End;
 						OneBedRecord.End = tempint;
 					}
-					if (OneBedRecord.ChrName != ChrName) continue;
+					if (OneBedRecord.ChrName != ChrName) continue; // not in the same chromosome
+					if (OneBedRecord.Start > End) continue; // no overlap
+					if (Start > OneBedRecord.End) continue;	// no overlap
 					if (OneBedRecord.Start < Start) OneBedRecord.Start = Start;
 					if (OneBedRecord.End > End) OneBedRecord.End = End; 
 					currentState.IncludeBed.push_back(OneBedRecord);
