@@ -37,8 +37,8 @@ map { chomp; my @t = split;
     if ($t[32] + $t[34] + $t[36] >= $paras{'cov'} && $t[33] + $t[34] + $t[36] >= $paras{'cov'} && $t[39] + $t[41] + $t[43] >= $paras{'cov'} && $t[40] + $t[41] + $t[43] >= $paras{'cov'}) {
         if ( ($t[34] + $t[36])  == 0 && ($t[41] + $t[43])/($t[39] + $t[41] + $t[43]) >= $paras{'vaf'} && (($t[41] + $t[43])/($t[40] + $t[41] + $t[43]) >= $paras{'vaf'} ) ) {
             #print; print "\n";
-            # no complex
-            if ( $t[1] eq "I" || ($t[1] eq "D" && $t[4] == 0) ) {
+            # allow complex
+            if ( $t[1] eq "I" || ($t[1] eq "D" && $t[4] == 0) || ($t[1] eq "D" && $t[4] > 0) ) {
                 $nocomplex_output_fh->print($_."\n");
             }
         }
