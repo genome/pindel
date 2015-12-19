@@ -419,13 +419,13 @@ struct Rest_Pos {
 	std::vector<unsigned> Pos_Reads; // put index here
 };
 
-struct bam_info {
-	bam_info() {
-		BamFile = "";
+struct xam_info {
+	xam_info() {
+		xamFile = "";
 		InsertSize = 0;
 		Tag = "";
 	}
-	std::string BamFile; // EW: change to FileName?
+	std::string xamFile; // EW: change to FileName?
 	int InsertSize;
 	std::string Tag;
 };

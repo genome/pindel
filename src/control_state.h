@@ -84,7 +84,7 @@ public:
 	std::ifstream inf_GenotypingInput;
 	LineReader *lineReader;
 	PindelReadReader *inf_Pindel_Reads;
-	std::vector<bam_info> bams_to_parse;
+	std::vector<xam_info> xams_to_parse;
 	std::vector<std::string> pindelfilesToParse;
     
 	std::string CurrentChrSeq;

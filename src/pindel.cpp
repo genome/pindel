@@ -680,58 +680,86 @@ bool fileExists(const std::string& filename )
     return exists;
 }
 
-/** 'convertToXBaiFileName' converts the name of the BAM file "bamFileName", for example x.bam, into x.bai 
-    (or at least returns "x.bai" as a result" **/
-//convertToXBaiFilename
-std::string convertToXBaiFilename( const std::string& bamFileName )
+/** 'convertToXBaiFileName' converts the name of the BAM/CRAM file "xamFileName", for example x.bam, into x.bai,
+    similarly y.cram into y.crai **/
+std::string convertToXaiFilename( const std::string& xamFileName )
 {
-	std::string outputName = bamFileName;
+	std::string outputName = xamFileName;
 	int nameLength = outputName.length();
-	outputName[ nameLength - 1 ] = 'i'; // "x.bam" -> "x.bai"
+	outputName[ nameLength - 1 ] = 'i'; // "x.bam" -> "x.bai", "y.cram"-> "y.crai"
 	return outputName;
 }
 
-void readBamConfigFile(std::string& bamConfigFilename, ControlState& currentState )
+/** Returns the extension of a file. **/
+std::string getExtension( std::string filename)
+{
+	std::size_t positionOfPeriod = filename.find_last_of( "." );
+	return filename.substr( positionOfPeriod + 1 );
+}
+
+/** Returns whether the bam/cram file given as argument (with name "xamFilename") 
+    has an accompanying index file - which is necessary for further processing. **/
+bool hasIndexFile( const std::string& xamFilename )
+{
+	// option 1: .bam => .bam.bai, .cram => .cram.crai
+	std::string fileExtension = getExtension( xamFilename );
+	std::string indexExtension = "";
+	if (fileExtension == "bam") {
+		indexExtension = "bai";
+	} else if (fileExtension == "cram") { 
+		indexExtension = "crai";
+	} else {
+		*logStream << xamFilename << " is not a valid name for the required binary sequence mapping file.\n";
+		exit( EXIT_FAILURE );
+	}
+	std::string regularIndexFilename = xamFilename + "." + indexExtension; // x.bam.bai / y.cram.crai
+	std::string shortIndexFilename = convertToXaiFilename( xamFilename ); // x.bai / y.crai
+	return (fileExists(regularIndexFilename) || fileExists(shortIndexFilename ));
+}
+
+/* Reads the configuration file specifying the binary input file, whether it is a bam-file or a cram-file.
+   calling bam or cram "xam" for now, though binary-format sequence alignment file would be more accurate */
+void readXamConfigFile(std::string& xamConfigFilename, ControlState& currentState )
 {
     int sampleCounter=0;
-    std::ifstream BamConfigFile( bamConfigFilename.c_str() );
-    if (BamConfigFile) {
-        while (BamConfigFile.good()) {
-				bam_info tempBamInfo;
-            BamConfigFile >> tempBamInfo.BamFile >> tempBamInfo.InsertSize;
-            if (!BamConfigFile.good()) break;
-            tempBamInfo.Tag = "";
-            BamConfigFile >> tempBamInfo.Tag;
-            if (tempBamInfo.Tag=="") {
-                *logStream << "Missing tag in line '" << tempBamInfo.BamFile << "\t" << tempBamInfo.InsertSize << "' in configuration file " << bamConfigFilename << "\n";
+    std::ifstream xamConfigFile( xamConfigFilename.c_str() );
+    if (xamConfigFile) {
+        while (xamConfigFile.good()) {
+				xam_info tempXamInfo;
+            xamConfigFile >> tempXamInfo.xamFile >> tempXamInfo.InsertSize;
+            if (!xamConfigFile.good()) break;
+            tempXamInfo.Tag = "";
+            xamConfigFile >> tempXamInfo.Tag;
+            if (tempXamInfo.Tag=="") {
+                *logStream << "Missing tag in line '" << tempXamInfo.xamFile << "\t" << tempXamInfo.InsertSize << "' in configuration file " << xamConfigFilename << "\n";
                 exit(EXIT_FAILURE);
             }
-            g_sampleNames.insert( tempBamInfo.Tag );
-            if (! fileExists( tempBamInfo.BamFile )) {
-                *logStream << "I cannot find the file '"<< tempBamInfo.BamFile << "'. referred to in configuration file '" << bamConfigFilename << "'. Please change the BAM configuration file.\n\n";
+            g_sampleNames.insert( tempXamInfo.Tag );
+            if (! fileExists( tempXamInfo.xamFile )) {
+                *logStream << "I cannot find the file '"<< tempXamInfo.xamFile << "'. referred to in configuration file '" << xamConfigFilename << "'. Please change the BAM/CRAM configuration file.\n\n";
                 exit(EXIT_FAILURE);
             }
-            if (! fileExists( tempBamInfo.BamFile+".bai" ) && ! fileExists( convertToXBaiFilename( tempBamInfo.BamFile ))) {
-                *logStream << "I cannot find the bam index-file '"<< tempBamInfo.BamFile << ".bai' that should accompany the file " << tempBamInfo.BamFile << " mentioned in the configuration file " << bamConfigFilename << ". Please run samtools index on " <<
-                          tempBamInfo.BamFile << ".\n\n";
+            if ( !hasIndexFile( tempXamInfo.xamFile) ) {
+                *logStream << "I cannot find the bam/cram index-file '"<< tempXamInfo.xamFile << ".bai/.crai' that should accompany the file " << tempXamInfo.xamFile << " mentioned in the configuration file " << xamConfigFilename << ". Please run samtools index on " <<
+                          tempXamInfo.xamFile << ".\n\n";
                 exit(EXIT_FAILURE);
             }
 
             //copy kai and throw crap into useless variable
 				std::string restOfLine;
-            safeGetline(BamConfigFile, restOfLine);
-            currentState.bams_to_parse.push_back(tempBamInfo);
+            safeGetline(xamConfigFile, restOfLine);
+            currentState.xams_to_parse.push_back(tempXamInfo);
             sampleCounter++;
         } // while
         if (sampleCounter==0) {
-            *logStream << "Could not find any samples in the sample file '" << bamConfigFilename
-                      << "'. Please run Pindel again with a config-file of the specified type (format 'A.bam	<insert-size>	sample_label)\n\n";
+            *logStream << "Could not find any samples in the sample file '" << xamConfigFilename
+                      << "'. Please run Pindel again with a config-file of the specified type (format 'A.bam (or A.cram)	<insert-size>	sample_label)\n\n";
             exit( EXIT_FAILURE );
         }
     }
     else {
         // no config-file defined
-        *logStream << "BAM configuration file '" << bamConfigFilename << "' does not exist. Please run Pindel again with an existing config-file (format 'A.bam	insert-size	sample_label')\n\n";
+        *logStream << "BAM/XAM  configuration file '" << xamConfigFilename << "' does not exist. Please run Pindel again with an existing config-file (format 'A.bam	(or A.cram) insert-size	sample_label')\n\n";
         exit( EXIT_FAILURE );
     }
 }
@@ -931,7 +959,7 @@ void init(int argc, char *argv[], ControlState& currentState )
 	}
 
     if (userSettings->bamFilesAsInput()) {
-        readBamConfigFile( userSettings->bamConfigFilename, currentState );
+        readXamConfigFile( userSettings->bamConfigFilename, currentState );
     }
 
 //std::cout << "12" << std::endl;

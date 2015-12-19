@@ -107,7 +107,7 @@ std::string get_sequence(uint8_t* sam_seq, int sam_seq_len);
 // region spanned by the given ControlState (currentState).  This method
 // assumes that currentState already contains the split reads found in
 // this region.
-void searchMEIBreakpoints(MEI_data& currentState, std::vector<bam_info>& bam_sources, std::string& chr_name,
+void searchMEIBreakpoints(MEI_data& currentState, std::vector<xam_info>& bam_sources, std::string& chr_name,
                           std::string& chr_sequence);
 
 // Generates mobile element insertion calls MEI-breakpoints contained by

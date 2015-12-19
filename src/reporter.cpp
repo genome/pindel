@@ -142,9 +142,9 @@ void UpdateSampleID(ControlState& currentState, std::vector < SPLIT_READ > & Goo
             //std::cout << GoodIndels[index].Tag << std::endl;
         }
     }
-    //bams_to_parse Tag
-    for (unsigned index = 0; index < currentState.bams_to_parse.size(); index++) {
-        if (SampleNames.find(currentState.bams_to_parse[index].Tag) != SampleNames.end()) {
+    //xams_to_parse Tag
+    for (unsigned index = 0; index < currentState.xams_to_parse.size(); index++) {
+        if (SampleNames.find(currentState.xams_to_parse[index].Tag) != SampleNames.end()) {
             SampleIDs.push_back(index);
         }
     }

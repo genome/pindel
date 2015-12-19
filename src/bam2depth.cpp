@@ -137,9 +137,9 @@ void getRelativeCoverage(const std::string & CurrentChrSeq,
 	const int MIN_BASE_QUALITY_READDEPTH = 0;
 	const int MIN_MAPPING_QUALITY_READDEPTH = 20;
 	std::vector<std::string> listOfFiles;
-	const std::vector<bam_info>& bamFileData = allGlobalData.bams_to_parse;
+	const std::vector<xam_info>& bamFileData = allGlobalData.xams_to_parse;
 	for (unsigned int fileIndex=0; fileIndex<bamFileData.size(); fileIndex++ ) {
-		listOfFiles.push_back( bamFileData[ fileIndex ].BamFile );
+		listOfFiles.push_back( bamFileData[ fileIndex ].xamFile );
 	}
 	getRelativeCoverageInternal( chromosomeName, chromosomeSize, chromosomeID, startPos, endPos, MIN_BASE_QUALITY_READDEPTH, MIN_MAPPING_QUALITY_READDEPTH, listOfFiles, 	
 		OneSV.RD_signals);  
@@ -163,9 +163,9 @@ void getRelativeCoverageForFiltering(const int chromosomeID, const ControlState&
 	const int MIN_BASE_QUALITY_READDEPTH = 0;
 	const int MIN_MAPPING_QUALITY_READDEPTH = 20;
 	std::vector<std::string> listOfFiles;
-	const std::vector<bam_info>& bamFileData = allGlobalData.bams_to_parse;
+	const std::vector<xam_info>& bamFileData = allGlobalData.xams_to_parse;
 	for (unsigned int fileIndex=0; fileIndex<SampleIDs.size(); fileIndex++ ) {
-		listOfFiles.push_back( bamFileData[ SampleIDs[fileIndex] ].BamFile );
+		listOfFiles.push_back( bamFileData[ SampleIDs[fileIndex] ].xamFile );
 	}
 	getRelativeCoverageInternal( chromosomeName, chromosomeSize, chromosomeID, startPos, endPos, MIN_BASE_QUALITY_READDEPTH, MIN_MAPPING_QUALITY_READDEPTH, listOfFiles,
                                 OneDEL.RD_signals);

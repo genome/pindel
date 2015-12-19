@@ -115,11 +115,11 @@ int far_end_found_elsewhere = 0;
 
 // Find split reads around the given cluster edge position (outer_pos), put
 // them in split_reads.
-static int get_split_reads_for_cluster(std::vector<bam_info>& bam_sources, char cluster_strand, int outer_pos,
+static int get_split_reads_for_cluster(std::vector<xam_info>& bam_sources, char cluster_strand, int outer_pos,
                                        const Chromosome* chromosome, std::vector<SPLIT_READ>& split_reads) {
     
     for (size_t i = 0; i < bam_sources.size(); i++) {
-        bam_info source = bam_sources.at(i);
+        xam_info source = bam_sources.at(i);
         
         // Determine bounds of the region where mates of split reads may reside 
         // related to the given cluster.
@@ -139,7 +139,7 @@ static int get_split_reads_for_cluster(std::vector<bam_info>& bam_sources, char 
         // Read split reads in defined window.
         ReadBuffer read_buffer(SPLIT_READ_BUFFER_SIZE, split_reads, HangingReads, chromosome->getSeq());
 
-        ReadInBamReads_SR(source.BamFile.c_str(), chromosome->getName(), &chromosome->getSeq(), split_reads, 
+        ReadInBamReads_SR(source.xamFile.c_str(), chromosome->getName(), &chromosome->getSeq(), split_reads, 
                           HangingReads, Ref_Supporting_Reads, source.InsertSize, source.Tag, search_window, 
                           read_buffer, false);
         }
@@ -218,7 +218,7 @@ static std::string get_consensus_unmapped(std::vector<simple_read>& reads, char 
 // Returns a breakpoint for a cluster of connected reads.  If no viable
 // breakpoint can be found, it returns a breakpoint with position -1.
 // Note: returned pointer must be deleted by caller.
-static void get_breakpoints(std::vector<simple_read*>& cluster, std::vector<bam_info>& bam_sources, int insert_size,
+static void get_breakpoints(std::vector<simple_read*>& cluster, std::vector<xam_info>& bam_sources, int insert_size,
                             int cluster_tid, char cluster_strand, const Chromosome* chromosome, 
                             std::map<std::string, std::string>& sample_dict, std::vector<MEI_breakpoint>& breakpoints,
                             UserDefinedSettings* userSettings) {
@@ -358,7 +358,7 @@ void get_breakpoint_estimation(std::vector<simple_read*>& cluster, int insert_si
 
 
 // See documentation in header file.
-void searchMEIBreakpoints(MEI_data& currentState, std::vector<bam_info>& bam_sources, const Chromosome* chromosome,
+void searchMEIBreakpoints(MEI_data& currentState, std::vector<xam_info>& bam_sources, const Chromosome* chromosome,
                           UserDefinedSettings* userSettings) {
     LOG_DEBUG(*logStream << time_log() << "Start searching for breakpoints..." << std::endl);
     std::vector<std::vector<simple_read*> > clusters;
@@ -697,23 +697,23 @@ static int fetch_disc_read_callback(const bam1_t* alignment, MEI_data* mei_data,
 }
 
 
-static int load_discordant_reads(MEI_data& mei_data, std::vector<bam_info>& bam_sources, const std::string& chr_name,
+static int load_discordant_reads(MEI_data& mei_data, std::vector<xam_info>& bam_sources, const std::string& chr_name,
                                  const SearchWindow& window, UserDefinedSettings* userSettings) {
     // Loop over associated bam files.
     for (size_t i = 0; i < bam_sources.size(); i++) {
         // Locate file.
-        bam_info source = bam_sources.at(i);
+        xam_info source = bam_sources.at(i);
         
-        LOG_DEBUG(*logStream << time_log() << "Loading discordant reads from " << source.BamFile << std::endl);
+        LOG_DEBUG(*logStream << time_log() << "Loading discordant reads from " << source.xamFile << std::endl);
         
         // Setup link to bamfile, its index and header.
-        samFile* fp = sam_open(source.BamFile.c_str(), "r");
-        hts_idx_t *idx = sam_index_load(fp, source.BamFile.c_str());
+        samFile* fp = sam_open(source.xamFile.c_str(), "r");
+        hts_idx_t *idx = sam_index_load(fp, source.xamFile.c_str());
         
         if (idx == NULL) {
-            LOG_WARN(*logStream << time_log() << "Failed to load index for " << source.BamFile.c_str() << std::endl);
+            LOG_WARN(*logStream << time_log() << "Failed to load index for " << source.xamFile.c_str() << std::endl);
             LOG_WARN(*logStream << "Skipping window: " << chr_name << ", " << window.getStart() << "--" <<
-                     window.getEnd() << " for BAM-file: " << source.BamFile.c_str() << std::endl);
+                     window.getEnd() << " for BAM-file: " << source.xamFile.c_str() << std::endl);
             continue;
         }
         
@@ -724,7 +724,7 @@ static int load_discordant_reads(MEI_data& mei_data, std::vector<bam_info>& bam_
             LOG_WARN(*logStream << time_log() << "Could not find sequence in alignment file: '" << chr_name <<
                      "'" << std::endl);
             LOG_WARN(*logStream << "Skipping window: " << chr_name << ", " << window.getStart() << "--" <<
-                     window.getEnd() << " for BAM-file: " << source.BamFile.c_str() << std::endl);
+                     window.getEnd() << " for BAM-file: " << source.xamFile.c_str() << std::endl);
             continue;
         }
         
@@ -814,7 +814,7 @@ static int append_cluster_connections(std::vector<MEI_event>& insertion_events, 
         
         // loop over one bed region
         do {
-            result = load_discordant_reads(mei_data, current_state.bams_to_parse, currentChromosome->getName(),
+            result = load_discordant_reads(mei_data, current_state.xams_to_parse, currentChromosome->getName(),
                                            currentWindow, userSettings);
             if (result) {
                 // something went wrong loading the reads, return error code.
@@ -925,9 +925,9 @@ void searchMEI(MEI_data& finalState, Genome& genome, std::map<int, std::string>&
 // name and order).
 std::map<int, std::string> get_sequence_name_dictionary(ControlState& state) {
     std::map<int, std::string> dict;
-    std::vector<bam_info>::iterator bam_info_iter;
-    for (bam_info_iter = state.bams_to_parse.begin(); bam_info_iter != state.bams_to_parse.end(); ++bam_info_iter) {
-        samFile* fp = sam_open((*bam_info_iter).BamFile.c_str(), "r");
+    std::vector<xam_info>::iterator xam_info_iter;
+    for (xam_info_iter = state.xams_to_parse.begin(); xam_info_iter != state.xams_to_parse.end(); ++xam_info_iter) {
+        samFile* fp = sam_open((*xam_info_iter).xamFile.c_str(), "r");
         bam_hdr_t *header = sam_hdr_read(fp);
         for (int tid = 0; tid < header->n_targets; tid++) {
             dict.insert(std::make_pair(tid, header->target_name[tid]));
@@ -977,14 +977,14 @@ int searchMEImain(ControlState& current_state, Genome& genome, UserDefinedSettin
         
         // loop over one bed region
         do {
-            result = load_discordant_reads(mei_data, current_state.bams_to_parse, currentChromosome->getName(),
+            result = load_discordant_reads(mei_data, current_state.xams_to_parse, currentChromosome->getName(),
                                            currentWindow, userSettings);
             if (result) {
                 // something went wrong loading the reads, return error code.
                 return result;
             }
             
-            searchMEIBreakpoints(mei_data, current_state.bams_to_parse, currentChromosome, userSettings);
+            searchMEIBreakpoints(mei_data, current_state.xams_to_parse, currentChromosome, userSettings);
             cleanup_reads(mei_data.discordant_reads);
             
 			currentWindow.next();

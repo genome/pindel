@@ -64,19 +64,19 @@ void do_rd_rp (ControlState & CurrentState, ParCollection & par) {
     std::map<std::string, int>::iterator it;
     std::vector <SampleAndBAMFiles> AllSamples;
     BAM_Path_IS TempOneBam;
-    for (unsigned int BAMindex = 0; BAMindex < CurrentState.bams_to_parse.size(); BAMindex++) {
-        it = SampleName2ID.find(CurrentState.bams_to_parse[BAMindex].Tag);
+    for (unsigned int BAMindex = 0; BAMindex < CurrentState.xams_to_parse.size(); BAMindex++) {
+        it = SampleName2ID.find(CurrentState.xams_to_parse[BAMindex].Tag);
         if (it != SampleName2ID.end()) { // already in the list, add it
-           TempOneBam.BamFile = CurrentState.bams_to_parse[BAMindex].BamFile;
-           TempOneBam.InsertSize = CurrentState.bams_to_parse[BAMindex].InsertSize;
+           TempOneBam.BamFile = CurrentState.xams_to_parse[BAMindex].xamFile;
+           TempOneBam.InsertSize = CurrentState.xams_to_parse[BAMindex].InsertSize;
            AllSamples[(*it).second].BAMs.push_back(TempOneBam); 
         }
         else { // not in the list add one new entry // mymap.insert ( pair<char,int>('a',100) );
-            SampleName2ID.insert(std::pair <std::string, int> (CurrentState.bams_to_parse[BAMindex].Tag, SampleName2ID.size())); 
+            SampleName2ID.insert(std::pair <std::string, int> (CurrentState.xams_to_parse[BAMindex].Tag, SampleName2ID.size())); 
             SampleAndBAMFiles OneSample;
-            OneSample.SampleName = CurrentState.bams_to_parse[BAMindex].Tag;
-            TempOneBam.BamFile = CurrentState.bams_to_parse[BAMindex].BamFile;
-            TempOneBam.InsertSize = CurrentState.bams_to_parse[BAMindex].InsertSize;
+            OneSample.SampleName = CurrentState.xams_to_parse[BAMindex].Tag;
+            TempOneBam.BamFile = CurrentState.xams_to_parse[BAMindex].xamFile;
+            TempOneBam.InsertSize = CurrentState.xams_to_parse[BAMindex].InsertSize;
             OneSample.BAMs.push_back(TempOneBam);
             AllSamples.push_back(OneSample);
         }

@@ -64,11 +64,11 @@ void doGenotyping (ControlState & CurrentState, UserDefinedSettings* userSetting
     std::set<std::string> SampleNameAsSet;
     std::map<std::string, unsigned> SampleName2IndexAsMap;
     std::vector<std::string> SampleNameAsVector;
-    for (unsigned BamIndex = 0; BamIndex < CurrentState.bams_to_parse.size(); BamIndex++) {
-        if (SampleNameAsSet.find(CurrentState.bams_to_parse[BamIndex].Tag) == SampleNameAsSet.end()) { // not in the set
-            SampleName2IndexAsMap.insert ( std::pair<std::string,int>(CurrentState.bams_to_parse[BamIndex].Tag, SampleNameAsSet.size() ) );
-            SampleNameAsSet.insert(CurrentState.bams_to_parse[BamIndex].Tag);
-            SampleNameAsVector.push_back(CurrentState.bams_to_parse[BamIndex].Tag);
+    for (unsigned BamIndex = 0; BamIndex < CurrentState.xams_to_parse.size(); BamIndex++) {
+        if (SampleNameAsSet.find(CurrentState.xams_to_parse[BamIndex].Tag) == SampleNameAsSet.end()) { // not in the set
+            SampleName2IndexAsMap.insert ( std::pair<std::string,int>(CurrentState.xams_to_parse[BamIndex].Tag, SampleNameAsSet.size() ) );
+            SampleNameAsSet.insert(CurrentState.xams_to_parse[BamIndex].Tag);
+            SampleNameAsVector.push_back(CurrentState.xams_to_parse[BamIndex].Tag);
         }
         else {
             std::cout << "Two BAM files with the same sample name.\n";

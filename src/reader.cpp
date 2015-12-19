@@ -1359,24 +1359,24 @@ short get_RP_Reads(ControlState& currentState, const SearchWindow& currentWindow
 
    if (userSettings->bamFilesAsInput()) {
        ReturnFromReadingReads = 0;
-       for (unsigned int i = 0; i < currentState.bams_to_parse.size(); i++) {
+       for (unsigned int i = 0; i < currentState.xams_to_parse.size(); i++) {
           currentState.Reads_RP.push_back(TempOneRPVector);
           ReturnFromReadingReads = ReadInBamReads_RP(
-                                                       currentState.bams_to_parse[i].BamFile.c_str(),
+                                                       currentState.xams_to_parse[i].xamFile.c_str(),
                                                        currentWindow.getChromosome()->getName(), 
 																		 &currentWindow.getChromosome()->getSeq(),
                                                        //&currentState.CurrentChrSeq,
                                                        currentState.Reads_RP[i],
-                                                       currentState.bams_to_parse[i].InsertSize,
-                                                       currentState.bams_to_parse[i].Tag,
+                                                       currentState.xams_to_parse[i].InsertSize,
+                                                       currentState.xams_to_parse[i].Tag,
                                                        currentWindow);
           if (ReturnFromReadingReads == 0) {
-              LOG_ERROR(*logStream << "Bam read failed: " << currentState.bams_to_parse[i].BamFile << std::endl);
+              LOG_ERROR(*logStream << "Bam read failed: " << currentState.xams_to_parse[i].xamFile << std::endl);
               return 1;
           }
           else if (currentState.Reads_RP.size() == 0) {
           }
-          else std::cout << currentState.bams_to_parse[i].BamFile << " RP " << currentState.Reads_RP[i].size() << std::endl;
+          else std::cout << currentState.xams_to_parse[i].xamFile << " RP " << currentState.Reads_RP[i].size() << std::endl;
        }
     }
     return 0;
@@ -1389,28 +1389,28 @@ short get_RP_Reads_Discovery(ControlState& currentState, const SearchWindow& cur
     
 	if (userSettings->bamFilesAsInput()) {
 		ReturnFromReadingReads = 0;
-		for (unsigned int i = 0; i < currentState.bams_to_parse.size(); i++) {
+		for (unsigned int i = 0; i < currentState.xams_to_parse.size(); i++) {
 			//currentState.Reads_RP.push_back(TempOneRPVector);
-			//std::cout << "Current BAM file: " << currentState.bams_to_parse[i].BamFile.c_str() << std::endl;
+			//std::cout << "Current BAM file: " << currentState.xams_to_parse[i].xamFile.c_str() << std::endl;
 			ReturnFromReadingReads = ReadInBamReads_RP_Discovery(
-                                                       currentState.bams_to_parse[i].BamFile.c_str(),
+                                                       currentState.xams_to_parse[i].xamFile.c_str(),
                                                        currentWindow.getChromosome()->getName(),
                                                        &currentWindow.getChromosome()->getSeq(),
                                                        //&currentState.CurrentChrSeq,
                                                        currentState.Reads_RP_Discovery,
                                                        currentState.Reads_RP_Discovery_InterChr,
-                                                       currentState.bams_to_parse[i].InsertSize,
-                                                       currentState.bams_to_parse[i].Tag,
+                                                       currentState.xams_to_parse[i].InsertSize,
+                                                       currentState.xams_to_parse[i].Tag,
                                                        currentWindow);
 			if (ReturnFromReadingReads == 0) {
-				*logStream << "Bamfile " << currentState.bams_to_parse[i].BamFile << " has some kind of error. Aborting Pindel\n";
+				*logStream << "Bamfile " << currentState.xams_to_parse[i].xamFile << " has some kind of error. Aborting Pindel\n";
 				return 1;
 			}
 			if (currentState.Reads_RP_Discovery.size() == 0) {
-				*logStream << "No discordant RP reads in Bamfile " << currentState.bams_to_parse[i].BamFile.c_str() << std::endl;
+				*logStream << "No discordant RP reads in Bamfile " << currentState.xams_to_parse[i].xamFile.c_str() << std::endl;
 			}
 			else {
-				std::cout << currentState.bams_to_parse[i].BamFile << " RP " << currentState.Reads_RP_Discovery.size() << std::endl;
+				std::cout << currentState.xams_to_parse[i].xamFile << " RP " << currentState.Reads_RP_Discovery.size() << std::endl;
 			}
 		}
 	}
@@ -1450,29 +1450,29 @@ short get_SR_Reads(ControlState& currentState, const SearchWindow& currentWindow
 	//UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
    if (userSettings->bamFilesAsInput()) {
       ReturnFromReadingReads = 0;
-      for (unsigned int i = 0; i < currentState.bams_to_parse.size(); i++) {
-         *logStream << "\nInsertsize in config: " << currentState.bams_to_parse[i].InsertSize << std::endl;
+      for (unsigned int i = 0; i < currentState.xams_to_parse.size(); i++) {
+         *logStream << "\nInsertsize in config: " << currentState.xams_to_parse[i].InsertSize << std::endl;
          //std::cout << "before ReadInBamReads_SR " << std::endl;
          ReturnFromReadingReads = ReadInBamReads_SR(
-                                                    currentState.bams_to_parse[i].BamFile.c_str(),
+                                                    currentState.xams_to_parse[i].xamFile.c_str(),
                                                     currentWindow.getChromosome()->getName(), 
                                                     &currentWindow.getChromosome()->getSeq(),
 																	//	&currentState.CurrentChrSeq, 
                                                     currentState.Reads_SR,
                                                     currentState.OneEndMappedReads,
                                                     currentState.RefSupportingReads,
-                                                    currentState.bams_to_parse[i].InsertSize,
-                                                    currentState.bams_to_parse[i].Tag,
+                                                    currentState.xams_to_parse[i].InsertSize,
+                                                    currentState.xams_to_parse[i].Tag,
                                                     currentWindow, readBuffer );
          //std::cout << "after ReadInBamReads_SR " << ReturnFromReadingReads << std::endl;
          if (ReturnFromReadingReads == 0) { // perhaps 'false'? ReadInBamReads returns a boolean...
-            LOG_ERROR(*logStream << "Bam read failed: " << currentState.bams_to_parse[i].BamFile << std::endl);
+            LOG_ERROR(*logStream << "Bam read failed: " << currentState.xams_to_parse[i].xamFile << std::endl);
             return EXIT_FAILURE;
          }
          else if (currentState.Reads_SR.size() == 0) {
-            LOG_ERROR(*logStream << "No currentState.Reads for " << currentWindow.getChromosome()->getName() << " found in " << currentState.bams_to_parse[i].BamFile << std::endl);
+            LOG_ERROR(*logStream << "No currentState.Reads for " << currentWindow.getChromosome()->getName() << " found in " << currentState.xams_to_parse[i].xamFile << std::endl);
          }
-         *logStream << "BAM file index\t" << i << "\nBam file name\t" << currentState.bams_to_parse[i].BamFile.c_str() << "\nNumber of split-reads so far\t" << currentState.Reads_SR.size() << "\n" << std::endl;
+         *logStream << "BAM file index\t" << i << "\nBam file name\t" << currentState.xams_to_parse[i].xamFile.c_str() << "\nNumber of split-reads so far\t" << currentState.Reads_SR.size() << "\n" << std::endl;
       }  
    }
 
@@ -1511,23 +1511,23 @@ short get_RP_Reads(ControlState& currentState, const SearchWindow& currentWindow
 	UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
     if (userSettings->bamFilesAsInput()) {
         ReturnFromReadingReads = 0;
-        for (unsigned int i = 0; i < currentState.bams_to_parse.size(); i++) {
-            *logStream << "Insertsize in bamreads: " << currentState.bams_to_parse[i].InsertSize << std::endl;
+        for (unsigned int i = 0; i < currentState.xams_to_parse.size(); i++) {
+            *logStream << "Insertsize in bamreads: " << currentState.xams_to_parse[i].InsertSize << std::endl;
             ReturnFromReadingReads = ReadInBamReads_RP(
-                                                       currentState.bams_to_parse[i].BamFile.c_str(),
+                                                       currentState.xams_to_parse[i].xamFile.c_str(),
                                                        currentWindow.getChromosome()->getName(),
                                                        &currentWindow.getChromosome()->getSeq(),
                                                        //	&currentState.CurrentChrSeq,
                                                        currentState.Reads_RP,
-                                                       currentState.bams_to_parse[i].InsertSize,
-                                                       currentState.bams_to_parse[i].Tag,
+                                                       currentState.xams_to_parse[i].InsertSize,
+                                                       currentState.xams_to_parse[i].Tag,
                                                        currentWindow);
             if (ReturnFromReadingReads == 0) { // perhaps 'false'? ReadInBamReads returns a boolean...
-                LOG_ERROR(*logStream << "Bam read failed: " << currentState.bams_to_parse[i].BamFile << std::endl);
+                LOG_ERROR(*logStream << "Bam read failed: " << currentState.xams_to_parse[i].xamFile << std::endl);
                 return EXIT_FAILURE;
             }
             else if (currentState.Reads_RP.size() == 0) {
-                LOG_ERROR(*logStream << "No currentState.Reads for " << currentWindow.getChromosome()->getName() << " found in " << currentState.bams_to_parse[i].BamFile << std::endl);
+                LOG_ERROR(*logStream << "No currentState.Reads for " << currentWindow.getChromosome()->getName() << " found in " << currentState.xams_to_parse[i].xamFile << std::endl);
             }
             *logStream << "BAM file index\t" << i << "\t" << currentState.Reads_RP.size() << std::endl;
         }
