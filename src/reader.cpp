@@ -428,6 +428,12 @@ bool ReadInBamReads_RP_Discovery (const char *bam_path,
 	bam_hdr_t *header = sam_hdr_read (fp);
 	assert (header);
 	//need thing that converts "tid" to "chromosome name"
+	// DEBUG_CRAM
+	// Hmm... it may be okay that tid is NULL, as it is an integer and that can be 0, 
+	// for example if it is the first chromosome.
+	//hts_set_fai_file
+	std::cout << "header is null: " << ((header == NULL) ? "TRUE" : "FALSE") << std::endl;
+	std::cout << "FragName.c_str() is " << FragName.c_str() << std::endl;
 	int tid;
 	tid = bam_name2id (header, FragName.c_str ());
     
@@ -446,7 +452,31 @@ bool ReadInBamReads_RP_Discovery (const char *bam_path,
 	//std::cout << "Before bam_fetch" << std::endl;
 	hts_itr_t *iter = sam_itr_queryi (idx, tid, currentWindow.getStart(), currentWindow.getEnd());
 	bam1_t *b = bam_init1();
-	while (sam_itr_next(fp, iter, b) >= 0) fetch_func_RP_Discovery(b, &data);
+	std::cout << "Before sam_itr_next\n";
+	// DEBUG_CRAM
+	// Hypotheses:
+   // first read literature! 5 min
+	// seems to suggest that the fai file with hts_set_fai_filename may not work properly. However, I don see that here in the code
+	// 
+	// fp = null Possible. Anyway, spend 5 mins or so checking variables
+	// iter = null Possible. Can check the getStart and getEnd, but idx and tid can also give problems
+   // b = null. Unlikely, as it is created by bam_init1, which seems a normal "C-constructor". Likely to be undefined, though,
+   // unless tricky things are done with internal global variables in htslib
+	std::cout << "currentWindow.getStart() returns " << currentWindow.getStart() << std::endl;
+	std::cout << "currentWindow.getEnd() returns " << currentWindow.getEnd() << std::endl;
+
+	std::cout << "tid is null: " << ((tid == NULL) ? "TRUE" : "FALSE") << std::endl;
+	std::cout << "idx is null: " << ((idx == NULL) ? "TRUE" : "FALSE") << std::endl;
+	std::cout << "fp is null: " << ((fp == NULL) ? "TRUE" : "FALSE") << std::endl;
+	std::cout << "iter is null: " << ((iter == NULL) ? "TRUE" : "FALSE") << std::endl;
+	std::cout << "b is null: " << ((b == NULL) ? "TRUE" : "FALSE") << std::endl;
+	while (sam_itr_next(fp, iter, b) >= 0) {
+		std::cout << "Before fetch EWL080116\n";
+		fetch_func_RP_Discovery(b, &data);
+		std::cout << "After fetch EWL080116\n";
+	}
+
+	std::cout << "After sam_itr_next\n";
 	bam_destroy1(b);
 	hts_itr_destroy(iter);
 	//std::cout << "After bam_fetch" << std::endl;
