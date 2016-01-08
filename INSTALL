@@ -47,7 +47,7 @@ if [ "$?" -ne 0 ]; then
     echo "->samtools or htslib was not properly compiled, in that case go to the samtools and htslib directory "
     echo "and run 'make'."
     echo " "
-    echo "For futher help, see the pindel wiki and its FAQ on https://trac.nbic.nl/pindel/wiki/PindelFaq"
+    echo "For futher help, see the FAQ file included in this directory"
     echo "Or contact us on kye@genome.wustl.edu" 
     exit 1
 else

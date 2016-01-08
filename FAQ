@@ -1,0 +1,57 @@
+*** Frequently Asked Questions ***
+
+** Contents **
+
+-Compile time errors
+-Runtime problems
+-Contacting the author(s)
+
+** Compile time errors **
+
+* Problems compiling pindel on OS X * /
+* "fatal error: <omp.h> file not found"
+
+For speed, Pindel uses the openmp-library to allow multithreaded performance.
+However, OS X does not seem to support openMP in general.
+
+This problem can be tackled by applying the following steps:
+
+1) check if you have homebrew installed on your computer
+   [if you don't know whether you have homebrew, just type the command for
+   the next step, "brew reinstall gcc --without-multilib". If brew is an
+   unknown command, you need to install it.]
+   To install homebrew, google "homebrew", or go to http://brew.sh/, or use
+   the ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" command.
+
+2) Ensure you have a proper gcc installation with multilib, by using the 
+   following command:
+   "brew reinstall gcc --without-multilib"
+
+3) Allow pindel to use the real GCC (of homebrew), instead of the 'fake' gcc
+   which is default for OS X, by going to pindel/src and using
+
+   make clean
+   make CXX=g++-4.9
+   [or any other number than 4.9, just whatever your homebrewed gcc version
+   number is]
+
+** Runtime problems **
+
+* Memory usage of Pindel is very high *
+
+The most common reason for high memory usage of Pindel is that Pindel tries
+to process the centromer regions, which contain lots of 'weird' reads. In such
+cases, it is best to use the -j or -J options to specify which chromosomal
+regions should be searched by pindel (-j) or skipped (-J). Note that in some
+cases you may need to extend the excluded regions a bit (by 10k or such), as
+pindel by default also checks for reads just outside the edges of the 
+officially specified regions, so you may want to slightly enlarge your 
+centromers, telomers or other problematic regions.
+
+The window size option (-W) can also reduce memory usage, which can be needed
+for very large data sets.
+
+
+** Contacting the authors **
+For any pindel-related questions, please contact Kai Ye, kye@genome.wustl.edu
+If you have questions related to pindel2vcf, you may also contact Eric-Wubbo Lameijer, e.m.w.lameijer@gmail.com
