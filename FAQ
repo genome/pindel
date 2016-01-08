@@ -23,7 +23,7 @@ This problem can be tackled by applying the following steps:
    To install homebrew, google "homebrew", or go to http://brew.sh/, or use
    the ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" command.
 
-2) Ensure you have a proper gcc installation with multilib, by using the 
+2) Ensure you have a proper gcc installation without multilib, by using the 
    following command:
    "brew reinstall gcc --without-multilib"
 
@@ -34,6 +34,9 @@ This problem can be tackled by applying the following steps:
    make CXX=g++-4.9
    [or any other number than 4.9, just whatever your homebrewed gcc version
    number is]
+
+4) go back to the ./pindel directory and again try the ./INSTALL command. If that
+   does not work, please contact us.
 
 ** Runtime problems **
 
