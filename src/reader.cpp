@@ -462,18 +462,18 @@ bool ReadInBamReads_RP_Discovery (const char *bam_path,
 	// iter = null Possible. Can check the getStart and getEnd, but idx and tid can also give problems
    // b = null. Unlikely, as it is created by bam_init1, which seems a normal "C-constructor". Likely to be undefined, though,
    // unless tricky things are done with internal global variables in htslib
-	std::cout << "currentWindow.getStart() returns " << currentWindow.getStart() << std::endl;
-	std::cout << "currentWindow.getEnd() returns " << currentWindow.getEnd() << std::endl;
+	//std::cout << "currentWindow.getStart() returns " << currentWindow.getStart() << std::endl;
+	//std::cout << "currentWindow.getEnd() returns " << currentWindow.getEnd() << std::endl;
 
-	std::cout << "tid is null: " << ((tid == NULL) ? "TRUE" : "FALSE") << std::endl;
-	std::cout << "idx is null: " << ((idx == NULL) ? "TRUE" : "FALSE") << std::endl;
-	std::cout << "fp is null: " << ((fp == NULL) ? "TRUE" : "FALSE") << std::endl;
-	std::cout << "iter is null: " << ((iter == NULL) ? "TRUE" : "FALSE") << std::endl;
-	std::cout << "b is null: " << ((b == NULL) ? "TRUE" : "FALSE") << std::endl;
+	//std::cout << "tid is null: " << ((tid == NULL) ? "TRUE" : "FALSE") << std::endl;
+	//std::cout << "idx is null: " << ((idx == NULL) ? "TRUE" : "FALSE") << std::endl;
+	//std::cout << "fp is null: " << ((fp == NULL) ? "TRUE" : "FALSE") << std::endl;
+	//std::cout << "iter is null: " << ((iter == NULL) ? "TRUE" : "FALSE") << std::endl;
+	//std::cout << "b is null: " << ((b == NULL) ? "TRUE" : "FALSE") << std::endl;
 	while (sam_itr_next(fp, iter, b) >= 0) {
-		std::cout << "Before fetch EWL080116\n";
+		//std::cout << "Before fetch EWL080116\n";
 		fetch_func_RP_Discovery(b, &data);
-		std::cout << "After fetch EWL080116\n";
+		//std::cout << "After fetch EWL080116\n";
 	}
 
 	std::cout << "After sam_itr_next\n";
