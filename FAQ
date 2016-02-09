@@ -8,6 +8,11 @@
 
 ** Compile time errors **
 
+* Contents *
+
+-Problems compiling pindel on OS X /
+ "fatal error: <omp.h> file not found"
+
 * Problems compiling pindel on OS X * /
 * "fatal error: <omp.h> file not found"
 
@@ -40,6 +45,14 @@ This problem can be tackled by applying the following steps:
 
 ** Runtime problems **
 
+* Contents *
+
+- Memory usage of Pindel is very high
+- Pindel runs (too) slowly
+- Pindel does not output VCF files
+- pindel2vcf4tgca does not produce valid VCF files
+
+
 * Memory usage of Pindel is very high *
 
 The most common reason for high memory usage of Pindel is that Pindel tries
@@ -51,8 +64,75 @@ pindel by default also checks for reads just outside the edges of the
 officially specified regions, so you may want to slightly enlarge your 
 centromers, telomers or other problematic regions.
 
-The window size option (-W) can also reduce memory usage, which can be needed
+The window size option (-W) can also reduce memory usage. This can be needed
 for very large data sets.
+
+
+* Pindel runs (too) slowly *
+
+Pindel can run quite slowly if there are many reads to process; for a part,
+long runtime can be caused by high coverage. However, there are some options
+to speed things up:
+1) eliminate 'unproductive' searching by excluding the centromeric and 
+   telomeric regions from the search process, this can be done with the -j and
+   -J options.
+2) Parallelize: there are two ways in which to speed up Pindel using 
+   parallelization:
+   a) allow Pindel to use multithreading (multiple processors/processor cores)
+      by using the -T option (default is 1; setting it to 2, 4 or 6 may help,
+      depending on your system)
+   b) commit jobs per chromosome or half-chromosome in parallel to a cluster,
+      this can be done by using the -c option to specify a chromosome (like 
+      -c 20) or per chromosome region (-c 20:500000-2000000)
+3) lower the search thoroughness. This can be done in many ways, check the 
+   pindel options (./pindel without any arguments) for further information.
+   Some of the options are lowering the sensitivity (-E), or disabling 
+   genotyping (not using -g)
+ 
+
+* Pindel does not output VCF files *
+
+Pindel itself does not output VCF files. Instead, it outputs a file format 
+that gives far more detail on the called SVs than would be possible with a 
+VCF file. This has the advantage that one can manually check promising SVs
+to see whether they are likely a real SV or just some artifact of 
+sequencing (like an extra base in a homopolymer). The disadvantage is of
+course that most genomic tools need a standard format like VCF. Therefore,
+we provide a conversion utility named pindel2vcf. You can find it as an
+executable file in the same directory as Pindel itself.
+   It can be used as follows:
+
+   pindel2vcf -p sample3chr20_D -r human_g1k_v36.fasta -R 1000GenomesPilot-NCBI36
+              -d 20101123 -v sample3chr20_D.vcf
+
+where the -p option is the name of the pindel output file, -r the name of the
+reference fasta file, -R the official name of the reference, -d the date
+at which the reference was originally created (if you don't care for submitting things
+to official archives, you can just make up those two and fill in things
+like -R x and -d 00000000, though I would recommend to just take the time
+and effort to find those things out). 
+   In any case, pindel2vcf will produce a vcf file that can be used by
+other tools.
+   Note that pindel2vcf has many options for filtering SVs and also an 
+option for outputting a GATK-format VCF. Run ./pindel2vcf to see all the
+available options.
+
+
+* Pindel2vcf4tcga does not produce valid VCF files *
+
+Pindel2vcf4tcga, despite its name, does not produce valid VCF files. This
+is because valid TCGA vcf files require a lot of input data that Pindel2vcf
+cannot know (like the version and settings of the alignment software), and
+also that even if all that data is available, the file produced would likely
+still be unacceptable to the TCGA database as the TCGA database only accepts
+files from 'accepted' groups and projects, and regular Pindel users would 
+therefore find pindel2vcf4tcga of no use at all.
+   For now, pindel2vcf4tgca is basically a 'half-converter' which converts
+pindel files into a semi-TCGA-vcf format, which can be processed by certain
+scripts that TCGA partners possess into full-blown TCGA files. This does not
+mean that pindel2vcf4tcga will never be working as a 'stand-alone' script,
+but for now it is simply for use by certain TCGA-affiliated users, regular
+Pindel users should not try to apply it to their own Pindel output.
 
 
 ** Contacting the authors **
