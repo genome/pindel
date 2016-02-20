@@ -13,6 +13,8 @@
 -Problems compiling pindel on OS X /
  "fatal error: <omp.h> file not found"
 
+-"fatal error: khash.h: No such file or directory"
+
 * Problems compiling pindel on OS X * /
 * "fatal error: <omp.h> file not found"
 
@@ -42,6 +44,35 @@ This problem can be tackled by applying the following steps:
 
 4) go back to the ./pindel directory and again try the ./INSTALL command. If that
    does not work, please contact us.
+
+
+* "fatal error: khash.h: No such file or directory" *
+
+At the moment of this FAQ update (Feb 20, 2016) we do not know exactly what
+causes this issue, possibly check the htslib-directory that you give to
+Pindel's ./INSTALL . Change path into a relative path, for example? Or 
+cloning htslib directly? Anyway, one way to solve this is to make a 
+(relatively) clean htslib/pindel install. Try the following steps:
+
+1) create a directory (for example "mkdir pindeltest", then 
+   "cd pindeltest")
+
+2) clone pindel into it ("git clone https://github.com/genome/pindel") 
+
+3) clone htslib into it ("git clone https://github.com/samtools/htslib")
+
+4) go to the htslib directory ("cd htslib")
+   a) ? I did not do so, but one user replaced the value of prefix in the
+      htslib Makefile by the htslib path (/usr/local/Apps/pindeltest/htslib)
+      Not certain if this is needed, but you could definitely try if the 
+      following steps do not work otherwise.
+   b) "make", "sudo make install"
+
+5) go to the pindel directory and install ("cd ../pindel", 
+   "./INSTALL ../htslib")
+
+6) if all things have gone well, you can now run pindel ("./pindel")
+  
 
 ** Runtime problems **
 
