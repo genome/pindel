@@ -17,41 +17,41 @@
 
 class GZLineReader:public LineReader
 {
-	private:
-		
-		std::string buffer;
-		gzFile in;
-		std::string filename;
-		const static int BUFFER_SIZE;
-		bool eof;
-		
-		char *cBuffer;
-		std::ostringstream oss;
-		char *newLinePtr;
-		
-		
-		void Open();
-			
-			
-		void Close();		
-			
-		void Advance();
-		
-	
-	public:
-		
-		GZLineReader(const char *_filename);
-			
-			
-		~GZLineReader();
-			
-		virtual void Reset();
-			
-			
-		virtual bool HasNext();
-			
-			
-		virtual std::string NextLine();
+private:
+
+   std::string buffer;
+   gzFile in;
+   std::string filename;
+   const static int BUFFER_SIZE;
+   bool eof;
+
+   char *cBuffer;
+   std::ostringstream oss;
+   char *newLinePtr;
+
+
+   void Open();
+
+
+   void Close();
+
+   void Advance();
+
+
+public:
+
+   GZLineReader(const char *_filename);
+
+
+   ~GZLineReader();
+
+   virtual void Reset();
+
+
+   virtual bool HasNext();
+
+
+   virtual std::string NextLine();
 };
 
 

@@ -34,16 +34,16 @@ int searchInversions(ControlState& currentState, unsigned NumBoxes, const Search
    static int Count_Inv_Minus = 0;
 
    std::vector<unsigned> Inv[NumBoxes];
-	unsigned TempBoxIndex;
+   unsigned TempBoxIndex;
 
-	//UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
-	int MIN_IndelSize_Inversion = userSettings->MIN_IndelSize_Inversion;
+   //UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
+   int MIN_IndelSize_Inversion = userSettings->MIN_IndelSize_Inversion;
 
    int CloseIndex = 0;
    int FarIndex = 0;
    LOG_INFO(*logStream << "Searching inversions ... " << std::endl);
    for (unsigned ReadIndex = 0; ReadIndex < currentState.Reads_SR.size(); ReadIndex++) {
-		SPLIT_READ& currentRead = currentState.Reads_SR[ReadIndex];
+      SPLIT_READ& currentRead = currentState.Reads_SR[ReadIndex];
       if (currentRead.Used || currentRead.UP_Far.empty() || currentRead.FragName != currentRead.FarFragName) {
          continue;
       }
@@ -83,19 +83,18 @@ int searchInversions(ControlState& currentState, unsigned NumBoxes, const Search
 
                               currentRead.BPLeft = currentRead.UP_Close[CloseIndex].AbsLoc + 1 - g_SpacerBeforeAfter;
                               currentRead.BPRight = currentRead.UP_Far[FarIndex].AbsLoc - g_SpacerBeforeAfter;
-                               LeftMostINV(currentState, currentRead, window);
+                              LeftMostINV(currentState, currentRead, window);
                               if (readTransgressesBinBoundaries( currentRead, window.getEnd())) {
                                  saveReadForNextCycle( currentRead, currentState.FutureReads_SR);
-                              }
-                              else {
+                              } else {
                                  if (readInSpecifiedRegion( currentRead,userSettings->getRegion())) {
-					TempBoxIndex = (int) (currentRead. BPLeft) / BoxSize;
-					if (TempBoxIndex < NumBoxes) {
-						Inv[TempBoxIndex]. push_back( ReadIndex);
-                                    		currentRead.Used = true;
-                                    		Count_Inv++;
-                                    		Count_Inv_Plus++;
-					}
+                                    TempBoxIndex = (int) (currentRead. BPLeft) / BoxSize;
+                                    if (TempBoxIndex < NumBoxes) {
+                                       Inv[TempBoxIndex]. push_back( ReadIndex);
+                                       currentRead.Used = true;
+                                       Count_Inv++;
+                                       Count_Inv_Plus++;
+                                    }
                                  }
                               }
                            }
@@ -104,7 +103,7 @@ int searchInversions(ControlState& currentState, unsigned NumBoxes, const Search
                   }
                }
             }
-            
+
             else if (currentRead. UP_Far[currentRead.UP_Far.size() - 1].AbsLoc + MIN_IndelSize_Inversion  < currentRead.UP_Close[0].AbsLoc) {
                for (short MAX_SNP_ERROR_index = 0; MAX_SNP_ERROR_index <= currentRead.getMAX_SNP_ERROR(); MAX_SNP_ERROR_index++) {
                   for (CloseIndex = 0; CloseIndex < (int) currentRead.UP_Close.size(); CloseIndex++) {
@@ -125,7 +124,7 @@ int searchInversions(ControlState& currentState, unsigned NumBoxes, const Search
                            continue;
                         }
                         if (currentRead. UP_Far[FarIndex].Direction == Plus) {
-                            
+
                            // anchor inside reversed block.
                            if (currentRead. UP_Far[FarIndex].LengthStr + currentRead. UP_Close[CloseIndex]. LengthStr == currentRead.getReadLength()
                                  && currentRead. UP_Far[FarIndex].AbsLoc + MIN_IndelSize_Inversion < currentRead. UP_Close[CloseIndex].AbsLoc) {
@@ -139,31 +138,30 @@ int searchInversions(ControlState& currentState, unsigned NumBoxes, const Search
 
                               currentRead.BPRight = currentRead.UP_Close[CloseIndex].AbsLoc - g_SpacerBeforeAfter;
                               currentRead.BPLeft = (currentRead.UP_Far[FarIndex].AbsLoc + 1) - g_SpacerBeforeAfter;
-                               LeftMostINV(currentState, currentRead, window);
+                              LeftMostINV(currentState, currentRead, window);
                               if (readTransgressesBinBoundaries( currentRead, window.getEnd())) {
                                  saveReadForNextCycle( currentRead, currentState.FutureReads_SR);
-                              }
-                              else {
+                              } else {
                                  if (readInSpecifiedRegion( currentRead, userSettings->getRegion())) {
-                                        TempBoxIndex = (int) (currentRead. BPLeft) / BoxSize;
-                                        if (TempBoxIndex < NumBoxes) {
-                                    		Inv[TempBoxIndex]. push_back( ReadIndex);
-                                    		currentRead.Used = true;
-                                    		Count_Inv++;
-                                    		Count_Inv_Plus++;
-					}
+                                    TempBoxIndex = (int) (currentRead. BPLeft) / BoxSize;
+                                    if (TempBoxIndex < NumBoxes) {
+                                       Inv[TempBoxIndex]. push_back( ReadIndex);
+                                       currentRead.Used = true;
+                                       Count_Inv++;
+                                       Count_Inv_Plus++;
+                                    }
                                  }
                               }
                            }
-                             
+
                         }
                      }
                   }
                }
             }
-              
+
          }
-              
+
          else if (currentRead.MatchedD == Minus) {
             if (currentRead. UP_Close[currentRead.UP_Close.size() - 1].AbsLoc > currentRead.UP_Far[0].AbsLoc + MIN_IndelSize_Inversion) {
                for (short MAX_SNP_ERROR_index = 0; MAX_SNP_ERROR_index <= currentRead.getMAX_SNP_ERROR(); MAX_SNP_ERROR_index++) {
@@ -197,16 +195,16 @@ int searchInversions(ControlState& currentState, unsigned NumBoxes, const Search
 
                               currentRead.BPLeft = currentRead.UP_Far[FarIndex].AbsLoc - g_SpacerBeforeAfter;
                               currentRead.BPRight = currentRead.UP_Close[CloseIndex].AbsLoc - 1 - g_SpacerBeforeAfter;
-                               LeftMostINV(currentState, currentRead, window);
+                              LeftMostINV(currentState, currentRead, window);
                               if (readInSpecifiedRegion( currentRead, userSettings->getRegion())) {
                                  TempBoxIndex = (int) (currentRead. BPLeft) / BoxSize;
                                  if (TempBoxIndex < NumBoxes) {
 
-                                 	Inv[TempBoxIndex]. push_back( ReadIndex);
-                                 	currentRead. Used = true;
-                                 	Count_Inv++;
-                                 	Count_Inv_Minus++;
-				}
+                                    Inv[TempBoxIndex]. push_back( ReadIndex);
+                                    currentRead. Used = true;
+                                    Count_Inv++;
+                                    Count_Inv_Minus++;
+                                 }
                               }
                            }
                         }
@@ -214,7 +212,7 @@ int searchInversions(ControlState& currentState, unsigned NumBoxes, const Search
                   }
                }
             }
-             
+
             else if (currentRead.UP_Close[0].AbsLoc + MIN_IndelSize_Inversion < currentRead.UP_Far[currentRead. UP_Far.size() - 1].AbsLoc) {
                for (short MAX_SNP_ERROR_index = 0; MAX_SNP_ERROR_index <= currentRead.getMAX_SNP_ERROR(); MAX_SNP_ERROR_index++) {
                   for (unsigned int CloseIndex = 0; CloseIndex < currentRead.UP_Close.size(); CloseIndex++) {
@@ -235,7 +233,7 @@ int searchInversions(ControlState& currentState, unsigned NumBoxes, const Search
                            continue;
                         }
                         if (currentRead. UP_Far[FarIndex].Direction == Minus) {
-                            
+
                            // anchor inside reversed block.
                            if (currentRead. UP_Close[CloseIndex].LengthStr + currentRead. UP_Far[FarIndex]. LengthStr == currentRead.getReadLength()
                                  && currentRead. UP_Close[CloseIndex]. AbsLoc + MIN_IndelSize_Inversion < currentRead. UP_Far[FarIndex].AbsLoc) {
@@ -249,25 +247,25 @@ int searchInversions(ControlState& currentState, unsigned NumBoxes, const Search
 
                               currentRead.BPLeft = currentRead.UP_Close[CloseIndex].AbsLoc - g_SpacerBeforeAfter;
                               currentRead.BPRight = currentRead.UP_Far[FarIndex].AbsLoc - 1 - g_SpacerBeforeAfter;
-                               LeftMostINV(currentState, currentRead, window);
+                              LeftMostINV(currentState, currentRead, window);
                               if (readInSpecifiedRegion( currentRead, userSettings->getRegion())) {
                                  TempBoxIndex = (int) (currentRead. BPLeft) / BoxSize;
                                  if (TempBoxIndex < NumBoxes) {
-                                 	Inv[TempBoxIndex]. push_back( ReadIndex);
-                                 	currentRead. Used = true;
+                                    Inv[TempBoxIndex]. push_back( ReadIndex);
+                                    currentRead. Used = true;
 
-                                 	Count_Inv++;
-                                 	Count_Inv_Minus++;
-				}
+                                    Count_Inv++;
+                                    Count_Inv_Minus++;
+                                 }
                               }
                            }
-                             
+
                         }
                      }
                   }
                }
             }
-            
+
          }
       }
    }
@@ -282,35 +280,39 @@ int searchInversions(ControlState& currentState, unsigned NumBoxes, const Search
    return EXIT_SUCCESS;
 }
 
-void LeftMostINV(ControlState& currentState, SPLIT_READ & currentRead, const SearchWindow& window) {
-    const std::string & TheInput = window.getChromosome()->getSeq();
- 	unsigned ChrLength = TheInput.size();   
-    unsigned int PosIndex = currentRead.BPLeft + g_SpacerBeforeAfter + 1;
-    unsigned int original_PosIndex = PosIndex;
-    //unsigned int Start = PosIndex + 1;
-    unsigned int End = currentRead.BPRight + g_SpacerBeforeAfter - 1;
-	if (ChrLength <= PosIndex + g_SpacerBeforeAfter || ChrLength <= original_PosIndex + g_SpacerBeforeAfter) {
-		currentRead.BPLeft = 1;
-		currentRead.BPRight = 1;
-		currentRead.BP = 1;
-		currentRead.Used = true;
-		return;
-	}
-    while (TheInput[PosIndex] == Convert2RC4N[(short) TheInput[End]]) {
-        ++PosIndex;
-        --End;
-    }
-    short DIFF = PosIndex - original_PosIndex;
-    if (DIFF > 0) {
-        if (currentRead.MatchedD == Plus) { // BP++
-            if (DIFF >= currentRead.BP) DIFF = currentRead.BP - 1;
-        }
-        else { //BP--
-            if (DIFF + currentRead.BP >= currentRead.getReadLength()) DIFF = currentRead.getReadLength() - currentRead.BP - 1;
-            currentRead.BPLeft += DIFF;
-            currentRead.BPRight -= DIFF;
-            currentRead.BP += DIFF;
-        }
-    } // Convert2RC4N[(short) CurrentBase];
+void LeftMostINV(ControlState& currentState, SPLIT_READ & currentRead, const SearchWindow& window)
+{
+   const std::string & TheInput = window.getChromosome()->getSeq();
+   unsigned ChrLength = TheInput.size();
+   unsigned int PosIndex = currentRead.BPLeft + g_SpacerBeforeAfter + 1;
+   unsigned int original_PosIndex = PosIndex;
+   //unsigned int Start = PosIndex + 1;
+   unsigned int End = currentRead.BPRight + g_SpacerBeforeAfter - 1;
+   if (ChrLength <= PosIndex + g_SpacerBeforeAfter || ChrLength <= original_PosIndex + g_SpacerBeforeAfter) {
+      currentRead.BPLeft = 1;
+      currentRead.BPRight = 1;
+      currentRead.BP = 1;
+      currentRead.Used = true;
+      return;
+   }
+   while (TheInput[PosIndex] == Convert2RC4N[(short) TheInput[End]]) {
+      ++PosIndex;
+      --End;
+   }
+   short DIFF = PosIndex - original_PosIndex;
+   if (DIFF > 0) {
+      if (currentRead.MatchedD == Plus) { // BP++
+         if (DIFF >= currentRead.BP) {
+            DIFF = currentRead.BP - 1;
+         }
+      } else { //BP--
+         if (DIFF + currentRead.BP >= currentRead.getReadLength()) {
+            DIFF = currentRead.getReadLength() - currentRead.BP - 1;
+         }
+         currentRead.BPLeft += DIFF;
+         currentRead.BPRight -= DIFF;
+         currentRead.BP += DIFF;
+      }
+   } // Convert2RC4N[(short) CurrentBase];
 }
 

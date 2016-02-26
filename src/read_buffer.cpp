@@ -35,68 +35,69 @@ ReadBuffer::~ReadBuffer()
    the next reads. */
 void ReadBuffer::flush()
 {
-	// std::cout << "in flush " << std::endl;
-	#pragma omp parallel for
-	for (int i=0; i<m_currentsize ; i++ ) {
-		// std::cout << "before GetCloseEnd " << std::endl;
-		//std::map<std::string, unsigned>::iterator it = g_ReadSeq2Index.find(m_rawreads[i].UnmatchedSeq);
-       
-		//if (it == g_ReadSeq2Index.end()) 
-		{
-		//if (m_rawreads[i].MapperSplit ) {
-		//	std::cout << "skip close end search" << std::endl;
-		//}
-            if (m_rawreads[i].MapperSplit == false)
-                GetCloseEnd(m_CHROMOSOME, m_rawreads[i]);
-            
-            //std::cout << "before mapping closed end: " << m_rawreads[i].Name << std::endl;
-		
-			if (m_rawreads[i].hasCloseEnd()) {
- 				updateReadAfterCloseEndMapping(m_rawreads[i]);
-               
- 				#pragma omp critical 
- 				{
-		//			g_ReadSeq2Index.insert(std::pair<std::string, unsigned> (m_rawreads[i].UnmatchedSeq, m_filteredReads.size()));
-					m_rawreads[i].SampleName2Number.insert(std::pair <std::string, unsigned> (m_rawreads[i].Tag, 1));
-					m_filteredReads.push_back(m_rawreads[i]);
-                    //std::cout << "with closed end: " << m_rawreads[i].Name << std::endl;
-				}
-               
-			}
-           	//	else {
-               			//if (m_rawreads[i].Name == "@DD7DT8Q1:4:1106:17724:13906#GTACCT/1") {
-              		 	//    std::cout << "m_rawreads[i] no close end" << std::endl;
-               			//}
-               			//#pragma omp critical
-               			//m_OneEndMappedReads.push_back(m_rawreads[i]);
-           	//	}
-       		}
-       		//else { // SampleName2Number std::map <std::string, unsigned> SampleName2Number;
-           	//	#pragma omp critical 
-           	//	{
-		//		unsigned ReadIndex = it -> second; // m_filteredReads[ReadIndex]
-               	//		std::map <std::string, unsigned>::iterator it_SampleName = m_filteredReads[ReadIndex].SampleName2Number.find(m_rawreads[i].Tag);
+   // std::cout << "in flush " << std::endl;
+   #pragma omp parallel for
+   for (int i=0; i<m_currentsize ; i++ ) {
+      // std::cout << "before GetCloseEnd " << std::endl;
+      //std::map<std::string, unsigned>::iterator it = g_ReadSeq2Index.find(m_rawreads[i].UnmatchedSeq);
+
+      //if (it == g_ReadSeq2Index.end())
+      {
+         //if (m_rawreads[i].MapperSplit ) {
+         //	std::cout << "skip close end search" << std::endl;
+         //}
+         if (m_rawreads[i].MapperSplit == false) {
+            GetCloseEnd(m_CHROMOSOME, m_rawreads[i]);
+         }
+
+         //std::cout << "before mapping closed end: " << m_rawreads[i].Name << std::endl;
+
+         if (m_rawreads[i].hasCloseEnd()) {
+            updateReadAfterCloseEndMapping(m_rawreads[i]);
+
+            #pragma omp critical
+            {
+               //			g_ReadSeq2Index.insert(std::pair<std::string, unsigned> (m_rawreads[i].UnmatchedSeq, m_filteredReads.size()));
+               m_rawreads[i].SampleName2Number.insert(std::pair <std::string, unsigned> (m_rawreads[i].Tag, 1));
+               m_filteredReads.push_back(m_rawreads[i]);
+               //std::cout << "with closed end: " << m_rawreads[i].Name << std::endl;
+            }
+
+         }
+         //	else {
+         //if (m_rawreads[i].Name == "@DD7DT8Q1:4:1106:17724:13906#GTACCT/1") {
+         //    std::cout << "m_rawreads[i] no close end" << std::endl;
+         //}
+         //#pragma omp critical
+         //m_OneEndMappedReads.push_back(m_rawreads[i]);
+         //	}
+      }
+      //else { // SampleName2Number std::map <std::string, unsigned> SampleName2Number;
+      //	#pragma omp critical
+      //	{
+      //		unsigned ReadIndex = it -> second; // m_filteredReads[ReadIndex]
+      //		std::map <std::string, unsigned>::iterator it_SampleName = m_filteredReads[ReadIndex].SampleName2Number.find(m_rawreads[i].Tag);
 //
-  //             			if (it_SampleName == m_filteredReads[ReadIndex].SampleName2Number.end()) {
+      //             			if (it_SampleName == m_filteredReads[ReadIndex].SampleName2Number.end()) {
 //					//std::cout << "adding " << m_rawreads[i].Tag << "\t1" << std::endl;
-  //                 			m_filteredReads[ReadIndex].SampleName2Number.insert(std::pair <std::string, unsigned> (m_rawreads[i].Tag, 1));
-    //           			}
+      //                 			m_filteredReads[ReadIndex].SampleName2Number.insert(std::pair <std::string, unsigned> (m_rawreads[i].Tag, 1));
+      //           			}
       //         			else {
-	//				
-	//				it_SampleName -> second++;
-	//				//std::cout << "increasing " << m_rawreads[i].Tag << "\t" << it_SampleName -> second << std::endl;
-	//			}
-	//		}
-       		//}
+      //
+      //				it_SampleName -> second++;
+      //				//std::cout << "increasing " << m_rawreads[i].Tag << "\t" << it_SampleName -> second << std::endl;
+      //			}
+      //		}
+      //}
 
-      		// std::cout << "after GetCloseEnd " << std::endl;
+      // std::cout << "after GetCloseEnd " << std::endl;
 
-   	}
-    	//std::cout << "end of flush " << std::endl;
-   	m_rawreads.clear();
-   	m_currentsize = 0;
-    std::cout << "The number of one end mapped read: " << m_filteredReads.size() << std::endl;
-    	//std::cout << "existing flush " << std::endl;
+   }
+   //std::cout << "end of flush " << std::endl;
+   m_rawreads.clear();
+   m_currentsize = 0;
+   std::cout << "The number of one end mapped read: " << m_filteredReads.size() << std::endl;
+   //std::cout << "existing flush " << std::endl;
 }
 
 /* 'ReadBuffer::addRawRead' adds the read "newRead" to the buffer, and invokes

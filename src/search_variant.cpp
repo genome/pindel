@@ -44,17 +44,17 @@ SearchVariant::~SearchVariant()
 
 }
 
-	//			std::cout << currentRead.BPLeft << " " << BoxSize << " " << NumBoxes << " " << TempBoxIndex << std::endl;
+//			std::cout << currentRead.BPLeft << " " << BoxSize << " " << NumBoxes << " " << TempBoxIndex << std::endl;
 int SearchVariant::Search(BDData & g_bdData, ControlState& currentState, const unsigned NumBoxes, const SearchWindow& window)
 {
    std::vector<unsigned> Vars[NumBoxes];
-	unsigned TempBoxIndex;
-    
+   unsigned TempBoxIndex;
+
    unsigned int farEndExists = 0;
    unsigned int readsUsed = 0;
    unsigned int bpSum = 0;
    for (unsigned ReadIndex = 0; ReadIndex < currentState.Reads_SR.size(); ReadIndex++)  {
-		SPLIT_READ& currentRead = currentState.Reads_SR[ReadIndex];
+      SPLIT_READ& currentRead = currentState.Reads_SR[ReadIndex];
       if (currentRead.Used) {
          readsUsed++;
       }
@@ -70,26 +70,28 @@ int SearchVariant::Search(BDData & g_bdData, ControlState& currentState, const u
    *logStream << "Far ends already mapped " << farEndExists << std::endl;
    *logStream << "Checksum of far ends: " << bpSum << std::endl;
 
-	//UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
+   //UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
    LOG_INFO(*logStream << "Searching " << typeOfVariant << " ... " << std::endl);
-	const std::string ChrSeq = window.getChromosome()->getSeq();
+   const std::string ChrSeq = window.getChromosome()->getSeq();
    for (unsigned ReadIndex = 0; ReadIndex < currentState.Reads_SR.size(); ReadIndex++) {
 
-		SPLIT_READ& currentRead = currentState.Reads_SR[ReadIndex];
-	//std::cout << ReadIndex << std::endl;
-	//std::cout << currentRead << std::endl;
+      SPLIT_READ& currentRead = currentState.Reads_SR[ReadIndex];
+      //std::cout << ReadIndex << std::endl;
+      //std::cout << currentRead << std::endl;
 
-       if (currentRead.FragName != currentRead.FarFragName) {
-           //std::cout << "inter-chromosome split-read" << std::endl;
-           continue;
-       }
+      if (currentRead.FragName != currentRead.FarFragName) {
+         //std::cout << "inter-chromosome split-read" << std::endl;
+         continue;
+      }
 
       if (currentRead.Used || currentRead.UP_Far.empty()) {
          continue;
       }
       if (currentRead.MatchedD == Plus) {
          for (short MAX_SNP_ERROR_index = 0; MAX_SNP_ERROR_index <= currentRead.getMAX_SNP_ERROR(); MAX_SNP_ERROR_index++) {
-		if (currentRead.Used) break;
+            if (currentRead.Used) {
+               break;
+            }
             for (unsigned int CloseIndex = 0; CloseIndex
                   < currentRead.UP_Close.size(); CloseIndex++) {
                if (currentRead.Used) {
@@ -121,46 +123,44 @@ int SearchVariant::Search(BDData & g_bdData, ControlState& currentState, const u
 
                         currentRead.BPLeft = currentRead. UP_Close[CloseIndex].AbsLoc - g_SpacerBeforeAfter;
                         currentRead.BPRight = currentRead.UP_Far[FarIndex]. AbsLoc - g_SpacerBeforeAfter;
-                         unsigned RealBP_left= currentRead.BPLeft;
-                         unsigned RealBP_right = currentRead.BPRight;//, DIFF;
-			if (ChrSeq.size() < RealBP_left || ChrSeq.size() < RealBP_right) {
-				currentRead.Used = true;
-				break;
-			}
-                         if (currentRead.NT_str.size()) {
-				//std::cout << "ns i currentRead.NT_str.size()" << std::endl;
-				//std::cout << currentRead.NT_str << " " << RealBP_left << " " << RealBP_right << std::endl;
-                             GetRealStart4Insertion(ChrSeq, currentRead.NT_str, RealBP_left, RealBP_right);
-				//std::cout << "ne i currentRead.NT_str.size()" << std::endl;
-                         }
-                         else {
-				//std::cout << "no_ns d currentRead.NT_str.size()" << std::endl;
-				//std::cout << RealBP_left << " " << RealBP_right << std::endl;
-                             GetRealStart4Deletion(ChrSeq, RealBP_left, RealBP_right);
-				//std::cout << "no_ns d currentRead.NT_str.size()" << std::endl;
-                         }
-                         short DIFF = currentRead.BPLeft - RealBP_left;
-                         DIFF = !((currentRead.BP - 1)<DIFF)?DIFF:(currentRead.BP - 1); // min(DIFF, currentRead.BP - 1);
-                         if (DIFF > 0)  {
-                             //std::cout << "DIFF " << DIFF << std::endl;
-                             currentRead.BP -= DIFF;
-                             currentRead.BPLeft -= DIFF;
-                             currentRead.BPRight  -= DIFF;
-                         }
+                        unsigned RealBP_left= currentRead.BPLeft;
+                        unsigned RealBP_right = currentRead.BPRight;//, DIFF;
+                        if (ChrSeq.size() < RealBP_left || ChrSeq.size() < RealBP_right) {
+                           currentRead.Used = true;
+                           break;
+                        }
+                        if (currentRead.NT_str.size()) {
+                           //std::cout << "ns i currentRead.NT_str.size()" << std::endl;
+                           //std::cout << currentRead.NT_str << " " << RealBP_left << " " << RealBP_right << std::endl;
+                           GetRealStart4Insertion(ChrSeq, currentRead.NT_str, RealBP_left, RealBP_right);
+                           //std::cout << "ne i currentRead.NT_str.size()" << std::endl;
+                        } else {
+                           //std::cout << "no_ns d currentRead.NT_str.size()" << std::endl;
+                           //std::cout << RealBP_left << " " << RealBP_right << std::endl;
+                           GetRealStart4Deletion(ChrSeq, RealBP_left, RealBP_right);
+                           //std::cout << "no_ns d currentRead.NT_str.size()" << std::endl;
+                        }
+                        short DIFF = currentRead.BPLeft - RealBP_left;
+                        DIFF = !((currentRead.BP - 1)<DIFF)?DIFF:(currentRead.BP - 1); // min(DIFF, currentRead.BP - 1);
+                        if (DIFF > 0)  {
+                           //std::cout << "DIFF " << DIFF << std::endl;
+                           currentRead.BP -= DIFF;
+                           currentRead.BPLeft -= DIFF;
+                           currentRead.BPRight  -= DIFF;
+                        }
                         if (readTransgressesBinBoundaries( currentRead, window.getEnd())) {
                            saveReadForNextCycle( currentRead, currentState.FutureReads_SR);
-                        }
-                        else {
+                        } else {
                            if (readInSpecifiedRegion( currentRead, userSettings->getRegion())) {
-                                TempBoxIndex = (int) (currentRead. BPLeft) / BoxSize;
-				//std::cout << currentRead.BPLeft << " " << BoxSize << " " << NumBoxes << " " << TempBoxIndex << std::endl;
-                                if (TempBoxIndex < NumBoxes) {
+                              TempBoxIndex = (int) (currentRead. BPLeft) / BoxSize;
+                              //std::cout << currentRead.BPLeft << " " << BoxSize << " " << NumBoxes << " " << TempBoxIndex << std::endl;
+                              if (TempBoxIndex < NumBoxes) {
 
-                              		Vars[TempBoxIndex].push_back(ReadIndex);
-                              		currentRead.Used = true;
-                              		Count_Var_Plus++;
-                              		Count_Var++;
-				}
+                                 Vars[TempBoxIndex].push_back(ReadIndex);
+                                 currentRead.Used = true;
+                                 Count_Var_Plus++;
+                                 Count_Var++;
+                              }
                            }
                         }
                      }
@@ -168,10 +168,11 @@ int SearchVariant::Search(BDData & g_bdData, ControlState& currentState, const u
                }
             }
          }
-      }
-      else if (currentRead.MatchedD == Minus) {
+      } else if (currentRead.MatchedD == Minus) {
          for (short MAX_SNP_ERROR_index = 0; MAX_SNP_ERROR_index <= currentRead.getMAX_SNP_ERROR(); MAX_SNP_ERROR_index++) {
-		if (currentRead.Used) break;
+            if (currentRead.Used) {
+               break;
+            }
             for (int CloseIndex = currentRead.UP_Close.size() - 1; CloseIndex >= 0; CloseIndex--) {
                if (currentRead.Used) {
                   break;
@@ -203,48 +204,46 @@ int SearchVariant::Search(BDData & g_bdData, ControlState& currentState, const u
 
                         currentRead.BPLeft = currentRead.UP_Far[FarIndex].AbsLoc - g_SpacerBeforeAfter;
                         currentRead.BPRight = currentRead.UP_Close[CloseIndex].AbsLoc - g_SpacerBeforeAfter;
-                         unsigned RealBP_left= currentRead.BPLeft;
-                         unsigned RealBP_right = currentRead.BPRight;//, DIFF;
-	
-			if (ChrSeq.size() < RealBP_left || ChrSeq.size() < RealBP_right) {
-				currentRead.Used = true;
-				break;
-			}
-                         if (currentRead.NT_str.size()) {
-				//std::cout << "ns i currentRead.NT_str.size()" << std::endl;
-				//std::cout << currentRead.NT_str << " " << RealBP_left << " " << RealBP_right << std::endl;
-                             GetRealStart4Insertion(ChrSeq, currentRead.NT_str, RealBP_left, RealBP_right);
-				//std::cout << "ne i currentRead.NT_str.size()" << std::endl;
-                         }
-                         else {
-				//std::cout << "no_ns d currentRead.NT_str.size()" << std::endl;
-				//std::cout <<  RealBP_left << " " << RealBP_right << std::endl;
-                             GetRealStart4Deletion(ChrSeq, RealBP_left, RealBP_right);
-				//std::cout << "no_ne d currentRead.NT_str.size()" << std::endl;
-                         }
-                         short DIFF = currentRead.BPLeft - RealBP_left;
-                         DIFF = !((currentRead.BP - 1)<DIFF)?DIFF:(currentRead.BP - 1);
-                         if (DIFF > 0) {
-                             // std::cout << DIFF << std::endl;
-                             //std::cout << "DIFF " << DIFF << std::endl;
-                             currentRead.BP -= DIFF;
-                             currentRead.BPLeft -= DIFF;
-                             currentRead.BPRight  -= DIFF;
-                         }
+                        unsigned RealBP_left= currentRead.BPLeft;
+                        unsigned RealBP_right = currentRead.BPRight;//, DIFF;
+
+                        if (ChrSeq.size() < RealBP_left || ChrSeq.size() < RealBP_right) {
+                           currentRead.Used = true;
+                           break;
+                        }
+                        if (currentRead.NT_str.size()) {
+                           //std::cout << "ns i currentRead.NT_str.size()" << std::endl;
+                           //std::cout << currentRead.NT_str << " " << RealBP_left << " " << RealBP_right << std::endl;
+                           GetRealStart4Insertion(ChrSeq, currentRead.NT_str, RealBP_left, RealBP_right);
+                           //std::cout << "ne i currentRead.NT_str.size()" << std::endl;
+                        } else {
+                           //std::cout << "no_ns d currentRead.NT_str.size()" << std::endl;
+                           //std::cout <<  RealBP_left << " " << RealBP_right << std::endl;
+                           GetRealStart4Deletion(ChrSeq, RealBP_left, RealBP_right);
+                           //std::cout << "no_ne d currentRead.NT_str.size()" << std::endl;
+                        }
+                        short DIFF = currentRead.BPLeft - RealBP_left;
+                        DIFF = !((currentRead.BP - 1)<DIFF)?DIFF:(currentRead.BP - 1);
+                        if (DIFF > 0) {
+                           // std::cout << DIFF << std::endl;
+                           //std::cout << "DIFF " << DIFF << std::endl;
+                           currentRead.BP -= DIFF;
+                           currentRead.BPLeft -= DIFF;
+                           currentRead.BPRight  -= DIFF;
+                        }
                         if (readTransgressesBinBoundaries( currentRead, window.getEnd())) {
                            saveReadForNextCycle( currentRead, currentState.FutureReads_SR);
-                        }
-                        else {
+                        } else {
                            if (readInSpecifiedRegion( currentRead, userSettings->getRegion())) {
-                                TempBoxIndex = (int) (currentRead. BPLeft) / BoxSize;
-				//std::cout << currentRead.BPLeft << " " << BoxSize << " " << NumBoxes << " " << TempBoxIndex << std::endl;
-                                if (TempBoxIndex < NumBoxes) {
+                              TempBoxIndex = (int) (currentRead. BPLeft) / BoxSize;
+                              //std::cout << currentRead.BPLeft << " " << BoxSize << " " << NumBoxes << " " << TempBoxIndex << std::endl;
+                              if (TempBoxIndex < NumBoxes) {
 
-                              		Vars[TempBoxIndex]. push_back(ReadIndex);
-                              		currentRead.Used = true;
-                              		Count_Var++;
-                              		Count_Var_Minus++;
-				}
+                                 Vars[TempBoxIndex]. push_back(ReadIndex);
+                                 currentRead.Used = true;
+                                 Count_Var++;
+                                 Count_Var_Minus++;
+                              }
                            }
                         }
                      }

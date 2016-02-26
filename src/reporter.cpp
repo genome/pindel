@@ -38,10 +38,14 @@
 //#include "genotyping.h"
 #include "bam2depth.h"
 
-bool compare(const SPLIT_READ & one, const SPLIT_READ & two) {
-	if (one.BPLeft < two.BPLeft) return true;
-	else if (one.BPRight < two.BPRight) return true;
-	return false;
+bool compare(const SPLIT_READ & one, const SPLIT_READ & two)
+{
+   if (one.BPLeft < two.BPLeft) {
+      return true;
+   } else if (one.BPRight < two.BPRight) {
+      return true;
+   }
+   return false;
 }
 
 OutputFileData deletionFileData;
@@ -65,52 +69,51 @@ void calculateSupportPerTag( std::vector< SPLIT_READ >& reads, const unsigned in
                              std::map<std::string,int>& sampleToIndexMap, SupportPerSample* NumSupportPerTag )
 {
 
-	std::map <std::string, unsigned>::iterator it;
-	int tagIndex;
-	for (unsigned int readIndex = firstReadIndex; readIndex <= lastReadIndex; readIndex++) {
-	      //std::string currentTag = reads[readIndex].Tag;
-      		//int tagIndex = sampleToIndexMap[ currentTag ];
-		std::map <std::string, unsigned> * SampleName2Number = &(reads[readIndex].SampleName2Number);
-		if (reads[readIndex].MatchedD == Plus)	{
-		// = reads[readIndex].SampleName2Number.find(m_rawreads[i].Tag);
-			for (it = SampleName2Number -> begin(); it != SampleName2Number -> end() ; ++it) {
-				tagIndex = sampleToIndexMap[ it -> first ];
-				//std::cout << "plus\t" << it -> first << "\t" << it -> second << std::endl;
-				NumSupportPerTag[tagIndex].NumPlus += it -> second;
-				if (reads[readIndex].UniqueRead) {
-					NumSupportPerTag[tagIndex].NumUPlus += it -> second;
-				}
-			}
-		}
-		else {
-			for (it = SampleName2Number -> begin(); it != SampleName2Number -> end() ; ++it) {
-				tagIndex = sampleToIndexMap[ it -> first ];
-				//std::cout << "minus\t" << it -> first << "\t" << it -> second << std::endl;
-				NumSupportPerTag[tagIndex].NumMinus += it -> second;
-				if (reads[readIndex].UniqueRead) {
-					NumSupportPerTag[tagIndex].NumUMinus += it -> second;
-				}
-			}
-		}
-	}
+   std::map <std::string, unsigned>::iterator it;
+   int tagIndex;
+   for (unsigned int readIndex = firstReadIndex; readIndex <= lastReadIndex; readIndex++) {
+      //std::string currentTag = reads[readIndex].Tag;
+      //int tagIndex = sampleToIndexMap[ currentTag ];
+      std::map <std::string, unsigned> * SampleName2Number = &(reads[readIndex].SampleName2Number);
+      if (reads[readIndex].MatchedD == Plus)	{
+         // = reads[readIndex].SampleName2Number.find(m_rawreads[i].Tag);
+         for (it = SampleName2Number -> begin(); it != SampleName2Number -> end() ; ++it) {
+            tagIndex = sampleToIndexMap[ it -> first ];
+            //std::cout << "plus\t" << it -> first << "\t" << it -> second << std::endl;
+            NumSupportPerTag[tagIndex].NumPlus += it -> second;
+            if (reads[readIndex].UniqueRead) {
+               NumSupportPerTag[tagIndex].NumUPlus += it -> second;
+            }
+         }
+      } else {
+         for (it = SampleName2Number -> begin(); it != SampleName2Number -> end() ; ++it) {
+            tagIndex = sampleToIndexMap[ it -> first ];
+            //std::cout << "minus\t" << it -> first << "\t" << it -> second << std::endl;
+            NumSupportPerTag[tagIndex].NumMinus += it -> second;
+            if (reads[readIndex].UniqueRead) {
+               NumSupportPerTag[tagIndex].NumUMinus += it -> second;
+            }
+         }
+      }
+   }
 }
 
 /* 'calculateSupportPerStrand (EWL, Aug31st2011) calculates the number of reads per strand (sample) supporting the event. */
 void calculateSupportPerStrand( SupportPerSample* NumSupportPerTag, unsigned int& LeftS, unsigned int& LeftUNum, unsigned int& RightS, unsigned int& RightUNum )
 {
-	LeftS = 0;
-	LeftUNum = 0;
-	RightS = 0;
-	RightUNum = 0;
-	//std::cout << "g_sampleNames.size(): " << g_sampleNames.size() << std::endl;
-	for (unsigned index = 0; index < g_sampleNames.size(); index++) {
-		
-		LeftS += NumSupportPerTag[index].NumPlus;
-		LeftUNum += NumSupportPerTag[index].NumUPlus;
-		RightS += NumSupportPerTag[index].NumMinus;
-		RightUNum += NumSupportPerTag[index].NumUMinus;
-		//std::cout << LeftS << "\t" << LeftUNum << "\t" << RightS << "\t" << RightUNum << std::endl;
-	}
+   LeftS = 0;
+   LeftUNum = 0;
+   RightS = 0;
+   RightUNum = 0;
+   //std::cout << "g_sampleNames.size(): " << g_sampleNames.size() << std::endl;
+   for (unsigned index = 0; index < g_sampleNames.size(); index++) {
+
+      LeftS += NumSupportPerTag[index].NumPlus;
+      LeftUNum += NumSupportPerTag[index].NumUPlus;
+      RightS += NumSupportPerTag[index].NumMinus;
+      RightUNum += NumSupportPerTag[index].NumUMinus;
+      //std::cout << LeftS << "\t" << LeftUNum << "\t" << RightS << "\t" << RightUNum << std::endl;
+   }
 }
 
 /*
@@ -134,30 +137,31 @@ void calculateSupportPerStrand( std::vector< SPLIT_READ >& reads, const unsigned
 }
 */
 
-void UpdateSampleID(ControlState& currentState, std::vector < SPLIT_READ > & GoodIndels, Indel4output & OneIndelEvent, std::vector <unsigned> & SampleIDs) {
-    std::set<std::string> SampleNames;
-    for (unsigned index = OneIndelEvent.Start; index <= OneIndelEvent.End; index++) {
-        if (SampleNames.find(GoodIndels[index].Tag) == SampleNames.end()) { // not in the set
-            SampleNames.insert(GoodIndels[index].Tag);
-            //std::cout << GoodIndels[index].Tag << std::endl;
-        }
-    }
-    //bams_to_parse Tag
-    for (unsigned index = 0; index < currentState.bams_to_parse.size(); index++) {
-        if (SampleNames.find(currentState.bams_to_parse[index].Tag) != SampleNames.end()) {
-            SampleIDs.push_back(index);
-        }
-    }
+void UpdateSampleID(ControlState& currentState, std::vector < SPLIT_READ > & GoodIndels, Indel4output & OneIndelEvent, std::vector <unsigned> & SampleIDs)
+{
+   std::set<std::string> SampleNames;
+   for (unsigned index = OneIndelEvent.Start; index <= OneIndelEvent.End; index++) {
+      if (SampleNames.find(GoodIndels[index].Tag) == SampleNames.end()) { // not in the set
+         SampleNames.insert(GoodIndels[index].Tag);
+         //std::cout << GoodIndels[index].Tag << std::endl;
+      }
+   }
+   //bams_to_parse Tag
+   for (unsigned index = 0; index < currentState.bams_to_parse.size(); index++) {
+      if (SampleNames.find(currentState.bams_to_parse[index].Tag) != SampleNames.end()) {
+         SampleIDs.push_back(index);
+      }
+   }
 }
 
 void OutputTDs (std::vector < SPLIT_READ > &TDs,
-           const std::string & TheInput,
-           const unsigned int &C_S,
-           const unsigned int &C_E,
-           const unsigned int &RealStart,
-           const unsigned int &RealEnd, std::ofstream & TDOutf)
+                const std::string & TheInput,
+                const unsigned int &C_S,
+                const unsigned int &C_E,
+                const unsigned int &RealStart,
+                const unsigned int &RealEnd, std::ofstream & TDOutf)
 {
-    
+
    unsigned int NumberOfReads = 0;// = C_E - C_S + 1;
    unsigned int LeftS = 1;
    unsigned int RightS = 1;
@@ -181,7 +185,7 @@ void OutputTDs (std::vector < SPLIT_READ > &TDs,
       if (NumSupportPerTag[i].NumUPlus + NumSupportPerTag[i].NumUMinus) {
          ++NumU_SupSamples;
       }
-	NumberOfReads += NumSupportPerTag[i].NumPlus + NumSupportPerTag[i].NumMinus;
+      NumberOfReads += NumSupportPerTag[i].NumPlus + NumSupportPerTag[i].NumMinus;
       Num_U_Reads += NumSupportPerTag[i].NumUPlus + NumSupportPerTag[i].NumUMinus;
    }
 
@@ -208,25 +212,23 @@ void OutputTDs (std::vector < SPLIT_READ > &TDs,
           NumU_SupSamples;
    std::vector <int> CoverageStart, CoverageEnd; //if (!(TDs[C_S].BPLeft + 2 >= g_RegionStart &&  TDs[C_S].BPRight + 2 < g_RegionEnd)) return;
    if (TDs[C_S].BPLeft + 1 >= g_RegionStart && TDs[C_S].BPLeft + 1 < g_RegionEnd) {
-       for (unsigned short i = 0; i < g_sampleNames.size (); i++) {
-           CoverageStart.push_back(g_RefCoverageRegion[TDs[C_S].BPLeft + 1 - g_RegionStart].RefCoveragePerSample[i]);
-       }
+      for (unsigned short i = 0; i < g_sampleNames.size (); i++) {
+         CoverageStart.push_back(g_RefCoverageRegion[TDs[C_S].BPLeft + 1 - g_RegionStart].RefCoveragePerSample[i]);
+      }
+   } else {
+      for (unsigned short i = 0; i < g_sampleNames.size (); i++) {
+         CoverageStart.push_back(-1);
+      }
    }
-   else {
-       for (unsigned short i = 0; i < g_sampleNames.size (); i++) {
-           CoverageStart.push_back(-1);
-       }
+   if (TDs[C_S].BPRight + 1 > g_RegionStart && TDs[C_S].BPRight + 1 < g_RegionEnd) {
+      for (unsigned short i = 0; i < g_sampleNames.size (); i++) {
+         CoverageEnd.push_back(g_RefCoverageRegion[TDs[C_S].BPRight + 1 - g_RegionStart].RefCoveragePerSample[i]);
+      }
+   } else {
+      for (unsigned short i = 0; i < g_sampleNames.size (); i++) {
+         CoverageEnd.push_back(-1);
+      }
    }
-    if (TDs[C_S].BPRight + 1 > g_RegionStart && TDs[C_S].BPRight + 1 < g_RegionEnd) {
-        for (unsigned short i = 0; i < g_sampleNames.size (); i++) {
-            CoverageEnd.push_back(g_RefCoverageRegion[TDs[C_S].BPRight + 1 - g_RegionStart].RefCoveragePerSample[i]);
-        }
-    }
-    else {
-        for (unsigned short i = 0; i < g_sampleNames.size (); i++) {
-            CoverageEnd.push_back(-1);
-        }
-    }
    for (unsigned short i = 0; i < g_sampleNames.size (); i++) {
       TDOutf << "\t" << indexToSampleMap[i]
              << " " << CoverageStart[i] << " " << CoverageEnd[i]
@@ -256,8 +258,7 @@ void OutputTDs (std::vector < SPLIT_READ > &TDs,
       }
       if (TDs[GoodIndex].MatchedD == Minus) {
          TDOutf << TDs[GoodIndex].getUnmatchedSeq() << std::endl;
-      }
-      else {
+      } else {
          TDOutf << ReverseComplement (TDs[GoodIndex].getUnmatchedSeq()) << std::endl;
       }
       TDOutf << "\t" << TDs[GoodIndex].MatchedD << "\t"
@@ -268,14 +269,15 @@ void OutputTDs (std::vector < SPLIT_READ > &TDs,
 }
 
 void OutputDeletions (std::vector < SPLIT_READ > &Deletions,
-                 const std::string & TheInput,
-                 const unsigned int &C_S,
-                 const unsigned int &C_E,
-                 const unsigned int &RealStart,
-                 const unsigned int &RealEnd, std::ofstream & DeletionOutf)
-{  //if (!(Deletions[C_S].BPLeft + 2 >= g_RegionStart &&  Deletions[C_S].BPRight + 2 < g_RegionEnd)) return;
+                      const std::string & TheInput,
+                      const unsigned int &C_S,
+                      const unsigned int &C_E,
+                      const unsigned int &RealStart,
+                      const unsigned int &RealEnd, std::ofstream & DeletionOutf)
+{
+   //if (!(Deletions[C_S].BPLeft + 2 >= g_RegionStart &&  Deletions[C_S].BPRight + 2 < g_RegionEnd)) return;
    //std::cout << "Start " << g_RegionStart << "\tEnd " << g_RegionEnd << std::endl;
-	//std::cout << "OutputDeletions" << " " << TheInput.size() << " " << RealStart << " " << RealEnd << std::endl;
+   //std::cout << "OutputDeletions" << " " << TheInput.size() << " " << RealStart << " " << RealEnd << std::endl;
    LOG_DEBUG(*logStream << "d_1" << std::endl);
    unsigned int NumberOfReads = 0;//C_E - C_S + 1;
    unsigned int LeftS = 1;
@@ -312,7 +314,7 @@ void OutputDeletions (std::vector < SPLIT_READ > &Deletions,
       if (NumSupportPerTag[i].NumUPlus + NumSupportPerTag[i].NumUMinus) {
          ++NumU_SupSamples;
       }
-		NumberOfReads += NumSupportPerTag[i].NumPlus + NumSupportPerTag[i].NumMinus;
+      NumberOfReads += NumSupportPerTag[i].NumPlus + NumSupportPerTag[i].NumMinus;
       Num_U_Reads +=
          NumSupportPerTag[i].NumUPlus + NumSupportPerTag[i].NumUMinus;
    }
@@ -321,8 +323,7 @@ void OutputDeletions (std::vector < SPLIT_READ > &Deletions,
    short GapSize = 0;
    if (Deletions[C_S].IndelSize < 14) {
       GapSize = Deletions[C_S].IndelSize;
-   }
-   else {
+   } else {
       GapSize = 13 + (int) log10 (Deletions[C_S].IndelSize - 10);
    }
    LOG_DEBUG(*logStream << "d_5a" << std::endl);
@@ -335,7 +336,7 @@ void OutputDeletions (std::vector < SPLIT_READ > &Deletions,
    CurrentChrMask[RealEnd + g_SpacerBeforeAfter] = 'B';
    LOG_DEBUG(*logStream << "d_5e" << std::endl);
 
-	//std::cout << "d_5e" << std::endl; // #############################3
+   //std::cout << "d_5e" << std::endl; // #############################3
    reportBreakDancerEvent(Deletions[C_S].FragName, Deletions[C_S].BPLeft+1, Deletions[C_S].BPRight+1, Deletions[C_S].IndelSize, "D", deletionFileData.getSvIndex());
    DeletionOutf <<
                 "####################################################################################################"
@@ -352,27 +353,25 @@ void OutputDeletions (std::vector < SPLIT_READ > &Deletions,
    DeletionOutf << "\t" << g_sampleNames.
                 size () << "\tNumSupSamples " << NumberSupSamples << "\t" <<
                 NumU_SupSamples;
-    std::vector <int> CoverageStart, CoverageEnd; //if (!(TDs[C_S].BPLeft + 2 >= g_RegionStart &&  TDs[C_S].BPRight + 2 < g_RegionEnd)) return;
-    if (Deletions[C_S].BPLeft + 2 >= g_RegionStart && Deletions[C_S].BPLeft + 2 < g_RegionEnd) {
-        for (unsigned short i = 0; i < g_sampleNames.size (); i++) {
-            CoverageStart.push_back(g_RefCoverageRegion[Deletions[C_S].BPLeft + 2 - g_RegionStart].RefCoveragePerSample[i]);
-        }
-    }
-    else {
-        for (unsigned short i = 0; i < g_sampleNames.size (); i++) {
-            CoverageStart.push_back(-1);
-        }
-    }
-    if (Deletions[C_S].BPRight > g_RegionStart && Deletions[C_S].BPRight < g_RegionEnd) {
-        for (unsigned short i = 0; i < g_sampleNames.size (); i++) {
-            CoverageEnd.push_back(g_RefCoverageRegion[Deletions[C_S].BPRight - g_RegionStart].RefCoveragePerSample[i]);
-        }
-    }
-    else {
-        for (unsigned short i = 0; i < g_sampleNames.size (); i++) {
-            CoverageEnd.push_back(-1);
-        }
-    }
+   std::vector <int> CoverageStart, CoverageEnd; //if (!(TDs[C_S].BPLeft + 2 >= g_RegionStart &&  TDs[C_S].BPRight + 2 < g_RegionEnd)) return;
+   if (Deletions[C_S].BPLeft + 2 >= g_RegionStart && Deletions[C_S].BPLeft + 2 < g_RegionEnd) {
+      for (unsigned short i = 0; i < g_sampleNames.size (); i++) {
+         CoverageStart.push_back(g_RefCoverageRegion[Deletions[C_S].BPLeft + 2 - g_RegionStart].RefCoveragePerSample[i]);
+      }
+   } else {
+      for (unsigned short i = 0; i < g_sampleNames.size (); i++) {
+         CoverageStart.push_back(-1);
+      }
+   }
+   if (Deletions[C_S].BPRight > g_RegionStart && Deletions[C_S].BPRight < g_RegionEnd) {
+      for (unsigned short i = 0; i < g_sampleNames.size (); i++) {
+         CoverageEnd.push_back(g_RefCoverageRegion[Deletions[C_S].BPRight - g_RegionStart].RefCoveragePerSample[i]);
+      }
+   } else {
+      for (unsigned short i = 0; i < g_sampleNames.size (); i++) {
+         CoverageEnd.push_back(-1);
+      }
+   }
    for (unsigned short i = 0; i < g_sampleNames.size (); i++)
       DeletionOutf << "\t" << indexToSampleMap[i]
                    << " " << CoverageStart[i] << " " << CoverageEnd[i]
@@ -385,23 +384,22 @@ void OutputDeletions (std::vector < SPLIT_READ > &Deletions,
 
    DeletionOutf << TheInput.substr (Deletions[C_S].Left - g_reportLength + Deletions[C_S].BP + 1, g_reportLength);	// << endl;// g_reportLength
    if (Deletions[C_S].IndelSize >= 14) {
-	
-	//std::cout << "d_5f" << std::endl; // #############################3
-	DeletionOutf << Cap2Low (TheInput.substr (Deletions[C_S].Left + Deletions[C_S].BP + 1, 5)) << "<" << Deletions[C_S].IndelSize - 10 << ">" << 
-		 Cap2Low (TheInput.substr (Deletions[C_S].Right - Deletions[C_S].getReadLength() + Deletions[C_S].BP - 3, 5));
-	//std::cout << "d_5fe" << std::endl; // #############################3
-   }
-   else {
-	
-	//std::cout << "d_5g" << std::endl; // #############################3
-	DeletionOutf << Cap2Low (TheInput.substr (Deletions[C_S].Left + Deletions[C_S].BP + 1, GapSize));
-	//std::cout << "d_5ge" << std::endl; // #############################3
+
+      //std::cout << "d_5f" << std::endl; // #############################3
+      DeletionOutf << Cap2Low (TheInput.substr (Deletions[C_S].Left + Deletions[C_S].BP + 1, 5)) << "<" << Deletions[C_S].IndelSize - 10 << ">" <<
+                   Cap2Low (TheInput.substr (Deletions[C_S].Right - Deletions[C_S].getReadLength() + Deletions[C_S].BP - 3, 5));
+      //std::cout << "d_5fe" << std::endl; // #############################3
+   } else {
+
+      //std::cout << "d_5g" << std::endl; // #############################3
+      DeletionOutf << Cap2Low (TheInput.substr (Deletions[C_S].Left + Deletions[C_S].BP + 1, GapSize));
+      //std::cout << "d_5ge" << std::endl; // #############################3
    }
 
-	
-	//std::cout << "d_6ha ###############33" << std::endl; // #############################3
+
+   //std::cout << "d_6ha ###############33" << std::endl; // #############################3
    DeletionOutf << TheInput.substr (Deletions[C_S].Left + Deletions[C_S].BP + 1 + Deletions[C_S].IndelSize, g_reportLength - GapSize) << std::endl;	// g_reportLength
-	//std::cout << "d_6hb" << std::endl; // #############################3
+   //std::cout << "d_6hb" << std::endl; // #############################3
    short SpaceBeforeReadSeq;
    for (unsigned int GoodIndex = C_S; GoodIndex <= C_E; GoodIndex++) {
       SpaceBeforeReadSeq = g_reportLength - Deletions[GoodIndex].BP - 1;
@@ -413,21 +411,20 @@ void OutputDeletions (std::vector < SPLIT_READ > &Deletions,
          g_reportLength + g_reportLength - SpaceBeforeReadSeq -
          Deletions[GoodIndex].getReadLength();
       if (Deletions[GoodIndex].MatchedD == Minus /*&& Deletions[GoodIndex].getReadLength() > Deletions[GoodIndex].BP*/) {
-	//std::cout << "d_7ha ###############33" << std::endl; // #############################3
+         //std::cout << "d_7ha ###############33" << std::endl; // #############################3
          DeletionOutf << Deletions[GoodIndex].getUnmatchedSeq().substr (0, Deletions[GoodIndex].BP + 1);	// << endl;
-	//std::cout << "d_7hb ###############33" << std::endl; // #############################3
+         //std::cout << "d_7hb ###############33" << std::endl; // #############################3
          for (int i = 0; i < GapSize; i++) {
             DeletionOutf << " ";
          }
-	//std::cout << "d_8ha ###############33" << std::endl; // #############################3
-	//std::cout << Deletions[GoodIndex].getUnmatchedSeq() << " " << Deletions[GoodIndex].BP << " " << Deletions[GoodIndex].getReadLength() << std::endl;
+         //std::cout << "d_8ha ###############33" << std::endl; // #############################3
+         //std::cout << Deletions[GoodIndex].getUnmatchedSeq() << " " << Deletions[GoodIndex].BP << " " << Deletions[GoodIndex].getReadLength() << std::endl;
          DeletionOutf << Deletions[GoodIndex].getUnmatchedSeq().substr (Deletions[GoodIndex].BP + 1, Deletions[GoodIndex].getReadLength() - Deletions[GoodIndex].BP);	// << endl;
-	//std::cout << "d_8hb ###############33" << std::endl; // #############################3
-      }
-      else /*if (Deletions[GoodIndex].getReadLength() > Deletions[GoodIndex].BP) */ {
-	//std::cout << "d_9ha ###############33" << std::endl; // #############################3
+         //std::cout << "d_8hb ###############33" << std::endl; // #############################3
+      } else { /*if (Deletions[GoodIndex].getReadLength() > Deletions[GoodIndex].BP) */
+         //std::cout << "d_9ha ###############33" << std::endl; // #############################3
          DeletionOutf << ReverseComplement (Deletions[GoodIndex].getUnmatchedSeq()).substr (0, Deletions[GoodIndex].BP + 1);	// << endl;
-	//std::cout << "d_9hb ###############33" << std::endl; // #############################3
+         //std::cout << "d_9hb ###############33" << std::endl; // #############################3
          for (int i = 0; i < GapSize; i++) {
             DeletionOutf << " ";
          }
@@ -436,22 +433,22 @@ void OutputDeletions (std::vector < SPLIT_READ > &Deletions,
       for (int i = 0; i < SpaceBeforeD; i++) {
          DeletionOutf << " ";
       }
-	//std::cout << "d_10ha ###############33" << std::endl; // #############################3
+      //std::cout << "d_10ha ###############33" << std::endl; // #############################3
       DeletionOutf << "\t" << Deletions[GoodIndex].MatchedD << "\t"
                    << Deletions[GoodIndex].MatchedRelPos
                    << "\t" << Deletions[GoodIndex].MS
                    << "\t" << Deletions[GoodIndex].Tag
                    << "\t" << Deletions[GoodIndex].Name << std::endl;
-	//std::cout << "d_10hb ###############33" << std::endl; // #############################3
+      //std::cout << "d_10hb ###############33" << std::endl; // #############################3
    }
 }
 
 void OutputInversions (std::vector < SPLIT_READ > &Inv,
-                  const std::string & TheInput,
-                  const unsigned int &C_S,
-                  const unsigned int &C_E,
-                  const unsigned int &RealStart,
-                  const unsigned int &RealEnd, std::ofstream & InvOutf)
+                       const std::string & TheInput,
+                       const unsigned int &C_S,
+                       const unsigned int &C_E,
+                       const unsigned int &RealStart,
+                       const unsigned int &RealEnd, std::ofstream & InvOutf)
 {
    //if (!(Inv[C_S].BPLeft + 2 >= g_RegionStart &&  Inv[C_S].BPRight + 2 < g_RegionEnd)) return;
    int LeftNT_index = -1;
@@ -511,7 +508,7 @@ void OutputInversions (std::vector < SPLIT_READ > &Inv,
       if (NumSupportPerTag[i].NumUPlus + NumSupportPerTag[i].NumUMinus) {
          ++NumU_SupSamples;
       }
-		NumberOfReads += NumSupportPerTag[i].NumPlus + NumSupportPerTag[i].NumMinus;
+      NumberOfReads += NumSupportPerTag[i].NumPlus + NumSupportPerTag[i].NumMinus;
       Num_U_Reads +=
          NumSupportPerTag[i].NumUPlus + NumSupportPerTag[i].NumUMinus;
    }
@@ -534,29 +531,27 @@ void OutputInversions (std::vector < SPLIT_READ > &Inv,
    InvOutf << "\t" << g_sampleNames.
            size () << "\tNumSupSamples " << NumberSupSamples << "\t" <<
            NumU_SupSamples;
-   
-    std::vector <int> CoverageStart, CoverageEnd; //if (!(TDs[C_S].BPLeft + 2 >= g_RegionStart &&  TDs[C_S].BPRight + 2 < g_RegionEnd)) return;
-    if (Inv[C_S].BPLeft + 1 >= g_RegionStart && Inv[C_S].BPLeft + 1 < g_RegionEnd) {
-        for (unsigned short i = 0; i < g_sampleNames.size (); i++) {
-            CoverageStart.push_back(g_RefCoverageRegion[Inv[C_S].BPLeft + 1 - g_RegionStart].RefCoveragePerSample[i]);
-        }
-    }
-    else {
-        for (unsigned short i = 0; i < g_sampleNames.size (); i++) {
-            CoverageStart.push_back(-1);
-        }
-    }
-    if (Inv[C_S].BPRight + 1 > g_RegionStart && Inv[C_S].BPRight + 1 < g_RegionEnd) {
-        for (unsigned short i = 0; i < g_sampleNames.size (); i++) {
-            CoverageEnd.push_back(g_RefCoverageRegion[Inv[C_S].BPRight + 1 - g_RegionStart].RefCoveragePerSample[i]);
-        }
-    }
-    else {
-        for (unsigned short i = 0; i < g_sampleNames.size (); i++) {
-            CoverageEnd.push_back(-1);
-        }
-    }
-    
+
+   std::vector <int> CoverageStart, CoverageEnd; //if (!(TDs[C_S].BPLeft + 2 >= g_RegionStart &&  TDs[C_S].BPRight + 2 < g_RegionEnd)) return;
+   if (Inv[C_S].BPLeft + 1 >= g_RegionStart && Inv[C_S].BPLeft + 1 < g_RegionEnd) {
+      for (unsigned short i = 0; i < g_sampleNames.size (); i++) {
+         CoverageStart.push_back(g_RefCoverageRegion[Inv[C_S].BPLeft + 1 - g_RegionStart].RefCoveragePerSample[i]);
+      }
+   } else {
+      for (unsigned short i = 0; i < g_sampleNames.size (); i++) {
+         CoverageStart.push_back(-1);
+      }
+   }
+   if (Inv[C_S].BPRight + 1 > g_RegionStart && Inv[C_S].BPRight + 1 < g_RegionEnd) {
+      for (unsigned short i = 0; i < g_sampleNames.size (); i++) {
+         CoverageEnd.push_back(g_RefCoverageRegion[Inv[C_S].BPRight + 1 - g_RegionStart].RefCoveragePerSample[i]);
+      }
+   } else {
+      for (unsigned short i = 0; i < g_sampleNames.size (); i++) {
+         CoverageEnd.push_back(-1);
+      }
+   }
+
    for (unsigned short i = 0; i < g_sampleNames.size (); i++)
       InvOutf << "\t" << indexToSampleMap[i]
               << " " << CoverageStart[i] << " " << CoverageEnd[i]
@@ -585,10 +580,9 @@ void OutputInversions (std::vector < SPLIT_READ > &Inv,
          if (Inv[GoodIndex].UP_Close[0].AbsLoc < Inv[GoodIndex].UP_Far[0].AbsLoc ) {
 
             InvOutf << ReverseComplement (Inv[GoodIndex].getUnmatchedSeq());
-             
+
             InvOutf << std::string( Inv[GoodIndex].BP, ' ' );
-         }
-         else {
+         } else {
             InvOutf << Inv[GoodIndex].getUnmatchedSeq();
          }
          InvOutf	<< "\t" << Inv[GoodIndex].MatchedD << "\t"
@@ -621,8 +615,7 @@ void OutputInversions (std::vector < SPLIT_READ > &Inv,
          if (Inv[GoodIndex].UP_Close[0].AbsLoc > Inv[GoodIndex].UP_Far[0].AbsLoc) {
             InvOutf << Inv[GoodIndex].getUnmatchedSeq();
             InvOutf << std::string( Inv[GoodIndex].BP, ' ');
-         }
-         else {
+         } else {
             InvOutf << ReverseComplement (Inv[GoodIndex].getUnmatchedSeq());
          }
          InvOutf  << "\t" << Inv[GoodIndex].MatchedD << "\t"
@@ -635,11 +628,11 @@ void OutputInversions (std::vector < SPLIT_READ > &Inv,
 }
 
 void OutputSIs (std::vector < SPLIT_READ > &SIs,
-           const std::string & TheInput,
-           const unsigned int &C_S,
-           const unsigned int &C_E,
-           const unsigned int &RealStart,
-           const unsigned int &RealEnd, std::ofstream & SIsOutf)
+                const std::string & TheInput,
+                const unsigned int &C_S,
+                const unsigned int &C_E,
+                const unsigned int &RealStart,
+                const unsigned int &RealEnd, std::ofstream & SIsOutf)
 {
    //if (!(SIs[C_S].BPLeft + 2 >= g_RegionStart &&  SIs[C_S].BPRight + 2 < g_RegionEnd)) return;
    unsigned int NumberOfReads = 0;//C_E - C_S + 1;
@@ -672,7 +665,7 @@ void OutputSIs (std::vector < SPLIT_READ > &SIs,
       if (NumSupportPerTag[i].NumUPlus + NumSupportPerTag[i].NumUMinus) {
          ++NumU_SupSamples;
       }
-	NumberOfReads += NumSupportPerTag[i].NumPlus + NumSupportPerTag[i].NumMinus;
+      NumberOfReads += NumSupportPerTag[i].NumPlus + NumSupportPerTag[i].NumMinus;
       Num_U_Reads +=
          NumSupportPerTag[i].NumUPlus + NumSupportPerTag[i].NumUMinus;
    }
@@ -701,29 +694,27 @@ void OutputSIs (std::vector < SPLIT_READ > &SIs,
    SIsOutf << "\t" << g_sampleNames.
            size () << "\tNumSupSamples " << NumberSupSamples << "\t" <<
            NumU_SupSamples;
-    
-    std::vector <int> CoverageStart, CoverageEnd; //if (!(TDs[C_S].BPLeft + 2 >= g_RegionStart &&  TDs[C_S].BPRight + 2 < g_RegionEnd)) return;
-    if (SIs[C_S].BPLeft + 2 >= g_RegionStart && SIs[C_S].BPLeft + 2 < g_RegionEnd) {
-        for (unsigned short i = 0; i < g_sampleNames.size (); i++) {
-            CoverageStart.push_back(g_RefCoverageRegion[SIs[C_S].BPLeft + 2 - g_RegionStart].RefCoveragePerSample[i]);
-        }
-    }
-    else {
-        for (unsigned short i = 0; i < g_sampleNames.size (); i++) {
-            CoverageStart.push_back(-1);
-        }
-    }
-    if (SIs[C_S].BPRight > g_RegionStart && SIs[C_S].BPRight < g_RegionEnd) {
-        for (unsigned short i = 0; i < g_sampleNames.size (); i++) {
-            CoverageEnd.push_back(g_RefCoverageRegion[SIs[C_S].BPRight - g_RegionStart].RefCoveragePerSample[i]);
-        }
-    }
-    else {
-        for (unsigned short i = 0; i < g_sampleNames.size (); i++) {
-            CoverageEnd.push_back(-1);
-        }
-    }
-    
+
+   std::vector <int> CoverageStart, CoverageEnd; //if (!(TDs[C_S].BPLeft + 2 >= g_RegionStart &&  TDs[C_S].BPRight + 2 < g_RegionEnd)) return;
+   if (SIs[C_S].BPLeft + 2 >= g_RegionStart && SIs[C_S].BPLeft + 2 < g_RegionEnd) {
+      for (unsigned short i = 0; i < g_sampleNames.size (); i++) {
+         CoverageStart.push_back(g_RefCoverageRegion[SIs[C_S].BPLeft + 2 - g_RegionStart].RefCoveragePerSample[i]);
+      }
+   } else {
+      for (unsigned short i = 0; i < g_sampleNames.size (); i++) {
+         CoverageStart.push_back(-1);
+      }
+   }
+   if (SIs[C_S].BPRight > g_RegionStart && SIs[C_S].BPRight < g_RegionEnd) {
+      for (unsigned short i = 0; i < g_sampleNames.size (); i++) {
+         CoverageEnd.push_back(g_RefCoverageRegion[SIs[C_S].BPRight - g_RegionStart].RefCoveragePerSample[i]);
+      }
+   } else {
+      for (unsigned short i = 0; i < g_sampleNames.size (); i++) {
+         CoverageEnd.push_back(-1);
+      }
+   }
+
    for (unsigned short i = 0; i < g_sampleNames.size (); i++)
       SIsOutf << "\t" << indexToSampleMap[i]
               << " " << CoverageStart[i] << " " << CoverageEnd[i]
@@ -746,8 +737,7 @@ void OutputSIs (std::vector < SPLIT_READ > &SIs,
       }
       if (SIs[GoodIndex].MatchedD == Minus) {
          SIsOutf << SIs[GoodIndex].getUnmatchedSeq();
-      }
-      else {
+      } else {
          SIsOutf << ReverseComplement (SIs[GoodIndex].getUnmatchedSeq());
       }
       short SpaceBeforeD =
@@ -765,11 +755,11 @@ void OutputSIs (std::vector < SPLIT_READ > &SIs,
 }
 
 void OutputDI (std::vector < SPLIT_READ > &DI,
-          const std::string & TheInput,
-          const unsigned int &C_S,
-          const unsigned int &C_E,
-          const unsigned int &RealStart,
-          const unsigned int &RealEnd, std::ofstream & DeletionOutf)
+               const std::string & TheInput,
+               const unsigned int &C_S,
+               const unsigned int &C_E,
+               const unsigned int &RealStart,
+               const unsigned int &RealEnd, std::ofstream & DeletionOutf)
 {
    //if (!(DI[C_S].BPLeft + 2 >= g_RegionStart &&  DI[C_S].BPRight + 2 < g_RegionEnd)) return;
    unsigned int NumberOfReads = 0;//C_E - C_S + 1;
@@ -803,7 +793,7 @@ void OutputDI (std::vector < SPLIT_READ > &DI,
       if (NumSupportPerTag[i].NumUPlus + NumSupportPerTag[i].NumUMinus) {
          ++NumU_SupSamples;
       }
-	NumberOfReads += NumSupportPerTag[i].NumPlus + NumSupportPerTag[i].NumMinus;
+      NumberOfReads += NumSupportPerTag[i].NumPlus + NumSupportPerTag[i].NumMinus;
       Num_U_Reads +=
          NumSupportPerTag[i].NumUPlus + NumSupportPerTag[i].NumUMinus;
    }
@@ -816,7 +806,7 @@ void OutputDI (std::vector < SPLIT_READ > &DI,
                 "####################################################################################################"
                 << std::endl;
    DeletionOutf << deletionFileData.getSvIndex() << "\tD " << DI[C_S].IndelSize << "\tNT " << DI[C_S].NT_size << " \"" << DI[C_S].NT_str
-<< "\"" << "\tChrID " << DI[C_S].FragName << "\tBP " << DI[C_S].BPLeft + 1 << "\t" << DI[C_S].BPRight + 1 << "\tBP_range " << DI[C_S].BPLeft + 1 << "\t" << DI[C_S].BPRight + 1 << "\tSupports " << NumberOfReads << "\t" << Num_U_Reads << "\t+ " << LeftS << "\t" << LeftUNum << "\t- " << RightS << "\t" << RightUNum << "\tS1 " << EasyScore;
+                << "\"" << "\tChrID " << DI[C_S].FragName << "\tBP " << DI[C_S].BPLeft + 1 << "\t" << DI[C_S].BPRight + 1 << "\tBP_range " << DI[C_S].BPLeft + 1 << "\t" << DI[C_S].BPRight + 1 << "\tSupports " << NumberOfReads << "\t" << Num_U_Reads << "\t+ " << LeftS << "\t" << LeftUNum << "\t- " << RightS << "\t" << RightUNum << "\tS1 " << EasyScore;
 
    int SUM_MS = 0;
    for (unsigned int i = C_S; i <= C_E; i++) {
@@ -828,29 +818,27 @@ void OutputDI (std::vector < SPLIT_READ > &DI,
    DeletionOutf << "\t" << g_sampleNames.
                 size () << "\tNumSupSamples " << NumberSupSamples << "\t" <<
                 NumU_SupSamples;
-   
-    std::vector <int> CoverageStart, CoverageEnd; //if (!(TDs[C_S].BPLeft + 2 >= g_RegionStart &&  TDs[C_S].BPRight + 2 < g_RegionEnd)) return;
-    if (DI[C_S].BPLeft + 2 >= g_RegionStart && DI[C_S].BPLeft + 2 < g_RegionEnd) {
-        for (unsigned short i = 0; i < g_sampleNames.size (); i++) {
-            CoverageStart.push_back(g_RefCoverageRegion[DI[C_S].BPLeft + 2 - g_RegionStart].RefCoveragePerSample[i]);
-        }
-    }
-    else {
-        for (unsigned short i = 0; i < g_sampleNames.size (); i++) {
-            CoverageStart.push_back(-1);
-        }
-    }
-    if (DI[C_S].BPRight > g_RegionStart && DI[C_S].BPRight < g_RegionEnd) {
-        for (unsigned short i = 0; i < g_sampleNames.size (); i++) {
-            CoverageEnd.push_back(g_RefCoverageRegion[DI[C_S].BPRight - g_RegionStart].RefCoveragePerSample[i]);
-        }
-    }
-    else {
-        for (unsigned short i = 0; i < g_sampleNames.size (); i++) {
-            CoverageEnd.push_back(-1);
-        }
-    }
-    
+
+   std::vector <int> CoverageStart, CoverageEnd; //if (!(TDs[C_S].BPLeft + 2 >= g_RegionStart &&  TDs[C_S].BPRight + 2 < g_RegionEnd)) return;
+   if (DI[C_S].BPLeft + 2 >= g_RegionStart && DI[C_S].BPLeft + 2 < g_RegionEnd) {
+      for (unsigned short i = 0; i < g_sampleNames.size (); i++) {
+         CoverageStart.push_back(g_RefCoverageRegion[DI[C_S].BPLeft + 2 - g_RegionStart].RefCoveragePerSample[i]);
+      }
+   } else {
+      for (unsigned short i = 0; i < g_sampleNames.size (); i++) {
+         CoverageStart.push_back(-1);
+      }
+   }
+   if (DI[C_S].BPRight > g_RegionStart && DI[C_S].BPRight < g_RegionEnd) {
+      for (unsigned short i = 0; i < g_sampleNames.size (); i++) {
+         CoverageEnd.push_back(g_RefCoverageRegion[DI[C_S].BPRight - g_RegionStart].RefCoveragePerSample[i]);
+      }
+   } else {
+      for (unsigned short i = 0; i < g_sampleNames.size (); i++) {
+         CoverageEnd.push_back(-1);
+      }
+   }
+
    for (unsigned short i = 0; i < g_sampleNames.size (); i++)
       DeletionOutf << "\t" << indexToSampleMap[i]
                    << " " << CoverageStart[i] << " " << CoverageEnd[i]
@@ -874,8 +862,7 @@ void OutputDI (std::vector < SPLIT_READ > &DI,
       }
       if (DI[GoodIndex].MatchedD == Minus) {
          DeletionOutf << DI[GoodIndex].getUnmatchedSeq() << "\t";
-      }
-      else {
+      } else {
          DeletionOutf << ReverseComplement (DI[GoodIndex].getUnmatchedSeq()) << "\t";
       }
       DeletionOutf << "\t" << DI[GoodIndex].MatchedD << "\t" << DI[GoodIndex].
@@ -884,91 +871,101 @@ void OutputDI (std::vector < SPLIT_READ > &DI,
    }
 }
 
-bool CompareFragName(const std::string & a, const std::string & b) {
-    if (a.size() > b.size()) {
-        for (unsigned pos = 0; pos < b.size(); pos++) {
-            if ((short)a[pos] > (short)b[pos]) return true;
-            else if ((short)a[pos] < (short)b[pos]) return false;
-        }
-    }
-    else if (a.size() < b.size()) {
-        for (unsigned pos = 0; pos < a.size(); pos++) {
-            for (unsigned pos = 0; pos < b.size(); pos++) {
-                if ((short)a[pos] > (short)b[pos]) return true;
-                else if ((short)a[pos] < (short)b[pos]) return false;
+bool CompareFragName(const std::string & a, const std::string & b)
+{
+   if (a.size() > b.size()) {
+      for (unsigned pos = 0; pos < b.size(); pos++) {
+         if ((short)a[pos] > (short)b[pos]) {
+            return true;
+         } else if ((short)a[pos] < (short)b[pos]) {
+            return false;
+         }
+      }
+   } else if (a.size() < b.size()) {
+      for (unsigned pos = 0; pos < a.size(); pos++) {
+         for (unsigned pos = 0; pos < b.size(); pos++) {
+            if ((short)a[pos] > (short)b[pos]) {
+               return true;
+            } else if ((short)a[pos] < (short)b[pos]) {
+               return false;
             }
-        }
-    }
-    else {
-        for (unsigned pos = 0; pos < b.size(); pos++) {
-            for (unsigned pos = 0; pos < b.size(); pos++) {
-                if ((short)a[pos] > (short)b[pos]) return true;
-                else if ((short)a[pos] < (short)b[pos]) return false;
+         }
+      }
+   } else {
+      for (unsigned pos = 0; pos < b.size(); pos++) {
+         for (unsigned pos = 0; pos < b.size(); pos++) {
+            if ((short)a[pos] > (short)b[pos]) {
+               return true;
+            } else if ((short)a[pos] < (short)b[pos]) {
+               return false;
             }
-        }
-    }
-    return false;
+         }
+      }
+   }
+   return false;
 }
 
 bool smaller( const SPLIT_READ& firstRead, const SPLIT_READ& secondRead )
 {
-	if (firstRead.FragName != secondRead.FragName ) {
-		return (CompareFragName(firstRead.FragName, secondRead.FragName));
-	}
-	if (firstRead.BPLeft != secondRead.BPLeft ) {
-		return (firstRead.BPLeft < secondRead.BPLeft);
-	}
-	if (firstRead.BPRight != secondRead.BPRight ) {
-		return (firstRead.BPRight < secondRead.BPRight);
-	}
-    if (firstRead.IndelSize != secondRead.IndelSize ) {
-		return (firstRead.IndelSize < secondRead.IndelSize);
-	}
-    if (firstRead.NT_size != secondRead.NT_size ) {
-		return (firstRead.NT_size < secondRead.NT_size);
-	}
-	if (firstRead.BP != secondRead.BP ) {
-		return (firstRead.BP < secondRead.BP);
-	}
-	return false; // are equal, though we may want to do more stringent sorting
+   if (firstRead.FragName != secondRead.FragName ) {
+      return (CompareFragName(firstRead.FragName, secondRead.FragName));
+   }
+   if (firstRead.BPLeft != secondRead.BPLeft ) {
+      return (firstRead.BPLeft < secondRead.BPLeft);
+   }
+   if (firstRead.BPRight != secondRead.BPRight ) {
+      return (firstRead.BPRight < secondRead.BPRight);
+   }
+   if (firstRead.IndelSize != secondRead.IndelSize ) {
+      return (firstRead.IndelSize < secondRead.IndelSize);
+   }
+   if (firstRead.NT_size != secondRead.NT_size ) {
+      return (firstRead.NT_size < secondRead.NT_size);
+   }
+   if (firstRead.BP != secondRead.BP ) {
+      return (firstRead.BP < secondRead.BP);
+   }
+   return false; // are equal, though we may want to do more stringent sorting
 }
 
 
 void bubblesortReads(const std::vector < SPLIT_READ >& Reads, std::vector < unsigned >& VariantIndices)
 {
-	unsigned int SIsNum = VariantIndices.size();
-	for (unsigned int First = 0; First < SIsNum - 1; First++) {
-		for (unsigned int Second = First + 1; Second < SIsNum; Second++) {
-			if (!smaller(Reads[VariantIndices[First]], Reads[VariantIndices[Second]])) {
-				std::swap( VariantIndices[First],VariantIndices[Second]); 
-			}
-		}
-	}
+   unsigned int SIsNum = VariantIndices.size();
+   for (unsigned int First = 0; First < SIsNum - 1; First++) {
+      for (unsigned int Second = First + 1; Second < SIsNum; Second++) {
+         if (!smaller(Reads[VariantIndices[First]], Reads[VariantIndices[Second]])) {
+            std::swap( VariantIndices[First],VariantIndices[Second]);
+         }
+      }
+   }
 }
 
 // NOTES:						// since both lengths are the same, the second argument of OR is equal to the first)
-					// firstRead.LeftMostPos + firstRead.getReadLength() == secondRead.LeftMostPos + secondRead.getReadLength()) {
+// firstRead.LeftMostPos + firstRead.getReadLength() == secondRead.LeftMostPos + secondRead.getReadLength()) {
 void markDuplicates(std::vector < SPLIT_READ >& Reads, const std::vector < unsigned >& VariantIndices)
 {
-	
-	//return;
-	// mark reads that are not unique 
-	unsigned int Num = VariantIndices.size();
+
+   //return;
+   // mark reads that are not unique
+   unsigned int Num = VariantIndices.size();
 
    for (unsigned int First = 0; First < Num - 1; First++) {
-		SPLIT_READ& firstRead = Reads[VariantIndices[First]];
-		if ( firstRead.UniqueRead == false ) { continue; }
+      SPLIT_READ& firstRead = Reads[VariantIndices[First]];
+      if ( firstRead.UniqueRead == false ) {
+         continue;
+      }
       for (unsigned int Second = First + 1; Second < Num; Second++) {
-			SPLIT_READ& secondRead = Reads[VariantIndices[Second]];		
-	//if (firstRead.Name == secondRead.Name) secondRead.UniqueRead = false;
+         SPLIT_READ& secondRead = Reads[VariantIndices[Second]];
+         //if (firstRead.Name == secondRead.Name) secondRead.UniqueRead = false;
          if ( firstRead.Left == secondRead.Left
-					&& firstRead.Right == secondRead.Right
-					&& firstRead.Name == secondRead.Name
-					//&& firstRead.MatchedD == secondRead.MatchedD
-					//&& firstRead.getReadLength() == secondRead.getReadLength() 
-				 ) { // added EW210812
+               && firstRead.Right == secondRead.Right
+               && firstRead.Name == secondRead.Name
+               //&& firstRead.MatchedD == secondRead.MatchedD
+               //&& firstRead.getReadLength() == secondRead.getReadLength()
+            ) { // added EW210812
 
-           secondRead.UniqueRead = false;
+            secondRead.UniqueRead = false;
          }
       }
    }
@@ -976,25 +973,25 @@ void markDuplicates(std::vector < SPLIT_READ >& Reads, const std::vector < unsig
 
 
 void SortOutputSI (ControlState& currentState, const unsigned &NumBoxes, const std::string & CurrentChr,
-              std::vector < SPLIT_READ > &Reads, std::vector < unsigned >SIs[],
-              std::ofstream & SIsOutf)
+                   std::vector < SPLIT_READ > &Reads, std::vector < unsigned >SIs[],
+                   std::ofstream & SIsOutf)
 {
    LOG_INFO(*logStream << "Sorting and outputing short insertions ..." << std::endl);
    unsigned int SIsNum;
    std::vector < SPLIT_READ > GoodIndels;
    unsigned int GoodNum;
    std::vector < Indel4output > IndelEvents;
-	//UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
+   //UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
 
-	// loop over all boxes
+   // loop over all boxes
    for (unsigned Box_index = 0; Box_index < NumBoxes; Box_index++) {
-       //std::cout << "Box_index " << Box_index << std::endl;
-		// does this box contain at least enough reads to warrant an event?
+      //std::cout << "Box_index " << Box_index << std::endl;
+      // does this box contain at least enough reads to warrant an event?
       if (SIs[Box_index].size () >= userSettings->NumRead2ReportCutOff) {
          //std::cout << "Bi 1" << std::endl;
          SIsNum = SIs[Box_index].size();
          LOG_DEBUG(*logStream << "SIsNum " << SIsNum << std::endl);
-			//std::cout << "Number of reads in current box: " << SIsNum << "\n";
+         //std::cout << "Number of reads in current box: " << SIsNum << "\n";
          //std::cout << "Bi 2" << std::endl;
          bubblesortReads( Reads, SIs[ Box_index ] );
          //std::cout << "Bi 3" << std::endl;
@@ -1004,12 +1001,13 @@ void SortOutputSI (ControlState& currentState, const unsigned &NumBoxes, const s
          IndelEvents.clear ();
          LOG_DEBUG(*logStream << GoodIndels.size() << std::endl);
 
-			// push all the reads of this box in the GoodIndels vector.
+         // push all the reads of this box in the GoodIndels vector.
          for (unsigned int index = 0; index < SIsNum; index++) {
-		if (Reads[SIs[Box_index][index]].UniqueRead)
-            		GoodIndels.push_back (Reads[SIs[Box_index][index]]);
+            if (Reads[SIs[Box_index][index]].UniqueRead) {
+               GoodIndels.push_back (Reads[SIs[Box_index][index]]);
+            }
          }
-	 //sort(GoodIndels.begin(), GoodIndels.end(), compare); 
+         //sort(GoodIndels.begin(), GoodIndels.end(), compare);
          //std::cout << "Bi 5" << std::endl;
          GoodNum = GoodIndels.size();
          LOG_DEBUG(*logStream << Box_index << " " << GoodNum << std::endl);
@@ -1019,22 +1017,21 @@ void SortOutputSI (ControlState& currentState, const unsigned &NumBoxes, const s
          Indel4output OneIndelEvent;
          //std::cout << "Bi 6" << std::endl;
          OneIndelEvent.initialize( 0, GoodIndels[0] );
-			//std::cout << "Number of Good indels " << GoodNum << "\n";
-			//for (unsigned x=0; x<GoodNum; x++ ) { std::cout << GoodIndels[x].getUnmatchedSeq() << ":" << GoodIndels[x].BPLeft << "-" << GoodIndels[x].IndelSize << std::endl; }
+         //std::cout << "Number of Good indels " << GoodNum << "\n";
+         //for (unsigned x=0; x<GoodNum; x++ ) { std::cout << GoodIndels[x].getUnmatchedSeq() << ":" << GoodIndels[x].BPLeft << "-" << GoodIndels[x].IndelSize << std::endl; }
 
-			// here we're fusing different reads into events. Typical A while() [B A ] B loop; there was a trick for that...
+         // here we're fusing different reads into events. Typical A while() [B A ] B loop; there was a trick for that...
          //std::cout << "Bi 7" << std::endl;
          for (unsigned int GoodIndex = 1; GoodIndex < GoodNum; GoodIndex++) {
             if (GoodIndels[GoodIndex].BPLeft == OneIndelEvent.BPLeft
-                && GoodIndels[GoodIndex].IndelSize == OneIndelEvent.IndelSize) {
+                  && GoodIndels[GoodIndex].IndelSize == OneIndelEvent.IndelSize) {
 
                OneIndelEvent.End = GoodIndex;
-            }
-            else {
+            } else {
                OneIndelEvent.complete();
                GetRealStart4Insertion (CurrentChr, OneIndelEvent.IndelStr, OneIndelEvent.RealStart, OneIndelEvent.RealEnd);
                IndelEvents.push_back (OneIndelEvent);
-               OneIndelEvent.initialize( GoodIndex, GoodIndels[GoodIndex]);        
+               OneIndelEvent.initialize( GoodIndex, GoodIndels[GoodIndex]);
             }
          }
          //std::cout << "Bi 8" << std::endl;
@@ -1044,45 +1041,45 @@ void SortOutputSI (ControlState& currentState, const unsigned &NumBoxes, const s
          //std::cout << "Bi 10" << std::endl;
          IndelEvents.push_back (OneIndelEvent);
 
-			//std::cout << "Number of indel events' " << IndelEvents.size() << "\n";
-			//for (unsigned x=0; x<IndelEvents.size(); x++ ) { std::cout << IndelEvents[x].Start << "-" << IndelEvents[x].End << std::endl; }
+         //std::cout << "Number of indel events' " << IndelEvents.size() << "\n";
+         //for (unsigned x=0; x<IndelEvents.size(); x++ ) { std::cout << IndelEvents[x].Start << "-" << IndelEvents[x].End << std::endl; }
 
          if (IndelEvents.size ()) {
 
-				// loop over all events; if two events are 'identical' (same Start, end, indelsize) the support is the biggest support available. [which is weird, why not sum?]
+            // loop over all events; if two events are 'identical' (same Start, end, indelsize) the support is the biggest support available. [which is weird, why not sum?]
             for (unsigned EventIndex = 0; EventIndex < IndelEvents.size (); EventIndex++) {
                if (IndelEvents[EventIndex].WhetherReport) {
-					//	const Indel4output& firstEvent = IndelEvents[EventIndex];
+                  //	const Indel4output& firstEvent = IndelEvents[EventIndex];
                   //unsigned int Max_Support = IndelEvents[EventIndex].Support;
                   //unsigned int Max_Support_Index = EventIndex;
                   /*
                   for (unsigned EventIndex_left = 0; EventIndex_left < IndelEvents.size (); EventIndex_left++) {
-							Indel4output& secondEvent = IndelEvents[EventIndex_left];
-                     if ( ( secondEvent.WhetherReport == true ) 
-								&& ( secondEvent.RealStart == firstEvent.RealStart )
-								&& ( secondEvent.RealEnd == firstEvent.RealEnd )
-								&& ( secondEvent.IndelSize == firstEvent.IndelSize )
-								&& ( secondEvent.IndelStr == firstEvent.IndelStr ) ) {
- 
+                  	Indel4output& secondEvent = IndelEvents[EventIndex_left];
+                     if ( ( secondEvent.WhetherReport == true )
+                  		&& ( secondEvent.RealStart == firstEvent.RealStart )
+                  		&& ( secondEvent.RealEnd == firstEvent.RealEnd )
+                  		&& ( secondEvent.IndelSize == firstEvent.IndelSize )
+                  		&& ( secondEvent.IndelStr == firstEvent.IndelStr ) ) {
+
                         secondEvent.WhetherReport = false;
-								// EW: if the events are the same, should you not be adding their support together? And if the support is higher, why not report this one and make reporting the previous event false?
-                         
+                  		// EW: if the events are the same, should you not be adding their support together? And if the support is higher, why not report this one and make reporting the previous event false?
+
                         if (IndelEvents[EventIndex_left].Support > Max_Support) {
-									std::cout << "THIS SHOULD NOT HAPPEN@@@!\n";
+                  			std::cout << "THIS SHOULD NOT HAPPEN@@@!\n";
                            Max_Support = IndelEvents[EventIndex_left].Support;
                            Max_Support_Index = EventIndex_left;
                         }
-                         
+
                      }
                   }
                    */
                   // report max one
                   LOG_DEBUG(*logStream << IndelEvents[EventIndex].Support << std::endl);
                   if (IndelEvents[EventIndex].Support >= userSettings->NumRead2ReportCutOff && IndelEvents[EventIndex].RealStart < IndelEvents[EventIndex].RealEnd) {
-                      //std::cout << "Bi 11 " << IndelEvents[EventIndex].Start << " " << IndelEvents[EventIndex].End << " " << IndelEvents[EventIndex].RealStart << " " << IndelEvents[EventIndex].RealEnd << std::endl;
-                      
+                     //std::cout << "Bi 11 " << IndelEvents[EventIndex].Start << " " << IndelEvents[EventIndex].End << " " << IndelEvents[EventIndex].RealStart << " " << IndelEvents[EventIndex].RealEnd << std::endl;
+
                      OutputSIs (GoodIndels, CurrentChr, IndelEvents[EventIndex].Start, IndelEvents[EventIndex].End, IndelEvents[EventIndex].RealStart, IndelEvents[EventIndex].RealEnd, SIsOutf);
-                      //std::cout << "Bi 12" << std::endl;
+                     //std::cout << "Bi 12" << std::endl;
 
                   }
                }
@@ -1093,68 +1090,77 @@ void SortOutputSI (ControlState& currentState, const unsigned &NumBoxes, const s
    LOG_INFO(*logStream << "Short insertions: " << NumberOfSIsInstances << std::endl << std::endl);
 }
 
-bool IsGoodTD(std::vector < SPLIT_READ > & GoodIndels, Indel4output & OneIndelEvent, unsigned RealStart, unsigned RealEnd, ControlState& currentState) {
-    //std::cout << "Real Start and End: " << RealStart << " " << RealEnd
-    //<< " " << RP_support_D(currentState, OneIndelEvent, RealStart, RealEnd)
-    if (RealEnd < RealStart) return false;
-    if (RealStart == 0) return false;
-    //UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
-    
-    //if (userSettings->pindelConfigFileAsInput() ||userSettings->singlePindelFileAsInput()) return true;
-    if (userSettings->pindelConfigFileAsInput() || userSettings->singlePindelFileAsInput() || userSettings->NormalSamples == false) return true;
-    //return true;
-    
-    //<< std::endl;
-    
-    if (RealEnd - RealStart < (unsigned)(GoodIndels[0].getReadLength() * 2)) {
-        //std::cout << "<1000 good" << std::endl;
-        return true;
-    }
-    else {
-        //std::cout << "entering > 2000" << std::endl;
-        int chromosomeID = g_genome.getChrID(OneIndelEvent.ChrName);
-        //std::cout << "chromosomeID " << chromosomeID << std::endl;
-        if (chromosomeID == -1) {
-            std::cout << "ID -1 " << OneIndelEvent.ChrName << " " << chromosomeID << std::endl;
-            return false;
-        }
-        
-        Genotyping OneDEL;
-        OneDEL.Type = "TD";
-        OneDEL.ChrA = OneIndelEvent.ChrName;
-        OneDEL.ChrB = OneIndelEvent.ChrName;
-        OneDEL.CI_A = 50;
-        OneDEL.CI_B = 50;
-        OneDEL.PosA = RealStart;
-        OneDEL.PosB = RealEnd;
-        std::vector <unsigned> SampleIDs;
-        //std::cout << "Before SampleIDs.size() " << SampleIDs.size() << std::endl;
-        UpdateSampleID(currentState, GoodIndels, OneIndelEvent, SampleIDs);
-        //std::cout << "After SampleIDs.size() " << SampleIDs.size() << std::endl;
-        //g_genome.getChr(chromosomeID);
-        getRelativeCoverageForFiltering(chromosomeID, currentState, OneDEL, g_genome.getChr(chromosomeID), SampleIDs);
-        //std::cout << ">2000, true " << OneIndelEvent.End - OneIndelEvent.Start  << std::endl;
-        //std::cout << "After getRelativeCoverageForFiltering " << SampleIDs.size() << " " << OneDEL.RD_signals.size() << std::endl;
-        unsigned CountGoodSamples = 0;
-        for (unsigned RD_index = 0; RD_index < OneDEL.RD_signals.size(); RD_index++) {
-            if (OneDEL.RD_signals[RD_index] >= 2.7) CountGoodSamples++;
-            //std::cout << " " << std::fixed << OneDEL.RD_signals[RD_index] << " ";
-        }
-        if ((OneDEL.RD_signals.size() == 1 && CountGoodSamples == 1) || (OneDEL.RD_signals.size() > 1 && OneDEL.RD_signals.size() <= 4 && OneDEL.RD_signals.size() - CountGoodSamples <= 1) || (OneDEL.RD_signals.size() > 4 && (((float)CountGoodSamples / OneDEL.RD_signals.size()) > 0.66) ))
-            return true;
-        else return false;
-    }
-    return false;
+bool IsGoodTD(std::vector < SPLIT_READ > & GoodIndels, Indel4output & OneIndelEvent, unsigned RealStart, unsigned RealEnd, ControlState& currentState)
+{
+   //std::cout << "Real Start and End: " << RealStart << " " << RealEnd
+   //<< " " << RP_support_D(currentState, OneIndelEvent, RealStart, RealEnd)
+   if (RealEnd < RealStart) {
+      return false;
+   }
+   if (RealStart == 0) {
+      return false;
+   }
+   //UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
+
+   //if (userSettings->pindelConfigFileAsInput() ||userSettings->singlePindelFileAsInput()) return true;
+   if (userSettings->pindelConfigFileAsInput() || userSettings->singlePindelFileAsInput() || userSettings->NormalSamples == false) {
+      return true;
+   }
+   //return true;
+
+   //<< std::endl;
+
+   if (RealEnd - RealStart < (unsigned)(GoodIndels[0].getReadLength() * 2)) {
+      //std::cout << "<1000 good" << std::endl;
+      return true;
+   } else {
+      //std::cout << "entering > 2000" << std::endl;
+      int chromosomeID = g_genome.getChrID(OneIndelEvent.ChrName);
+      //std::cout << "chromosomeID " << chromosomeID << std::endl;
+      if (chromosomeID == -1) {
+         std::cout << "ID -1 " << OneIndelEvent.ChrName << " " << chromosomeID << std::endl;
+         return false;
+      }
+
+      Genotyping OneDEL;
+      OneDEL.Type = "TD";
+      OneDEL.ChrA = OneIndelEvent.ChrName;
+      OneDEL.ChrB = OneIndelEvent.ChrName;
+      OneDEL.CI_A = 50;
+      OneDEL.CI_B = 50;
+      OneDEL.PosA = RealStart;
+      OneDEL.PosB = RealEnd;
+      std::vector <unsigned> SampleIDs;
+      //std::cout << "Before SampleIDs.size() " << SampleIDs.size() << std::endl;
+      UpdateSampleID(currentState, GoodIndels, OneIndelEvent, SampleIDs);
+      //std::cout << "After SampleIDs.size() " << SampleIDs.size() << std::endl;
+      //g_genome.getChr(chromosomeID);
+      getRelativeCoverageForFiltering(chromosomeID, currentState, OneDEL, g_genome.getChr(chromosomeID), SampleIDs);
+      //std::cout << ">2000, true " << OneIndelEvent.End - OneIndelEvent.Start  << std::endl;
+      //std::cout << "After getRelativeCoverageForFiltering " << SampleIDs.size() << " " << OneDEL.RD_signals.size() << std::endl;
+      unsigned CountGoodSamples = 0;
+      for (unsigned RD_index = 0; RD_index < OneDEL.RD_signals.size(); RD_index++) {
+         if (OneDEL.RD_signals[RD_index] >= 2.7) {
+            CountGoodSamples++;
+         }
+         //std::cout << " " << std::fixed << OneDEL.RD_signals[RD_index] << " ";
+      }
+      if ((OneDEL.RD_signals.size() == 1 && CountGoodSamples == 1) || (OneDEL.RD_signals.size() > 1 && OneDEL.RD_signals.size() <= 4 && OneDEL.RD_signals.size() - CountGoodSamples <= 1) || (OneDEL.RD_signals.size() > 4 && (((float)CountGoodSamples / OneDEL.RD_signals.size()) > 0.66) )) {
+         return true;
+      } else {
+         return false;
+      }
+   }
+   return false;
 }
 
 void SortAndOutputTandemDuplications (ControlState& currentState, const unsigned &NumBoxes, const std::string & CurrentChr, std::vector < SPLIT_READ > &AllReads, std::vector < unsigned >TDs[],
-                                 std::ofstream & TDOutf, const bool nonTemplate)
+                                      std::ofstream & TDOutf, const bool nonTemplate)
 {
 
    if (nonTemplate) {
       LOG_INFO(*logStream << "Sorting and outputing tandem duplications with non-template sequence ..." << std::endl);
-   }
-   else {
+   } else {
       LOG_INFO(*logStream << "Sorting and outputing tandem duplications ..." << std::endl);
    }
    unsigned int TDNum;
@@ -1164,23 +1170,24 @@ void SortAndOutputTandemDuplications (ControlState& currentState, const unsigned
    unsigned int GoodNum;
    std::vector < SPLIT_READ > GoodIndels;
    std::vector < Indel4output > IndelEvents;
-	//UserDefinedSettings *userSettings = UserDefinedSettings::Instance();
+   //UserDefinedSettings *userSettings = UserDefinedSettings::Instance();
 
    for (unsigned Box_index = 0; Box_index < NumBoxes; Box_index++) {
       if (TDs[Box_index].size () >= userSettings->NumRead2ReportCutOff) {
          TDNum = TDs[Box_index].size ();
 
-          bubblesortReads( AllReads, TDs[ Box_index ] );
-          markDuplicates( AllReads, TDs[ Box_index ] );
-          
+         bubblesortReads( AllReads, TDs[ Box_index ] );
+         markDuplicates( AllReads, TDs[ Box_index ] );
+
          GoodIndels.clear ();
          IndelEvents.clear ();
 
          for (unsigned int First = 0; First < TDNum; First++) {
-		if (AllReads[TDs[Box_index][First]].UniqueRead)
-            		GoodIndels.push_back (AllReads[TDs[Box_index][First]]);
+            if (AllReads[TDs[Box_index][First]].UniqueRead) {
+               GoodIndels.push_back (AllReads[TDs[Box_index][First]]);
+            }
          }
-	 //sort(GoodIndels.begin(), GoodIndels.end(), compare);
+         //sort(GoodIndels.begin(), GoodIndels.end(), compare);
          GoodNum = GoodIndels.size ();
          if (GoodNum == 0) {
             continue;
@@ -1197,8 +1204,7 @@ void SortAndOutputTandemDuplications (ControlState& currentState, const unsigned
             if (GoodIndels[GoodIndex].BPLeft == OneIndelEvent.BPLeft
                   && GoodIndels[GoodIndex].BPRight == OneIndelEvent.BPRight) {
                OneIndelEvent.End = GoodIndex;
-            }
-            else {
+            } else {
                OneIndelEvent.RealStart = OneIndelEvent.BPLeft;
                OneIndelEvent.RealEnd = OneIndelEvent.BPRight;
                OneIndelEvent.Support =
@@ -1210,7 +1216,7 @@ void SortAndOutputTandemDuplications (ControlState& currentState, const unsigned
                OneIndelEvent.End = GoodIndex;
                OneIndelEvent.BPLeft = GoodIndels[GoodIndex].BPLeft;
                OneIndelEvent.BPRight = GoodIndels[GoodIndex].BPRight;
-               OneIndelEvent.ChrName = GoodIndels[GoodIndex].FragName; 
+               OneIndelEvent.ChrName = GoodIndels[GoodIndex].FragName;
             }
          }
 
@@ -1229,38 +1235,37 @@ void SortAndOutputTandemDuplications (ControlState& currentState, const unsigned
                   unsigned int RealEnd = IndelEvents[EventIndex].RealEnd;
                   //unsigned int Max_Support = IndelEvents[EventIndex].Support;
                   //unsigned int Max_Support_Index = EventIndex;
-                   /*
+                  /*
                   for (unsigned EventIndex_left = 0;
-                        EventIndex_left < IndelEvents.size ();
-                        EventIndex_left++) {
-                     if (IndelEvents[EventIndex_left].WhetherReport ==
-                           false) {
-                        continue;
-                     }
-                     else if (IndelEvents[EventIndex_left].RealStart !=
-                              RealStart) {
-                        continue;
-                     }
-                     else if (IndelEvents[EventIndex_left].RealEnd != RealEnd) {
-                        continue;
-                     }
-                     else {
-                        IndelEvents[EventIndex_left].WhetherReport = false;
-                        if (IndelEvents[EventIndex_left].Support > Max_Support) {
-                           Max_Support = IndelEvents[EventIndex_left].Support;
-                           Max_Support_Index = EventIndex_left;
-                        }
-                     }
+                       EventIndex_left < IndelEvents.size ();
+                       EventIndex_left++) {
+                    if (IndelEvents[EventIndex_left].WhetherReport ==
+                          false) {
+                       continue;
+                    }
+                    else if (IndelEvents[EventIndex_left].RealStart !=
+                             RealStart) {
+                       continue;
+                    }
+                    else if (IndelEvents[EventIndex_left].RealEnd != RealEnd) {
+                       continue;
+                    }
+                    else {
+                       IndelEvents[EventIndex_left].WhetherReport = false;
+                       if (IndelEvents[EventIndex_left].Support > Max_Support) {
+                          Max_Support = IndelEvents[EventIndex_left].Support;
+                          Max_Support_Index = EventIndex_left;
+                       }
+                    }
                   }
-                   */
+                  */
                   // report max one
                   if (IndelEvents[EventIndex].Support >= userSettings->NumRead2ReportCutOff && IsGoodTD(GoodIndels, IndelEvents[EventIndex], RealStart, RealEnd, currentState)) {
                      if (GoodIndels[ IndelEvents[EventIndex].Start].IndelSize < userSettings->BalanceCutoff) {
                         OutputTDs (GoodIndels, CurrentChr, IndelEvents[EventIndex].Start, IndelEvents[EventIndex].End, RealStart, RealEnd, TDOutf);
                         NumberOfTDInstances++;
                         countTandemDuplications++;
-                     }
-                     else if (ReportEvent(GoodIndels, IndelEvents[EventIndex].Start, IndelEvents[EventIndex].End)) {
+                     } else if (ReportEvent(GoodIndels, IndelEvents[EventIndex].Start, IndelEvents[EventIndex].End)) {
                         OutputTDs (GoodIndels, CurrentChr, IndelEvents[EventIndex].Start, IndelEvents[EventIndex].End, RealStart, RealEnd, TDOutf);
                         NumberOfTDInstances++;
                         countTandemDuplications++;
@@ -1275,146 +1280,161 @@ void SortAndOutputTandemDuplications (ControlState& currentState, const unsigned
       LOG_INFO(*logStream << "Tandem duplications with non-template sequence (TD_NT): " <<
                countTandemDuplications << std::endl
                << std::endl);
-   }
-   else {
+   } else {
       LOG_INFO(*logStream << "Tandem duplications: " << NumberOfTDInstances << std::endl
                << std::endl);
    }
 }
 
-bool RP_support_D(ControlState& currentState, Indel4output & OneIndelEvent, unsigned start, unsigned end) {
-    // RP_READ
-    // Reads_RP_Discovery
-    unsigned CountSupportingReadPairRead = 0;
-    unsigned Cutoff = OneIndelEvent.Support * 2;
-    if (Cutoff > 10) Cutoff = 10;
-    for (unsigned index = 0; index < currentState.Reads_RP_Discovery.size(); index++) {// DA ～＝ DB ChrNameA == ChrNameB == CurrentChrName PosA < start PosB > end
-        RP_READ & currentRead = currentState.Reads_RP_Discovery[index];
-        if ((currentRead.PosA < currentRead.PosB && currentRead.PosA < start && currentRead.PosB > end) || (currentRead.PosA > currentRead.PosB && currentRead.PosB < start && currentRead.PosA > end)) {
-            if (currentRead.DA != currentRead.DB) {
-                if (currentRead.ChrNameA == OneIndelEvent.ChrName && currentRead.ChrNameB == OneIndelEvent.ChrName) {
-                    CountSupportingReadPairRead++;
-                }
+bool RP_support_D(ControlState& currentState, Indel4output & OneIndelEvent, unsigned start, unsigned end)
+{
+   // RP_READ
+   // Reads_RP_Discovery
+   unsigned CountSupportingReadPairRead = 0;
+   unsigned Cutoff = OneIndelEvent.Support * 2;
+   if (Cutoff > 10) {
+      Cutoff = 10;
+   }
+   for (unsigned index = 0; index < currentState.Reads_RP_Discovery.size(); index++) {// DA ～＝ DB ChrNameA == ChrNameB == CurrentChrName PosA < start PosB > end
+      RP_READ & currentRead = currentState.Reads_RP_Discovery[index];
+      if ((currentRead.PosA < currentRead.PosB && currentRead.PosA < start && currentRead.PosB > end) || (currentRead.PosA > currentRead.PosB && currentRead.PosB < start && currentRead.PosA > end)) {
+         if (currentRead.DA != currentRead.DB) {
+            if (currentRead.ChrNameA == OneIndelEvent.ChrName && currentRead.ChrNameB == OneIndelEvent.ChrName) {
+               CountSupportingReadPairRead++;
             }
-        }
-        //std::cout << "CountSupportingReadPairRead " << CountSupportingReadPairRead << std::endl;
-        if (CountSupportingReadPairRead >= Cutoff) return true;
-    }
-    return false;
+         }
+      }
+      //std::cout << "CountSupportingReadPairRead " << CountSupportingReadPairRead << std::endl;
+      if (CountSupportingReadPairRead >= Cutoff) {
+         return true;
+      }
+   }
+   return false;
 }
 
 
 
-bool IsGoodDeletion(std::vector < SPLIT_READ > & GoodIndels, Indel4output & OneIndelEvent, unsigned RealStart, unsigned RealEnd, ControlState& currentState) {
-    //std::cout << "Real Start and End: " << RealStart << " " << RealEnd
-    //<< " " << RP_support_D(currentState, OneIndelEvent, RealStart, RealEnd)
-    //<< std::endl;
-    
-    //UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
-    return true;
-    if (RealEnd < RealStart) return false;
-    if (RealStart == 0) return false;
-    
-    if (userSettings->pindelConfigFileAsInput() || userSettings->singlePindelFileAsInput() || userSettings->NormalSamples == false) return true;
-    //return true;
-    //std::cout << "in IsGoodDeletion RealStart " << RealStart << " RealEnd " << RealEnd << std::endl;
-    if (RealEnd < RealStart) return false;
-    //std::cout << "should be returned already, you should not see RealStart " << RealStart << " RealEnd " << RealEnd << std::endl;
-    if (RealEnd - RealStart < 1000) {
-        //std::cout << "<1000 good" << std::endl;
-        return true;
-    }
-    else if (RealEnd - RealStart < 2000) {
-        
-        if (RP_support_D(currentState, OneIndelEvent, RealStart, RealEnd)) {
-            //std::cout << "<2000, true " << OneIndelEvent.End - OneIndelEvent.Start << std::endl;
-            return true;   
-        }
-        else {
-            //std::cout << "<2000, false " << OneIndelEvent.End - OneIndelEvent.Start << std::endl;
-            return false;
-        }
-    }
-    else if (RP_support_D(currentState, OneIndelEvent, RealStart, RealEnd)) {
-        //std::cout << "entering > 2000" << std::endl;
-        int chromosomeID = g_genome.getChrID(OneIndelEvent.ChrName);
-        //std::cout << "chromosomeID " << chromosomeID << std::endl;
-        if (chromosomeID == -1) {
-            std::cout << "ID -1 " << OneIndelEvent.ChrName << " " << chromosomeID << std::endl;
-            return false;
-        }
-                
-        Genotyping OneDEL;
-        OneDEL.Type = "DEL";
-        OneDEL.ChrA = OneIndelEvent.ChrName;
-        OneDEL.ChrB = OneIndelEvent.ChrName;
-        OneDEL.CI_A = 50;
-        OneDEL.CI_B = 50;
-        OneDEL.PosA = RealStart;
-        OneDEL.PosB = RealEnd;
-        std::vector <unsigned> SampleIDs;
-        //std::cout << "Before SampleIDs.size() " << SampleIDs.size() << std::endl;
-        UpdateSampleID(currentState, GoodIndels, OneIndelEvent, SampleIDs);
-        //std::cout << "After SampleIDs.size() " << SampleIDs.size() << std::endl;
-        //g_genome.getChr(chromosomeID);
-        getRelativeCoverageForFiltering(chromosomeID, currentState, OneDEL, g_genome.getChr(chromosomeID), SampleIDs);
-        //std::cout << ">2000, true " << OneIndelEvent.End - OneIndelEvent.Start  << std::endl;
-        //std::cout << "After getRelativeCoverageForFiltering " << SampleIDs.size() << " " << OneDEL.RD_signals.size() << std::endl;
-        unsigned CountGoodSamples = 0;
-        for (unsigned RD_index = 0; RD_index < OneDEL.RD_signals.size(); RD_index++) {
-            if (OneDEL.RD_signals[RD_index] <= 1.3) CountGoodSamples++;
-            //std::cout << " " << std::fixed << OneDEL.RD_signals[RD_index];
-        }
-        if ((OneDEL.RD_signals.size() == 1 && CountGoodSamples == 1) || (OneDEL.RD_signals.size() > 1 && OneDEL.RD_signals.size() <= 4 && OneDEL.RD_signals.size() - CountGoodSamples <= 1) || (OneDEL.RD_signals.size() > 4 && (((float)CountGoodSamples / OneDEL.RD_signals.size()) > 0.66) ))
-            return true;
-        else return false;
-    }
-    
-    return false;
+bool IsGoodDeletion(std::vector < SPLIT_READ > & GoodIndels, Indel4output & OneIndelEvent, unsigned RealStart, unsigned RealEnd, ControlState& currentState)
+{
+   //std::cout << "Real Start and End: " << RealStart << " " << RealEnd
+   //<< " " << RP_support_D(currentState, OneIndelEvent, RealStart, RealEnd)
+   //<< std::endl;
+
+   //UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
+   return true;
+   if (RealEnd < RealStart) {
+      return false;
+   }
+   if (RealStart == 0) {
+      return false;
+   }
+
+   if (userSettings->pindelConfigFileAsInput() || userSettings->singlePindelFileAsInput() || userSettings->NormalSamples == false) {
+      return true;
+   }
+   //return true;
+   //std::cout << "in IsGoodDeletion RealStart " << RealStart << " RealEnd " << RealEnd << std::endl;
+   if (RealEnd < RealStart) {
+      return false;
+   }
+   //std::cout << "should be returned already, you should not see RealStart " << RealStart << " RealEnd " << RealEnd << std::endl;
+   if (RealEnd - RealStart < 1000) {
+      //std::cout << "<1000 good" << std::endl;
+      return true;
+   } else if (RealEnd - RealStart < 2000) {
+
+      if (RP_support_D(currentState, OneIndelEvent, RealStart, RealEnd)) {
+         //std::cout << "<2000, true " << OneIndelEvent.End - OneIndelEvent.Start << std::endl;
+         return true;
+      } else {
+         //std::cout << "<2000, false " << OneIndelEvent.End - OneIndelEvent.Start << std::endl;
+         return false;
+      }
+   } else if (RP_support_D(currentState, OneIndelEvent, RealStart, RealEnd)) {
+      //std::cout << "entering > 2000" << std::endl;
+      int chromosomeID = g_genome.getChrID(OneIndelEvent.ChrName);
+      //std::cout << "chromosomeID " << chromosomeID << std::endl;
+      if (chromosomeID == -1) {
+         std::cout << "ID -1 " << OneIndelEvent.ChrName << " " << chromosomeID << std::endl;
+         return false;
+      }
+
+      Genotyping OneDEL;
+      OneDEL.Type = "DEL";
+      OneDEL.ChrA = OneIndelEvent.ChrName;
+      OneDEL.ChrB = OneIndelEvent.ChrName;
+      OneDEL.CI_A = 50;
+      OneDEL.CI_B = 50;
+      OneDEL.PosA = RealStart;
+      OneDEL.PosB = RealEnd;
+      std::vector <unsigned> SampleIDs;
+      //std::cout << "Before SampleIDs.size() " << SampleIDs.size() << std::endl;
+      UpdateSampleID(currentState, GoodIndels, OneIndelEvent, SampleIDs);
+      //std::cout << "After SampleIDs.size() " << SampleIDs.size() << std::endl;
+      //g_genome.getChr(chromosomeID);
+      getRelativeCoverageForFiltering(chromosomeID, currentState, OneDEL, g_genome.getChr(chromosomeID), SampleIDs);
+      //std::cout << ">2000, true " << OneIndelEvent.End - OneIndelEvent.Start  << std::endl;
+      //std::cout << "After getRelativeCoverageForFiltering " << SampleIDs.size() << " " << OneDEL.RD_signals.size() << std::endl;
+      unsigned CountGoodSamples = 0;
+      for (unsigned RD_index = 0; RD_index < OneDEL.RD_signals.size(); RD_index++) {
+         if (OneDEL.RD_signals[RD_index] <= 1.3) {
+            CountGoodSamples++;
+         }
+         //std::cout << " " << std::fixed << OneDEL.RD_signals[RD_index];
+      }
+      if ((OneDEL.RD_signals.size() == 1 && CountGoodSamples == 1) || (OneDEL.RD_signals.size() > 1 && OneDEL.RD_signals.size() <= 4 && OneDEL.RD_signals.size() - CountGoodSamples <= 1) || (OneDEL.RD_signals.size() > 4 && (((float)CountGoodSamples / OneDEL.RD_signals.size()) > 0.66) )) {
+         return true;
+      } else {
+         return false;
+      }
+   }
+
+   return false;
 }
 
 void SortOutputD (ControlState& currentState, const unsigned &NumBoxes, const std::string & CurrentChr,
-             std::vector < SPLIT_READ > &Reads, std::vector < unsigned >Deletions[],
-             std::ofstream & DeletionOutf)
+                  std::vector < SPLIT_READ > &Reads, std::vector < unsigned >Deletions[],
+                  std::ofstream & DeletionOutf)
 {
    LOG_INFO(*logStream << "Sorting and outputing deletions ..." << std::endl);
    unsigned int DeletionsNum;
    //short CompareResult;
    //unsigned Temp4Exchange;
-    
+
 
    unsigned int GoodNum;
    std::vector < SPLIT_READ > GoodIndels;
    std::vector < Indel4output > IndelEvents;
-	//UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
-    //std::cout << "S1" << std::endl;
-    //std::cout << "here" << std::endl;
+   //UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
+   //std::cout << "S1" << std::endl;
+   //std::cout << "here" << std::endl;
    for (unsigned Box_index = 0; Box_index < NumBoxes; Box_index++) {
       LOG_DEBUG(*logStream << Box_index << "\t" << NumBoxes << "\t" << Deletions[Box_index].size() << std::endl);
-	//std::cout << "Box_index" << "\t" << Box_index << std::endl;
+      //std::cout << "Box_index" << "\t" << Box_index << std::endl;
       if (Deletions[Box_index].size () >= userSettings->NumRead2ReportCutOff) {
          //std::cout << "S2" << std::endl;
          DeletionsNum = Deletions[Box_index].size ();
-          /*
-          for (unsigned index = 0; index < DeletionsNum; index++) {
-              std::cout << "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$" << std::endl;
-              std::cout << Reads[Deletions[ Box_index ][index]];
-              std::cout << "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$" << std::endl;
-          }
-          */
-          //std::cout << "S3" << std::endl;
-          bubblesortReads( Reads, Deletions[ Box_index ] );
-          //std::cout << "S4" << std::endl;
-          markDuplicates( Reads, Deletions[ Box_index ] );
-          //std::cout << "S5" << std::endl;
+         /*
+         for (unsigned index = 0; index < DeletionsNum; index++) {
+             std::cout << "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$" << std::endl;
+             std::cout << Reads[Deletions[ Box_index ][index]];
+             std::cout << "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$" << std::endl;
+         }
+         */
+         //std::cout << "S3" << std::endl;
+         bubblesortReads( Reads, Deletions[ Box_index ] );
+         //std::cout << "S4" << std::endl;
+         markDuplicates( Reads, Deletions[ Box_index ] );
+         //std::cout << "S5" << std::endl;
          GoodIndels.clear ();
          IndelEvents.clear ();
-	 //GoodIndels.swap(Reads[Deletions[Box_index]);
+         //GoodIndels.swap(Reads[Deletions[Box_index]);
          for (unsigned int First = 0; First < DeletionsNum; First++) {
-		if (Reads[Deletions[Box_index][First]].UniqueRead)
-            		GoodIndels.push_back (Reads[Deletions[Box_index][First]]);
+            if (Reads[Deletions[Box_index][First]].UniqueRead) {
+               GoodIndels.push_back (Reads[Deletions[Box_index][First]]);
+            }
          }
-	 //sort(GoodIndels.begin(), GoodIndels.end(), compare);
+         //sort(GoodIndels.begin(), GoodIndels.end(), compare);
          //std::cout << "S6" << std::endl;
          GoodNum = GoodIndels.size ();
          LOG_DEBUG(*logStream << Box_index << " box read size " << GoodNum << std::endl);
@@ -1431,49 +1451,48 @@ void SortOutputD (ControlState& currentState, const unsigned &NumBoxes, const st
          OneIndelEvent.WhetherReport = true;
          LOG_DEBUG(*logStream << "here" << std::endl);
          //std::cout << "S7" << std::endl;
-	 //std::cout << OneIndelEvent.Start << " " << OneIndelEvent.End << " " << OneIndelEvent.ChrName << " " << OneIndelEvent.Support << " " << OneIndelEvent.BPLeft << " " << OneIndelEvent.BPRight << std::endl;
+         //std::cout << OneIndelEvent.Start << " " << OneIndelEvent.End << " " << OneIndelEvent.ChrName << " " << OneIndelEvent.Support << " " << OneIndelEvent.BPLeft << " " << OneIndelEvent.BPRight << std::endl;
          for (unsigned int GoodIndex = 1; GoodIndex < GoodNum; GoodIndex++) {
             if (GoodIndels[GoodIndex].BPLeft == OneIndelEvent.BPLeft
                   && GoodIndels[GoodIndex].BPRight == OneIndelEvent.BPRight
                   && GoodIndels[GoodIndex].FragName == OneIndelEvent.ChrName
                   && GoodIndels[GoodIndex].FarFragName == OneIndelEvent.ChrName) {
                OneIndelEvent.End = GoodIndex;
-            }
-            else {
+            } else {
                OneIndelEvent.RealStart = OneIndelEvent.BPLeft;
                OneIndelEvent.RealEnd = OneIndelEvent.BPRight;
                OneIndelEvent.Support =
                   OneIndelEvent.End - OneIndelEvent.Start + 1;
-		//std::cout << "before: " << CurrentChr.size() << " " << OneIndelEvent.RealStart << " " << OneIndelEvent.RealEnd << std::endl;
-		
+               //std::cout << "before: " << CurrentChr.size() << " " << OneIndelEvent.RealStart << " " << OneIndelEvent.RealEnd << std::endl;
+
                GetRealStart4Deletion (CurrentChr, OneIndelEvent.RealStart,
                                       OneIndelEvent.RealEnd);
-		//std::cout << "after: " << CurrentChr.size() << " " << OneIndelEvent.RealStart << " " << OneIndelEvent.RealEnd << std::endl;
-               	
-		IndelEvents.push_back (OneIndelEvent);
-            /*    std::cout << OneIndelEvent.RealStart << " "
-                          << OneIndelEvent.Start << " "
-                          << OneIndelEvent.End << " "
-                          << OneIndelEvent.RealEnd << " "
-                          << OneIndelEvent.BPLeft << " "
-                          << OneIndelEvent.BPRight << " " << OneIndelEvent.Support << std::endl;*/
+               //std::cout << "after: " << CurrentChr.size() << " " << OneIndelEvent.RealStart << " " << OneIndelEvent.RealEnd << std::endl;
+
+               IndelEvents.push_back (OneIndelEvent);
+               /*    std::cout << OneIndelEvent.RealStart << " "
+                             << OneIndelEvent.Start << " "
+                             << OneIndelEvent.End << " "
+                             << OneIndelEvent.RealEnd << " "
+                             << OneIndelEvent.BPLeft << " "
+                             << OneIndelEvent.BPRight << " " << OneIndelEvent.Support << std::endl;*/
                OneIndelEvent.Start = GoodIndex;
                OneIndelEvent.End = GoodIndex;
                OneIndelEvent.BPLeft = GoodIndels[GoodIndex].BPLeft;
                OneIndelEvent.BPRight = GoodIndels[GoodIndex].BPRight;
                OneIndelEvent.ChrName = GoodIndels[GoodIndex].FragName;
             }
-	 	//std::cout << OneIndelEvent.Start << " " << OneIndelEvent.End << " " << OneIndelEvent.ChrName << " " << OneIndelEvent.Support << " " << OneIndelEvent.BPLeft << " " << OneIndelEvent.BPRight << std::endl;
+            //std::cout << OneIndelEvent.Start << " " << OneIndelEvent.End << " " << OneIndelEvent.ChrName << " " << OneIndelEvent.Support << " " << OneIndelEvent.BPLeft << " " << OneIndelEvent.BPRight << std::endl;
          }
          //std::cout << "S8" << std::endl;
          OneIndelEvent.RealStart = OneIndelEvent.BPLeft;
          OneIndelEvent.RealEnd = OneIndelEvent.BPRight;
          // std::cout << OneIndelEvent.RealStart << " " << OneIndelEvent.RealEnd << std::endl;
          OneIndelEvent.Support = OneIndelEvent.End - OneIndelEvent.Start + 1;
-		//std::cout << "before: " << CurrentChr.size() << " " << OneIndelEvent.RealStart << " " << OneIndelEvent.RealEnd << std::endl;
+         //std::cout << "before: " << CurrentChr.size() << " " << OneIndelEvent.RealStart << " " << OneIndelEvent.RealEnd << std::endl;
          GetRealStart4Deletion (CurrentChr, OneIndelEvent.RealStart,
                                 OneIndelEvent.RealEnd);
-		//std::cout << "after: " << CurrentChr.size() << " " << OneIndelEvent.RealStart << " " << OneIndelEvent.RealEnd << std::endl;
+         //std::cout << "after: " << CurrentChr.size() << " " << OneIndelEvent.RealStart << " " << OneIndelEvent.RealEnd << std::endl;
          IndelEvents.push_back (OneIndelEvent);
          LOG_DEBUG(*logStream << "IndelEvent: " << IndelEvents.size() << std::endl);
 
@@ -1510,26 +1529,24 @@ void SortOutputD (ControlState& currentState, const unsigned &NumBoxes, const st
                         }
                      }
                   }
-                  */ 
+                  */
                   // report max one
                   LOG_DEBUG(*logStream << "max" << std::endl);
-                   //std::cout << "current D " << RealStart << " " << RealEnd << " " << RealEnd - RealStart << " " << IndelEvents[EventIndex].Support << " " << IsGoodDeletion(GoodIndels, IndelEvents[EventIndex], RealStart, RealEnd, currentState) << std::endl;
-                //std::cout << EventIndex << " " << IsGoodDeletion(GoodIndels, IndelEvents[EventIndex], RealStart, RealEnd, currentState) << std::endl;  
-		if (IndelEvents[EventIndex].Support >= userSettings->NumRead2ReportCutOff && IsGoodDeletion(GoodIndels, IndelEvents[EventIndex], RealStart, RealEnd, currentState))
-                  {
-                      //std::cout << "passed IsGoodDeletion" << std::endl;
+                  //std::cout << "current D " << RealStart << " " << RealEnd << " " << RealEnd - RealStart << " " << IndelEvents[EventIndex].Support << " " << IsGoodDeletion(GoodIndels, IndelEvents[EventIndex], RealStart, RealEnd, currentState) << std::endl;
+                  //std::cout << EventIndex << " " << IsGoodDeletion(GoodIndels, IndelEvents[EventIndex], RealStart, RealEnd, currentState) << std::endl;
+                  if (IndelEvents[EventIndex].Support >= userSettings->NumRead2ReportCutOff && IsGoodDeletion(GoodIndels, IndelEvents[EventIndex], RealStart, RealEnd, currentState)) {
+                     //std::cout << "passed IsGoodDeletion" << std::endl;
                      LOG_DEBUG(*logStream << "aa" << std::endl);
                      // std::cout << "aa" << std::endl;
                      if (GoodIndels[IndelEvents[EventIndex].Start].IndelSize < userSettings->BalanceCutoff) {
                         LOG_DEBUG(*logStream << "ba" << std::endl);
-                         //std::cout << "ba" << std::endl;
+                        //std::cout << "ba" << std::endl;
                         OutputDeletions (GoodIndels, CurrentChr, IndelEvents[EventIndex].Start, IndelEvents[EventIndex].End, RealStart,
-									RealEnd, DeletionOutf);
+                                         RealEnd, DeletionOutf);
                         deletionFileData.increaseTemplateSvCounter();
                         LOG_DEBUG(*logStream << "bb" << std::endl);
                         //std::cout << "bb" << std::endl;
-                     }
-                     else if (ReportEvent( GoodIndels, IndelEvents[EventIndex].Start, IndelEvents[EventIndex].End)) {
+                     } else if (ReportEvent( GoodIndels, IndelEvents[EventIndex].Start, IndelEvents[EventIndex].End)) {
                         LOG_DEBUG(*logStream << "ca" << std::endl);
                         //std::cout << "ca" << std::endl;
                         //std::cout << "there 1" << std::endl;
@@ -1538,7 +1555,7 @@ void SortOutputD (ControlState& currentState, const unsigned &NumBoxes, const st
                         //std::cout << "there 2" << std::endl;
                         deletionFileData.increaseTemplateSvCounter();
                         LOG_DEBUG(*logStream << "cb" << std::endl);
-                         //std::cout << "cb" << std::endl;
+                        //std::cout << "cb" << std::endl;
                      }
                   }
                }
@@ -1548,21 +1565,21 @@ void SortOutputD (ControlState& currentState, const unsigned &NumBoxes, const st
          //std::cout << "S9" << std::endl;
       }												// if (!Deletions[Box_index].empty())
    }														// for (unsigned Box_index = 0; Box_index < NumBoxes; Box_index++)
-    //std::cout << "there" << std::endl;
+   //std::cout << "there" << std::endl;
    LOG_INFO(*logStream << "Deletions: " << deletionFileData.getTemplateSvCounter() << std::endl << std::endl);
 }
 
 void SortOutputInv (ControlState& currentState, const unsigned &NumBoxes, const std::string & CurrentChr,
-               std::vector < SPLIT_READ > &Reads, std::vector < unsigned >Inv[],
-               std::ofstream & InvOutf)
+                    std::vector < SPLIT_READ > &Reads, std::vector < unsigned >Inv[],
+                    std::ofstream & InvOutf)
 {
    OutputSorter os(NumBoxes, CurrentChr, InvOutf);
    os.SortAndOutputInversions(currentState, Reads, Inv);
 }
 
 void SortOutputInv_NT (ControlState& currentState, const unsigned &NumBoxes, const std::string & CurrentChr,
-                  std::vector < SPLIT_READ > &Reads, std::vector < unsigned >Inv[],
-                  std::ofstream & InvOutf)
+                       std::vector < SPLIT_READ > &Reads, std::vector < unsigned >Inv[],
+                       std::ofstream & InvOutf)
 {
    OutputSorter os(NumBoxes, CurrentChr, InvOutf);
    os.SortAndOutputNonTemplateInversions(currentState, Reads, Inv);
@@ -1599,7 +1616,7 @@ void OutputShortInversion (std::vector < SPLIT_READ > &supportingReads,
       if (NumSupportPerTag[i].NumUPlus + NumSupportPerTag[i].NumUMinus) {
          ++NumU_SupSamples;
       }
-		NumberOfReads += NumSupportPerTag[i].NumPlus + NumSupportPerTag[i].NumMinus;
+      NumberOfReads += NumSupportPerTag[i].NumPlus + NumSupportPerTag[i].NumMinus;
       Num_U_Reads += NumSupportPerTag[i].NumUPlus + NumSupportPerTag[i].NumUMinus;
    }
 
@@ -1627,29 +1644,27 @@ void OutputShortInversion (std::vector < SPLIT_READ > &supportingReads,
 
    InversionOutF << "\t" << g_sampleNames.size() << "\tNumSupSamples " << NumberSupSamples << "\t" <<
                  NumU_SupSamples;
-    
-    std::vector <int> CoverageStart, CoverageEnd; //if (!(TDs[C_S].BPLeft + 2 >= g_RegionStart &&  TDs[C_S].BPRight + 2 < g_RegionEnd)) return;
-    if (supportingReads[indexOfFirstRead].BPLeft + 2 >= g_RegionStart && supportingReads[indexOfFirstRead].BPLeft + 2 < g_RegionEnd) {
-        for (unsigned short i = 0; i < g_sampleNames.size (); i++) {
-            CoverageStart.push_back(g_RefCoverageRegion[supportingReads[indexOfFirstRead].BPLeft + 2 - g_RegionStart].RefCoveragePerSample[i]);
-        }
-    }
-    else {
-        for (unsigned short i = 0; i < g_sampleNames.size (); i++) {
-            CoverageStart.push_back(-1);
-        }
-    }
-    if (supportingReads[indexOfFirstRead].BPRight > g_RegionStart && supportingReads[indexOfFirstRead].BPRight < g_RegionEnd) {
-        for (unsigned short i = 0; i < g_sampleNames.size (); i++) {
-            CoverageEnd.push_back(g_RefCoverageRegion[supportingReads[indexOfFirstRead].BPRight - g_RegionStart].RefCoveragePerSample[i]);
-        }
-    }
-    else {
-        for (unsigned short i = 0; i < g_sampleNames.size (); i++) {
-            CoverageEnd.push_back(-1);
-        }
-    }
-    
+
+   std::vector <int> CoverageStart, CoverageEnd; //if (!(TDs[C_S].BPLeft + 2 >= g_RegionStart &&  TDs[C_S].BPRight + 2 < g_RegionEnd)) return;
+   if (supportingReads[indexOfFirstRead].BPLeft + 2 >= g_RegionStart && supportingReads[indexOfFirstRead].BPLeft + 2 < g_RegionEnd) {
+      for (unsigned short i = 0; i < g_sampleNames.size (); i++) {
+         CoverageStart.push_back(g_RefCoverageRegion[supportingReads[indexOfFirstRead].BPLeft + 2 - g_RegionStart].RefCoveragePerSample[i]);
+      }
+   } else {
+      for (unsigned short i = 0; i < g_sampleNames.size (); i++) {
+         CoverageStart.push_back(-1);
+      }
+   }
+   if (supportingReads[indexOfFirstRead].BPRight > g_RegionStart && supportingReads[indexOfFirstRead].BPRight < g_RegionEnd) {
+      for (unsigned short i = 0; i < g_sampleNames.size (); i++) {
+         CoverageEnd.push_back(g_RefCoverageRegion[supportingReads[indexOfFirstRead].BPRight - g_RegionStart].RefCoveragePerSample[i]);
+      }
+   } else {
+      for (unsigned short i = 0; i < g_sampleNames.size (); i++) {
+         CoverageEnd.push_back(-1);
+      }
+   }
+
    for (unsigned short i = 0; i < g_sampleNames.size (); i++)
       InversionOutF << "\t" << indexToSampleMap[i]
                     << " " << CoverageStart[i] << " " << CoverageEnd[i]
@@ -1671,8 +1686,7 @@ void OutputShortInversion (std::vector < SPLIT_READ > &supportingReads,
       }
       if (supportingReads[GoodIndex].MatchedD == Minus) {
          InversionOutF << supportingReads[GoodIndex].getUnmatchedSeq() << "\t";
-      }
-      else {
+      } else {
          InversionOutF << ReverseComplement (supportingReads[GoodIndex].getUnmatchedSeq()) << "\t";
       }
       InversionOutF << "\t" << supportingReads[GoodIndex].MatchedD << "\t" << supportingReads[GoodIndex].MatchedRelPos << "\t" << supportingReads[GoodIndex].MS << "\t"
@@ -1698,7 +1712,7 @@ void SortOutputDI (ControlState& currentState, const unsigned &NumBoxes, const s
 {
    LOG_INFO(*logStream << "Sorting and outputing deletions with non-template sequences ..." <<
             std::endl);
-    std::cout << "Added: Sorting and outputing deletions with non-template sequences ..." << std::endl;
+   std::cout << "Added: Sorting and outputing deletions with non-template sequences ..." << std::endl;
    unsigned int DINum;
    short CompareResult;
    unsigned Temp4Exchange;
@@ -1706,41 +1720,37 @@ void SortOutputDI (ControlState& currentState, const unsigned &NumBoxes, const s
    unsigned int GoodNum;
    std::vector < SPLIT_READ > GoodIndels;
    std::vector < Indel4output > IndelEvents;
-	//UserDefinedSettings *userSettings = UserDefinedSettings::Instance();
+   //UserDefinedSettings *userSettings = UserDefinedSettings::Instance();
 
    for (unsigned Box_index = 0; Box_index < NumBoxes; Box_index++) {
       LOG_DEBUG(*logStream << "Box_index: "   << Box_index << std::endl);
       //if (DI[Box_index].size ())
-       //std::cout << Box_index << " " << DI[Box_index].size () << std::endl;
+      //std::cout << Box_index << " " << DI[Box_index].size () << std::endl;
       if (DI[Box_index].size () >= userSettings->NumRead2ReportCutOff) {
          DINum = DI[Box_index].size ();
          for (unsigned int First = 0; First < DINum - 1; First++) {
             {
                for (unsigned int Second = First + 1; Second < DINum; Second++) {
-                  {  
+                  {
                      CompareResult = 0;
                      if (Reads[DI[Box_index][First]].BPLeft < Reads[DI[Box_index][Second]].BPLeft) {
                         continue;
-                     }
-                     else if (Reads[DI[Box_index][First]].BPLeft > Reads[DI[Box_index][Second]].BPLeft) {
+                     } else if (Reads[DI[Box_index][First]].BPLeft > Reads[DI[Box_index][Second]].BPLeft) {
                         CompareResult = 1;
-                     }
-                     else if (Reads[DI[Box_index][First]].BPLeft == Reads[DI[Box_index][Second]].BPLeft) {
+                     } else if (Reads[DI[Box_index][First]].BPLeft == Reads[DI[Box_index][Second]].BPLeft) {
                         if (Reads[DI[Box_index][First]].BPRight < Reads[DI[Box_index][Second]].BPRight) {
                            continue;
-                        }
-                        else if (Reads[DI[Box_index][First]].BPRight > Reads[DI[Box_index][Second]].BPRight) {
+                        } else if (Reads[DI[Box_index][First]].BPRight > Reads[DI[Box_index][Second]].BPRight) {
                            CompareResult = 1;
-                        }
-                        else {
+                        } else {
                            if (Reads[DI[Box_index][First]].NT_size < Reads[DI[Box_index][Second]].NT_size) {
                               continue;
-                           }
-                           else if (Reads[DI[Box_index][First]].NT_size >
-                                    Reads[DI[Box_index][Second]].NT_size) {
+                           } else if (Reads[DI[Box_index][First]].NT_size >
+                                      Reads[DI[Box_index][Second]].NT_size) {
+                              CompareResult = 1;
+                           } else if (Reads[DI[Box_index][First]].BP > Reads[DI[Box_index][Second]].BP) {
                               CompareResult = 1;
                            }
-                           else if (Reads[DI[Box_index][First]].BP > Reads[DI[Box_index][Second]].BP) CompareResult = 1; 
                         }
                      }
                      if (CompareResult == 1) {
@@ -1752,26 +1762,28 @@ void SortOutputDI (ControlState& currentState, const unsigned &NumBoxes, const s
                }
             }
          }
-          for (unsigned int First = 0; First < DINum - 1; First++) {
-              for (unsigned int Second = First + 1; Second < DINum; Second++) {
-                  if (Reads[DI[Box_index][First]].getReadLength() == Reads[DI[Box_index][Second]].getReadLength()) {
-                      if (Reads[DI[Box_index][First]].LeftMostPos ==
-                          Reads[DI[Box_index][Second]].LeftMostPos || Reads[DI[Box_index][First]].LeftMostPos + Reads[DI[Box_index][First]].getReadLength() ==
-                          Reads[DI[Box_index][Second]].LeftMostPos + Reads[DI[Box_index][Second]].getReadLength()) {
-                          if (Reads[DI[Box_index][First]].MatchedD == Reads[DI[Box_index][Second]].MatchedD)
-                          Reads[DI[Box_index][Second]].UniqueRead = false;
-                      }
+         for (unsigned int First = 0; First < DINum - 1; First++) {
+            for (unsigned int Second = First + 1; Second < DINum; Second++) {
+               if (Reads[DI[Box_index][First]].getReadLength() == Reads[DI[Box_index][Second]].getReadLength()) {
+                  if (Reads[DI[Box_index][First]].LeftMostPos ==
+                        Reads[DI[Box_index][Second]].LeftMostPos || Reads[DI[Box_index][First]].LeftMostPos + Reads[DI[Box_index][First]].getReadLength() ==
+                        Reads[DI[Box_index][Second]].LeftMostPos + Reads[DI[Box_index][Second]].getReadLength()) {
+                     if (Reads[DI[Box_index][First]].MatchedD == Reads[DI[Box_index][Second]].MatchedD) {
+                        Reads[DI[Box_index][Second]].UniqueRead = false;
+                     }
                   }
-              }
-          }
+               }
+            }
+         }
          GoodIndels.clear ();
          IndelEvents.clear ();
 
          for (unsigned int First = 0; First < DINum; First++) {
-		if (Reads[DI[Box_index][First]].UniqueRead)
-            		GoodIndels.push_back (Reads[DI[Box_index][First]]);
+            if (Reads[DI[Box_index][First]].UniqueRead) {
+               GoodIndels.push_back (Reads[DI[Box_index][First]]);
+            }
          }
-	 //sort(GoodIndels.begin(), GoodIndels.end(), compare);
+         //sort(GoodIndels.begin(), GoodIndels.end(), compare);
          GoodNum = GoodIndels.size ();
          LOG_DEBUG(*logStream << Box_index << " " << GoodNum << std::endl);
          if (GoodNum == 0) {
@@ -1793,8 +1805,7 @@ void SortOutputDI (ControlState& currentState, const unsigned &NumBoxes, const s
                   OneIndelEvent.IndelSize
                   && GoodIndels[GoodIndex].NT_size == OneIndelEvent.NT_size) {
                OneIndelEvent.End = GoodIndex;
-            }
-            else {
+            } else {
                IndelEvents.push_back (OneIndelEvent);
                OneIndelEvent.Start = GoodIndex;
                OneIndelEvent.End = GoodIndex;
@@ -1819,11 +1830,10 @@ void SortOutputDI (ControlState& currentState, const unsigned &NumBoxes, const s
                   if (IsInversion(GoodIndels[IndelEvents[EventIndex].Start], CurrentChr )) {
                      OutputShortInversion(GoodIndels, CurrentChr,IndelEvents[EventIndex].Start,
                                           IndelEvents[EventIndex].End,RealStart, RealEnd, InvOutf);
-                      //std::cout << "Small inv " << IndelEvents[EventIndex].End - IndelEvents[EventIndex].Start + 1 << std::endl;
+                     //std::cout << "Small inv " << IndelEvents[EventIndex].End - IndelEvents[EventIndex].Start + 1 << std::endl;
                      // increase the number of inversion instances in the OutputShortInversion itself; it'd add
                      // needless complexity here.
-                  }
-                  else if (IsGoodDeletion(GoodIndels, IndelEvents[EventIndex], RealStart, RealEnd, currentState)) {
+                  } else if (IsGoodDeletion(GoodIndels, IndelEvents[EventIndex], RealStart, RealEnd, currentState)) {
                      OutputDI (GoodIndels, CurrentChr,IndelEvents[EventIndex].Start, IndelEvents[EventIndex].End,
                                RealStart, RealEnd, DIOutf);
                      deletionFileData.increaseNonTemplateSvCounter();
@@ -1842,15 +1852,15 @@ void SortOutputDI (ControlState& currentState, const unsigned &NumBoxes, const s
 
 void SortOutputLI (ControlState& currentState, const std::string & CurrentChr, std::vector < SPLIT_READ > &Reads, const SearchWindow& window, const std::string& filename)
 {
-	//std::cout << "entering SortOutputLI" << std::endl;
+   //std::cout << "entering SortOutputLI" << std::endl;
    unsigned UP_Close_index;
    unsigned temp_AbsLoc;
    unsigned int LI_BORDER_BUFFER = 4 * g_maxInsertSize;
-	//UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
-	time_t Time_LI_S, Time_LI_E;
+   //UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
+   time_t Time_LI_S, Time_LI_E;
    Time_LI_S = time(NULL);
 
-	std::ofstream LargeInsertionOutf( filename.c_str(), std::ios::app);
+   std::ofstream LargeInsertionOutf( filename.c_str(), std::ios::app);
    *logStream << "LI: maxInsertSize: " << g_maxInsertSize << std::endl;
 
    unsigned int absStartLIWindow = g_SpacerBeforeAfter + window.getStart();
@@ -1860,7 +1870,7 @@ void SortOutputLI (ControlState& currentState, const std::string & CurrentChr, s
       absEndLIWindow = CurrentChr.size() - g_SpacerBeforeAfter;
    }
 
-	//std::cout << "SortOutputLI:1" << std::endl;
+   //std::cout << "SortOutputLI:1" << std::endl;
    unsigned int absStartBuffered = absStartLIWindow - LI_BORDER_BUFFER;
    unsigned int absEndBuffered = absEndLIWindow + LI_BORDER_BUFFER;
 
@@ -1886,8 +1896,8 @@ void SortOutputLI (ControlState& currentState, const std::string & CurrentChr, s
       }
    }
 
-	
-	//std::cout << "SortOutputLI:2" << std::endl;
+
+   //std::cout << "SortOutputLI:2" << std::endl;
 
    std::vector < LI_Pos > LI_Positions;
    LI_Pos temp_LI_pos;
@@ -1895,7 +1905,7 @@ void SortOutputLI (ControlState& currentState, const std::string & CurrentChr, s
    int LI_Positions_Size = 0;
    bool SkipPlus;
 
-	//std::cout << "SortOutputLI:3" << std::endl;
+   //std::cout << "SortOutputLI:3" << std::endl;
    for (unsigned int Index_Minus = absStartBuffered; Index_Minus < absEndBuffered; Index_Minus++) {
       SkipPlus = false;
       for (unsigned int MaskedPosIndexMinus = Index_Minus + 10;
@@ -1932,7 +1942,7 @@ void SortOutputLI (ControlState& currentState, const std::string & CurrentChr, s
    }
 
 
-	//std::cout << "SortOutputLI:4" << std::endl;
+   //std::cout << "SortOutputLI:4" << std::endl;
 
    LOG_DEBUG(*logStream << "LI: " << LI_Positions.size() << std::endl);
    static int Count_LI = 0;
@@ -1952,14 +1962,13 @@ void SortOutputLI (ControlState& currentState, const std::string & CurrentChr, s
       if (Reads[Index].MatchedD == Plus) {
          LI_Positions[EventIndex_Pos[temp_AbsLoc]].Plus_Reads.
          push_back (Index);
-      }
-      else {
+      } else {
          LI_Positions[EventIndex_Pos[temp_AbsLoc]].Minus_Reads.
          push_back (Index);
       }
    }
 
-	//std::cout << "SortOutputLI:4" << std::endl;
+   //std::cout << "SortOutputLI:4" << std::endl;
    std::vector < SPLIT_READ > temp_Plus_Reads, temp_Minus_Reads;
 
    bool temp_BalancedPlus_Plus, temp_BalancedPlus_Minus,
@@ -1994,9 +2003,8 @@ void SortOutputLI (ControlState& currentState, const std::string & CurrentChr, s
             temp_Minus_Reads[i].UP_Close[UP_Close_index].LengthStr;
          if ((float) temp_LengthStr > temp_Minus_Reads[i].getReadLength() * 0.5) {
             temp_BalancedMinus_Plus = true;
-         }
-         else if ((float) temp_LengthStr <
-                  temp_Minus_Reads[i].getReadLength() * 0.5) {
+         } else if ((float) temp_LengthStr <
+                    temp_Minus_Reads[i].getReadLength() * 0.5) {
             temp_BalancedMinus_Minus = true;
          }
       }
@@ -2010,9 +2018,8 @@ void SortOutputLI (ControlState& currentState, const std::string & CurrentChr, s
             temp_Plus_Reads[i].UP_Close[UP_Close_index].LengthStr;
          if ((float) temp_LengthStr > temp_Plus_Reads[i].getReadLength() * 0.5) {
             temp_BalancedPlus_Plus = true;
-         }
-         else if ((float) temp_LengthStr <
-                  temp_Plus_Reads[i].getReadLength() * 0.5) {
+         } else if ((float) temp_LengthStr <
+                    temp_Plus_Reads[i].getReadLength() * 0.5) {
             temp_BalancedPlus_Minus = true;
          }
       }
@@ -2034,7 +2041,7 @@ void SortOutputLI (ControlState& currentState, const std::string & CurrentChr, s
          NumSupportPerTagPlus[tagIndex]++;
       }
 
-	//std::cout << "SortOutputLI:6" << std::endl;
+      //std::cout << "SortOutputLI:6" << std::endl;
       bool SupportedByOneSample = false;
       for (unsigned short j = 0; j < g_sampleNames.size (); j++) {
          LOG_DEBUG(*logStream << NumSupportPerTagPlus[j] << "\t" << NumSupportPerTagMinus[j] << std::endl);
@@ -2044,7 +2051,7 @@ void SortOutputLI (ControlState& currentState, const std::string & CurrentChr, s
          }
       }
 
-	//std::cout << "SortOutputLI:7" << std::endl;
+      //std::cout << "SortOutputLI:7" << std::endl;
       short PositiveBool = 0;
       if (temp_BalancedPlus_Plus) {
          PositiveBool++;
@@ -2059,7 +2066,7 @@ void SortOutputLI (ControlState& currentState, const std::string & CurrentChr, s
          PositiveBool++;
       }
 
-	//std::cout << "SortOutputLI:8" << std::endl;
+      //std::cout << "SortOutputLI:8" << std::endl;
       if (SupportedByOneSample && PositiveBool >= 1) {
          {
             reportBreakDancerEvent(temp_Plus_Reads[0].FragName, LI_Positions[LI_index].
@@ -2076,15 +2083,15 @@ void SortOutputLI (ControlState& currentState, const std::string & CurrentChr, s
                                size () << "\t" << LI_Positions[LI_index].Minus_Pos -
                                g_SpacerBeforeAfter +
                                1 << "\t- " << temp_Minus_Reads.size ();
-             
+
             for (unsigned short i = 0; i < g_sampleNames.size (); i++) {
-                LargeInsertionOutf << "\t" << indexToSampleMap[i] 
-                                   << " + " << NumSupportPerTagPlus[i]
-                                   << " - " << NumSupportPerTagMinus[i];
+               LargeInsertionOutf << "\t" << indexToSampleMap[i]
+                                  << " + " << NumSupportPerTagPlus[i]
+                                  << " - " << NumSupportPerTagMinus[i];
             }
             LargeInsertionOutf << std::endl;
 
-            LargeInsertionOutf << (CurrentChr.substr (LI_Positions[LI_index].Plus_Pos - g_reportLength + 1, g_reportLength)) 
+            LargeInsertionOutf << (CurrentChr.substr (LI_Positions[LI_index].Plus_Pos - g_reportLength + 1, g_reportLength))
                                << Cap2Low (CurrentChr.substr (LI_Positions[LI_index].Plus_Pos + 1, g_reportLength)) << std::endl;
             for (unsigned int i = 0; i < temp_Plus_Reads.size (); i++) {
                UP_Close_index = temp_Plus_Reads[i].UP_Close.size () - 1;
@@ -2097,7 +2104,7 @@ void SortOutputLI (ControlState& currentState, const std::string & CurrentChr, s
                                   << temp_Plus_Reads[i].MatchedD << "\t"
                                   << temp_Plus_Reads[i].MatchedRelPos << "\t"
                                   << temp_Plus_Reads[i].MS << "\t"
-                                  << temp_Plus_Reads[i].Tag << "\t" 
+                                  << temp_Plus_Reads[i].Tag << "\t"
                                   << temp_Plus_Reads[i].Name << std::endl;
             }
 
@@ -2121,36 +2128,36 @@ void SortOutputLI (ControlState& currentState, const std::string & CurrentChr, s
                      temp_Minus_Reads[i].getReadLength(); j++) {
                   LargeInsertionOutf << " ";
                }
-               LargeInsertionOutf << (temp_Minus_Reads[i].getUnmatchedSeq()) 
+               LargeInsertionOutf << (temp_Minus_Reads[i].getUnmatchedSeq())
                                   << temp_Minus_Reads[i].MatchedD << "\t"
                                   << temp_Minus_Reads[i].MatchedRelPos << "\t"
                                   << temp_Minus_Reads[i].MS << "\t"
-                                  << temp_Minus_Reads[i].Tag << "\t" 
-                                  << temp_Minus_Reads[i].Name << std::endl;                
+                                  << temp_Minus_Reads[i].Tag << "\t"
+                                  << temp_Minus_Reads[i].Name << std::endl;
             }
          }
 
       }
    }
    LOG_INFO(*logStream << "Breakpoints for large insertions (LI): " << Count_LI << std::endl << std::endl);
-	LargeInsertionOutf.close();
+   LargeInsertionOutf.close();
    Time_LI_E = time(NULL);
-	*logStream << "Mining, Sorting and output LI results: " << (unsigned int) difftime(Time_LI_E, Time_LI_S) << " seconds." << std::endl << std::endl;
+   *logStream << "Mining, Sorting and output LI results: " << (unsigned int) difftime(Time_LI_E, Time_LI_S) << " seconds." << std::endl << std::endl;
 }
 
 /** writes (appends) breakpoints to the file with the name "filename" */
-void SortOutputRest (ControlState& currentState, const std::string & CurrentChr, 
-                std::vector < SPLIT_READ > &Reads,
-               // std::vector < SPLIT_READ > &BP_Reads, 
-					const SearchWindow& window,
-					 const std::string& filename)
+void SortOutputRest (ControlState& currentState, const std::string & CurrentChr,
+                     std::vector < SPLIT_READ > &Reads,
+                     // std::vector < SPLIT_READ > &BP_Reads,
+                     const SearchWindow& window,
+                     const std::string& filename)
 {
    SPLIT_READ one_BP_read;
    unsigned UP_Close_index;
    unsigned temp_AbsLoc;
    LOG_DEBUG(*logStream << "1" << std::endl);
    // find LI combinations
-	time_t Time_BP_S, Time_BP_E;
+   time_t Time_BP_S, Time_BP_E;
    Time_BP_S = time(NULL);
 
 
@@ -2194,103 +2201,101 @@ void SortOutputRest (ControlState& currentState, const std::string & CurrentChr,
 
    bool SkipThisPos;
    for (unsigned int Index = absStartBuffered; Index < absEndBuffered; Index++) {
-         SkipThisPos = false;
-         if (SkipThisPos == true) {
-            continue;
-         }
-         if (plus_LI_Pos[Index] >= NumRead2ReportCutOff_BP) {
-            temp_Rest_pos.Strand = Plus;
-            temp_Rest_pos.Pos = Index;
-            Rest_Positions.push_back (temp_Rest_pos);
-         }
-         if (minus_LI_Pos[Index] >= NumRead2ReportCutOff_BP) {
-            temp_Rest_pos.Strand = Minus;
-            temp_Rest_pos.Pos = Index;
-            Rest_Positions.push_back (temp_Rest_pos);
-         }
+      SkipThisPos = false;
+      if (SkipThisPos == true) {
+         continue;
+      }
+      if (plus_LI_Pos[Index] >= NumRead2ReportCutOff_BP) {
+         temp_Rest_pos.Strand = Plus;
+         temp_Rest_pos.Pos = Index;
+         Rest_Positions.push_back (temp_Rest_pos);
+      }
+      if (minus_LI_Pos[Index] >= NumRead2ReportCutOff_BP) {
+         temp_Rest_pos.Strand = Minus;
+         temp_Rest_pos.Pos = Index;
+         Rest_Positions.push_back (temp_Rest_pos);
+      }
    }
 
-      // find supporting reads
-      for (unsigned Index = 0; Index < Reads.size (); Index++) {
-         if (Reads[Index].Used || !Reads[Index].UP_Far.empty ()) {
-            continue;
-         }
-         UP_Close_index = Reads[Index].UP_Close.size () - 1;
-         temp_AbsLoc = Reads[Index].UP_Close[UP_Close_index].AbsLoc;
-         for (unsigned Pos_index = 0; Pos_index < Rest_Positions.size ();
+   // find supporting reads
+   for (unsigned Index = 0; Index < Reads.size (); Index++) {
+      if (Reads[Index].Used || !Reads[Index].UP_Far.empty ()) {
+         continue;
+      }
+      UP_Close_index = Reads[Index].UP_Close.size () - 1;
+      temp_AbsLoc = Reads[Index].UP_Close[UP_Close_index].AbsLoc;
+      for (unsigned Pos_index = 0; Pos_index < Rest_Positions.size ();
             Pos_index++) {
-            if (Reads[Index].MatchedD == Rest_Positions[Pos_index].Strand) {
-               if (temp_AbsLoc == Rest_Positions[Pos_index].Pos) {
-                  Reads[Index].Used = true;
-                  Rest_Positions[Pos_index].Pos_Reads.push_back (Index);	// copy index to save memory
-               }
+         if (Reads[Index].MatchedD == Rest_Positions[Pos_index].Strand) {
+            if (temp_AbsLoc == Rest_Positions[Pos_index].Pos) {
+               Reads[Index].Used = true;
+               Rest_Positions[Pos_index].Pos_Reads.push_back (Index);	// copy index to save memory
             }
          }
       }
+   }
 
    LOG_DEBUG(*logStream << "Other unassigned breakpoints (BP): " << Rest_Positions.size() << std::endl << std::endl);
    int Count_BP = 0;
    bool temp_BalancedPlus, temp_BalancedMinus;
    short temp_LengthStr;
 
-    std::map<std::string,int> sampleToIndexMap;
-    std::map<int,std::string> indexToSampleMap;
-    createMaps( sampleToIndexMap, indexToSampleMap) ;
+   std::map<std::string,int> sampleToIndexMap;
+   std::map<int,std::string> indexToSampleMap;
+   createMaps( sampleToIndexMap, indexToSampleMap) ;
    for (unsigned LI_index = 0; LI_index < Rest_Positions.size (); LI_index++) {
       temp_BalancedPlus = false;
       temp_BalancedMinus = false;
       for (unsigned int i = 0; i < Rest_Positions[LI_index].Pos_Reads.size (); i++) {
-         SPLIT_READ & CurrentSupportingRead = Reads[Rest_Positions[LI_index].Pos_Reads[i]];  
+         SPLIT_READ & CurrentSupportingRead = Reads[Rest_Positions[LI_index].Pos_Reads[i]];
          UP_Close_index = CurrentSupportingRead.UP_Close.size () - 1;
          temp_LengthStr = CurrentSupportingRead.UP_Close[UP_Close_index].LengthStr;
          if ((float) temp_LengthStr > CurrentSupportingRead.getReadLength() * 0.5) {
             temp_BalancedPlus = true;
-         }
-         else if ((float) temp_LengthStr < CurrentSupportingRead.getReadLength() * 0.5) {
+         } else if ((float) temp_LengthStr < CurrentSupportingRead.getReadLength() * 0.5) {
             temp_BalancedMinus = true;
          }
       }
       if (temp_BalancedPlus && temp_BalancedMinus) {
          Count_BP++;
-          SupportPerSample NumSupportPerTag[g_sampleNames.size ()];
-          for (unsigned short i = 0; i < g_sampleNames.size (); i++) {
-              NumSupportPerTag[i].NumPlus = 0;
-              NumSupportPerTag[i].NumMinus = 0;
-          }
+         SupportPerSample NumSupportPerTag[g_sampleNames.size ()];
+         for (unsigned short i = 0; i < g_sampleNames.size (); i++) {
+            NumSupportPerTag[i].NumPlus = 0;
+            NumSupportPerTag[i].NumMinus = 0;
+         }
 
-          for (unsigned int readIndex = 0; readIndex < Rest_Positions[LI_index].Pos_Reads.size(); readIndex++) {
-             SPLIT_READ & CurrentSupportingRead = Reads[Rest_Positions[LI_index].Pos_Reads[readIndex]];
-             std::string currentTag = CurrentSupportingRead.Tag;
-             int tagIndex = sampleToIndexMap[ currentTag ];
-             if (CurrentSupportingRead.MatchedD == Plus)	{
-                NumSupportPerTag[tagIndex].NumPlus++;
-             }
-             else {
-                NumSupportPerTag[tagIndex].NumMinus++;
-             }
-          }
+         for (unsigned int readIndex = 0; readIndex < Rest_Positions[LI_index].Pos_Reads.size(); readIndex++) {
+            SPLIT_READ & CurrentSupportingRead = Reads[Rest_Positions[LI_index].Pos_Reads[readIndex]];
+            std::string currentTag = CurrentSupportingRead.Tag;
+            int tagIndex = sampleToIndexMap[ currentTag ];
+            if (CurrentSupportingRead.MatchedD == Plus)	{
+               NumSupportPerTag[tagIndex].NumPlus++;
+            } else {
+               NumSupportPerTag[tagIndex].NumMinus++;
+            }
+         }
 
-          
-          
-          
+
+
+
          if (Rest_Positions[LI_index].Strand == Plus) {
             reportBreakDancerEvent(Reads[Rest_Positions[LI_index].Pos_Reads[0]].FragName,  0, 0, -1, "BP", -1);
             Outf_Rest <<
                       "########################################################" <<
                       std::endl;
-            Outf_Rest << "ChrID " << Reads[Rest_Positions[LI_index].Pos_Reads[0]].FragName 
-                      << "\t" << Rest_Positions[LI_index].Pos - g_SpacerBeforeAfter + 1 
+            Outf_Rest << "ChrID " << Reads[Rest_Positions[LI_index].Pos_Reads[0]].FragName
+                      << "\t" << Rest_Positions[LI_index].Pos - g_SpacerBeforeAfter + 1
                       << "\t+ " << Rest_Positions[LI_index].Pos_Reads.size();
             for (unsigned short SampleIndex = 0; SampleIndex < g_sampleNames.size (); ++SampleIndex) {
-                Outf_Rest << "\t" << indexToSampleMap[SampleIndex] << " " << NumSupportPerTag[SampleIndex].NumPlus;
+               Outf_Rest << "\t" << indexToSampleMap[SampleIndex] << " " << NumSupportPerTag[SampleIndex].NumPlus;
             }
             Outf_Rest << std::endl;
 
-            Outf_Rest << (CurrentChr.substr (Rest_Positions[LI_index].Pos - g_reportLength + 1, g_reportLength)) 
+            Outf_Rest << (CurrentChr.substr (Rest_Positions[LI_index].Pos - g_reportLength + 1, g_reportLength))
                       << Cap2Low (CurrentChr.substr(Rest_Positions[LI_index].Pos + 1, g_reportLength))
                       << std::endl;
             for (unsigned int i = 0; i < Rest_Positions[LI_index].Pos_Reads.size(); i++) {
-               SPLIT_READ & CurrentSupportingRead = Reads[Rest_Positions[LI_index].Pos_Reads[i]]; 
+               SPLIT_READ & CurrentSupportingRead = Reads[Rest_Positions[LI_index].Pos_Reads[i]];
                UP_Close_index = CurrentSupportingRead.UP_Close.size () - 1;
                temp_LengthStr = CurrentSupportingRead.UP_Close[UP_Close_index].LengthStr;
                for (int j = 0; j < g_reportLength - temp_LengthStr; j++) {
@@ -2304,8 +2309,7 @@ void SortOutputRest (ControlState& currentState, const std::string & CurrentChr,
                          Tag << "\t" << CurrentSupportingRead.Name << std::endl;
             }
 
-         }
-         else {
+         } else {
             reportBreakDancerEvent(Reads[Rest_Positions[LI_index].Pos_Reads[0]].FragName,  0,  0, -1, "BP", -1);
             Outf_Rest <<
                       "########################################################" <<
@@ -2316,8 +2320,8 @@ void SortOutputRest (ControlState& currentState, const std::string & CurrentChr,
                       1 << "\t- " << Rest_Positions[LI_index].Pos_Reads.
                       size ();// << "\t" << std::endl;
             for (unsigned short SampleIndex = 0; SampleIndex < g_sampleNames.size (); ++SampleIndex) {
-                Outf_Rest << "\t" << indexToSampleMap[SampleIndex] << " " << NumSupportPerTag[SampleIndex].NumMinus;
-            } 
+               Outf_Rest << "\t" << indexToSampleMap[SampleIndex] << " " << NumSupportPerTag[SampleIndex].NumMinus;
+            }
             Outf_Rest << std::endl;
             Outf_Rest << Cap2Low (CurrentChr.
                                   substr (Rest_Positions[LI_index].Pos -
@@ -2330,7 +2334,7 @@ void SortOutputRest (ControlState& currentState, const std::string & CurrentChr,
                                                  g_reportLength))
                       << std::endl;
             for (unsigned int i = 0; i < Rest_Positions[LI_index].Pos_Reads.size (); i++) {
-                SPLIT_READ & CurrentSupportingRead = Reads[Rest_Positions[LI_index].Pos_Reads[i]];
+               SPLIT_READ & CurrentSupportingRead = Reads[Rest_Positions[LI_index].Pos_Reads[i]];
                UP_Close_index = CurrentSupportingRead.UP_Close.size () - 1;
                temp_LengthStr =
                   CurrentSupportingRead.UP_Close[UP_Close_index].LengthStr;
@@ -2348,462 +2352,522 @@ void SortOutputRest (ControlState& currentState, const std::string & CurrentChr,
       }
    }
    LOG_INFO(*logStream << "Other unassigned breakpoints (BP): " << Count_BP << std::endl << std::endl);
-	Outf_Rest.close();
+   Outf_Rest.close();
    Time_BP_E = time(NULL);
    *logStream << "Mining, Sorting and output BP results: " << (unsigned int) difftime(Time_BP_E, Time_BP_S) << " seconds." << std::endl << std::endl;
 }
 
-std::string GetConsensusInsertedStr(const std::vector <SPLIT_READ> & Reads, const int & StartIndex, const int & EndIndex) {
-    // InsertedStr
-    std::map<std::string,int> NT_str_2_count;
-    std::map<std::string,int>::iterator it;
-    for (int i = StartIndex; i <= EndIndex; i++) {
-        it = NT_str_2_count.find(Reads[i].NT_str);
-        if (it == NT_str_2_count.end()) {
-            NT_str_2_count[Reads[i].NT_str] = 1;
-        }
-        else it->second++;
-    }
-    int Max = 0;
-    std::string OutputStr = "";
-    for (std::map<std::string,int>::iterator it=NT_str_2_count.begin(); it!=NT_str_2_count.end(); it++ ) {
-        if (it->second > Max) {
-            Max = it->second;
-            OutputStr = it->first;
-        }
-    }
-    return OutputStr;
+std::string GetConsensusInsertedStr(const std::vector <SPLIT_READ> & Reads, const int & StartIndex, const int & EndIndex)
+{
+   // InsertedStr
+   std::map<std::string,int> NT_str_2_count;
+   std::map<std::string,int>::iterator it;
+   for (int i = StartIndex; i <= EndIndex; i++) {
+      it = NT_str_2_count.find(Reads[i].NT_str);
+      if (it == NT_str_2_count.end()) {
+         NT_str_2_count[Reads[i].NT_str] = 1;
+      } else {
+         it->second++;
+      }
+   }
+   int Max = 0;
+   std::string OutputStr = "";
+   for (std::map<std::string,int>::iterator it=NT_str_2_count.begin(); it!=NT_str_2_count.end(); it++ ) {
+      if (it->second > Max) {
+         Max = it->second;
+         OutputStr = it->first;
+      }
+   }
+   return OutputStr;
 }
 
 std::string IntToString ( int number )
 {
-    std::ostringstream oss;
-    
-    // Works just like cout
-    oss<< number;
-    
-    // Return the underlying string
-    return oss.str();
+   std::ostringstream oss;
+
+   // Works just like cout
+   oss<< number;
+
+   // Return the underlying string
+   return oss.str();
 }
 
-void UpdateInterChromosomeCallAndSupport(std::map<std::string,int> & CallAndSupport, std::string & tempResult) {
-    std::map<std::string,int> ::iterator it;
-    it = CallAndSupport.find(tempResult);
-    if (it == CallAndSupport.end()) { // no such element
-        CallAndSupport.insert ( std::pair<std::string,int>(tempResult,1) );
-    }
-    else {
-        (*it).second++;
-    }
+void UpdateInterChromosomeCallAndSupport(std::map<std::string,int> & CallAndSupport, std::string & tempResult)
+{
+   std::map<std::string,int> ::iterator it;
+   it = CallAndSupport.find(tempResult);
+   if (it == CallAndSupport.end()) { // no such element
+      CallAndSupport.insert ( std::pair<std::string,int>(tempResult,1) );
+   } else {
+      (*it).second++;
+   }
 }
 
-std::string OtherStrand(const char input) {
-    if (input == '+') return "-";
-    else if (input == '-') return "+";
-    else return "";
+std::string OtherStrand(const char input)
+{
+   if (input == '+') {
+      return "-";
+   } else if (input == '-') {
+      return "+";
+   } else {
+      return "";
+   }
 }
 
-std::string SameStrand(const char input) {
-    if (input == '+') return "+";
-    else if (input == '-') return "-";
-    else return "";
+std::string SameStrand(const char input)
+{
+   if (input == '+') {
+      return "+";
+   } else if (input == '-') {
+      return "-";
+   } else {
+      return "";
+   }
 }
 
 void SortAndReportInterChromosomalEvents(ControlState& current_state, Genome& genome, UserDefinedSettings* user_settings)
 {
-    
-    std::ofstream INToutputfile(user_settings->getINTOutputFilename().c_str(), std::ios::app);
 
-	bool GoodRead;
+   std::ofstream INToutputfile(user_settings->getINTOutputFilename().c_str(), std::ios::app);
 
-	std::string InsertedSequence;
+   bool GoodRead;
 
-    //std::map Result;
-    std::map<std::string,int> CallAndSupport;
-    std::string tempResult;
-    std::set<std::string> ChrNames;
-	std::set<std::string> ReadNames;
-	 std::set<std::string>::iterator it;
-    std::set<std::string>::iterator first, second;
-    std::cout << "reporting interchromosome variants" << std::endl;
-    for (unsigned index = 0; index < current_state.InterChromosome_SR.size(); index++) {
-	
-        //std::cout << current_state.InterChromosome_SR[index];//.FragName << " " << current_state.InterChromosome_SR[index].FarFragName << std::endl;
-        ChrNames.insert(current_state.InterChromosome_SR[index].FragName);
-        ChrNames.insert(current_state.InterChromosome_SR[index].FarFragName);
-    }
-    //std::cout << "ChrNames.size() " << ChrNames.size() << std::endl;
-    for (first = ChrNames.begin(); first != ChrNames.end(); first++) {
-        //second = first;
-        //second++;
-        //if (second == ChrNames.end()) break;
-        for (second = first; second != ChrNames.end(); second++) {
-            if (first == second) {
-                continue;
+   std::string InsertedSequence;
+
+   //std::map Result;
+   std::map<std::string,int> CallAndSupport;
+   std::string tempResult;
+   std::set<std::string> ChrNames;
+   std::set<std::string> ReadNames;
+   std::set<std::string>::iterator it;
+   std::set<std::string>::iterator first, second;
+   std::cout << "reporting interchromosome variants" << std::endl;
+   for (unsigned index = 0; index < current_state.InterChromosome_SR.size(); index++) {
+
+      //std::cout << current_state.InterChromosome_SR[index];//.FragName << " " << current_state.InterChromosome_SR[index].FarFragName << std::endl;
+      ChrNames.insert(current_state.InterChromosome_SR[index].FragName);
+      ChrNames.insert(current_state.InterChromosome_SR[index].FarFragName);
+   }
+   //std::cout << "ChrNames.size() " << ChrNames.size() << std::endl;
+   for (first = ChrNames.begin(); first != ChrNames.end(); first++) {
+      //second = first;
+      //second++;
+      //if (second == ChrNames.end()) break;
+      for (second = first; second != ChrNames.end(); second++) {
+         if (first == second) {
+            continue;
+         }
+         for (unsigned index = 0; index < current_state.InterChromosome_SR.size(); index++) {
+            GoodRead = false;
+
+            SPLIT_READ & currentRead = current_state.InterChromosome_SR[index];
+            it = ReadNames.find(currentRead.Name);
+            if (it != ReadNames.end()) {
+               // this reads is already seen. skip it
+               //std::cout << "skip one interchr read" << std::endl;
+               continue;
+            } else {
+               ReadNames.insert(currentRead.Name);
             }
-            for (unsigned index = 0; index < current_state.InterChromosome_SR.size(); index++) {
-		GoodRead = false;
-
-                SPLIT_READ & currentRead = current_state.InterChromosome_SR[index];
-		it = ReadNames.find(currentRead.Name);
-		if (it != ReadNames.end()) {
-			// this reads is already seen. skip it
-			//std::cout << "skip one interchr read" << std::endl;
-			continue;
-		}
-		else ReadNames.insert(currentRead.Name);
-                if (currentRead.FragName == *first && currentRead.FarFragName == *second) {
-                    //std::cout << *first << " " << *second << std::endl;
-                    if (currentRead.MatchedD == '+') { // close smaller
-                        for (unsigned CloseIndex = 0; CloseIndex < currentRead.UP_Close.size(); CloseIndex++) {
-				if (currentRead.Used) break;
-                            for (int FarIndex = currentRead.UP_Far.size() - 1; FarIndex >= 0; FarIndex--) {
-				if (currentRead.Used) break;
-                                if (currentRead.UP_Close[CloseIndex].LengthStr + currentRead.UP_Far[FarIndex].LengthStr == currentRead.getReadLength()) {
-                                    currentRead.Used = true;
-                                    currentRead.Left = currentRead. UP_Close[CloseIndex].AbsLoc - currentRead. UP_Close[CloseIndex].LengthStr + 1;
-                                    if (currentRead.MatchedFarD == '+') 
-                                        currentRead.Right = currentRead.UP_Far[FarIndex]. AbsLoc - currentRead.UP_Far[FarIndex]. LengthStr - 1;
-                                    else currentRead.Right = currentRead.UP_Far[FarIndex]. AbsLoc + currentRead.UP_Far[FarIndex]. LengthStr - 1;
-                                    currentRead.BP = currentRead.UP_Close[CloseIndex].LengthStr - 1;
-                                    currentRead.BPLeft = currentRead.UP_Close[CloseIndex].AbsLoc - g_SpacerBeforeAfter;
-                                    currentRead.BPRight = currentRead.UP_Far[FarIndex]. AbsLoc - g_SpacerBeforeAfter;//0;//
-					GoodRead = true;
-					InsertedSequence = "\"\"";
-					if (currentRead.BPLeft == 0 || currentRead.BPRight == 0) {
-						std::cout << currentRead;
-                    				//std::cout << tempResult << " " << currentRead.FragName << " " << currentRead.MatchedRelPos << " " << currentRead.BPLeft << " " << currentRead.MatchedD << " " 
-						//	<< currentRead.FarFragName << " " << currentRead.BPRight << " " << currentRead.MatchedFarD << " " << currentRead.Left << " " << currentRead.Right << std::endl;
-					}
-                                }
-                            }
-                        }
-                    }
-                    else { //close bigger
-                        for (int CloseIndex = currentRead.UP_Close.size() - 1; CloseIndex >= 0; CloseIndex--) {
-				if (currentRead.Used) break;
-                            for (unsigned FarIndex = 0; FarIndex < currentRead.UP_Far.size(); FarIndex++) {
-				if (currentRead.Used) break;
-                                if (currentRead.UP_Close[CloseIndex].LengthStr + currentRead.UP_Far[FarIndex].LengthStr == currentRead.getReadLength()) {
-                                    currentRead.Used = true;
-                                    currentRead.Left = currentRead. UP_Close[CloseIndex].AbsLoc + currentRead. UP_Close[CloseIndex].LengthStr - 1;
-                                    if (currentRead.MatchedFarD == '+')
-                                        currentRead.Right = currentRead.UP_Far[FarIndex]. AbsLoc - currentRead.UP_Far[FarIndex]. LengthStr - 1;
-                                    else currentRead.Right = currentRead.UP_Far[FarIndex]. AbsLoc + currentRead.UP_Far[FarIndex]. LengthStr - 1;
-                                    currentRead.BP = currentRead.UP_Close[CloseIndex].LengthStr - 1;
-                                    currentRead.BPLeft = currentRead.UP_Close[CloseIndex].AbsLoc - g_SpacerBeforeAfter;
-                                    currentRead.BPRight = currentRead.UP_Far[FarIndex]. AbsLoc - g_SpacerBeforeAfter;//0;//
-					GoodRead = true;
-					InsertedSequence = "\"\"";
-					if (currentRead.BPLeft == 0 || currentRead.BPRight == 0) {
-						std::cout << currentRead;
-                    				//std::cout << tempResult << " " << currentRead.FragName << " " << currentRead.MatchedRelPos << " " << currentRead.BPLeft << " " << currentRead.MatchedD << " " 
-						//	<< currentRead.FarFragName << " " << currentRead.BPRight << " " << currentRead.MatchedFarD << " " << currentRead.Left << " " << currentRead.Right << std::endl;
-					}
-                                }
-                            }
-                        }
-                    }
-			if (GoodRead == false) {
-				unsigned EffectiveLength = currentRead.UP_Close[currentRead.UP_Close.size() - 1].LengthStr + currentRead.UP_Far[currentRead.UP_Far.size() - 1].LengthStr;
-				if (EffectiveLength >= 30 && 
-					currentRead.UP_Close[currentRead.UP_Close.size() - 1].LengthStr >= 10 && currentRead.UP_Far[currentRead.UP_Far.size() - 1].LengthStr >= 10) {
-					//if (currentRead.MatchedD == '+') {
-					InsertedSequence = currentRead.UnmatchedSeq.substr(currentRead.UP_Far[currentRead.UP_Far.size() - 1].LengthStr, currentRead.getReadLength() - EffectiveLength);
-					//}
-					InsertedSequence = "\"" + InsertedSequence + "\"";
-                              	      currentRead.BPLeft = currentRead.UP_Close[currentRead.UP_Close.size() - 1].AbsLoc - g_SpacerBeforeAfter;
-                              	      currentRead.BPRight = currentRead.UP_Far[currentRead.UP_Far.size() - 1]. AbsLoc - g_SpacerBeforeAfter;//0;//
-					GoodRead = true;
-				}
-			}
-
-			if (GoodRead == true) {
-                    		tempResult = "Anchor " + SameStrand(currentRead.MatchedD) + " " +
-                                 currentRead.FragName + " " + IntToString(currentRead.BPLeft) + " " + OtherStrand(currentRead.MatchedD) + " " +
-                                 currentRead.FarFragName + " " + IntToString(currentRead.BPRight)  + " " + SameStrand(currentRead.MatchedFarD) + " " + InsertedSequence;
-				if (currentRead.BPLeft == 0 || currentRead.BPRight == 0) {
-					//std::cout << currentRead;
-                    			std::cout << tempResult << " " << currentRead.FragName << " " << currentRead.MatchedRelPos << " " << currentRead.BPLeft << " " << currentRead.MatchedD << " " 
-						<< currentRead.FarFragName << " " << currentRead.BPRight << " " << currentRead.MatchedFarD << " " << currentRead.Left << " " << currentRead.Right << std::endl;
-				}
-                    		UpdateInterChromosomeCallAndSupport(CallAndSupport, tempResult);
-			}
-			//else std::cout << "non-template in read " << currentRead.FragName << " " << currentRead.MatchedRelPos << " " << currentRead.BPLeft << " " << currentRead.MatchedD << " " 
-			//			<< currentRead.FarFragName << " " << currentRead.BPRight << " " << currentRead.MatchedFarD << " " << currentRead.Left << " " << currentRead.Right << std::endl;
-
-                }
-                else if (currentRead.FragName == *second && currentRead.FarFragName == *first) {
-                    //std::cout << *second << " " << *first << std::endl;
-                    if (currentRead.MatchedFarD == '-') { // close smaller
-                        for (unsigned CloseIndex = 0; CloseIndex < currentRead.UP_Close.size(); CloseIndex++) {
-				if (currentRead.Used) break;
-                            for (int FarIndex = currentRead.UP_Far.size() - 1; FarIndex >= 0; FarIndex--) {
-				if (currentRead.Used) break;
-                                if (currentRead.UP_Close[CloseIndex].LengthStr + currentRead.UP_Far[FarIndex].LengthStr == currentRead.getReadLength()) {
-                                    currentRead.Used = true;
-                                    currentRead.Left = currentRead. UP_Far[FarIndex].AbsLoc - currentRead. UP_Close[CloseIndex].LengthStr + 1;
-                                    if (currentRead.MatchedD == '+')
-                                        currentRead.Right = currentRead.UP_Far[FarIndex]. AbsLoc - currentRead.UP_Far[FarIndex]. LengthStr - 1;
-                                    else currentRead.Right = currentRead.UP_Far[FarIndex]. AbsLoc + currentRead.UP_Far[FarIndex]. LengthStr - 1;
-                                    currentRead.BP = currentRead.UP_Close[CloseIndex].LengthStr - 1;
-                                    currentRead.BPLeft = currentRead.UP_Close[CloseIndex].AbsLoc - g_SpacerBeforeAfter;
-                                    currentRead.BPRight = currentRead.UP_Far[FarIndex]. AbsLoc - g_SpacerBeforeAfter;//0;//
-					GoodRead = true;
-					InsertedSequence = "\"\"";
-					if (currentRead.BPLeft == 0 || currentRead.BPRight == 0) {
-						std::cout << currentRead;
-                    				//std::cout << tempResult << " " << currentRead.FragName << " " << currentRead.MatchedRelPos << " " << currentRead.BPLeft << " " << currentRead.MatchedD << " " 
-						//	<< currentRead.FarFragName << " " << currentRead.BPRight << " " << currentRead.MatchedFarD << " " << currentRead.Left << " " << currentRead.Right << std::endl;
-					}
-                                }
-                            }
-                        }
-                    }
-                    else { //close bigger
-                        for (int CloseIndex = currentRead.UP_Close.size() - 1; CloseIndex >= 0; CloseIndex--) {
-				if (currentRead.Used) break;
-                            for (unsigned FarIndex = 0; FarIndex < currentRead.UP_Far.size(); FarIndex++) {
-				if (currentRead.Used) break;
-                                if (currentRead.UP_Close[CloseIndex].LengthStr + currentRead.UP_Far[FarIndex].LengthStr == currentRead.getReadLength()) {
-                                    currentRead.Used = true;
-                                    currentRead.Left = currentRead. UP_Close[CloseIndex].AbsLoc + currentRead. UP_Close[CloseIndex].LengthStr - 1;
-                                    if (currentRead.MatchedFarD == '+')
-                                        currentRead.Right = currentRead.UP_Far[FarIndex]. AbsLoc - currentRead.UP_Far[FarIndex]. LengthStr - 1;
-                                    else currentRead.Right = currentRead.UP_Far[FarIndex]. AbsLoc + currentRead.UP_Far[FarIndex]. LengthStr - 1;
-                                    currentRead.BP = currentRead.UP_Close[CloseIndex].LengthStr - 1;
-                                    currentRead.BPLeft = currentRead.UP_Close[CloseIndex].AbsLoc - g_SpacerBeforeAfter;
-                                    currentRead.BPRight = currentRead.UP_Far[FarIndex]. AbsLoc - g_SpacerBeforeAfter;//0;//
-					GoodRead = true;
-					InsertedSequence = "\"\"";
-					if (currentRead.BPLeft == 0 || currentRead.BPRight == 0) {
-						std::cout << currentRead;
-                    				//std::cout << tempResult << " " << currentRead.FragName << " " << currentRead.MatchedRelPos << " " << currentRead.BPLeft << " " << currentRead.MatchedD << " " 
-						//	<< currentRead.FarFragName << " " << currentRead.BPRight << " " << currentRead.MatchedFarD << " " << currentRead.Left << " " << currentRead.Right << std::endl;
-					}
-                                }
-                            }
-                        }
-                    }
-			if (GoodRead == false) {
-				unsigned EffectiveLength = currentRead.UP_Close[currentRead.UP_Close.size() - 1].LengthStr + currentRead.UP_Far[currentRead.UP_Far.size() - 1].LengthStr;
-				if (EffectiveLength >= 30 && 
-					currentRead.UP_Close[currentRead.UP_Close.size() - 1].LengthStr >= 10 && currentRead.UP_Far[currentRead.UP_Far.size() - 1].LengthStr >= 10) {
-					//if (currentRead.MatchedD == '+') {
-					InsertedSequence = currentRead.UnmatchedSeq.substr(currentRead.UP_Far[currentRead.UP_Far.size() - 1].LengthStr, currentRead.getReadLength() - EffectiveLength);
-					//}
-					InsertedSequence = "\"" + InsertedSequence + "\"";
-                              	      currentRead.BPLeft = currentRead.UP_Close[currentRead.UP_Close.size() - 1].AbsLoc - g_SpacerBeforeAfter;
-                              	      currentRead.BPRight = currentRead.UP_Far[currentRead.UP_Far.size() - 1]. AbsLoc - g_SpacerBeforeAfter;//0;//
-					GoodRead = true;
-				}
-			}
-			if (GoodRead == true) {
-                    		tempResult = "Anchor " + SameStrand(currentRead.MatchedD) + " " +
-                                 currentRead.FragName + " " + IntToString(currentRead.BPLeft) + " " + OtherStrand(currentRead.MatchedD) + " " +
-                                 currentRead.FarFragName + " " + IntToString(currentRead.BPRight)  + " " + SameStrand(currentRead.MatchedFarD) + " " + InsertedSequence;
-				if (currentRead.BPLeft == 0 || currentRead.BPRight == 0) {
-					//std::cout << currentRead;
-                    			std::cout << tempResult << " " << currentRead.FragName << " " << currentRead.MatchedRelPos << " " << currentRead.BPLeft << " " << currentRead.MatchedD << " " 
-						<< currentRead.FarFragName << " " << currentRead.BPRight << " " << currentRead.MatchedFarD << " " << currentRead.Left << " " << currentRead.Right << std::endl;
-				}
-                    		UpdateInterChromosomeCallAndSupport(CallAndSupport, tempResult);
-			}
-			//else std::cout << "non-template in read " << currentRead.FragName << " " << currentRead.MatchedRelPos << " " << currentRead.BPLeft << " " << currentRead.MatchedD << " " 
-			//			<< currentRead.FarFragName << " " << currentRead.BPRight << " " << currentRead.MatchedFarD << " " << currentRead.Left << " " << currentRead.Right << std::endl;
-                }
-            }
-        }
-    }
-    
-    for ( std::map<std::string,int> ::iterator it = CallAndSupport.begin() ; it != CallAndSupport.end(); it++ ) {
-        if ((*it).second >= 2) {
-            INToutputfile << (*it).first << "\tsupport: " << (*it).second << std::endl;
-		//std::cout << (*it).first << "\tsupport: " << (*it).second << std::endl;
-	}
-    }
-        
-    
-}
-
-void GetVariants(std::ifstream & input_file, std::vector <Variant> & variants) {
-    Variant TempOne;
-    TempOne.Report = true;
-    unsigned NumberOfSamples;
-    std::string tempStr;
-    int tempInt;
-    char tempChar;
-    unsigned RefStartSupport, RefEndSupport, AlleleStartSupport, AlleleEndSupport;
-    while (input_file >> tempStr) {
-        if (tempStr.size() == 0) return;
-        if (tempStr.substr(0, 2) == "##") {
-            input_file >> tempInt >> TempOne.VariantType >> TempOne.Length
-                       >> tempStr >> TempOne.NT_length >> TempOne.NT_str
-                       >> tempStr >> TempOne.ChrName
-                       >> tempStr >> TempOne.Start >> TempOne.End // BP
-                       >> tempStr >> TempOne.Start_Range >> TempOne.End_Range // BP_range
-                       >> tempStr >> TempOne.AlleleSupport >> tempInt // support
-                       >> tempChar >> tempInt >> tempInt // +
-                       >> tempChar >> tempInt >> tempInt // -
-                       >> tempStr >> tempInt // S
-                       >> tempStr >> tempInt // SUM_MS
-                       >> NumberOfSamples // total number of samples
-                       >> tempStr >> tempInt >> tempInt
-                       >> tempStr >> RefStartSupport >> RefEndSupport
-                       >> AlleleStartSupport >> tempInt >> AlleleEndSupport >> tempInt;
-            getline(input_file, tempStr);
-            if (NumberOfSamples != 1) {
-                std::cout << "NumberOfSamples != 1: " << NumberOfSamples << std::endl;
-                return;
-            }
-            for (unsigned i = 0; i <= TempOne.AlleleSupport; i++) {
-                getline(input_file, tempStr);
-            }
-            if (RefStartSupport >= RefEndSupport) TempOne.RefSupport = RefStartSupport;
-            else TempOne.RefSupport = RefEndSupport;
-            TempOne.AlleleSupport = AlleleStartSupport + AlleleEndSupport;
-            if (TempOne.AlleleSupport > 10 && TempOne.AlleleSupport > TempOne.RefSupport * 1.5) {
-                
-                variants.push_back(TempOne);
-                //std::cout << TempOne.VariantType << " " << TempOne.Length << " " << TempOne.ChrName << " " << TempOne.Start << " " << TempOne.End << " " << TempOne.RefSupport << " " << TempOne.AlleleSupport << std::endl;
-            }
-        }
-        else {
-            std::cout << "someting is wrong here: " << tempStr << std::endl;
-        }
-    }
-    //std::cout << "There are " << variants.size() << " variants reported." << std::endl;
-}
-
-bool CompareTwoVariants(const Variant & first, const Variant & second) {
-    if (first.ChrName.size() != second.ChrName.size()) { // name length !=
-        if (first.ChrName.size() < second.ChrName.size()) return true;
-        else return false;
-    }
-    else if (first.ChrName != second.ChrName) { // name length equal
-        for (unsigned CharIndex = 0; CharIndex < first.ChrName.size(); CharIndex++) {
-            if ((int)first.ChrName[CharIndex] < (int)second.ChrName[CharIndex]) return true;
-            else if ((int)first.ChrName[CharIndex] > (int)second.ChrName[CharIndex]) return false;
-        }
-    }
-    else {
-        if (first.Start_Range < second.Start_Range) return true;
-        else if (first.Start_Range > second.Start_Range) return false;
-        else if (first.End_Range < second.End_Range) return true;
-        else if (first.End_Range > second.End_Range) return false;
-        else {
-            std::cout << "we shall never be here: WhetherExchange() in reporter.cpp" << std::endl;
-            return true;
-        }
-    }
-    return true;
-}
-
-void ModifyRefAndOutput(std::map<std::string, short> ChrName2Index, std::vector <Variant> & VariantsForReport, std::vector <VariantsPerChr> & WholeGenomeVariants, std::ofstream & Ploidy_Contig_Output_File) {
-    //std::cout << "entering ModifyRefAndOutput" << std::endl;
-    std::string NT_String, Left, Right;
-    for (unsigned index = 0; index < VariantsForReport.size(); index++) {
-        
-        //std::cout << "Adding " << index << std::endl;
-        WholeGenomeVariants[ChrName2Index.find(VariantsForReport[index].ChrName)->second].IndexOfVariants.push_back(index);
-    }
-    for (unsigned ChrIndex = 0; ChrIndex < WholeGenomeVariants.size(); ChrIndex++) {
-        std::string & Current_ChrName = WholeGenomeVariants[ChrIndex].ChrName;
-        std::string & Current_ChrSeq = WholeGenomeVariants[ChrIndex].ChrSeq;
-        Current_ChrSeq = Current_ChrSeq.substr(g_SpacerBeforeAfter, Current_ChrSeq.size() - 2 * g_SpacerBeforeAfter);
-        //std::cout << "Before: " << Current_ChrName << " " << Current_ChrSeq.size() << std::endl;
-        if (WholeGenomeVariants[ChrIndex].IndexOfVariants.size()) {
-            for (int VariantIndex = (int)WholeGenomeVariants[ChrIndex].IndexOfVariants.size() - 1; VariantIndex >= 0; VariantIndex--) {
-                Variant & Current_Variant = VariantsForReport[WholeGenomeVariants[ChrIndex].IndexOfVariants[VariantIndex]];
-                //std::cout << Current_Variant.VariantType << " " << Current_Variant.Length << " " << Current_Variant.NT_length << " " << Current_Variant.NT_str << " " << Current_Variant.ChrName << " " << Current_Variant.Start << " " << Current_Variant.End << std::endl;
-                if (Current_Variant.NT_length == 0) NT_String = "";
-                else NT_String = Current_Variant.NT_str.substr(1, Current_Variant.NT_length);
-                //std::cout << "NT_String = |" << NT_String << "|" << std::endl;
-                Left = Current_ChrSeq.substr(0, Current_Variant.Start);
-                //std::cout << "Left = |" << Left.size() << "|" << std::endl;
-                Right = Current_ChrSeq.substr(Current_Variant.End - 1, Current_ChrSeq.size() - Current_Variant.End + 1);
-                //std::cout << "Right = |" << Right.size() << "|" << std::endl;
-                Current_ChrSeq = Left + NT_String + Right;
-            }
-        }
-        //std::cout << "After: " << Current_ChrName << " " << Current_ChrSeq.size() << std::endl;
-        Ploidy_Contig_Output_File << ">" << Current_ChrName << "\n" << Current_ChrSeq << std::endl;
-    }
-    //std::cout << "leaving ModifyRefAndOutput" << std::endl;
-}
-
-void GetConsensusBasedOnPloidy(ControlState& current_state, Genome& genome, UserDefinedSettings* user_settings) {
-    //for ( std::map<std::string, unsigned>::iterator it = g_ChrName2Ploidy.begin(); it != g_ChrName2Ploidy.end(); it++ ) {
-    //    if ((*it).second != 1) {
-    //        std::cout << "only accept ploidy 1 for testing at this stage" << std::endl;
-    //        return;
-    //    }
-    //}
-    std::ifstream D_Input_file(user_settings->getDOutputFilename().c_str());
-    std::ifstream SI_input_file(user_settings->getSIOutputFilename().c_str());
-    std::ofstream Ploidy_Variant_Output_File( (user_settings->getIndelConsensusOutputFilename()).c_str() );
-    std::ofstream Ploidy_Contig_Output_File( (user_settings->getContigOutputFilename()).c_str() );
-    std::vector <Variant> Variants;
-    std::cout << "1" << std::endl;
-    GetVariants(D_Input_file, Variants);
-    GetVariants(SI_input_file, Variants);
-    std::cout << "2" << std::endl;
-    if (Variants.size() == 0) return;
-    for (unsigned first = 0; first < Variants.size() - 1; first++) {
-        if (Variants[first].Report == false) continue;
-        for (unsigned second = first + 1; second < Variants.size(); second++) {
-            if (Variants[second].Report == false) continue;
-            if (Variants[first].ChrName == Variants[second].ChrName) {
-                if (Variants[first].Start >= Variants[second].End || Variants[second].Start >= Variants[first].End) { // no overlap
-                    continue;
-                }
-                else {
-                    if (Variants[first].AlleleSupport >= Variants[second].AlleleSupport) {
-                        Variants[second].Report = false;
-                    }
-                    else {
-                        Variants[first].Report = false;
+            if (currentRead.FragName == *first && currentRead.FarFragName == *second) {
+               //std::cout << *first << " " << *second << std::endl;
+               if (currentRead.MatchedD == '+') { // close smaller
+                  for (unsigned CloseIndex = 0; CloseIndex < currentRead.UP_Close.size(); CloseIndex++) {
+                     if (currentRead.Used) {
                         break;
-                    }
-                }
+                     }
+                     for (int FarIndex = currentRead.UP_Far.size() - 1; FarIndex >= 0; FarIndex--) {
+                        if (currentRead.Used) {
+                           break;
+                        }
+                        if (currentRead.UP_Close[CloseIndex].LengthStr + currentRead.UP_Far[FarIndex].LengthStr == currentRead.getReadLength()) {
+                           currentRead.Used = true;
+                           currentRead.Left = currentRead. UP_Close[CloseIndex].AbsLoc - currentRead. UP_Close[CloseIndex].LengthStr + 1;
+                           if (currentRead.MatchedFarD == '+') {
+                              currentRead.Right = currentRead.UP_Far[FarIndex]. AbsLoc - currentRead.UP_Far[FarIndex]. LengthStr - 1;
+                           } else {
+                              currentRead.Right = currentRead.UP_Far[FarIndex]. AbsLoc + currentRead.UP_Far[FarIndex]. LengthStr - 1;
+                           }
+                           currentRead.BP = currentRead.UP_Close[CloseIndex].LengthStr - 1;
+                           currentRead.BPLeft = currentRead.UP_Close[CloseIndex].AbsLoc - g_SpacerBeforeAfter;
+                           currentRead.BPRight = currentRead.UP_Far[FarIndex]. AbsLoc - g_SpacerBeforeAfter;//0;//
+                           GoodRead = true;
+                           InsertedSequence = "\"\"";
+                           if (currentRead.BPLeft == 0 || currentRead.BPRight == 0) {
+                              std::cout << currentRead;
+                              //std::cout << tempResult << " " << currentRead.FragName << " " << currentRead.MatchedRelPos << " " << currentRead.BPLeft << " " << currentRead.MatchedD << " "
+                              //	<< currentRead.FarFragName << " " << currentRead.BPRight << " " << currentRead.MatchedFarD << " " << currentRead.Left << " " << currentRead.Right << std::endl;
+                           }
+                        }
+                     }
+                  }
+               } else { //close bigger
+                  for (int CloseIndex = currentRead.UP_Close.size() - 1; CloseIndex >= 0; CloseIndex--) {
+                     if (currentRead.Used) {
+                        break;
+                     }
+                     for (unsigned FarIndex = 0; FarIndex < currentRead.UP_Far.size(); FarIndex++) {
+                        if (currentRead.Used) {
+                           break;
+                        }
+                        if (currentRead.UP_Close[CloseIndex].LengthStr + currentRead.UP_Far[FarIndex].LengthStr == currentRead.getReadLength()) {
+                           currentRead.Used = true;
+                           currentRead.Left = currentRead. UP_Close[CloseIndex].AbsLoc + currentRead. UP_Close[CloseIndex].LengthStr - 1;
+                           if (currentRead.MatchedFarD == '+') {
+                              currentRead.Right = currentRead.UP_Far[FarIndex]. AbsLoc - currentRead.UP_Far[FarIndex]. LengthStr - 1;
+                           } else {
+                              currentRead.Right = currentRead.UP_Far[FarIndex]. AbsLoc + currentRead.UP_Far[FarIndex]. LengthStr - 1;
+                           }
+                           currentRead.BP = currentRead.UP_Close[CloseIndex].LengthStr - 1;
+                           currentRead.BPLeft = currentRead.UP_Close[CloseIndex].AbsLoc - g_SpacerBeforeAfter;
+                           currentRead.BPRight = currentRead.UP_Far[FarIndex]. AbsLoc - g_SpacerBeforeAfter;//0;//
+                           GoodRead = true;
+                           InsertedSequence = "\"\"";
+                           if (currentRead.BPLeft == 0 || currentRead.BPRight == 0) {
+                              std::cout << currentRead;
+                              //std::cout << tempResult << " " << currentRead.FragName << " " << currentRead.MatchedRelPos << " " << currentRead.BPLeft << " " << currentRead.MatchedD << " "
+                              //	<< currentRead.FarFragName << " " << currentRead.BPRight << " " << currentRead.MatchedFarD << " " << currentRead.Left << " " << currentRead.Right << std::endl;
+                           }
+                        }
+                     }
+                  }
+               }
+               if (GoodRead == false) {
+                  unsigned EffectiveLength = currentRead.UP_Close[currentRead.UP_Close.size() - 1].LengthStr + currentRead.UP_Far[currentRead.UP_Far.size() - 1].LengthStr;
+                  if (EffectiveLength >= 30 &&
+                        currentRead.UP_Close[currentRead.UP_Close.size() - 1].LengthStr >= 10 && currentRead.UP_Far[currentRead.UP_Far.size() - 1].LengthStr >= 10) {
+                     //if (currentRead.MatchedD == '+') {
+                     InsertedSequence = currentRead.UnmatchedSeq.substr(currentRead.UP_Far[currentRead.UP_Far.size() - 1].LengthStr, currentRead.getReadLength() - EffectiveLength);
+                     //}
+                     InsertedSequence = "\"" + InsertedSequence + "\"";
+                     currentRead.BPLeft = currentRead.UP_Close[currentRead.UP_Close.size() - 1].AbsLoc - g_SpacerBeforeAfter;
+                     currentRead.BPRight = currentRead.UP_Far[currentRead.UP_Far.size() - 1]. AbsLoc - g_SpacerBeforeAfter;//0;//
+                     GoodRead = true;
+                  }
+               }
+
+               if (GoodRead == true) {
+                  tempResult = "Anchor " + SameStrand(currentRead.MatchedD) + " " +
+                               currentRead.FragName + " " + IntToString(currentRead.BPLeft) + " " + OtherStrand(currentRead.MatchedD) + " " +
+                               currentRead.FarFragName + " " + IntToString(currentRead.BPRight)  + " " + SameStrand(currentRead.MatchedFarD) + " " + InsertedSequence;
+                  if (currentRead.BPLeft == 0 || currentRead.BPRight == 0) {
+                     //std::cout << currentRead;
+                     std::cout << tempResult << " " << currentRead.FragName << " " << currentRead.MatchedRelPos << " " << currentRead.BPLeft << " " << currentRead.MatchedD << " "
+                               << currentRead.FarFragName << " " << currentRead.BPRight << " " << currentRead.MatchedFarD << " " << currentRead.Left << " " << currentRead.Right << std::endl;
+                  }
+                  UpdateInterChromosomeCallAndSupport(CallAndSupport, tempResult);
+               }
+               //else std::cout << "non-template in read " << currentRead.FragName << " " << currentRead.MatchedRelPos << " " << currentRead.BPLeft << " " << currentRead.MatchedD << " "
+               //			<< currentRead.FarFragName << " " << currentRead.BPRight << " " << currentRead.MatchedFarD << " " << currentRead.Left << " " << currentRead.Right << std::endl;
+
+            } else if (currentRead.FragName == *second && currentRead.FarFragName == *first) {
+               //std::cout << *second << " " << *first << std::endl;
+               if (currentRead.MatchedFarD == '-') { // close smaller
+                  for (unsigned CloseIndex = 0; CloseIndex < currentRead.UP_Close.size(); CloseIndex++) {
+                     if (currentRead.Used) {
+                        break;
+                     }
+                     for (int FarIndex = currentRead.UP_Far.size() - 1; FarIndex >= 0; FarIndex--) {
+                        if (currentRead.Used) {
+                           break;
+                        }
+                        if (currentRead.UP_Close[CloseIndex].LengthStr + currentRead.UP_Far[FarIndex].LengthStr == currentRead.getReadLength()) {
+                           currentRead.Used = true;
+                           currentRead.Left = currentRead. UP_Far[FarIndex].AbsLoc - currentRead. UP_Close[CloseIndex].LengthStr + 1;
+                           if (currentRead.MatchedD == '+') {
+                              currentRead.Right = currentRead.UP_Far[FarIndex]. AbsLoc - currentRead.UP_Far[FarIndex]. LengthStr - 1;
+                           } else {
+                              currentRead.Right = currentRead.UP_Far[FarIndex]. AbsLoc + currentRead.UP_Far[FarIndex]. LengthStr - 1;
+                           }
+                           currentRead.BP = currentRead.UP_Close[CloseIndex].LengthStr - 1;
+                           currentRead.BPLeft = currentRead.UP_Close[CloseIndex].AbsLoc - g_SpacerBeforeAfter;
+                           currentRead.BPRight = currentRead.UP_Far[FarIndex]. AbsLoc - g_SpacerBeforeAfter;//0;//
+                           GoodRead = true;
+                           InsertedSequence = "\"\"";
+                           if (currentRead.BPLeft == 0 || currentRead.BPRight == 0) {
+                              std::cout << currentRead;
+                              //std::cout << tempResult << " " << currentRead.FragName << " " << currentRead.MatchedRelPos << " " << currentRead.BPLeft << " " << currentRead.MatchedD << " "
+                              //	<< currentRead.FarFragName << " " << currentRead.BPRight << " " << currentRead.MatchedFarD << " " << currentRead.Left << " " << currentRead.Right << std::endl;
+                           }
+                        }
+                     }
+                  }
+               } else { //close bigger
+                  for (int CloseIndex = currentRead.UP_Close.size() - 1; CloseIndex >= 0; CloseIndex--) {
+                     if (currentRead.Used) {
+                        break;
+                     }
+                     for (unsigned FarIndex = 0; FarIndex < currentRead.UP_Far.size(); FarIndex++) {
+                        if (currentRead.Used) {
+                           break;
+                        }
+                        if (currentRead.UP_Close[CloseIndex].LengthStr + currentRead.UP_Far[FarIndex].LengthStr == currentRead.getReadLength()) {
+                           currentRead.Used = true;
+                           currentRead.Left = currentRead. UP_Close[CloseIndex].AbsLoc + currentRead. UP_Close[CloseIndex].LengthStr - 1;
+                           if (currentRead.MatchedFarD == '+') {
+                              currentRead.Right = currentRead.UP_Far[FarIndex]. AbsLoc - currentRead.UP_Far[FarIndex]. LengthStr - 1;
+                           } else {
+                              currentRead.Right = currentRead.UP_Far[FarIndex]. AbsLoc + currentRead.UP_Far[FarIndex]. LengthStr - 1;
+                           }
+                           currentRead.BP = currentRead.UP_Close[CloseIndex].LengthStr - 1;
+                           currentRead.BPLeft = currentRead.UP_Close[CloseIndex].AbsLoc - g_SpacerBeforeAfter;
+                           currentRead.BPRight = currentRead.UP_Far[FarIndex]. AbsLoc - g_SpacerBeforeAfter;//0;//
+                           GoodRead = true;
+                           InsertedSequence = "\"\"";
+                           if (currentRead.BPLeft == 0 || currentRead.BPRight == 0) {
+                              std::cout << currentRead;
+                              //std::cout << tempResult << " " << currentRead.FragName << " " << currentRead.MatchedRelPos << " " << currentRead.BPLeft << " " << currentRead.MatchedD << " "
+                              //	<< currentRead.FarFragName << " " << currentRead.BPRight << " " << currentRead.MatchedFarD << " " << currentRead.Left << " " << currentRead.Right << std::endl;
+                           }
+                        }
+                     }
+                  }
+               }
+               if (GoodRead == false) {
+                  unsigned EffectiveLength = currentRead.UP_Close[currentRead.UP_Close.size() - 1].LengthStr + currentRead.UP_Far[currentRead.UP_Far.size() - 1].LengthStr;
+                  if (EffectiveLength >= 30 &&
+                        currentRead.UP_Close[currentRead.UP_Close.size() - 1].LengthStr >= 10 && currentRead.UP_Far[currentRead.UP_Far.size() - 1].LengthStr >= 10) {
+                     //if (currentRead.MatchedD == '+') {
+                     InsertedSequence = currentRead.UnmatchedSeq.substr(currentRead.UP_Far[currentRead.UP_Far.size() - 1].LengthStr, currentRead.getReadLength() - EffectiveLength);
+                     //}
+                     InsertedSequence = "\"" + InsertedSequence + "\"";
+                     currentRead.BPLeft = currentRead.UP_Close[currentRead.UP_Close.size() - 1].AbsLoc - g_SpacerBeforeAfter;
+                     currentRead.BPRight = currentRead.UP_Far[currentRead.UP_Far.size() - 1]. AbsLoc - g_SpacerBeforeAfter;//0;//
+                     GoodRead = true;
+                  }
+               }
+               if (GoodRead == true) {
+                  tempResult = "Anchor " + SameStrand(currentRead.MatchedD) + " " +
+                               currentRead.FragName + " " + IntToString(currentRead.BPLeft) + " " + OtherStrand(currentRead.MatchedD) + " " +
+                               currentRead.FarFragName + " " + IntToString(currentRead.BPRight)  + " " + SameStrand(currentRead.MatchedFarD) + " " + InsertedSequence;
+                  if (currentRead.BPLeft == 0 || currentRead.BPRight == 0) {
+                     //std::cout << currentRead;
+                     std::cout << tempResult << " " << currentRead.FragName << " " << currentRead.MatchedRelPos << " " << currentRead.BPLeft << " " << currentRead.MatchedD << " "
+                               << currentRead.FarFragName << " " << currentRead.BPRight << " " << currentRead.MatchedFarD << " " << currentRead.Left << " " << currentRead.Right << std::endl;
+                  }
+                  UpdateInterChromosomeCallAndSupport(CallAndSupport, tempResult);
+               }
+               //else std::cout << "non-template in read " << currentRead.FragName << " " << currentRead.MatchedRelPos << " " << currentRead.BPLeft << " " << currentRead.MatchedD << " "
+               //			<< currentRead.FarFragName << " " << currentRead.BPRight << " " << currentRead.MatchedFarD << " " << currentRead.Left << " " << currentRead.Right << std::endl;
             }
-            else continue;
-        }
-    }
-    std::cout << "3" << std::endl;
-    std::vector <Variant> VariantsForReport;
-    for (unsigned index = 0; index < Variants.size(); index++) {
-        if (Variants[index].Report) VariantsForReport.push_back(Variants[index]);
-    }
-    std::cout << "4" << std::endl;
-    sort(VariantsForReport.begin(), VariantsForReport.end(), CompareTwoVariants);
-    std::cout << "5" << std::endl;
-    for (unsigned index = 0; index < VariantsForReport.size(); index++) {
-            Ploidy_Variant_Output_File << "Type " << VariantsForReport[index].VariantType << "\t"
-                                       << "Size " << VariantsForReport[index].Length << "\t"
-                                       << "NT_Length " << VariantsForReport[index].NT_length << "\t"
-                                       << "NT_String " << VariantsForReport[index].NT_str << "\t"
-                                       << "ChrName " << VariantsForReport[index].ChrName << "\t"
-                                       << "Start " << VariantsForReport[index].Start << "\t"
-                                       << "End " << VariantsForReport[index].End << "\t"
-                                       << "RefSupport " << VariantsForReport[index].RefSupport << "\t"
-                                       << "VariantSupport " << VariantsForReport[index].AlleleSupport << std::endl;
-    }
-    std::cout << "6" << std::endl;
-    std::vector <VariantsPerChr> WholeGenomeVariants;
-    g_genome.reset();
-    std::map<std::string, short> ChrName2Index;
-    short ChrIndex = 0;
-    while (const Chromosome* currentChromosome = g_genome.getNextChromosome()) {
-        //std::cout << "ChrName: " << currentChromosome->getName() << "\tSize: " << (currentChromosome->getSeq()).size() - 2 * g_SpacerBeforeAfter << std::endl;
-        VariantsPerChr tempOne;
-        tempOne.ChrName = currentChromosome->getName();
-        tempOne.ChrSeq = currentChromosome->getSeq();
-        ChrName2Index.insert(std::pair<std::string, short>(tempOne.ChrName, ChrIndex) );
-        ChrIndex++;
-        WholeGenomeVariants.push_back(tempOne);
-    }
-    std::cout << "7" << std::endl;
-    ModifyRefAndOutput(ChrName2Index, VariantsForReport, WholeGenomeVariants, Ploidy_Contig_Output_File);
-    std::cout << "8" << std::endl;
+         }
+      }
+   }
+
+   for ( std::map<std::string,int> ::iterator it = CallAndSupport.begin() ; it != CallAndSupport.end(); it++ ) {
+      if ((*it).second >= 2) {
+         INToutputfile << (*it).first << "\tsupport: " << (*it).second << std::endl;
+         //std::cout << (*it).first << "\tsupport: " << (*it).second << std::endl;
+      }
+   }
+
+
+}
+
+void GetVariants(std::ifstream & input_file, std::vector <Variant> & variants)
+{
+   Variant TempOne;
+   TempOne.Report = true;
+   unsigned NumberOfSamples;
+   std::string tempStr;
+   int tempInt;
+   char tempChar;
+   unsigned RefStartSupport, RefEndSupport, AlleleStartSupport, AlleleEndSupport;
+   while (input_file >> tempStr) {
+      if (tempStr.size() == 0) {
+         return;
+      }
+      if (tempStr.substr(0, 2) == "##") {
+         input_file >> tempInt >> TempOne.VariantType >> TempOne.Length
+                    >> tempStr >> TempOne.NT_length >> TempOne.NT_str
+                    >> tempStr >> TempOne.ChrName
+                    >> tempStr >> TempOne.Start >> TempOne.End // BP
+                    >> tempStr >> TempOne.Start_Range >> TempOne.End_Range // BP_range
+                    >> tempStr >> TempOne.AlleleSupport >> tempInt // support
+                    >> tempChar >> tempInt >> tempInt // +
+                    >> tempChar >> tempInt >> tempInt // -
+                    >> tempStr >> tempInt // S
+                    >> tempStr >> tempInt // SUM_MS
+                    >> NumberOfSamples // total number of samples
+                    >> tempStr >> tempInt >> tempInt
+                    >> tempStr >> RefStartSupport >> RefEndSupport
+                    >> AlleleStartSupport >> tempInt >> AlleleEndSupport >> tempInt;
+         getline(input_file, tempStr);
+         if (NumberOfSamples != 1) {
+            std::cout << "NumberOfSamples != 1: " << NumberOfSamples << std::endl;
+            return;
+         }
+         for (unsigned i = 0; i <= TempOne.AlleleSupport; i++) {
+            getline(input_file, tempStr);
+         }
+         if (RefStartSupport >= RefEndSupport) {
+            TempOne.RefSupport = RefStartSupport;
+         } else {
+            TempOne.RefSupport = RefEndSupport;
+         }
+         TempOne.AlleleSupport = AlleleStartSupport + AlleleEndSupport;
+         if (TempOne.AlleleSupport > 10 && TempOne.AlleleSupport > TempOne.RefSupport * 1.5) {
+
+            variants.push_back(TempOne);
+            //std::cout << TempOne.VariantType << " " << TempOne.Length << " " << TempOne.ChrName << " " << TempOne.Start << " " << TempOne.End << " " << TempOne.RefSupport << " " << TempOne.AlleleSupport << std::endl;
+         }
+      } else {
+         std::cout << "someting is wrong here: " << tempStr << std::endl;
+      }
+   }
+   //std::cout << "There are " << variants.size() << " variants reported." << std::endl;
+}
+
+bool CompareTwoVariants(const Variant & first, const Variant & second)
+{
+   if (first.ChrName.size() != second.ChrName.size()) { // name length !=
+      if (first.ChrName.size() < second.ChrName.size()) {
+         return true;
+      } else {
+         return false;
+      }
+   } else if (first.ChrName != second.ChrName) { // name length equal
+      for (unsigned CharIndex = 0; CharIndex < first.ChrName.size(); CharIndex++) {
+         if ((int)first.ChrName[CharIndex] < (int)second.ChrName[CharIndex]) {
+            return true;
+         } else if ((int)first.ChrName[CharIndex] > (int)second.ChrName[CharIndex]) {
+            return false;
+         }
+      }
+   } else {
+      if (first.Start_Range < second.Start_Range) {
+         return true;
+      } else if (first.Start_Range > second.Start_Range) {
+         return false;
+      } else if (first.End_Range < second.End_Range) {
+         return true;
+      } else if (first.End_Range > second.End_Range) {
+         return false;
+      } else {
+         std::cout << "we shall never be here: WhetherExchange() in reporter.cpp" << std::endl;
+         return true;
+      }
+   }
+   return true;
+}
+
+void ModifyRefAndOutput(std::map<std::string, short> ChrName2Index, std::vector <Variant> & VariantsForReport, std::vector <VariantsPerChr> & WholeGenomeVariants, std::ofstream & Ploidy_Contig_Output_File)
+{
+   //std::cout << "entering ModifyRefAndOutput" << std::endl;
+   std::string NT_String, Left, Right;
+   for (unsigned index = 0; index < VariantsForReport.size(); index++) {
+
+      //std::cout << "Adding " << index << std::endl;
+      WholeGenomeVariants[ChrName2Index.find(VariantsForReport[index].ChrName)->second].IndexOfVariants.push_back(index);
+   }
+   for (unsigned ChrIndex = 0; ChrIndex < WholeGenomeVariants.size(); ChrIndex++) {
+      std::string & Current_ChrName = WholeGenomeVariants[ChrIndex].ChrName;
+      std::string & Current_ChrSeq = WholeGenomeVariants[ChrIndex].ChrSeq;
+      Current_ChrSeq = Current_ChrSeq.substr(g_SpacerBeforeAfter, Current_ChrSeq.size() - 2 * g_SpacerBeforeAfter);
+      //std::cout << "Before: " << Current_ChrName << " " << Current_ChrSeq.size() << std::endl;
+      if (WholeGenomeVariants[ChrIndex].IndexOfVariants.size()) {
+         for (int VariantIndex = (int)WholeGenomeVariants[ChrIndex].IndexOfVariants.size() - 1; VariantIndex >= 0; VariantIndex--) {
+            Variant & Current_Variant = VariantsForReport[WholeGenomeVariants[ChrIndex].IndexOfVariants[VariantIndex]];
+            //std::cout << Current_Variant.VariantType << " " << Current_Variant.Length << " " << Current_Variant.NT_length << " " << Current_Variant.NT_str << " " << Current_Variant.ChrName << " " << Current_Variant.Start << " " << Current_Variant.End << std::endl;
+            if (Current_Variant.NT_length == 0) {
+               NT_String = "";
+            } else {
+               NT_String = Current_Variant.NT_str.substr(1, Current_Variant.NT_length);
+            }
+            //std::cout << "NT_String = |" << NT_String << "|" << std::endl;
+            Left = Current_ChrSeq.substr(0, Current_Variant.Start);
+            //std::cout << "Left = |" << Left.size() << "|" << std::endl;
+            Right = Current_ChrSeq.substr(Current_Variant.End - 1, Current_ChrSeq.size() - Current_Variant.End + 1);
+            //std::cout << "Right = |" << Right.size() << "|" << std::endl;
+            Current_ChrSeq = Left + NT_String + Right;
+         }
+      }
+      //std::cout << "After: " << Current_ChrName << " " << Current_ChrSeq.size() << std::endl;
+      Ploidy_Contig_Output_File << ">" << Current_ChrName << "\n" << Current_ChrSeq << std::endl;
+   }
+   //std::cout << "leaving ModifyRefAndOutput" << std::endl;
+}
+
+void GetConsensusBasedOnPloidy(ControlState& current_state, Genome& genome, UserDefinedSettings* user_settings)
+{
+   //for ( std::map<std::string, unsigned>::iterator it = g_ChrName2Ploidy.begin(); it != g_ChrName2Ploidy.end(); it++ ) {
+   //    if ((*it).second != 1) {
+   //        std::cout << "only accept ploidy 1 for testing at this stage" << std::endl;
+   //        return;
+   //    }
+   //}
+   std::ifstream D_Input_file(user_settings->getDOutputFilename().c_str());
+   std::ifstream SI_input_file(user_settings->getSIOutputFilename().c_str());
+   std::ofstream Ploidy_Variant_Output_File( (user_settings->getIndelConsensusOutputFilename()).c_str() );
+   std::ofstream Ploidy_Contig_Output_File( (user_settings->getContigOutputFilename()).c_str() );
+   std::vector <Variant> Variants;
+   std::cout << "1" << std::endl;
+   GetVariants(D_Input_file, Variants);
+   GetVariants(SI_input_file, Variants);
+   std::cout << "2" << std::endl;
+   if (Variants.size() == 0) {
+      return;
+   }
+   for (unsigned first = 0; first < Variants.size() - 1; first++) {
+      if (Variants[first].Report == false) {
+         continue;
+      }
+      for (unsigned second = first + 1; second < Variants.size(); second++) {
+         if (Variants[second].Report == false) {
+            continue;
+         }
+         if (Variants[first].ChrName == Variants[second].ChrName) {
+            if (Variants[first].Start >= Variants[second].End || Variants[second].Start >= Variants[first].End) { // no overlap
+               continue;
+            } else {
+               if (Variants[first].AlleleSupport >= Variants[second].AlleleSupport) {
+                  Variants[second].Report = false;
+               } else {
+                  Variants[first].Report = false;
+                  break;
+               }
+            }
+         } else {
+            continue;
+         }
+      }
+   }
+   std::cout << "3" << std::endl;
+   std::vector <Variant> VariantsForReport;
+   for (unsigned index = 0; index < Variants.size(); index++) {
+      if (Variants[index].Report) {
+         VariantsForReport.push_back(Variants[index]);
+      }
+   }
+   std::cout << "4" << std::endl;
+   sort(VariantsForReport.begin(), VariantsForReport.end(), CompareTwoVariants);
+   std::cout << "5" << std::endl;
+   for (unsigned index = 0; index < VariantsForReport.size(); index++) {
+      Ploidy_Variant_Output_File << "Type " << VariantsForReport[index].VariantType << "\t"
+                                 << "Size " << VariantsForReport[index].Length << "\t"
+                                 << "NT_Length " << VariantsForReport[index].NT_length << "\t"
+                                 << "NT_String " << VariantsForReport[index].NT_str << "\t"
+                                 << "ChrName " << VariantsForReport[index].ChrName << "\t"
+                                 << "Start " << VariantsForReport[index].Start << "\t"
+                                 << "End " << VariantsForReport[index].End << "\t"
+                                 << "RefSupport " << VariantsForReport[index].RefSupport << "\t"
+                                 << "VariantSupport " << VariantsForReport[index].AlleleSupport << std::endl;
+   }
+   std::cout << "6" << std::endl;
+   std::vector <VariantsPerChr> WholeGenomeVariants;
+   g_genome.reset();
+   std::map<std::string, short> ChrName2Index;
+   short ChrIndex = 0;
+   while (const Chromosome* currentChromosome = g_genome.getNextChromosome()) {
+      //std::cout << "ChrName: " << currentChromosome->getName() << "\tSize: " << (currentChromosome->getSeq()).size() - 2 * g_SpacerBeforeAfter << std::endl;
+      VariantsPerChr tempOne;
+      tempOne.ChrName = currentChromosome->getName();
+      tempOne.ChrSeq = currentChromosome->getSeq();
+      ChrName2Index.insert(std::pair<std::string, short>(tempOne.ChrName, ChrIndex) );
+      ChrIndex++;
+      WholeGenomeVariants.push_back(tempOne);
+   }
+   std::cout << "7" << std::endl;
+   ModifyRefAndOutput(ChrName2Index, VariantsForReport, WholeGenomeVariants, Ploidy_Contig_Output_File);
+   std::cout << "8" << std::endl;
 }

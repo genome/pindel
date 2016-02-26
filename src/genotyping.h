@@ -1,9 +1,9 @@
-/* 
- * This File is part of Pindel; a program to locate genomic variation. 
+/*
+ * This File is part of Pindel; a program to locate genomic variation.
  * https://trac.nbic.nl/pindel/
- * 
+ *
  *   Copyright (C) 2011 Kai Ye
- * 
+ *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
  *   the Free Software Foundation, either version 3 of the License, or
@@ -30,30 +30,30 @@
 #define	GENOTYPING_H
 
 struct SampleAndCounts {
-    std::string SampleName;
-    unsigned Count;
+   std::string SampleName;
+   unsigned Count;
 };
 
 struct SR {
-    std::string ChrA;
-    unsigned PosA_Computed;
-    std::string ChrB;
-    unsigned PosB_Computed;
-    std::vector <SampleAndCounts> AllSupportingSamples;
+   std::string ChrA;
+   unsigned PosA_Computed;
+   std::string ChrB;
+   unsigned PosB_Computed;
+   std::vector <SampleAndCounts> AllSupportingSamples;
 };
 
 struct RP_Supports {
-    std::string SampleName;
-    std::string ChrA;
-    unsigned PosA_Computed;
-    char StrandA;
-    std::string ChrB;
-    unsigned PosB_Computed;
-    char StrandB;    
+   std::string SampleName;
+   std::string ChrA;
+   unsigned PosA_Computed;
+   char StrandA;
+   std::string ChrB;
+   unsigned PosB_Computed;
+   char StrandB;
 };
 
 struct RP {
-    std::vector <RP_Supports> All_Supporting_RPs;
+   std::vector <RP_Supports> All_Supporting_RPs;
 };
 
 /*
@@ -65,27 +65,28 @@ struct RD {
  */
 
 struct Genotyping {
-    Genotyping() {
-        Index = 0;
-        Type = "";
-        ChrA = "";
-        PosA = 0;
-        CI_A = 0;
-        ChrB = "";
-        PosB = 0;
-        CI_B = 0;        
-    }
-    unsigned Index;
-    std::string Type;
-    std::string ChrA;
-    unsigned PosA;
-    unsigned CI_A;
-    std::string ChrB;
-    unsigned PosB;
-    unsigned CI_B;
-    SR SR_signals;
-    std::vector<double> RD_signals;
-    RP RP_signals;
+   Genotyping()
+   {
+      Index = 0;
+      Type = "";
+      ChrA = "";
+      PosA = 0;
+      CI_A = 0;
+      ChrB = "";
+      PosB = 0;
+      CI_B = 0;
+   }
+   unsigned Index;
+   std::string Type;
+   std::string ChrA;
+   unsigned PosA;
+   unsigned CI_A;
+   std::string ChrB;
+   unsigned PosB;
+   unsigned CI_B;
+   SR SR_signals;
+   std::vector<double> RD_signals;
+   RP RP_signals;
 };
 
 

@@ -1,9 +1,9 @@
-/* 
- * This File is part of Pindel; a program to locate genomic variation. 
+/*
+ * This File is part of Pindel; a program to locate genomic variation.
  * https://trac.nbic.nl/pindel/
- * 
+ *
  *   Copyright (C) 2011 Kai Ye
- * 
+ *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
  *   the Free Software Foundation, either version 3 of the License, or
@@ -24,18 +24,18 @@
 class RefReader
 {
 public:
-  void ReadChr(const std::string & ChrName) ;
-  void ReadSeq(bool WhetherBuildUp) ;
-  RefReader(std::ifstream & inf_Seq_in, std::string & TheInput_in) ;
-  ~RefReader() ;
+   void ReadChr(const std::string & ChrName) ;
+   void ReadSeq(bool WhetherBuildUp) ;
+   RefReader(std::ifstream & inf_Seq_in, std::string & TheInput_in) ;
+   ~RefReader() ;
 
 private:
-  RefReader(const RefReader&);
+   RefReader(const RefReader&);
 
-  std::ifstream* inf_Seq;
-  std::string* TheInput;
-  void CopyThisSeq() ;
-  void SkipThisSeq() ;
+   std::ifstream* inf_Seq;
+   std::string* TheInput;
+   void CopyThisSeq() ;
+   void SkipThisSeq() ;
 };
 
 

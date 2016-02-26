@@ -18,31 +18,31 @@
 
 class IfstreamLineReader:public LineReader
 {
-	private:
-	
-		std::ifstream *in;
-		const std::string filename;
-		std::string buffer;
-		
-		
-		void Advance();
-		
-	
-	public:
-	
-		IfstreamLineReader(const char *_filename);
-			
-			
-		~IfstreamLineReader();
-			
-			
-		virtual void Reset();
-			
-			
-		virtual bool HasNext();
-			
-			
-		virtual std::string NextLine();
+private:
+
+   std::ifstream *in;
+   const std::string filename;
+   std::string buffer;
+
+
+   void Advance();
+
+
+public:
+
+   IfstreamLineReader(const char *_filename);
+
+
+   ~IfstreamLineReader();
+
+
+   virtual void Reset();
+
+
+   virtual bool HasNext();
+
+
+   virtual std::string NextLine();
 };
 
 #endif

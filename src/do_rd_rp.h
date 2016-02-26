@@ -1,9 +1,9 @@
-/* 
- * This File is part of Pindel; a program to locate genomic variation. 
+/*
+ * This File is part of Pindel; a program to locate genomic variation.
  * https://trac.nbic.nl/pindel/
- * 
+ *
  *   Copyright (C) 2011 Kai Ye
- * 
+ *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
  *   the Free Software Foundation, either version 3 of the License, or
@@ -28,32 +28,33 @@
 #define	rdrp_H
 
 struct ChrNameAndSize {
-    std::string ChrName;
-    unsigned ChrSize;
+   std::string ChrName;
+   unsigned ChrSize;
 };
 
 struct DiscordantRP {
-    std::string Read1_ChrName;
-    unsigned Read1_Pos;
-    char Read1_D;
-    std::string Read2_ChrName;
-    unsigned Read2_Pos;
-    char Read2_D;
-    std::string SampleName;
+   std::string Read1_ChrName;
+   unsigned Read1_Pos;
+   char Read1_D;
+   std::string Read2_ChrName;
+   unsigned Read2_Pos;
+   char Read2_D;
+   std::string SampleName;
 };
 
 struct BAM_Path_IS {
-    BAM_Path_IS() {
-        BamFile = "";
-        InsertSize = 0;
-    }
-    std::string BamFile;
-    int InsertSize;
+   BAM_Path_IS()
+   {
+      BamFile = "";
+      InsertSize = 0;
+   }
+   std::string BamFile;
+   int InsertSize;
 };
 
 struct SampleAndBAMFiles {
-    std::string SampleName;
-    std::vector <BAM_Path_IS> BAMs;
+   std::string SampleName;
+   std::vector <BAM_Path_IS> BAMs;
 };
 
 void do_rd_rp (ControlState & CurrentState, ParCollection & par);

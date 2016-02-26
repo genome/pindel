@@ -101,8 +101,7 @@ int main (int argc, char *argv[])
       if(!cin) {
          cout << "Sorry, there is actually no standard input. " << endl;
       }
-   }
-   else {
+   } else {
       inf_Read.open(argv[1],ifstream::in);
       if(!inf_Read) {
          cout << "Sorry, cannot find the file: " << argv[1] << endl;
@@ -143,8 +142,7 @@ int main (int argc, char *argv[])
       for (int i = 0; i < Num_Lines; i++) {
          if (argv1 != 0) {
             getline(inf_Read, TempStr);
-         }
-         else {
+         } else {
             getline(cin, TempStr);
          }
       }
@@ -157,8 +155,7 @@ int main (int argc, char *argv[])
       if (TempOne.QNAME[0] == '@') {
          if (argv1!=0) {
             getline(inf_Read, TempStr);
-         }
-         else {
+         } else {
             getline(cin, TempStr);
          }
          continue;
@@ -170,8 +167,7 @@ int main (int argc, char *argv[])
                   >> TempOne.MPOS >> TempOne.ISIZE >> TempOne.SEQ
                   >> TempOne.QUAL;
          getline(inf_Read, TempOne.OPT);
-      }
-      else {
+      } else {
          cin >> TempOne.FLAG >> TempOne.RNAME >> TempOne.POS
              >> TempOne.MAPQ >> TempOne.CIGAR >> TempOne.MRNM
              >> TempOne.MPOS >> TempOne.ISIZE >> TempOne.SEQ
@@ -199,8 +195,7 @@ int main (int argc, char *argv[])
                                << TempOne.StrandOfMate << "\t" << TempOne.MRNM << "\t"
                                << TempOne.MPOS << "\t" << TempOne.MAPQ << "\t"
                                << InsertSize << "\t" << Tag << "\n";
-               }
-               else { // anchor read is on reverse strand
+               } else { // anchor read is on reverse strand
                   OutOneMapped << '@' << TempOne.QNAME << "\n" << TempOne.SEQ << "\n"
                                //<< TempOne.QUAL << "\n"
                                << TempOne.StrandOfMate << "\t" << TempOne.MRNM << "\t"
@@ -208,8 +203,7 @@ int main (int argc, char *argv[])
                                << InsertSize << "\t" << Tag << "\n";
                }
                CountOneEndMapped++;
-            }
-            else if (ResultWhetherReport == 2) { //  difficult to map or mapped with indels or partially mapped
+            } else if (ResultWhetherReport == 2) { //  difficult to map or mapped with indels or partially mapped
                if (TempOne.StrandOfMate == ForwardStrand) {
                   //if (TempLeft.POS <= InsertSize) TempPos = 1;
                   //else TempPos = TempLeft.POS - InsertSize;
@@ -218,8 +212,7 @@ int main (int argc, char *argv[])
                                << TempOne.StrandOfMate << "\t" << TempOne.MRNM << "\t"
                                << TempOne.MPOS << "\t" << TempOne.MAPQ << "\t"
                                << InsertSize << "\t" << Tag << "\n";
-               }
-               else { // reverse strand
+               } else { // reverse strand
                   OutOneMapped << '@' << TempOne.QNAME << "\n" << TempOne.SEQ << "\n"
                                //<< TempLeft.QUAL << "\n"
                                << TempOne.StrandOfMate << "\t" << TempOne.MRNM << "\t"
@@ -229,8 +222,7 @@ int main (int argc, char *argv[])
                CountDifficultMapped++;
             }
          }
-      }
-      else if (Platform == "Illumina-MatePair") {
+      } else if (Platform == "Illumina-MatePair") {
          ResultWhetherReport = WhetherReport(TempOne);
          if (TempOne.MateUnmapped || TempOne.MRNM == "*" || TempOne.SEQ == "*") {}
          else {
@@ -241,8 +233,7 @@ int main (int argc, char *argv[])
                                << ReverseStrand << "\t" << TempOne.MRNM << "\t"
                                << TempOne.MPOS << "\t" << TempOne.MAPQ << "\t"
                                << InsertSize << "\t" << Tag << "\n";
-               }
-               else { // anchor read is on reverse strand
+               } else { // anchor read is on reverse strand
                   OutOneMapped << '@' << TempOne.QNAME << "\n" << ReverseComplement(TempOne.SEQ) << "\n"
                                //<< TempOne.QUAL << "\n"
                                << ForwardStrand << "\t" << TempOne.MRNM << "\t"
@@ -250,8 +241,7 @@ int main (int argc, char *argv[])
                                << InsertSize << "\t" << Tag << "\n";
                }
                CountOneEndMapped++;
-            }
-            else if (ResultWhetherReport == 2) { //  difficult to map or mapped with indels or partially mapped
+            } else if (ResultWhetherReport == 2) { //  difficult to map or mapped with indels or partially mapped
                if (TempOne.StrandOfMate == ForwardStrand) {
                   //if (TempLeft.POS <= InsertSize) TempPos = 1;
                   //else TempPos = TempLeft.POS - InsertSize;
@@ -260,8 +250,7 @@ int main (int argc, char *argv[])
                                << ReverseStrand << "\t" << TempOne.MRNM << "\t"
                                << TempOne.MPOS << "\t" << TempOne.MAPQ << "\t"
                                << InsertSize << "\t" << Tag << "\n";
-               }
-               else { // reverse strand
+               } else { // reverse strand
                   OutOneMapped << '@' << TempOne.QNAME << "\n" << ReverseComplement(TempOne.SEQ) << "\n"
                                //<< TempLeft.QUAL << "\n"
                                << ForwardStrand << "\t" << TempOne.MRNM << "\t"
@@ -294,68 +283,57 @@ void GetFlag(READ & input)
 {
    if (input.FLAG % 2 == 1) {
       input.Paired = true;
-   }
-   else {
+   } else {
       input.Paired = false;
    }
    if ((input.FLAG / 2) % 2 == 1) {
       input.ProperPaired = true;
-   }
-   else {
+   } else {
       input.ProperPaired = false;
    }
    if ((input.FLAG / 4)  % 2 == 1) {
       input.QueryUnmapped = true;
-   }
-   else {
+   } else {
       input.QueryUnmapped = false;
    }
    if ((input.FLAG / 8)  % 2 == 1) {
       input.MateUnmapped = true;
-   }
-   else {
+   } else {
       input.MateUnmapped = false;
    }
    if ((input.FLAG / 16)  % 2 == 1) {
       input.StrandOfQuery = ReverseStrand;
-   }
-   else {
+   } else {
       input.StrandOfQuery = ForwardStrand;
    }
    if ((input.FLAG / 32)  % 2 == 1) {
       input.StrandOfMate = ReverseStrand;
-   }
-   else {
+   } else {
       input.StrandOfMate = ForwardStrand;
    }
    if ((input.FLAG / 64)  % 2 == 1) {
       input.FirstRead = true;
-   }
-   else {
+   } else {
       input.FirstRead = false;
    }
    if ((input.FLAG / 128) % 2 == 1) {
       input.SecondRead = true;
-   }
-   else {
+   } else {
       input.SecondRead = false;
    }
    if ((input.FLAG / 256) % 2 == 1) {
       input.NotPrimaryAlignment = true;
-   }
-   else {
+   } else {
       input.NotPrimaryAlignment = false;
    }
    if ((input.FLAG / 512) % 2 == 1) {
       input.FailQualityCheck = true;
-   }
-   else {
+   } else {
       input.FailQualityCheck = false;
    }
    if ((input.FLAG / 1024) % 2 == 1) {
       input.Duplication = true;
-   }
-   else {
+   } else {
       input.Duplication = false;
    }
 }

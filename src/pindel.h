@@ -1,9 +1,9 @@
-/* 
- * This File is part of Pindel; a program to locate genomic variation. 
+/*
+ * This File is part of Pindel; a program to locate genomic variation.
  * https://trac.nbic.nl/pindel/
- * 
+ *
  *   Copyright (C) 2011 Kai Ye
- * 
+ *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
  *   the Free Software Foundation, either version 3 of the License, or
@@ -52,10 +52,11 @@ extern std::map<std::string,unsigned> g_ChrName2Ploidy;
  */
 
 struct RefCoveragePerPosition {
-    RefCoveragePerPosition() {
-        //CoveragePerSample.clear();
-    }
-    std::vector <unsigned> RefCoveragePerSample;
+   RefCoveragePerPosition()
+   {
+      //CoveragePerSample.clear();
+   }
+   std::vector <unsigned> RefCoveragePerSample;
 };
 
 extern std::vector <RefCoveragePerPosition> g_RefCoverageRegion;
@@ -91,9 +92,9 @@ extern unsigned g_NumberOfGapAlignedReads;
 extern UserDefinedSettings* userSettings;
 
 struct ChrNameAndSizeAndIndex {
-    std::string ChrName;
-    unsigned ChrSize;
-    short ChrIndex;
+   std::string ChrName;
+   unsigned ChrSize;
+   short ChrIndex;
 };
 extern std::vector <ChrNameAndSizeAndIndex> g_ChrNameAndSizeAndIndex;
 
@@ -134,315 +135,372 @@ class Chromosome;
 typedef std::vector <unsigned> PosVector;
 
 struct UniquePoint {
-	const Chromosome * chromosome_p;
-	short LengthStr;
-	unsigned int AbsLoc;
-	char Direction; // forward reverse
-	char Strand; // sense antisense
-	short Mismatches;
+   const Chromosome * chromosome_p;
+   short LengthStr;
+   unsigned int AbsLoc;
+   char Direction; // forward reverse
+   char Strand; // sense antisense
+   short Mismatches;
 
-	UniquePoint( const Chromosome* chromosome_ptr, const short lengthStr, const unsigned int absLoc, const char direction, const char strand, const short mismatches );
+   UniquePoint( const Chromosome* chromosome_ptr, const short lengthStr, const unsigned int absLoc, const char direction, const char strand, const short mismatches );
 
-	friend std::ostream& operator<<(std::ostream& os, const UniquePoint& up );
-	//UniquePoint() { UniquePoint(NULL,0,0,'N','N', 0); };
-	UniquePoint() {
-		chromosome_p = NULL;
-		LengthStr = 0;
-		AbsLoc = 0;
-		Direction = 'N';
-		Strand = 'N';
-		Mismatches = 0;
-	}
+   friend std::ostream& operator<<(std::ostream& os, const UniquePoint& up );
+   //UniquePoint() { UniquePoint(NULL,0,0,'N','N', 0); };
+   UniquePoint()
+   {
+      chromosome_p = NULL;
+      LengthStr = 0;
+      AbsLoc = 0;
+      Direction = 'N';
+      Strand = 'N';
+      Mismatches = 0;
+   }
 };
 
-class SortedUniquePoints { 
+class SortedUniquePoints
+{
 
 public:
-	void push_back( const UniquePoint& up ) { m_positions.push_back( up ); }// make inline?
-	unsigned int size() const { return m_positions.size(); }
-	unsigned int MaxLen() const;
-    unsigned int NumMismatch() const;
-	bool empty() const { return m_positions.empty(); } 
-	const UniquePoint& operator[](const unsigned int pos) const { return m_positions[pos]; } 
-	UniquePoint& operator[](const unsigned int pos) { return m_positions[pos]; }
-	void clear() { m_positions.clear(); }
-	void swap(SortedUniquePoints& otherPV) { m_positions.swap( otherPV.m_positions ); };
+   void push_back( const UniquePoint& up )
+   {
+      m_positions.push_back( up );   // make inline?
+   }
+   unsigned int size() const
+   {
+      return m_positions.size();
+   }
+   unsigned int MaxLen() const;
+   unsigned int NumMismatch() const;
+   bool empty() const
+   {
+      return m_positions.empty();
+   }
+   const UniquePoint& operator[](const unsigned int pos) const
+   {
+      return m_positions[pos];
+   }
+   UniquePoint& operator[](const unsigned int pos)
+   {
+      return m_positions[pos];
+   }
+   void clear()
+   {
+      m_positions.clear();
+   }
+   void swap(SortedUniquePoints& otherPV)
+   {
+      m_positions.swap( otherPV.m_positions );
+   };
 
 private:
-	std::vector< UniquePoint> m_positions;
+   std::vector< UniquePoint> m_positions;
 };
 
 struct REF_READ {
-    REF_READ () {
-        Tag = "";
-        FragName = "";
-        Pos = 0;
-        MQ = 0;
-        ReadLength = 0;
-    }
-    std::string Tag;
-    std::string FragName;
-    unsigned Pos;
-    short MQ;
-    short ReadLength;
+   REF_READ ()
+   {
+      Tag = "";
+      FragName = "";
+      Pos = 0;
+      MQ = 0;
+      ReadLength = 0;
+   }
+   std::string Tag;
+   std::string FragName;
+   unsigned Pos;
+   short MQ;
+   short ReadLength;
 };
 
 struct RP_READ {
-    RP_READ () {
-        ReadName = "";
-        ChrNameA = "";
-        ChrNameB = "";
-        DA = 'k';
-        DB = 'k';
-        PosA = 0;
-        PosB = 0;
-        OriginalPosA = 0;
-        OriginalPosB = 0;
-		PosA1 = 0;	//Han(2013.06.17)
-		PosB1 = 0;	//Han(2013.06.17)
-        Distance = 0;
-        MQA = 0;
-        MQB = 0;
-        Tag = "";
-        InsertSize = 0;
-        ReadLength = 0;
-        NumberOfIdentical = 0;
-        Report = false;
-        Visited = false;
-        Experimental_InsertSize = 0;
-	Tags.clear();
-    }
-    std::string ReadName;
-    std::string ChrNameA;
-    std::string ChrNameB;
-    char DA;
-    char DB;
-    unsigned PosA;
-    unsigned PosB;
-    unsigned OriginalPosA;
-    unsigned OriginalPosB;
-    unsigned PosA1;	//Han(2013.06.17)
-	unsigned PosB1;	//Han(2013.06.17)
-    short Distance;
-    short MQA;
-    short MQB;
-    std::string Tag;
-	std::vector <std::string> Tags;
-    unsigned InsertSize;
-    unsigned Experimental_InsertSize; // ex
-    short ReadLength;
-    unsigned NumberOfIdentical;
-    bool Report;
-    bool Visited;
+   RP_READ ()
+   {
+      ReadName = "";
+      ChrNameA = "";
+      ChrNameB = "";
+      DA = 'k';
+      DB = 'k';
+      PosA = 0;
+      PosB = 0;
+      OriginalPosA = 0;
+      OriginalPosB = 0;
+      PosA1 = 0;	//Han(2013.06.17)
+      PosB1 = 0;	//Han(2013.06.17)
+      Distance = 0;
+      MQA = 0;
+      MQB = 0;
+      Tag = "";
+      InsertSize = 0;
+      ReadLength = 0;
+      NumberOfIdentical = 0;
+      Report = false;
+      Visited = false;
+      Experimental_InsertSize = 0;
+      Tags.clear();
+   }
+   std::string ReadName;
+   std::string ChrNameA;
+   std::string ChrNameB;
+   char DA;
+   char DB;
+   unsigned PosA;
+   unsigned PosB;
+   unsigned OriginalPosA;
+   unsigned OriginalPosB;
+   unsigned PosA1;	//Han(2013.06.17)
+   unsigned PosB1;	//Han(2013.06.17)
+   short Distance;
+   short MQA;
+   short MQB;
+   std::string Tag;
+   std::vector <std::string> Tags;
+   unsigned InsertSize;
+   unsigned Experimental_InsertSize; // ex
+   short ReadLength;
+   unsigned NumberOfIdentical;
+   bool Report;
+   bool Visited;
 };
 
 struct SPLIT_READ {
-	SPLIT_READ() {
-	FragName = "";
-        FarFragName = "";
-	Name = "";
-	UnmatchedSeq = "";
-	MatchedD = 0;
-        MatchedFarD = 0;
-	MatchedRelPos = 0;
-	MS = 0;
-	InsertSize = 0;
-	Tag = "";
-        Thickness = 0;
-	ReadLength = 0;
-	ReadLengthMinus = 0;
-	MAX_SNP_ERROR = 0;
-	TOTAL_SNP_ERROR_CHECKED = 0;
-	TOTAL_SNP_ERROR_CHECKED_Minus = 0;
-	BP = 0;
-	Left = 0;
-	Right = 0;
-	BPLeft = 0;
-	BPRight = 0; 
-	IndelSize = 0;
-	//Investigated = false; // whether far end has been searched for
-        UniqueRead = false;
-	NT_str = "";
-	NT_size = 0;
-	Used = false;
-	CloseEndLength = 0;
-	LeftMostPos = 0;
-        CloseEndMismatch = 0;
-        FarEndMismatch = 0;
-        read_group = "";
-        MapperSplit = false;
-	}
-    bool MapperSplit;
-	std::string FragName;
-   	std::string FarFragName;
-	std::string Name;
+   SPLIT_READ()
+   {
+      FragName = "";
+      FarFragName = "";
+      Name = "";
+      UnmatchedSeq = "";
+      MatchedD = 0;
+      MatchedFarD = 0;
+      MatchedRelPos = 0;
+      MS = 0;
+      InsertSize = 0;
+      Tag = "";
+      Thickness = 0;
+      ReadLength = 0;
+      ReadLengthMinus = 0;
+      MAX_SNP_ERROR = 0;
+      TOTAL_SNP_ERROR_CHECKED = 0;
+      TOTAL_SNP_ERROR_CHECKED_Minus = 0;
+      BP = 0;
+      Left = 0;
+      Right = 0;
+      BPLeft = 0;
+      BPRight = 0;
+      IndelSize = 0;
+      //Investigated = false; // whether far end has been searched for
+      UniqueRead = false;
+      NT_str = "";
+      NT_size = 0;
+      Used = false;
+      CloseEndLength = 0;
+      LeftMostPos = 0;
+      CloseEndMismatch = 0;
+      FarEndMismatch = 0;
+      read_group = "";
+      MapperSplit = false;
+   }
+   bool MapperSplit;
+   std::string FragName;
+   std::string FarFragName;
+   std::string Name;
 
-	void setUnmatchedSeq( const std::string & unmatchedSeq );
-	const std::string& getUnmatchedSeq() const { return UnmatchedSeq; }	
+   void setUnmatchedSeq( const std::string & unmatchedSeq );
+   const std::string& getUnmatchedSeq() const
+   {
+      return UnmatchedSeq;
+   }
 
 
-	char MatchedD; // rename AnchorStrand?
-    	char MatchedFarD;
-	unsigned int MatchedRelPos;
-	short MS; // rename MappingQuality ?
-	short InsertSize;
-	std::string Tag; // rename SampleName ?
-	std::map <std::string, unsigned> SampleName2Number;
-    	unsigned Thickness;
-	SortedUniquePoints UP_Close; // partial alignment of the unmapped reads close to the mapped read
-	SortedUniquePoints UP_Far;
-	short getReadLength() const { return ReadLength; }
-	short getReadLengthMinus() const { return ReadLengthMinus; }
-	short getMAX_SNP_ERROR() const { return MAX_SNP_ERROR; } // the maximum amount of errors allowed when mapping the read
-	
-	// since you want to be sure that even if you find the maximum allowed number of errors (say 5) the read is sufficiently 
-	// unique (so no mappings with 6 or 7 errors possible), the CloseEnd and Far end search arrays should allow for additional rows housing the positions with 6 and 7-mismatches 
-	short getTOTAL_SNP_ERROR_CHECKED() const { return TOTAL_SNP_ERROR_CHECKED; } 
+   char MatchedD; // rename AnchorStrand?
+   char MatchedFarD;
+   unsigned int MatchedRelPos;
+   short MS; // rename MappingQuality ?
+   short InsertSize;
+   std::string Tag; // rename SampleName ?
+   std::map <std::string, unsigned> SampleName2Number;
+   unsigned Thickness;
+   SortedUniquePoints UP_Close; // partial alignment of the unmapped reads close to the mapped read
+   SortedUniquePoints UP_Far;
+   short getReadLength() const
+   {
+      return ReadLength;
+   }
+   short getReadLengthMinus() const
+   {
+      return ReadLengthMinus;
+   }
+   short getMAX_SNP_ERROR() const
+   {
+      return MAX_SNP_ERROR;   // the maximum amount of errors allowed when mapping the read
+   }
 
-	short getTOTAL_SNP_ERROR_CHECKED_Minus() const { return TOTAL_SNP_ERROR_CHECKED_Minus; } 
+   // since you want to be sure that even if you find the maximum allowed number of errors (say 5) the read is sufficiently
+   // unique (so no mappings with 6 or 7 errors possible), the CloseEnd and Far end search arrays should allow for additional rows housing the positions with 6 and 7-mismatches
+   short getTOTAL_SNP_ERROR_CHECKED() const
+   {
+      return TOTAL_SNP_ERROR_CHECKED;
+   }
 
-	short BP;
-	int Left;
-	int Right;
-	unsigned int BPLeft;
-	unsigned int BPRight;
-	unsigned int IndelSize;
-	bool UniqueRead;
-	std::string InsertedStr;
-	std::string NT_str;
-	unsigned short NT_size;
-	bool Used;
-	//bool Investigated;
-	short CloseEndLength;
-	short CloseEndMismatch;
-	short FarEndMismatch;
-	int LeftMostPos;
-	std::map <std::string, int> ReadCountPerSample;
-	std::string read_group;
+   short getTOTAL_SNP_ERROR_CHECKED_Minus() const
+   {
+      return TOTAL_SNP_ERROR_CHECKED_Minus;
+   }
 
-	unsigned int getLastAbsLocCloseEnd() const;
-	bool goodFarEndFound() const;
-	bool hasCloseEnd() const;
-	unsigned int MaxLenCloseEnd() const;
-	unsigned int MaxLenFarEnd() const;
-    std::string UnmatchedSeq;
-	friend std::ostream& operator<<(std::ostream& os, const SPLIT_READ& splitRead);
-    
+   short BP;
+   int Left;
+   int Right;
+   unsigned int BPLeft;
+   unsigned int BPRight;
+   unsigned int IndelSize;
+   bool UniqueRead;
+   std::string InsertedStr;
+   std::string NT_str;
+   unsigned short NT_size;
+   bool Used;
+   //bool Investigated;
+   short CloseEndLength;
+   short CloseEndMismatch;
+   short FarEndMismatch;
+   int LeftMostPos;
+   std::map <std::string, int> ReadCountPerSample;
+   std::string read_group;
+
+   unsigned int getLastAbsLocCloseEnd() const;
+   bool goodFarEndFound() const;
+   bool hasCloseEnd() const;
+   unsigned int MaxLenCloseEnd() const;
+   unsigned int MaxLenFarEnd() const;
+   std::string UnmatchedSeq;
+   friend std::ostream& operator<<(std::ostream& os, const SPLIT_READ& splitRead);
+
 private:
-	short ReadLength;
-	short ReadLengthMinus;
-	short MAX_SNP_ERROR; // = (short)(Temp_One_Read.UnmatchedSeq.size() * Seq_Error_Rate);
-	short TOTAL_SNP_ERROR_CHECKED; // = MAX_SNP_ERROR + ADDITIONAL_MISMATCH + 1;
-	short TOTAL_SNP_ERROR_CHECKED_Minus; // = MAX_SNP_ERROR + ADDITIONAL_MISMATCH;
-	
+   short ReadLength;
+   short ReadLengthMinus;
+   short MAX_SNP_ERROR; // = (short)(Temp_One_Read.UnmatchedSeq.size() * Seq_Error_Rate);
+   short TOTAL_SNP_ERROR_CHECKED; // = MAX_SNP_ERROR + ADDITIONAL_MISMATCH + 1;
+   short TOTAL_SNP_ERROR_CHECKED_Minus; // = MAX_SNP_ERROR + ADDITIONAL_MISMATCH;
+
 };
 
 
 
 struct SupportPerSample {
-	int NumPlus;
-	int NumMinus;
-	int NumUPlus;
-	int NumUMinus;
+   int NumPlus;
+   int NumMinus;
+   int NumUPlus;
+   int NumUMinus;
 
-	SupportPerSample() { NumPlus=0; NumMinus=0; NumUPlus=0; NumUMinus=0; }
+   SupportPerSample()
+   {
+      NumPlus=0;
+      NumMinus=0;
+      NumUPlus=0;
+      NumUMinus=0;
+   }
 };
 
 struct Indel4output {
-	Indel4output() {
-		BPLeft = 0;
-		BPRight = 0;
-		IndelSize = 0;
-		Start = 0;
-		End = 0;
-		RealStart = 0;
-		RealEnd = 0;
-		NT_size = 0;
-		WhetherReport = false;
-		IndelStr = "";
-        ChrName = "";
-		Support = 0;
-	}
-	void initialize(unsigned int start, const SPLIT_READ& read) {
-		Start = start;
+   Indel4output()
+   {
+      BPLeft = 0;
+      BPRight = 0;
+      IndelSize = 0;
+      Start = 0;
+      End = 0;
+      RealStart = 0;
+      RealEnd = 0;
+      NT_size = 0;
+      WhetherReport = false;
+      IndelStr = "";
+      ChrName = "";
+      Support = 0;
+   }
+   void initialize(unsigned int start, const SPLIT_READ& read)
+   {
+      Start = start;
       End = start;
-		Support = End - Start + 1;
+      Support = End - Start + 1;
       IndelSize = read.IndelSize;
       IndelStr = read.NT_str;
       BPLeft = read.BPLeft;
       BPRight = read.BPRight;
       WhetherReport = true;
-        ChrName = read.FragName;
-		RealStart = 0;
-		RealEnd = 0;
-		NT_size = 0;
-	}
-	void complete() {
-   	RealStart = BPLeft;
+      ChrName = read.FragName;
+      RealStart = 0;
+      RealEnd = 0;
+      NT_size = 0;
+   }
+   void complete()
+   {
+      RealStart = BPLeft;
       RealEnd = BPRight;
       Support =  End - Start + 1; // may become accessor function?
-	}
-	unsigned int BPLeft;
-	unsigned int BPRight;
-	unsigned int IndelSize;
-	unsigned int Start;
-	unsigned int End;
-	unsigned int RealStart;
-	unsigned int RealEnd;
-	short NT_size;
-	bool WhetherReport;
-	std::string IndelStr;
-    std::string ChrName;
-	unsigned short Support;
+   }
+   unsigned int BPLeft;
+   unsigned int BPRight;
+   unsigned int IndelSize;
+   unsigned int Start;
+   unsigned int End;
+   unsigned int RealStart;
+   unsigned int RealEnd;
+   short NT_size;
+   bool WhetherReport;
+   std::string IndelStr;
+   std::string ChrName;
+   unsigned short Support;
 };
 
 struct LI_Pos {
-	LI_Pos() {
-		Plus_Pos = 0;
-		Minus_Pos = 0;
-		WhetherReport = false;
-	}
-	unsigned Plus_Pos;
-	unsigned Minus_Pos;
-	std::vector<unsigned> Plus_Reads; // put index here
-	std::vector<unsigned> Minus_Reads;
-	bool WhetherReport;
+   LI_Pos()
+   {
+      Plus_Pos = 0;
+      Minus_Pos = 0;
+      WhetherReport = false;
+   }
+   unsigned Plus_Pos;
+   unsigned Minus_Pos;
+   std::vector<unsigned> Plus_Reads; // put index here
+   std::vector<unsigned> Minus_Reads;
+   bool WhetherReport;
 };
 
 struct Rest_Pos {
-	Rest_Pos() {
-		Strand = 'X';
-		Pos = 0;
-	}
-	char Strand;
-	unsigned Pos;
-	std::vector<unsigned> Pos_Reads; // put index here
+   Rest_Pos()
+   {
+      Strand = 'X';
+      Pos = 0;
+   }
+   char Strand;
+   unsigned Pos;
+   std::vector<unsigned> Pos_Reads; // put index here
 };
 
 struct bam_info {
-	bam_info() {
-		BamFile = "";
-		InsertSize = 0;
-		Tag = "";
-	}
-	std::string BamFile; // EW: change to FileName?
-	int InsertSize;
-	std::string Tag;
+   bam_info()
+   {
+      BamFile = "";
+      InsertSize = 0;
+      Tag = "";
+   }
+   std::string BamFile; // EW: change to FileName?
+   int InsertSize;
+   std::string Tag;
 };
 
 struct flags_hit {
-	flags_hit() {
-		mapped = false;
-		unique = false;
-		sw = false;
-		edits = 0;
-		suboptimal = false;
-	}
-	bool mapped;
-	bool unique;
-	bool sw;
-	int edits;
-	bool suboptimal;
+   flags_hit()
+   {
+      mapped = false;
+      unique = false;
+      sw = false;
+      edits = 0;
+      suboptimal = false;
+   }
+   bool mapped;
+   bool unique;
+   bool sw;
+   int edits;
+   bool suboptimal;
 };
 
 /*
@@ -458,8 +516,8 @@ ReverseComplement(const std::vector<std::string> &input);
 std::string ReverseComplement(const std::string & InputPattern);
 std::string Cap2Low(const std::string & input);
 void GetRealStart4Insertion(const std::string & TheInput,
-		std::string & InsertedStr, unsigned int &RealStart,
-		unsigned int &RealEnd);
+                            std::string & InsertedStr, unsigned int &RealStart,
+                            unsigned int &RealEnd);
 void GetRealStart4Deletion(const std::string & TheInput,	unsigned int &RealStart, unsigned int &RealEnd);
 bool ReportEvent(const std::vector<SPLIT_READ> &Deletions, const unsigned int &Pre_S, const unsigned int &Pre_E);
 void GetCloseEnd(const std::string & CurrentChr, SPLIT_READ & Temp_One_Read);
@@ -469,24 +527,24 @@ void GetFarEnd_SingleStrandUpStream(const std::string & CurrentChr, SPLIT_READ &
 void GetFarEnd_SingleStrandDownStreamInsertions(const std::string & CurrentChr, SPLIT_READ & Temp_One_Read, const short &RangeIndex);
 void GetFarEnd(const std::string & CurrentChr, SPLIT_READ & Temp_One_Read,	const int &start, const int &end);
 void OutputDeletions(std::vector<SPLIT_READ> &Deletions,
-		const std::string & TheInput, const unsigned int &C_S,
-		const unsigned int &C_E, const unsigned int &RealStart,
-		const unsigned int &RealEnd, std::ofstream & DeletionOutf);
+                     const std::string & TheInput, const unsigned int &C_S,
+                     const unsigned int &C_E, const unsigned int &RealStart,
+                     const unsigned int &RealEnd, std::ofstream & DeletionOutf);
 
 void OutputTDs(std::vector<SPLIT_READ> &TDs,
-		const std::string & TheInput, const unsigned int &C_S,
-		const unsigned int &C_E, const unsigned int &RealStart,
-		const unsigned int &RealEnd, std::ofstream & TDOutf);
+               const std::string & TheInput, const unsigned int &C_S,
+               const unsigned int &C_E, const unsigned int &RealStart,
+               const unsigned int &RealEnd, std::ofstream & TDOutf);
 
 void OutputInversions(std::vector<SPLIT_READ> &Inv,
-		const std::string & TheInput, const unsigned int &C_S,
-		const unsigned int &C_E, const unsigned int &RealStart,
-		const unsigned int &RealEnd, std::ofstream & InvOutf);
+                      const std::string & TheInput, const unsigned int &C_S,
+                      const unsigned int &C_E, const unsigned int &RealStart,
+                      const unsigned int &RealEnd, std::ofstream & InvOutf);
 
 void OutputSIs(std::vector<SPLIT_READ> &SIs,
-		const std::string & TheInput, const unsigned int &C_S,
-		const unsigned int &C_E, const unsigned int &RealStart,
-		const unsigned int &RealEnd, std::ofstream & SIsOutf);
+               const std::string & TheInput, const unsigned int &C_S,
+               const unsigned int &C_E, const unsigned int &RealStart,
+               const unsigned int &RealEnd, std::ofstream & SIsOutf);
 
 short CompareTwoReads(const SPLIT_READ & First, const SPLIT_READ & Second);
 std::string Reverse(const std::string & InputPattern);
@@ -507,16 +565,16 @@ void CheckBoth(SPLIT_READ & read,
                const short CurrentLength,
                SortedUniquePoints &UP);
 void CheckBothPerfect(SPLIT_READ & read,
-               const std::string & readSeq,
-               const std::vector <FarEndSearchPerRegion*> & WholeGenomeSearchResult_input,
-               const short minimumLengthToReportMatch,
-               const short BP_End,
-               const short CurrentLength,
-               SortedUniquePoints &UP);
+                      const std::string & readSeq,
+                      const std::vector <FarEndSearchPerRegion*> & WholeGenomeSearchResult_input,
+                      const short minimumLengthToReportMatch,
+                      const short BP_End,
+                      const short CurrentLength,
+                      SortedUniquePoints &UP);
 void GetIndelTypeAndRealStart(const std::string & TheInput,
-		const unsigned int &BPLeft, const unsigned int &IndelSize,
-		const std::string & IndelStr, std::string & IndelType,
-		unsigned int &RealStart, const bool & WhetherD);
+                              const unsigned int &BPLeft, const unsigned int &IndelSize,
+                              const std::string & IndelStr, std::string & IndelType,
+                              unsigned int &RealStart, const bool & WhetherD);
 void CleanUniquePoints(SortedUniquePoints &Input_UP);
 
 bool readTransgressesBinBoundaries(SPLIT_READ & read,	const unsigned int &upperBinBorder);
@@ -524,8 +582,8 @@ bool readTransgressesBinBoundaries(SPLIT_READ & read,	const unsigned int &upperB
 void saveReadForNextCycle(SPLIT_READ & read,	std::vector<SPLIT_READ> &futureReads);
 
 bool readInSpecifiedRegion(const SPLIT_READ & read, const SearchRegion* region );
-void reportBreakDancerEvent( const std::string& chromosomeName, const int leftPosition, const int rightPosition, 
-	                          const int svSize, const std::string& svType, const int svCounter);
+void reportBreakDancerEvent( const std::string& chromosomeName, const int leftPosition, const int rightPosition,
+                             const int svSize, const std::string& svType, const int svCounter);
 void updateReadAfterCloseEndMapping( SPLIT_READ& Temp_One_Read );
 
 LineReader *getLineReaderByFilename(const char *filename);
@@ -534,99 +592,148 @@ LineReader *getLineReaderByFilename(const char *filename);
 
 class Genome;
 
-class Chromosome {
+class Chromosome
+{
 
-friend class Genome;
+   friend class Genome;
 
 public:
-	Chromosome( const std::string& name, const std::string& sequence ) { m_name = name; m_sequence = sequence; };
-	const std::string& getName() const { return m_name; }
-    const std::string & getSeq() const { return m_sequence; }
-	const unsigned int getCompSize() const { return m_sequence.size(); }
-	const unsigned int getBiolSize() const { return m_sequence.size() - 2 * g_SpacerBeforeAfter; }
+   Chromosome( const std::string& name, const std::string& sequence )
+   {
+      m_name = name;
+      m_sequence = sequence;
+   };
+   const std::string& getName() const
+   {
+      return m_name;
+   }
+   const std::string & getSeq() const
+   {
+      return m_sequence;
+   }
+   const unsigned int getCompSize() const
+   {
+      return m_sequence.size();
+   }
+   const unsigned int getBiolSize() const
+   {
+      return m_sequence.size() - 2 * g_SpacerBeforeAfter;
+   }
 
 private:
-	std::string m_name;
-	std::string m_sequence;
+   std::string m_name;
+   std::string m_sequence;
 };
 
 extern const Chromosome g_dummyChromosome;
 
-class Genome {
- public:
-	Genome() {
-		//m_referenceFile = NULL;
-		m_fullMode = false;
-		m_currentChromosomeIndex = 0;
-	}
+class Genome
+{
+public:
+   Genome()
+   {
+      //m_referenceFile = NULL;
+      m_fullMode = false;
+      m_currentChromosomeIndex = 0;
+   }
 
-	//unsigned int chrNameToChrIndex( const std::string chromosomeName );
-	const Chromosome* getChr( unsigned int index ) const;
-	const Chromosome* getChr( const std::string& chromosomeName ) const;
-    short getChrID( const std::string& chromosomeName );
-	void load( const std::string& referenceFileName );
-	void loadAll(const std::string& referenceFileName);
-	const Chromosome* getNextChromosome();
-    
-    // Reset genome reading to the initial position.  (i.e. subsequent call to
-    // getNextChromosome() will return the first chromosome loaded.
-    void reset();
+   //unsigned int chrNameToChrIndex( const std::string chromosomeName );
+   const Chromosome* getChr( unsigned int index ) const;
+   const Chromosome* getChr( const std::string& chromosomeName ) const;
+   short getChrID( const std::string& chromosomeName );
+   void load( const std::string& referenceFileName );
+   void loadAll(const std::string& referenceFileName);
+   const Chromosome* getNextChromosome();
+
+   // Reset genome reading to the initial position.  (i.e. subsequent call to
+   // getNextChromosome() will return the first chromosome loaded.
+   void reset();
 
 private:
-	const Chromosome* loadChromosome();
-	const Chromosome* addChromosome( Chromosome* newChromosome );
-	void clear();
+   const Chromosome* loadChromosome();
+   const Chromosome* addChromosome( Chromosome* newChromosome );
+   void clear();
 
-	std::ifstream m_referenceFile;
-	bool m_fullMode; 
-	int m_currentChromosomeIndex;
-	std::vector< Chromosome* > m_chromosomes;
+   std::ifstream m_referenceFile;
+   bool m_fullMode;
+   int m_currentChromosomeIndex;
+   std::vector< Chromosome* > m_chromosomes;
 };
 
 extern Genome g_genome;
 
-class SearchWindow {
+class SearchWindow
+{
 
 public:
-	SearchWindow( const Chromosome* chromosome, const unsigned int regionStart, const unsigned int regionEnd );
-	SearchWindow(const SearchWindow& other); 
+   SearchWindow( const Chromosome* chromosome, const unsigned int regionStart, const unsigned int regionEnd );
+   SearchWindow(const SearchWindow& other);
 
-	unsigned int getStart() const { return m_currentStart; }
-	unsigned int getEnd() const { return m_currentEnd; }
-	void setStart( const unsigned int newStart ) { m_currentStart = newStart; }	
-	void setEnd( const unsigned int newEnd ) { m_currentEnd = newEnd; }
-	const std::string& getChromosomeName() const { return m_chromosome->getName(); }
-	const Chromosome* getChromosome() const { return m_chromosome; }
-	unsigned int getSize() const { return 1 + m_currentEnd - m_currentStart; }
-	bool encompasses( const std::string& chromosomeName, const unsigned int position ) const;
-	SearchWindow makePindelCoordinateCopy() const { SearchWindow temp( m_chromosome, m_currentStart + g_SpacerBeforeAfter, m_currentEnd + g_SpacerBeforeAfter ); return temp; }; 
-	SearchWindow& operator=(const SearchWindow& other );
-	void display() const {std::cout << m_chromosome -> getName() << "\t" << m_currentStart << "\t" << m_currentEnd << "\t" << m_currentEnd - m_currentStart << std::endl;}
+   unsigned int getStart() const
+   {
+      return m_currentStart;
+   }
+   unsigned int getEnd() const
+   {
+      return m_currentEnd;
+   }
+   void setStart( const unsigned int newStart )
+   {
+      m_currentStart = newStart;
+   }
+   void setEnd( const unsigned int newEnd )
+   {
+      m_currentEnd = newEnd;
+   }
+   const std::string& getChromosomeName() const
+   {
+      return m_chromosome->getName();
+   }
+   const Chromosome* getChromosome() const
+   {
+      return m_chromosome;
+   }
+   unsigned int getSize() const
+   {
+      return 1 + m_currentEnd - m_currentStart;
+   }
+   bool encompasses( const std::string& chromosomeName, const unsigned int position ) const;
+   SearchWindow makePindelCoordinateCopy() const
+   {
+      SearchWindow temp( m_chromosome, m_currentStart + g_SpacerBeforeAfter, m_currentEnd + g_SpacerBeforeAfter );
+      return temp;
+   };
+   SearchWindow& operator=(const SearchWindow& other );
+   void display() const
+   {
+      std::cout << m_chromosome -> getName() << "\t" << m_currentStart << "\t" << m_currentEnd << "\t" << m_currentEnd - m_currentStart << std::endl;
+   }
 
 protected:
-	const Chromosome* m_chromosome;
-	unsigned int m_currentStart;
-	unsigned int m_currentEnd;
+   const Chromosome* m_chromosome;
+   unsigned int m_currentStart;
+   unsigned int m_currentEnd;
 };
 
-class LoopingSearchWindow: public SearchWindow {
+class LoopingSearchWindow: public SearchWindow
+{
 
 public:
-	LoopingSearchWindow(const SearchRegion* region, const Chromosome* chromosome, const int binSize, const unsigned int start, const unsigned int end);
-	LoopingSearchWindow(const SearchRegion* region, const Chromosome* chromosome, const int binSize);
-	void next();
-	std::string display() const;
-	bool finished() const;
+   LoopingSearchWindow(const SearchRegion* region, const Chromosome* chromosome, const int binSize, const unsigned int start, const unsigned int end);
+   LoopingSearchWindow(const SearchRegion* region, const Chromosome* chromosome, const int binSize);
+   void next();
+   std::string display() const;
+   bool finished() const;
 
 private:
-	void updateEndPositions();
-	unsigned int m_globalStart;
-	unsigned int m_globalEnd;
-	unsigned int m_officialStart;
-	unsigned int m_officialEnd;
-	unsigned int m_displayedStart;
-	unsigned int m_displayedEnd;
-	const unsigned int m_BIN_SIZE;
+   void updateEndPositions();
+   unsigned int m_globalStart;
+   unsigned int m_globalEnd;
+   unsigned int m_officialStart;
+   unsigned int m_officialEnd;
+   unsigned int m_displayedStart;
+   unsigned int m_displayedEnd;
+   const unsigned int m_BIN_SIZE;
 };
 
 void safeGetline(std::istream& is, std::string& t);

@@ -1,9 +1,9 @@
-/* 
- * This File is part of Pindel; a program to locate genomic variation. 
+/*
+ * This File is part of Pindel; a program to locate genomic variation.
  * https://trac.nbic.nl/pindel/
- * 
+ *
  *   Copyright (C) 2011 Kai Ye
- * 
+ *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
  *   the Free Software Foundation, either version 3 of the License, or
@@ -32,7 +32,7 @@
 struct AChromosome {
     AChromosome() {
         ChrName = "";
-        ChrSeq = ""; 
+        ChrSeq = "";
     }
     std::string ChrName;
     std::string ChrSeq;
@@ -40,24 +40,25 @@ struct AChromosome {
  */
 
 struct Assembly {
-    Assembly() {
-        Index = 0;
-        Type = "";
-        ChrA = "";
-        PosA = 0;
-        CI_A = 0;
-        ChrB = "";
-        PosB = 0;
-        CI_B = 0;        
-    }
-    unsigned Index;
-    std::string Type;
-    std::string ChrA;
-    unsigned PosA;
-    unsigned CI_A;
-    std::string ChrB;
-    unsigned PosB;
-    unsigned CI_B;
+   Assembly()
+   {
+      Index = 0;
+      Type = "";
+      ChrA = "";
+      PosA = 0;
+      CI_A = 0;
+      ChrB = "";
+      PosB = 0;
+      CI_B = 0;
+   }
+   unsigned Index;
+   std::string Type;
+   std::string ChrA;
+   unsigned PosA;
+   unsigned CI_A;
+   std::string ChrB;
+   unsigned PosB;
+   unsigned CI_B;
 };
 
 void doAssembly (ControlState & CurrentState, UserDefinedSettings* userSettings);//std::ifstream& FastaFile );

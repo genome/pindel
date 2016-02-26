@@ -17,7 +17,7 @@ using std::istringstream;
 
 PindelReadReader::PindelReadReader(LineReader &_reader):reader(_reader)
 {
-	advance();
+   advance();
 }
 
 
@@ -28,39 +28,39 @@ PindelReadReader::~PindelReadReader()
 
 void PindelReadReader::Reset()
 {
-	reader.Reset();
-	advance();
+   reader.Reset();
+   advance();
 }
 
 
 bool PindelReadReader::HasNext()
 {
-	return (reader.HasNext() || buffer.Name!="" );
+   return (reader.HasNext() || buffer.Name!="" );
 }
 
 
 SPLIT_READ PindelReadReader::NextRead()
 {
-	const SPLIT_READ tmp = buffer;
-	advance();
-	return tmp;
+   const SPLIT_READ tmp = buffer;
+   advance();
+   return tmp;
 }
 
 
 void PindelReadReader::advance()
 {
-	buffer = SPLIT_READ();
-	
-	// Read line by line
-	 
-	buffer.Name = reader.NextLine();
-	buffer.setUnmatchedSeq( reader.NextLine());
-	
-	istringstream iss(reader.NextLine().c_str());
-	iss >> buffer.MatchedD;
-	iss >> buffer.FragName;
-	iss >> buffer.MatchedRelPos;
-	iss >> buffer.MS;
-	iss >> buffer.InsertSize;
-	iss >> buffer.Tag;
+   buffer = SPLIT_READ();
+
+   // Read line by line
+
+   buffer.Name = reader.NextLine();
+   buffer.setUnmatchedSeq( reader.NextLine());
+
+   istringstream iss(reader.NextLine().c_str());
+   iss >> buffer.MatchedD;
+   iss >> buffer.FragName;
+   iss >> buffer.MatchedRelPos;
+   iss >> buffer.MS;
+   iss >> buffer.InsertSize;
+   iss >> buffer.Tag;
 }

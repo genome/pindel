@@ -14,14 +14,14 @@
 
 class LineReader
 {
-	public:
-		
-		LineReader();
-		virtual ~LineReader();
-	
-		virtual void		Reset() = 0;
-		virtual bool		HasNext() = 0;
-		virtual std::string NextLine() = 0;
+public:
+
+   LineReader();
+   virtual ~LineReader();
+
+   virtual void		Reset() = 0;
+   virtual bool		HasNext() = 0;
+   virtual std::string NextLine() = 0;
 };
 
 
