@@ -543,7 +543,7 @@ void TryLI(std::map<std::string,int> & ChrName2Index, ControlState & CurrentStat
    short MaximumOverlap;// = min();
    short MaxMismatch = 3;
    short CountMismatch;
-   short FirstLength, SecondLength;
+   short FirstLength; //, SecondLength;
    std::string FirstOne, SecondOne, MergedString;
    std::cout << "TryLI" << std::endl;
    for (unsigned ReadIndex = 0; ReadIndex < First.size(); ReadIndex++) {
@@ -565,7 +565,7 @@ void TryLI(std::map<std::string,int> & ChrName2Index, ControlState & CurrentStat
          FirstOne = ReverseComplement(First[ReadIndex_Plus].getUnmatchedSeq());
          SecondOne = Second[ReadIndex_Minus].getUnmatchedSeq();
          FirstLength = FirstOne.size();
-         SecondLength = SecondOne.size();
+         //SecondLength = SecondOne.size();
          std::cout << FirstOne << "\n" << SecondOne << "\n";
          for (short OverlapCount = MinimumOverlap; OverlapCount < MaximumOverlap; OverlapCount++) {
             CountMismatch = 0;

@@ -884,7 +884,7 @@ void build_record_SR (const bam1_t * mapped_read, const bam1_t * unmapped_read, 
    }
    Temp_One_Read.MatchedRelPos = mapped_core->pos;
    uint32_t *cigar_pointer_mapped = bam_get_cigar (mapped_read);
-   uint32_t *cigar_pointer_unmapped = bam_get_cigar (unmapped_read);
+   //uint32_t *cigar_pointer_unmapped = bam_get_cigar (unmapped_read);
    if (mapped_core->flag & BAM_FREVERSE) {
       Temp_One_Read.MatchedD = '-';
 
@@ -958,9 +958,9 @@ void build_record_RefRead (const bam1_t * mapped_read, const bam1_t * ref_read, 
    //std::string Tag = (std::string) data_for_bam->Tag;
    //int InsertSize = (int) data_for_bam->InsertSize;
 
-   const bam1_core_t *mapped_core;
+   //const bam1_core_t *mapped_core;
    const bam1_core_t *Ref_read_core;
-   mapped_core = &mapped_read->core;
+   //mapped_core = &mapped_read->core;
    Ref_read_core = &ref_read->core;
 
 
@@ -1217,10 +1217,10 @@ static int fetch_func_RP (const bam1_t * b1, void *data)
    //const std::string CurrentChrSeq = *(std::string *) data_for_bam->CurrentChrSeq;
 
    RP_READ Temp_One_Read;
-   const bam1_core_t *b1_core;
+   //const bam1_core_t *b1_core;
    //bam1_t *b2;
    //bam1_core_t *b2_core;
-   b1_core = &b1->core;
+   //b1_core = &b1->core;
    //std::string read_name = bam_get_qname (b1);
    /*
    khint_t key = kh_get (read_name, read_to_map_qual, bam_get_qname (b1));
@@ -1262,10 +1262,10 @@ static int fetch_func_RP_Discovery (const bam1_t * b1, void *data)
    //const std::string CurrentChrSeq = *(std::string *) data_for_bam->CurrentChrSeq;
 
    RP_READ Temp_One_Read;
-   const bam1_core_t *b1_core;
+   //const bam1_core_t *b1_core;
    //bam1_t *b2;
    //bam1_core_t *b2_core;
-   b1_core = &b1->core;
+   //b1_core = &b1->core;
    //std::string read_name = bam_get_qname (b1);
    //if ("read_10038" == read_name) {
    //    std::cout << "see read_10038 in fetch_func_RP_Discovery" << std::endl;

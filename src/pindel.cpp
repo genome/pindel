@@ -1616,7 +1616,7 @@ int main(int argc, char *argv[])
 {
    //TODO: These are counters that are only used in individual steps. They should be moved to separate functions later.
    //Below are variables used for cpu time measurement
-   time_t Time_Load_S, Time_Load_E, Time_Mine_E, Time_Sort_E;
+   time_t Time_Load_S, Time_Load_E, Time_Sort_E;
    Timer timer;
    timer.switchTo("Initializing pindel");
 
@@ -1906,7 +1906,7 @@ int main(int argc, char *argv[])
          //if (currentState.Reads_SR[index].Name == "@M01144:44:000000000-A6N99:1:1101:18676:4723/1")
          //  			std::cout << currentState.Reads_SR[index].Name << std::endl;
          //}
-         Time_Mine_E = time(NULL);
+         //Time_Mine_E = time(NULL);
          if (currentState.Reads_SR.size() ) {
             *logStream << "There are " << currentState.Reads_SR.size() << " split-reads for this chromosome region.\n" << std::endl; // what region?
             std::cout << "There are " << g_NumberOfGapAlignedReads << " split-reads mapped by aligner." << std::endl;

@@ -7,27 +7,7 @@ make[1]: Entering directory `/home/eric-wubbo/Desktop/Pindel_related/pindel_git/
 make[1]: Leaving directory `/home/eric-wubbo/Desktop/Pindel_related/pindel_git/src'
 make[1]: Entering directory `/home/eric-wubbo/Desktop/Pindel_related/pindel_git/src'
 g++  -I/home/eric-wubbo/Desktop/Pindel_related/htslib -Wall -g -c -O3 -fopenmp pindel.cpp -o pindel.o
-pindel.cpp: In function ‘int main(int, char**)’:
-pindel.cpp:1619:37: warning: variable ‘Time_Mine_E’ set but not used [-Wunused-but-set-variable]
-    time_t Time_Load_S, Time_Load_E, Time_Mine_E, Time_Sort_E;
-                                     ^
 g++  -I/home/eric-wubbo/Desktop/Pindel_related/htslib -Wall -g -c -O3 -fopenmp reader.cpp -o reader.o
-reader.cpp: In function ‘void build_record_SR(const bam1_t*, const bam1_t*, void*)’:
-reader.cpp:887:14: warning: unused variable ‘cigar_pointer_unmapped’ [-Wunused-variable]
-    uint32_t *cigar_pointer_unmapped = bam_get_cigar (unmapped_read);
-              ^
-reader.cpp: In function ‘void build_record_RefRead(const bam1_t*, const bam1_t*, void*)’:
-reader.cpp:961:23: warning: variable ‘mapped_core’ set but not used [-Wunused-but-set-variable]
-    const bam1_core_t *mapped_core;
-                       ^
-reader.cpp: In function ‘int fetch_func_RP(const bam1_t*, void*)’:
-reader.cpp:1220:23: warning: variable ‘b1_core’ set but not used [-Wunused-but-set-variable]
-    const bam1_core_t *b1_core;
-                       ^
-reader.cpp: In function ‘int fetch_func_RP_Discovery(const bam1_t*, void*)’:
-reader.cpp:1265:23: warning: variable ‘b1_core’ set but not used [-Wunused-but-set-variable]
-    const bam1_core_t *b1_core;
-                       ^
 g++  -I/home/eric-wubbo/Desktop/Pindel_related/htslib -Wall -g -c -O3 -fopenmp reporter.cpp -o reporter.o
 g++  -I/home/eric-wubbo/Desktop/Pindel_related/htslib -Wall -g -c -O3 -fopenmp searcher.cpp -o searcher.o
 g++  -I/home/eric-wubbo/Desktop/Pindel_related/htslib -Wall -g -c -O3 -fopenmp parameter.cpp -o parameter.o
@@ -58,10 +38,6 @@ g++  -I/home/eric-wubbo/Desktop/Pindel_related/htslib -Wall -g -c -O3 -fopenmp l
 g++  -I/home/eric-wubbo/Desktop/Pindel_related/htslib -Wall -g -c -O3 -fopenmp search_MEI_util.cpp -o search_MEI_util.o
 g++  -I/home/eric-wubbo/Desktop/Pindel_related/htslib -Wall -g -c -O3 -fopenmp search_MEI.cpp -o search_MEI.o
 g++  -I/home/eric-wubbo/Desktop/Pindel_related/htslib -Wall -g -c -O3 -fopenmp assembly.cpp -o assembly.o
-assembly.cpp: In function ‘void TryLI(std::map<std::basic_string<char>, int>&, ControlState&, const Assembly&, std::vector<SPLIT_READ>&, std::vector<SPLIT_READ>&, std::ofstream&)’:
-assembly.cpp:546:23: warning: variable ‘SecondLength’ set but not used [-Wunused-but-set-variable]
-    short FirstLength, SecondLength;
-                       ^
 g++  -I/home/eric-wubbo/Desktop/Pindel_related/htslib -Wall -g -c -O3 -fopenmp genotyping.cpp -o genotyping.o
 g++  -L/home/eric-wubbo/Desktop/Pindel_related/htslib/ -Wl,-rpath /home/eric-wubbo/Desktop/Pindel_related/htslib/ pindel.o reader.o reporter.o searcher.o parameter.o refreader.o control_state.o search_deletions_nt.o search_inversions.o search_inversions_nt.o bam2depth.o search_tandem_duplications.o search_tandem_duplications_nt.o output_sorter.o farend_searcher.o search_variant.o searchshortinsertions.o searchdeletions.o output_file_data.o bddata.o shifted_vector.o read_buffer.o line_reader.o ifstream_line_reader.o gz_line_reader.o pindel_read_reader.o user_defined_settings.o fn_parameters.o logstream.o search_MEI_util.o search_MEI.o assembly.o genotyping.o -O3 -fopenmp -lhts -lm -lz -o pindel
 g++ -O3 SAM_2_PINDEL_cin_2011Sept26.cpp -o sam2pindel
