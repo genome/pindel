@@ -1,6 +1,6 @@
 Style manual for Pindel refactoring
 by Eric-Wubbo Lameijer and Kai Ye
-Version 0.0, August 31st 2011
+Version 0.1, February 28th 2016
 
 If you refactor:
 
@@ -8,23 +8,35 @@ General guidelines for writing new classes and functions:
 -try keep as many data members as possible private
 -add your name and the date to any new function or class you make
 
+We use Astyle for layout, currently with options -A3, -s3 and -j.
 
-Layout:
-
-if ( ) {
-	line1;
-	line2;
-}
-else {
-	line3;
+This means:
+function and class names like:
+functionname()
+{
 }
 
-for/while/do:
-
-for () {
-	line1;
-	line2;
+loops and statements like
+if (a) {
+} else {
 }
+
+and
+while (b) {
+}
+
+For clarity, one-statement bodies of if/else statements and for
+loops are also wrapped in {}.
+
+Anyway, looking at the current code you should get an idea of 
+the general style; and if you for whatever reason do not choose 
+to use the current style - at least the whitespace will be 
+reverted to our standards on the next run of the beautifier, 
+unless you can convince us of the superior readability produced 
+by your coding style preferences...
+
+Since people work on pindel on different editors, we don't use tabs, but
+spaces, one indentation level being represented by 3 spaces.
 
 Variable names/ function names/ class names.
 
@@ -33,7 +45,7 @@ We use camelCase
 Variable names start with lower case character:
 variableName
 
-Function and classn names start with upper case character:
+Function and class names start with upper case character:
 FunctionName
 ClassName
 

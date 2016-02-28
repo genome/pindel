@@ -43,7 +43,8 @@ d) You will now see a lot of files appearing in the directory you started
    files (they are ordinary text files) with any text editor of your choosing
    to get detailed information on the SVs detected. You can also transform
    them into VCF files, by using the pindel2vcf tool. How to use that is
-   explained later in this FAQ.
+   explained later in this FAQ. You can also find other examples on how
+   to run Pindel and pindel2vcf in the demo directory.
 
 
 ** Compile time errors **

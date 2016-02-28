@@ -59,7 +59,6 @@ Makefile.local:
 	@echo 'COLOUSINGBD15_TIME=60' >> $@
 	@echo 'COLOWOBD15_TIME=80' >> $@
 	@echo 'SIM1CHRVS20305_TIME=60' >> $@
-	@echo 'WARNING: Created default Makefile.local; please review it.'
 	@false
 
 # Pseudo targets for configuration

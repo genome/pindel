@@ -20,9 +20,9 @@ in the FAQ, and please let us know if for whatever reason those do not work
 in your case.
 
 If htslib has been cloned and installed, go to the pindel directory 
-([my_path]/pindel) and use the INSTALL script there in the following way:
+([my-path]/pindel) and use the INSTALL script there in the following way:
 
-./INSTALL [path_to_htslib]
+./INSTALL [path-to-htslib]
 
 for example
 

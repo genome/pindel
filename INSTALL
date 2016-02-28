@@ -1,6 +1,6 @@
 #!/bin/sh
 # builds the pindel file, using the htslib directory as an argument
-# script adapted by Eric-Wubbo Lameijer, e.m.w.lameijer@lumc.nl, based on http://www.kingcomputerservices.com/unix_101/tips_on_good_shell_programming_practices.htm
+# script adapted by Eric-Wubbo Lameijer, e.m.w.lameijer@gmail.com, based on http://www.kingcomputerservices.com/unix_101/tips_on_good_shell_programming_practices.htm
 
 #  test if we have a argument on the command line
 
@@ -8,9 +8,9 @@ if [ "$#" != "1" ]; then
     echo " "
     echo "INSTALL"
     echo "    purpose:  builds the pindel executable "
-    echo "    purpose:  you should first download samtools and compile htslib and samtools separately before proceed to Pindel install. "
+    echo "    IMPORTANT:  you should first clone and make/install htslib before installing Pindel. "
     echo "    usage:    ./INSTALL [htslibdirectory]"
-    echo "    example:  ./INSTALL /home/user/tools/samtools-1.2/htslib-1.2.1/"
+    echo "    example:  ./INSTALL /home/user/tools/htslib/"
     echo " "
     exit 1
 fi
@@ -41,13 +41,12 @@ if [ "$?" -ne 0 ]; then
     echo "Possible reasons: "
     echo "1. 'cannot cd to [path]"
     echo "->the htslib path provided was incorrect"
-    echo "(so '../htslib/' was used instead of '/home/user/samtools/htslib')"
     echo " "
     echo "2. 'cannot find -lbam'"
-    echo "->samtools or htslib was not properly compiled, in that case go to the samtools and htslib directory "
+    echo "->htslib was not properly compiled/made, in that case, go to the htslib directory and follow the htslib installation instructions"
     echo "and run 'make'."
     echo " "
-    echo "For futher help, see the FAQ file included in this directory"
+    echo "For further help, see the FAQ file included in this directory"
     echo "Or contact us on kye@genome.wustl.edu" 
     exit 1
 else
@@ -61,7 +60,8 @@ else
     echo " "
     echo "You can test pindel with the example files in the demo directory; example commands are given in the RUNME in that directory."
     echo " " 
-    echo "For help and background information, see the pindel wiki and its FAQ on https://trac.nbic.nl/pindel/wiki/PindelFaq"
-    echo "Or contact us on kye@genome.wustl.edu" 
+    echo "For help and background information, see the pindel wiki and its FAQ on gmt.genome.wustl.edu/packages/pindel, as well as"
+    echo "the FAQ file in the Pindel root directory (the same directory as this INSTALL script is located)"
+    echo "or contact us on kye@genome.wustl.edu" 
     echo " "
 fi 
