@@ -2,36 +2,42 @@
 
 ## Compiling 
 
-To compile Pindel you need GNU Make, GCC and cppcheck and python. Usually they 
-are already installed on Linux. On the Mac you will need to install XCode (3 or
-higher), the latest version can be downloaded from the Mac App Store. cppcheck 
-can be installed with Fink, MacPorts or Homebrew, where homebrew is more
-convenient if you don't need to install other software from source.
+To compile Pindel you need three things: GNU Make and GCC (which usually are 
+already installed on Linux) and htslib. The last is not installed on Linux
+by default, but it can be retrieved with:
 
-Pindel requires samtools; you can download the latest version of samtools from
-[the Samtools Sourceforge site](http://sourceforge.net/projects/samtools/files/). 
-You need to extract and build samtools before you compile Pindel. Refer to the 
-documentation of samtools for the requirements to build samtools.
+git clone https://github.com/samtools/htslib
 
-If you make the Pindel project the first time, it will create a `Makefile.local`.
-It will try to be smart and generate this file with the correct location of
-samtools if you specify it on the make commandline.
+htslib needs to be built before you can start installing Pindel.
+(Go to htslib's directory, and follow the directions
+in its 'readme'. At the time of writing this (February 2016) it simply works
+if you give the commands "make" and "sudo make install".)
 
-    make SAMTOOLS=~/samtools-0.1.18
+To compile Pindel on OS X, you may need to do more work - 'regular' 
+installation under OS X may work, but in some cases OS X gives problems with
+the OpenMP library Pindel uses for speedup. In those cases, see the instructions
+in the FAQ, and please let us know if for whatever reason those do not work 
+in your case.
 
-The `Makefile.local` also includes a couple of options for the different tests.
-The `*_TIME` options define the max execution time for the jobs in the acceptance
-tests, if they are exceeded the acceptance tests will fail.
+If htslib has been cloned and installed, go to the pindel directory 
+([my_path]/pindel) and use the INSTALL script there in the following way:
 
-The `THREADS` option defines the number of threads used in the functional tests,
-this should be at least 2, it is recommended to match the number of cores in
-your system to get the fastest execution time.
+./INSTALL [path_to_htslib]
 
-## Different tests
-The following test targets are defined:
+for example
 
-1. acceptance-tests
-2. coverage-tests
-3. functional-tests
-4. regression-tests
+./INSTALL ../htslib
+
+After this, you can run pindel by using
+
+./pindel [options]
+
+Plain "./pindel" without command line options will list all available command
+line options, the FAQ in the Pindel root directory includes a usage example.
+
+If there are any problems with installing or running Pindel, you may be
+able to find the solution in the FAQ (the FAQ file stored in the same
+directory as the INSTALL script), otherwise, feel free to open an issue 
+on github (https://github.com/genome/pindel/issues) or to contact the
+main author, Kai Ye, at kye@genome.wustl.edu
 
