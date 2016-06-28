@@ -2,9 +2,50 @@
 
 ** Contents **
 
+-How do I run pindel?
 -Compile time errors
 -Runtime problems
 -Contacting the author(s)
+
+** How do I run pindel? **
+
+Typing "./pindel" at the command line will show you all possible pindel 
+options, which are many. 
+
+What you usually need to do, however, is
+a) know where your bam file is/bam files are
+b) create a small textfile that consists of one line for each bam file
+   you want to analyze, consisting of the bamfile name followed by
+   whitespace (like a tab) followed by the insert size (you should know
+   this from the person who sequenced the data, if you really do not or
+   cannot know it, 500 is a decent default value), and finally again a 
+   whitespace (like a tab) followed by your name for the sample
+
+Example:
+
+pop1_ind1.bam	450	P1_1
+pop1_ind2.bam	450	P1_2
+pop1_ind3.bam 	450	P1_3
+
+c) run pindel with its basic parameters: -f to specify the reference fasta
+   file, -i to specify the input text file you just created, and -o 
+   to speficy the output filename. For example, with the test data delivered
+   with the Pindel package, this would look like:
+
+./pindel -f test/SmallTest/sim1chrVs2.fa -i test/SmallTest/sim1chrVs2.conf_for_demo -o simulated_test.out
+
+d) You will now see a lot of files appearing in the directory you started 
+   Pindel from, for example simulated_test.out_D, which contains the 
+   deletions found in the samples. _SI contains the short insertions, _INV
+   the inversions, and _TD the tandem duplications. There are also some
+   other output files, which can be filled at will with specific options
+   (like -l makes Pindel output long insertions as well). You can view the
+   files (they are ordinary text files) with any text editor of your choosing
+   to get detailed information on the SVs detected. You can also transform
+   them into VCF files, by using the pindel2vcf tool. How to use that is
+   explained later in this FAQ. You can also find other examples on how
+   to run Pindel and pindel2vcf in the demo directory.
+
 
 ** Compile time errors **
 

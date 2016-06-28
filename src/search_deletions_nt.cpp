@@ -34,13 +34,13 @@ int searchIndels(ControlState& currentState, unsigned NumBoxes, const SearchWind
    unsigned CloseIndex, FarIndex;
 
    std::vector<unsigned> DI[NumBoxes];
-	unsigned TempBoxIndex;
+   unsigned TempBoxIndex;
    LOG_INFO(*logStream << "Searching deletion-insertions ... " << std::endl);
 
-	//UserDefinedSettings *userSettings = UserDefinedSettings::Instance();
+   //UserDefinedSettings *userSettings = UserDefinedSettings::Instance();
 
    for (unsigned ReadIndex = 0; ReadIndex < currentState.Reads_SR.size(); ReadIndex++) {
-		SPLIT_READ& currentRead = currentState.Reads_SR[ReadIndex];
+      SPLIT_READ& currentRead = currentState.Reads_SR[ReadIndex];
       if (currentRead.Used
             || currentRead.UP_Far.empty() || currentRead.FragName != currentRead.FarFragName) {
          continue;
@@ -55,9 +55,9 @@ int searchIndels(ControlState& currentState, unsigned NumBoxes, const SearchWind
 
       if (currentRead.MatchedD == Plus) {
          if (currentRead.UP_Far[FarIndex].Direction == Minus) {
-            if (currentRead.UP_Far[FarIndex].LengthStr + currentRead.UP_Close[CloseIndex].LengthStr < currentRead.getReadLength() && 
-					currentRead.UP_Far[FarIndex].LengthStr + currentRead.UP_Close[CloseIndex].LengthStr >= userSettings->Min_Num_Matched_Bases && 
-					currentRead.UP_Far[FarIndex].AbsLoc > currentRead.UP_Close[CloseIndex].AbsLoc + 1) {
+            if (currentRead.UP_Far[FarIndex].LengthStr + currentRead.UP_Close[CloseIndex].LengthStr < currentRead.getReadLength() &&
+                  currentRead.UP_Far[FarIndex].LengthStr + currentRead.UP_Close[CloseIndex].LengthStr >= userSettings->Min_Num_Matched_Bases &&
+                  currentRead.UP_Far[FarIndex].AbsLoc > currentRead.UP_Close[CloseIndex].AbsLoc + 1) {
                currentRead.Left = currentRead.UP_Close[CloseIndex].AbsLoc - currentRead.UP_Close[CloseIndex].LengthStr + 1;
                currentRead.Right = currentRead.UP_Far[FarIndex].AbsLoc + currentRead.UP_Far[FarIndex].LengthStr - 1;
                currentRead.BP = currentRead.UP_Close[CloseIndex].LengthStr - 1;
@@ -73,28 +73,26 @@ int searchIndels(ControlState& currentState, unsigned NumBoxes, const SearchWind
 
                   if (readTransgressesBinBoundaries( currentRead, window.getEnd())) {
                      saveReadForNextCycle(currentRead, currentState.FutureReads_SR);
-                  }
-                  else {
+                  } else {
                      if (readInSpecifiedRegion( currentRead, userSettings->getRegion() ) ) {
-                                TempBoxIndex = (int) (currentRead. BPLeft) / BoxSize;
-                                if (TempBoxIndex < NumBoxes) {
+                        TempBoxIndex = (int) (currentRead. BPLeft) / BoxSize;
+                        if (TempBoxIndex < NumBoxes) {
 
-                        	DI[TempBoxIndex]. push_back(ReadIndex);
-                        	currentRead.Used = true;
-                        	Count_DI++;
-                        	Count_DI_Plus++;
-			}
+                           DI[TempBoxIndex]. push_back(ReadIndex);
+                           currentRead.Used = true;
+                           Count_DI++;
+                           Count_DI_Plus++;
+                        }
                      }
                   }
                }
             }
          }
-      }
-      else if (currentRead.MatchedD == Minus) {
+      } else if (currentRead.MatchedD == Minus) {
          if (currentRead.UP_Far[FarIndex].Direction == Plus) {
-            if (currentRead.UP_Close[CloseIndex].LengthStr + currentRead.UP_Far[FarIndex].LengthStr < currentRead.getReadLength() && 
-                currentRead.UP_Close[CloseIndex].LengthStr + currentRead.UP_Far[FarIndex].LengthStr >= userSettings->Min_Num_Matched_Bases && 
-                currentRead.UP_Close[CloseIndex].AbsLoc > currentRead.UP_Far[FarIndex].AbsLoc + 1) {
+            if (currentRead.UP_Close[CloseIndex].LengthStr + currentRead.UP_Far[FarIndex].LengthStr < currentRead.getReadLength() &&
+                  currentRead.UP_Close[CloseIndex].LengthStr + currentRead.UP_Far[FarIndex].LengthStr >= userSettings->Min_Num_Matched_Bases &&
+                  currentRead.UP_Close[CloseIndex].AbsLoc > currentRead.UP_Far[FarIndex].AbsLoc + 1) {
 
                currentRead.Left = currentRead.UP_Far[FarIndex].AbsLoc - currentRead.UP_Far[FarIndex].LengthStr + 1;
                currentRead.Right = currentRead.UP_Close[CloseIndex].AbsLoc + currentRead.UP_Close[CloseIndex].LengthStr - 1;
@@ -110,17 +108,16 @@ int searchIndels(ControlState& currentState, unsigned NumBoxes, const SearchWind
 
                      if (readTransgressesBinBoundaries( currentRead, window.getEnd())) {
                         saveReadForNextCycle( currentRead, currentState.FutureReads_SR);
-                     }
-                     else {
+                     } else {
                         if (readInSpecifiedRegion( currentRead, userSettings->getRegion())) {
-                                TempBoxIndex = (int) (currentRead. BPLeft) / BoxSize;
-                                if (TempBoxIndex < NumBoxes) {
+                           TempBoxIndex = (int) (currentRead. BPLeft) / BoxSize;
+                           if (TempBoxIndex < NumBoxes) {
 
-                           		DI[TempBoxIndex]. push_back(ReadIndex);
-                           		currentRead.Used = true;
-                           		Count_DI++;
-                           		Count_DI_Minus++;
-				}
+                              DI[TempBoxIndex]. push_back(ReadIndex);
+                              currentRead.Used = true;
+                              Count_DI++;
+                              Count_DI_Minus++;
+                           }
                         }
                      }
                   }

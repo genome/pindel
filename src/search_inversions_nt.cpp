@@ -34,30 +34,30 @@ int searchInversionsNT(ControlState& currentState, unsigned NumBoxes, const Sear
 
    int CloseIndex = 0;
    int FarIndex = 0;
-	unsigned TempBoxIndex;
-	//UserDefinedSettings *userSettings = UserDefinedSettings::Instance();
-    
+   unsigned TempBoxIndex;
+   //UserDefinedSettings *userSettings = UserDefinedSettings::Instance();
+
    LOG_INFO(*logStream << "Searching inversions with non-template sequence ... "
             << std::endl);
    for (unsigned ReadIndex = 0; ReadIndex < currentState.Reads_SR.size(); ReadIndex++) {
-		SPLIT_READ& currentRead = currentState.Reads_SR[ReadIndex];
+      SPLIT_READ& currentRead = currentState.Reads_SR[ReadIndex];
       if (currentRead.Used
             || currentRead.UP_Far.empty() || currentRead.FragName != currentRead.FarFragName) {
          continue;
       }
       CloseIndex = currentRead.UP_Close.size() - 1;
       FarIndex = currentRead.UP_Far.size() - 1;
-      if (currentRead.UP_Far[FarIndex].Mismatches + currentRead.UP_Close[CloseIndex].Mismatches > 
-			(short) (1 + userSettings->Seq_Error_Rate * (currentRead.UP_Far[FarIndex].LengthStr + currentRead.UP_Close[CloseIndex].LengthStr))) {
+      if (currentRead.UP_Far[FarIndex].Mismatches + currentRead.UP_Close[CloseIndex].Mismatches >
+            (short) (1 + userSettings->Seq_Error_Rate * (currentRead.UP_Far[FarIndex].LengthStr + currentRead.UP_Close[CloseIndex].LengthStr))) {
          continue;
       }
-      if (currentRead.UP_Close[0].Strand != currentRead.UP_Far[0].Strand && 
-				currentRead.UP_Close[0].Direction == currentRead.UP_Far[0].Direction) {
+      if (currentRead.UP_Close[0].Strand != currentRead.UP_Far[0].Strand &&
+            currentRead.UP_Close[0].Direction == currentRead.UP_Far[0].Direction) {
          if (currentRead.MatchedD == Plus) {
             if (currentRead.UP_Far[FarIndex]. Direction == Plus) {
-               if (currentRead.UP_Far[FarIndex].LengthStr + currentRead.UP_Close[CloseIndex].LengthStr < currentRead.getReadLength() && 
-						 currentRead.UP_Far[FarIndex].AbsLoc > currentRead.UP_Close[CloseIndex].AbsLoc + userSettings->MIN_IndelSize_Inversion && 
-						 currentRead.UP_Far[FarIndex].LengthStr + currentRead.UP_Close[CloseIndex].LengthStr >= userSettings->Min_Num_Matched_Bases ) {
+               if (currentRead.UP_Far[FarIndex].LengthStr + currentRead.UP_Close[CloseIndex].LengthStr < currentRead.getReadLength() &&
+                     currentRead.UP_Far[FarIndex].AbsLoc > currentRead.UP_Close[CloseIndex].AbsLoc + userSettings->MIN_IndelSize_Inversion &&
+                     currentRead.UP_Far[FarIndex].LengthStr + currentRead.UP_Close[CloseIndex].LengthStr >= userSettings->Min_Num_Matched_Bases ) {
 
                   currentRead.Left = (currentRead. UP_Close[CloseIndex].AbsLoc + 1) - currentRead.UP_Close[CloseIndex].LengthStr;
                   currentRead.Right = currentRead.UP_Far[FarIndex].AbsLoc - currentRead.UP_Far[FarIndex].LengthStr + currentRead.getReadLength();
@@ -71,27 +71,26 @@ int searchInversionsNT(ControlState& currentState, unsigned NumBoxes, const Sear
                   currentRead.BPRight = currentRead.UP_Far[FarIndex].AbsLoc - g_SpacerBeforeAfter;
                   if (readTransgressesBinBoundaries( currentRead, window.getEnd())) {
                      saveReadForNextCycle(currentRead, currentState.FutureReads_SR);
-                  }
-                  else {
+                  } else {
                      if ( 1 ) {
                         if (readInSpecifiedRegion( currentRead, userSettings->getRegion())) {
-                                TempBoxIndex = (int) (currentRead. BPLeft) / BoxSize;
-                                if (TempBoxIndex < NumBoxes) {
+                           TempBoxIndex = (int) (currentRead. BPLeft) / BoxSize;
+                           if (TempBoxIndex < NumBoxes) {
 
-                           		Inv_NT[TempBoxIndex]. push_back(ReadIndex);
-                           		currentRead.Used = true;
-                           		Count_Inv_NT++;
-                           		Count_Inv_NT_Plus++;
-				}
+                              Inv_NT[TempBoxIndex]. push_back(ReadIndex);
+                              currentRead.Used = true;
+                              Count_Inv_NT++;
+                              Count_Inv_NT_Plus++;
+                           }
                         }
                      }
                   }
 
                }
                // anchor inside reversed block.
-               if (currentRead.UP_Far[FarIndex].LengthStr + currentRead.UP_Close[CloseIndex].LengthStr < currentRead.getReadLength() && 
-						 currentRead.UP_Far[FarIndex].AbsLoc + userSettings->MIN_IndelSize_Inversion < currentRead.UP_Close[CloseIndex].AbsLoc && 
-                   currentRead.UP_Far[FarIndex].LengthStr + currentRead.UP_Close[CloseIndex].LengthStr >= userSettings->Min_Num_Matched_Bases) {
+               if (currentRead.UP_Far[FarIndex].LengthStr + currentRead.UP_Close[CloseIndex].LengthStr < currentRead.getReadLength() &&
+                     currentRead.UP_Far[FarIndex].AbsLoc + userSettings->MIN_IndelSize_Inversion < currentRead.UP_Close[CloseIndex].AbsLoc &&
+                     currentRead.UP_Far[FarIndex].LengthStr + currentRead.UP_Close[CloseIndex].LengthStr >= userSettings->Min_Num_Matched_Bases) {
 
                   currentRead.Right = currentRead.UP_Close[CloseIndex].AbsLoc - currentRead.UP_Close[CloseIndex].LengthStr + currentRead.getReadLength();
                   currentRead.Left = currentRead.UP_Far[FarIndex].AbsLoc - currentRead.UP_Far[FarIndex].LengthStr + 1;
@@ -106,29 +105,27 @@ int searchInversionsNT(ControlState& currentState, unsigned NumBoxes, const Sear
 
                   if (readTransgressesBinBoundaries( currentRead, window.getEnd())) {
                      saveReadForNextCycle(currentRead, currentState.FutureReads_SR);
-                  }
-                  else {
+                  } else {
                      if ( readInSpecifiedRegion( currentRead, userSettings->getRegion())) {
-                                TempBoxIndex = (int) (currentRead. BPLeft) / BoxSize;
-                                if (TempBoxIndex < NumBoxes) {
+                        TempBoxIndex = (int) (currentRead. BPLeft) / BoxSize;
+                        if (TempBoxIndex < NumBoxes) {
 
-                        		Inv_NT[TempBoxIndex]. push_back(ReadIndex);
-                        		currentRead.Used = true;
-                        		Count_Inv_NT++;
-                        		Count_Inv_NT_Plus++;
-				}
+                           Inv_NT[TempBoxIndex]. push_back(ReadIndex);
+                           currentRead.Used = true;
+                           Count_Inv_NT++;
+                           Count_Inv_NT_Plus++;
+                        }
                      }
                   }
                }
             }
 
-         }
-         else if (currentRead.MatchedD == Minus) {
+         } else if (currentRead.MatchedD == Minus) {
             if (currentRead.UP_Far[FarIndex]. Direction == Minus) {
                // anchor outside reversed block.
-               if (currentRead.UP_Close[CloseIndex].LengthStr  + currentRead.UP_Far[FarIndex].LengthStr < currentRead.getReadLength() && 
-                   currentRead.UP_Close[CloseIndex].AbsLoc > currentRead.UP_Far[FarIndex].AbsLoc + userSettings->MIN_IndelSize_Inversion && 
-                   currentRead.UP_Far[FarIndex].LengthStr + currentRead.UP_Close[CloseIndex].LengthStr >= userSettings->Min_Num_Matched_Bases) {
+               if (currentRead.UP_Close[CloseIndex].LengthStr  + currentRead.UP_Far[FarIndex].LengthStr < currentRead.getReadLength() &&
+                     currentRead.UP_Close[CloseIndex].AbsLoc > currentRead.UP_Far[FarIndex].AbsLoc + userSettings->MIN_IndelSize_Inversion &&
+                     currentRead.UP_Far[FarIndex].LengthStr + currentRead.UP_Close[CloseIndex].LengthStr >= userSettings->Min_Num_Matched_Bases) {
 
                   currentRead.Left = currentRead.UP_Far[FarIndex].AbsLoc + currentRead.UP_Far[FarIndex].LengthStr - currentRead.getReadLength();
                   currentRead.Right = currentRead.UP_Close[CloseIndex].AbsLoc + currentRead.UP_Close[CloseIndex].LengthStr - 1;
@@ -142,25 +139,24 @@ int searchInversionsNT(ControlState& currentState, unsigned NumBoxes, const Sear
                   currentRead.BPRight = currentRead.UP_Close[CloseIndex].AbsLoc - 1 - g_SpacerBeforeAfter;
                   if (readTransgressesBinBoundaries( currentRead, window.getEnd())) {
                      saveReadForNextCycle(currentRead, currentState.FutureReads_SR);
-                  }
-                  else {
+                  } else {
                      if ( readInSpecifiedRegion( currentRead, userSettings->getRegion())) {
-                                TempBoxIndex = (int) (currentRead. BPLeft) / BoxSize;
-                                if (TempBoxIndex < NumBoxes) {
+                        TempBoxIndex = (int) (currentRead. BPLeft) / BoxSize;
+                        if (TempBoxIndex < NumBoxes) {
 
-                        		Inv_NT[TempBoxIndex]. push_back(ReadIndex);
-                        		currentRead.Used = true;
+                           Inv_NT[TempBoxIndex]. push_back(ReadIndex);
+                           currentRead.Used = true;
 
-                        		Count_Inv_NT++;
-                        		Count_Inv_NT_Minus++;
-				}
+                           Count_Inv_NT++;
+                           Count_Inv_NT_Minus++;
+                        }
                      }
                   }
                }
                // anchor inside reversed block.
-               if (currentRead.UP_Close[CloseIndex].LengthStr + currentRead.UP_Far[FarIndex].LengthStr < currentRead.getReadLength() && 
-                   currentRead.UP_Close[CloseIndex].AbsLoc + userSettings->MIN_IndelSize_Inversion < currentRead.UP_Far[FarIndex].AbsLoc && 
-                   currentRead.UP_Far[FarIndex].LengthStr + currentRead.UP_Close[CloseIndex].LengthStr >= userSettings->Min_Num_Matched_Bases) {
+               if (currentRead.UP_Close[CloseIndex].LengthStr + currentRead.UP_Far[FarIndex].LengthStr < currentRead.getReadLength() &&
+                     currentRead.UP_Close[CloseIndex].AbsLoc + userSettings->MIN_IndelSize_Inversion < currentRead.UP_Far[FarIndex].AbsLoc &&
+                     currentRead.UP_Far[FarIndex].LengthStr + currentRead.UP_Close[CloseIndex].LengthStr >= userSettings->Min_Num_Matched_Bases) {
 
                   currentRead.Right = currentRead.UP_Far[FarIndex].AbsLoc + currentRead.UP_Far[FarIndex].LengthStr - 1;
                   currentRead.Left = currentRead.UP_Close[CloseIndex].AbsLoc + currentRead.UP_Close[CloseIndex].LengthStr - currentRead.getReadLength();
@@ -175,18 +171,17 @@ int searchInversionsNT(ControlState& currentState, unsigned NumBoxes, const Sear
 
                   if (readTransgressesBinBoundaries( currentRead, window.getEnd())) {
                      saveReadForNextCycle(currentRead, currentState.FutureReads_SR);
-                  }
-                  else {
+                  } else {
                      if ( readInSpecifiedRegion( currentRead, userSettings->getRegion())) {
-                                TempBoxIndex = (int) (currentRead. BPLeft) / BoxSize;
-                                if (TempBoxIndex < NumBoxes) {
+                        TempBoxIndex = (int) (currentRead. BPLeft) / BoxSize;
+                        if (TempBoxIndex < NumBoxes) {
 
-                        		Inv_NT[TempBoxIndex]. push_back(ReadIndex);
-                        		currentRead.Used = true;
+                           Inv_NT[TempBoxIndex]. push_back(ReadIndex);
+                           currentRead.Used = true;
 
-                        		Count_Inv_NT++;
-                        		Count_Inv_NT_Minus++;
-				}
+                           Count_Inv_NT++;
+                           Count_Inv_NT_Minus++;
+                        }
                      }
                   }
                }

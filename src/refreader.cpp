@@ -44,8 +44,7 @@ void RefReader::ReadSeq(bool WhetherBuildUp)
 
    if (WhetherBuildUp) {
       CopyThisSeq();
-   }
-   else {
+   } else {
       SkipThisSeq();
    }
 
@@ -77,8 +76,7 @@ void RefReader::CopyThisSeq()
       if (TempChar != '\n' && TempChar != '\r') {
          if (TempChar == '>') {
             break;
-         }
-         else {
+         } else {
             if ('a' <= TempChar && TempChar <= 'z') {
                TempChar = TempChar + Diff2UpperCase;
             }

@@ -1,0 +1,445 @@
+####################################################################################################
+0	TD 50	NT 0 ""	ChrID 20	BP 1206717	1206768	BP_range 1206717	1206768	Supports 1	1	+ 0	0	- 1	1	S1 2	SUM_MS 60	1	NumSupSamples 1	1	COLO-829-BL 0 0 0 0 1 1
+TGTGTGTGTGTCTGTGTGTGTATCTGTGTGTGTCTCTGTGTGTGCCTATGTGTGTGTCTGTTTGTGTGTGTATCTgtgtgtgtctctgtgtgtgcctatgtgtgtgtctgtttgtgtgtgtatctgtgtgtgtctctgtgtgtgcctatg
+                                                      TGTCTGTTTGTGTGTGTATCTGTGTGTGTCTCTGTGTGTGCCTATGTGTGTGTCTGTTTGTGTGTGTATCTGTGT
+	-	1206905	60	COLO-829-BL	@@HWI-EAS300_8282_FC30BVC_PE:8:71:1387:1011/2
+####################################################################################################
+1	TD 60	NT 0 ""	ChrID 20	BP 1965284	1965345	BP_range 1965284	1965345	Supports 1	1	+ 0	0	- 1	1	S1 2	SUM_MS 60	1	NumSupSamples 1	1	COLO-829-BL 0 0 0 0 1 1
+TGGATAGATGATGCGTAAGGAATGGTGGGTGGATAGGTGGATAGTAGATGAATGGATGGACAGTGAATAGATGCAtaaggaatggtgggtggataggtggatagtagatgaatggatggacagtgaatagatgcataaggaatggtgggt
+                                                           ACAGTGGATAGATGCATAAGGAATGGTGGGTGGATAGGTGGGTAGTAGATGAATGGATGGACAGTGGATAGATGC
+	-	1965539	60	COLO-829-BL	@@HWUSI-EAS493_8289_FC30GNW_PE:4:44:447:1895/1
+####################################################################################################
+2	TD 73	NT 0 ""	ChrID 20	BP 2558199	2558273	BP_range 2558199	2558273	Supports 1	1	+ 1	1	- 0	0	S1 2	SUM_MS 60	1	NumSupSamples 1	1	COLO-829-BL 0 0 1 1 0 0
+CCTCAAAAGGTGGTGGTGAATTTAGGGCCATTACTAGCCCATATAGTACCTTGTGCAAATTTTTTAAAGGTGCCCtcaaaaggtggtggtgaatttagggccattactagcccatatagtaccttgtgcaaattttttaaaggtgcccac
+                                                                   AGGTGCCCACAAAAGGTGGTGGTGAATTTAGGGCCATTACTAGCCCATATAGTACCTTGTGCAAATTTTTTAAAG
+	+	2557905	60	COLO-829-BL	@@HWI-EAS255_8305_FC30G7J_PE:8:30:1181:1643/1
+####################################################################################################
+3	TD 64	NT 0 ""	ChrID 20	BP 2771472	2771537	BP_range 2771472	2771537	Supports 1	1	+ 1	1	- 0	0	S1 2	SUM_MS 37	1	NumSupSamples 1	1	COLO-829-BL 0 0 1 1 0 0
+CTATAGATAGACATATAGATGTATCTATCGATAGATAGATGTATCTATCGATAGATAGATAGATGTATCTATCGAcatatagatgtatctatcgatagatagatgtatctatcgatagatagatagatgtatctatcgatagatagatag
+                                 GATAGATGTATCTATCGATAGATAGATAGATGTATCTATCGATAGATAGATGTATCTATCGATAGATAGATGTAT
+	+	2771177	37	COLO-829-BL	@@HWI-EAS107_8284_FC30GCE_PE:7:30:1104:192/2
+####################################################################################################
+4	TD 40	NT 0 ""	ChrID 20	BP 2771476	2771517	BP_range 2771476	2771517	Supports 2	2	+ 0	0	- 2	2	S1 3	SUM_MS 74	1	NumSupSamples 1	1	COLO-829-BL 0 0 0 0 2 2
+AGACATATAGATGTATCTATCTATAGATAGACATATAGATGTATCTATCGATAGATAGATGTATCTATCGATAGAtagatgtatctatcgatagatagatgtatctatcgatagatagatagatgtatctatcgatagatagatagatat
+                                       TGTATCTATCGATAGATAGATGTATCTATCGATAGATAGATGTATCTATCGATAGATAGATGTATCTATCGATAG
+	-	2771846	37	COLO-829-BL	@@HWI-EAS258_8310_FC30G9N_PE:5:40:1432:1957/1
+                                      ATGTATCTATCGATAGATAGATGTATCTATCGATAGATAGATGTATCTATCGATAGATAGCTGTATCTATTGATA
+	-	2771791	37	COLO-829-BL	@@HWUSI-EAS493_8289_FC30GNW_PE:2:6:815:765/2
+####################################################################################################
+5	TD 59	NT 0 ""	ChrID 20	BP 3377873	3377933	BP_range 3377873	3377933	Supports 1	1	+ 0	0	- 1	1	S1 2	SUM_MS 60	1	NumSupSamples 1	1	COLO-829-BL 0 0 0 0 1 1
+TGTATTTAAAAGTCAAGAATTGGCACTATAGGCCAGGCGTGGGTGACAAGAGCAAAACTCTGTCTCAAAAAAAAAgaattggcactataggccaggcgtgggtgacaagagcaaaactctgtctcaaaaaaaaaaaaattggcactataa
+                   TTGGCACTATAGGCCAGGCGTGGGTGACAAGAGCAAAACTCTGTCTCAAAAAAAAAAAATTGGCACTATAAGCAA
+	-	3378087	60	COLO-829-BL	@@HWI-EAS255_8291_FC30GRN_PE:7:61:1669:1109/2
+####################################################################################################
+6	TD 91	NT 0 ""	ChrID 20	BP 3692766	3692858	BP_range 3692766	3692858	Supports 1	1	+ 1	1	- 0	0	S1 2	SUM_MS 37	1	NumSupSamples 1	1	COLO-829-BL 0 0 1 1 0 0
+CCCCGACTACAGCTGCCCCCAAAGCTGTGAACTCAGAGTATATGACAAATGGCCAAGCACAAGAGTGTGAGGCCCgcctgccgtaaccgccccccgactacagctgcccccaaagctgtgaactcagagtatatgacaaatggccaagca
+                                                                  GTGAGGCCCTCCTGCCGTAGCCGCCCCCCGACTACAGCTGCCCCCAAAGCTGTGAACTCAGAGTATATGACAAAT
+	+	3692455	37	COLO-829-BL	@@HWI-EAS255_8305_FC30G7J_PE:2:52:1469:503/1
+####################################################################################################
+7	TD 61	NT 0 ""	ChrID 20	BP 4188687	4188749	BP_range 4188687	4188749	Supports 1	1	+ 0	0	- 1	1	S1 2	SUM_MS 37	1	NumSupSamples 1	1	COLO-829-BL 0 0 0 0 1 1
+ATATATATATATACCTGTTGGGTCTGGGTCTGTTTCTCTGTATATATATATATATATATATATATATATATATATctgttgggtctgggtctgtttctctgtatatatatatatatatatatatatatatatatatatatatatatatat
+                                       GTGTGTATATATATATATATATATATATATATATATCTGTGGGGTGTGGGTCTGTTTCTCTGTATATATATATAT
+	-	4188876	37	COLO-829-BL	@@HWI-EAS258_8310_FC30G9N_PE:4:82:134:1422/1
+####################################################################################################
+8	TD 84	NT 0 ""	ChrID 20	BP 4450881	4450966	BP_range 4450881	4450966	Supports 1	1	+ 1	1	- 0	0	S1 2	SUM_MS 60	1	NumSupSamples 1	1	COLO-829-BL 0 0 1 1 0 0
+AGGGGATCCCCAAGCCAGGGCTATGACACCTTCTTTGGGGCTCTGCAGTTCCTGGCATCTCCAAGCTTCTGGGAGcccaaacctaggggatccccaagccagggctatgacaccttctttggggctctgcagttcctggcatctccaagc
+                                                                 CGTCTGGGAGCCCAAACCTAGGGGATCCCCAAGCCAGGGCTATGACACCTTCTTTGGGGCTCTGCAGTTCCTGGC
+	+	4450561	60	COLO-829-BL	@@HWUSI-EAS493_8289_FC30GNW_PE:5:29:827:1992/2
+####################################################################################################
+9	TD 66	NT 1 "A"	ChrID 20	BP 1605789	1605856	BP_range 1605789	1605856	Supports 1	1	+ 0	0	- 1	1	S1 2	SUM_MS 37	1	NumSupSamples 1	1	COLO-829-BL 0 0 0 0 1 1
+CTGTATTAGAACATGAGACTGTATTAGAAGTGAGGACAATGAGGCACAGAGAGGTTCAATTTTAAGATAGAGCTT aacatgagactgtattagaagtgaggacaatgaggcacagagaggttcaattttaagatagagctttgggttgag
+                     TATTAGAAGTGAGGACAATGAGGCACAGAGAGGTTCAATTTTAAGATAGAGCTTAAACATGAGACTGTATTAGAA
+	-	1606007	37	COLO-829-BL	@@HWI-EAS138_4_FC30GP8:6:102:720:1602/1
+####################################################################################################
+10	TD 45	NT 34 "ACACTGTTATAAACACTTCTCAATATAATAATTT"	ChrID 20	BP 2020058	2020104	BP_range 2020058	2020104	Supports 1	1	+ 0	0	- 1	1	S1 2	SUM_MS 37	1	NumSupSamples 1	1	COLO-829-BL 0 0 0 0 1 1
+CCTCATCTGTCAAGTAGAGATAATAACAGGATTGAGAATTCAATAAATTATTATATTGAGAAGTGTTTATAACAG                                  attgagaattcaataaattattatattgagaagtgtttataacagtgtctggtaaatgcttcttaaatgttagtt
+                                                              GTGTTTATACCAGACACTGTTATAAACACTTCTCAATATAATAATTTATTGAGAATTCAATAAATTATTATATTG
+	-	2020373	37	COLO-829-BL	@@HWI-EAS107_8284_FC30GCE_PE:4:9:1192:587/2
+####################################################################################################
+11	TD 84	NT 0 ""	ChrID 20	BP 5273795	5273880	BP_range 5273795	5273880	Supports 1	1	+ 0	0	- 1	1	S1 2	SUM_MS 60	1	NumSupSamples 1	1	COLO-829-BL 0 0 0 0 1 1
+GGGAACCATAGGTGAGGCTGCAGAGTTGGGTAAGAGGCAGAGCATGGCAGTGAAAGCTAATACAAAGAGGACATCgcacatcctgggaaccataggtgaggctgcagagttgggtaagaggcagagcatggcagtgaaagctaatacaaa
+            TGAGGCTGCAGAGTTGGGTAAGAGGCAGAGCATGGCAGGGAAAGCTAATACAAAGAGGACATCTCACCTCCTGGG
+	-	5274033	60	COLO-829-BL	@@HWI-EAS107_8284_FC30GCE_PE:7:8:129:1795/2
+####################################################################################################
+12	TD 136	NT 0 ""	ChrID 20	BP 5628105	5628242	BP_range 5628105	5628242	Supports 2	2	+ 2	2	- 0	0	S1 3	SUM_MS 74	1	NumSupSamples 1	1	COLO-829-BL 0 0 2 2 0 0
+AATGGAGACAGAGTTCCACCATGTTGGCCAGACTGGTCTCAAACACCTGACCTTAAGTGATCCACCTCCCCCAACctcccaagtagttgggattacaggtgcctgccaccacgcctggctaattttttgtatttttaatggagacagagt
+                                                       AGTGATCCACATGCCCCAACCTCCCAAGCAGGTGGGATTACAGGTGCCTGCCACCACGCCTGGCTAATTTTTTGT
+	+	5627888	37	COLO-829-BL	@@HWI-EAS255_8282_FC30G79_PE:4:60:620:1593/1
+                                  GGTCTCAAACACCTGACCTTAAGTGATCCACATGCCCCAACCTCCCAAGCAGGTGGGATTACAGGTGCCTGCCAC
+	+	5628061	37	COLO-829-BL	@@HWI-EAS255_8291_FC30GRN_PE:2:85:298:996/1
+####################################################################################################
+13	TD 64	NT 0 ""	ChrID 20	BP 5989921	5989986	BP_range 5989921	5989986	Supports 1	1	+ 1	1	- 0	0	S1 2	SUM_MS 60	1	NumSupSamples 1	1	COLO-829-BL 0 0 1 1 0 0
+ATCAATGGTCAGAATAATGGTTACCTCTTAACAGCATCCCAGGCAGAGGGAATTCCCGTTCTAAATCAGTGGTCAgaataatggttacctcttaacagcatcccaggcagagggaattcccgttctaaatcagtggtcagaatagtggtt
+                                                              AAATCAATGGTCAGAATAATGGTTCCCTCTTAACAGCATCCCAGGCAGAGGGAATTCCCGTTCTAAATCAGTGGT
+	+	5989594	60	COLO-829-BL	@@HWI-EAS138_4_FC30GP8:3:59:1744:1843/2
+####################################################################################################
+14	TD 82	NT 0 ""	ChrID 20	BP 6740382	6740465	BP_range 6740382	6740465	Supports 1	1	+ 1	1	- 0	0	S1 2	SUM_MS 37	1	NumSupSamples 1	1	COLO-829-BL 0 0 1 1 0 0
+AACTGGCAGGTGTAGATTTCCATGGAAACCAACCCTAAAAGAATGAAAACCCAAGGAGAGAATTGTGTGAAGTGCcccagggaactggcaggtgtagatttccatggaaaccaaccctaaaagaatgaaaacccaaggagagaattgtgt
+                                                                  GTTAAGTGCCCCAAGGAACTGGCAGGTGTAAATTTCCATGGAAACCAACCCTAAAAGAATGAAAACCCAAGGAGA
+	+	6740059	37	COLO-829-BL	@@HWI-EAS138_4_FC30GP8:8:39:1564:230/1
+####################################################################################################
+15	TD 70	NT 0 ""	ChrID 20	BP 6860228	6860299	BP_range 6860228	6860299	Supports 1	1	+ 0	0	- 1	1	S1 2	SUM_MS 60	1	NumSupSamples 1	1	COLO-829-BL 0 0 0 0 1 1
+GGTTTTCTTCTTGAGATAGTGTAAAGTGTATCTGCTTCTTGCTATCTAAATATCCCTGGTTGAGACAAAAGTCAAtcttcttgagatagtgtaaagtgtatctgcttcttgctatctaaatatccctggttgagacaaaagtcaatcttc
+            GAGATAGTGTAAAGTGTATCTGCTTATTGCTATCTAAATATCACTGGTTGAGACAAAAGTCAATCTTCTTGAGAT
+	-	6860440	60	COLO-829-BL	@@HWI-EAS138_4_FC30GP8:8:6:1554:285/2
+####################################################################################################
+16	TD 41	NT 0 ""	ChrID 20	BP 7550755	7550797	BP_range 7550755	7550797	Supports 1	1	+ 0	0	- 1	1	S1 2	SUM_MS 37	1	NumSupSamples 1	1	COLO-829-BL 0 0 0 0 1 1
+AGTCTCCCCTAGATTAGCTAGACATGGAGCACTGATTGGTGCGTTTACAAACCTTGAGCTAGACACAGAGTGCTGattggtgcgtttacaaaccttgagctagacacagagtgctgattggtgcgtttacaatccctgagctagacacag
+                                       TGCATTTACAAACCTTGAGCTAGACACAGGGTGCTGATTGGTGCGTTTCCAAACCTTGAGCTAGACACAGAGTGC
+	-	7550982	37	COLO-829-BL	@@HWI-EAS138_4_FC30GP8:6:26:594:1919/2
+####################################################################################################
+17	TD 41	NT 0 ""	ChrID 20	BP 7550756	7550798	BP_range 7550756	7550798	Supports 1	1	+ 0	0	- 1	1	S1 2	SUM_MS 37	1	NumSupSamples 1	1	COLO-829-BL 0 0 0 0 1 1
+GTCTCCCCTAGATTAGCTAGACATGGAGCACTGATTGGTGCGTTTACAAACCTTGAGCTAGACACAGAGTGCTGAttggtgcgtttacaaaccttgagctagacacagagtgctgattggtgcgtttacaatccctgagctagacacaga
+                                       GCATTTACAAACCTTGAGCTAGACACAGGGTGCTGATTGGTGCGTTTCCAAACCTTGAGCTAGACACAGAGTGCT
+	-	7550984	37	COLO-829-BL	@@HWI-EAS258_8310_FC30G9N_PE:3:40:473:373/1
+####################################################################################################
+18	TD 41	NT 0 ""	ChrID 20	BP 7550764	7550806	BP_range 7550764	7550806	Supports 1	1	+ 0	0	- 1	1	S1 2	SUM_MS 37	1	NumSupSamples 1	1	COLO-829-BL 0 0 0 0 1 1
+TAGATTAGCTAGACATGGAGCACTGATTGGTGCGTTTACAAACCTTGAGCTAGACACAGAGTGCTGATTGGTGCGtttacaaaccttgagctagacacagagtgctgattggtgcgtttacaatccctgagctagacacagagtgctgat
+                                       AAACCTTGAGCTAGACACAGGGTGCTGATTGGTGCGTTTCCAAACCTTGAGCTAGACACAGAGTGCTGATTGGTG
+	-	7550984	37	COLO-829-BL	@@HWI-EAS255_8291_FC30GRN_PE:4:85:141:1586/1
+####################################################################################################
+19	TD 99	NT 0 ""	ChrID 20	BP 7775477	7775577	BP_range 7775477	7775577	Supports 1	1	+ 1	1	- 0	0	S1 2	SUM_MS 60	1	NumSupSamples 1	1	COLO-829-BL 0 0 1 1 0 0
+AATCCCATAACCTTCACTATGTTTTGTGCTTTCATCACAGTGTACAGCCTCGCTCAGGGAGAGCGACCTCTTCTTccaccaaaaccagatctcaaagaaaatcccataaccttcactatgttttgtgctttcatcacagtgtacagcctc
+                                                                  CCCCTTCTTCCACCAAAACCAGATCTCAAAGAAAAACCCATAACCTTCACTATGTTTTGTGCTTTCATCACAGTG
+	+	7775343	60	COLO-829-BL	@@HWI-EAS258_8310_FC30G9N_PE:4:20:1256:1982/2
+####################################################################################################
+20	TD 46	NT 39 "ATAAGTTCAAATAAGACTATGCAAATAGAGTTGATTGAA"	ChrID 20	BP 7074333	7074380	BP_range 7074333	7074380	Supports 1	1	+ 1	1	- 0	0	S1 2	SUM_MS 37	1	NumSupSamples 1	1	COLO-829-BL 0 0 1 1 0 0
+ACAAAACTGTGCAATTCAATCAACTCTATTTGCATAGTCTTATTTGAACTTAGTTTTATATATACATATATAAAA                                       ttgcatagtcttatttgaacttagttttatatatacatatataaaatatataatgtagtattttaattttaattt
+                                                    GTTTTATATATACATATATGAAAATAAGTTCAAATAAGACTATGCAAATAGAGTTGATTGAATTGCATAGTCTTA
+	+	7074045	37	COLO-829-BL	@@HWI-EAS138_4_FC30GP8:5:15:1375:1986/2
+####################################################################################################
+21	TD 61	NT 13 "ATGCAAACAGGTT"	ChrID 20	BP 8049603	8049665	BP_range 8049603	8049665	Supports 1	1	+ 1	1	- 0	0	S1 2	SUM_MS 37	1	NumSupSamples 1	1	COLO-829-BL 0 0 1 1 0 0
+AGGAGAGATTGAAAGAATATTCAACCTGTTTGCATTTATCACAAGGAGGCTAACTCTGCCTTGAATTAGTGGTAA             gaatattcaacctgtttgcatttatcacaaggaggctaactctgccttgaattagtggtaaggacaaaaggagat
+                             TTGCATTTATCACAAGGAGGCTAACTCTGCCTTGAATTCGTGGTAAATGCAAACAGGTTGAATATTCAACCTGTT
+	+	8049312	37	COLO-829-BL	@@HWI-EAS258_8282_FC30GAE_PE:2:4:989:1072/2
+####################################################################################################
+22	TD 84	NT 22 "GGGGGGTCACAAAAACTTCACC"	ChrID 20	BP 9944072	9944157	BP_range 9944072	9944157	Supports 1	1	+ 0	0	- 1	1	S1 2	SUM_MS 37	1	NumSupSamples 1	1	COLO-829-BL 0 0 0 0 1 1
+TATTCTTTCCTTGCTGTGGGTAGTGCATTTCAGGGGGTAAATATCCATAGGCTCTTTCCCAGGCTCACGAGATAG                      ccaaaccattattctttccttgctgtgggtagtgcatttcagggggtaaatatccataggctctttcccaggctc
+                              CAGGGGGTAAATATCCATAGGCTCTTTCCCAGGCTCACGAGGTAGGGGGGGTCACAAAAACTTCACCCCAAACCA
+	-	9944311	37	COLO-829-BL	@@HWI-EAS138_4_FC30GP8:3:68:231:1096/2
+####################################################################################################
+23	TD 144	NT 0 ""	ChrID 20	BP 10252569	10252714	BP_range 10252569	10252714	Supports 7	7	+ 5	5	- 2	2	S1 18	SUM_MS 259	1	NumSupSamples 1	1	COLO-829-BL 0 0 5 5 2 2
+CTTAAACTGGGACTTGTCTTTAGAAGACCACGAATAAAATACAGGTGTATGACCCCGGAGGGAGAGTGTCAAGGAcctggctgcagtgtggggtagggcaggagagggcaaaccctccagtgtggagagggcaggacattcgatcttaaa
+                                                  GACCCTGGAGGGAGAGTGTCAAGGACCTGGCTGCAGTGTGGGGTAGGGCAGGAGAGGGCAAACCCTCCAGTGTGG
+	+	10252363	37	COLO-829-BL	@@HWI-EAS300_8282_FC30BVC_PE:1:80:784:1970/1
+                                              GTATGACCCTGGAGGGAGAGTGTCAAGGACCTGGCTGCAGTGTGGGGTAGGGCAGGAGAGGGCAAACCCTCCAGT
+	+	10252348	37	COLO-829-BL	@@HWI-EAS107_8284_FC30GCE_PE:5:30:898:1306/1
+                                          AGGTGTATGACCCTGGAGGGAGAGTGTCATGGACCTGGCTGCAGTGTGGGGTAGGGCAGGAGAGGGCAAACCCTC
+	+	10252351	37	COLO-829-BL	@@HWI-EAS107_8284_FC30GCE_PE:2:7:1276:65/1
+                                   AAAATACAGGTGTATGACCCTGGAGGGAGAGTGTCAAGGACCTGGCTGCAGTGAGGGGTAGGGCAGGAGAGGGCA
+	-	10252919	37	COLO-829-BL	@@HWI-EAS107_8284_FC30GCE_PE:7:80:1117:1561/2
+                        ATACCACGAATAAAATACAGGTGTATGACCCTGGAGGGAGAGTGTCAAGGACCTGGCTGCAGTGTGGGGTAGGGC
+	+	10252363	37	COLO-829-BL	@@HWUSI-EAS493_8289_FC30GNW_PE:4:13:797:921/1
+                    TAGAAGACCACGAATAAAATACAGGTGTATGACCCTGGAGGGAGAGTGTCAAGGACCTGGCTGCAGTGTGGGGTA
+	+	10252346	37	COLO-829-BL	@@HWI-EAS255_8291_FC30GRN_PE:5:31:289:1000/1
+                TCTTTAGAAGACCACGAATAAAATACAGGTGTATGACCCTGGAGGGAGAGTGTCAAGGACCTGGCTGCAGTGTGG
+	-	10252722	37	COLO-829-BL	@@HWI-EAS255_8305_FC30G7J_PE:1:11:948:832/1
+####################################################################################################
+24	TD 80	NT 0 ""	ChrID 20	BP 12401699	12401780	BP_range 12401699	12401780	Supports 2	2	+ 1	1	- 1	1	S1 4	SUM_MS 74	1	NumSupSamples 1	1	COLO-829-BL 0 0 1 1 1 1
+TTTTTATTCAACAATTTATTTATATCAATATGGACTCCTCTATGTGATACTGTAAGCAGATCTTATACTTTTGGTcttattttttattcaacaatttatttatatcaatatggactcctctatgtgatactgtaagcagatcttatactt
+                                                              TTATACTTTTGGTTATATTTTTTTTTCAACAATTTATTTATATCAATATGGACTCCTCTATGTGATACTGTAAGC
+	-	12402062	37	COLO-829-BL	@@HWI-EAS255_8282_FC30G79_PE:5:67:1669:1214/1
+                                                  TGTAAGCAGATCTTATACTTTTGGTTATATTTTTTATTCAACAATTTATTTATACCAATATGGACTCCTCTATGT
+	+	12401424	37	COLO-829-BL	@@HWI-EAS255_8305_FC30G7J_PE:4:55:386:1891/1
+####################################################################################################
+25	TD 91	NT 0 ""	ChrID 20	BP 13076605	13076697	BP_range 13076605	13076697	Supports 1	1	+ 1	1	- 0	0	S1 2	SUM_MS 60	1	NumSupSamples 1	1	COLO-829-BL 0 0 1 1 0 0
+ACTCACAAACTCGTCAACCCCATCTCTTTTGCTTAGGATTACGGGGGAAATGCATTCTCTTTTTTTGCATGCCAAtggtattggctcacaaactcacaaactcgtcaaccccatctcttttgcttaggattacgggggaaatgcattctc
+                                                                  GCATGACAATGGTATTGTCTCACAAACTCACAAACTCGTCAACCCCATCTCTTTTGCTTAGGATTACGGGGGAAA
+	+	13076293	60	COLO-829-BL	@@HWI-EAS300_8282_FC30BVC_PE:6:41:1071:1329/2
+####################################################################################################
+26	TD 94	NT 0 ""	ChrID 20	BP 14328938	14329033	BP_range 14328938	14329033	Supports 1	1	+ 0	0	- 1	1	S1 2	SUM_MS 60	1	NumSupSamples 1	1	COLO-829-BL 0 0 0 0 1 1
+AATACCTTTTGAGTACTCTCCCTGATGACCCGTAAATTATGAGGTTTTTCCATTCTGGCTAATTGGAACATAAACtttccccactactgggtttaataccttttgagtactctccctgatgacccgtaaattatgaggtttttccattct
+           AGTACTCTCCCTGATGACCCGTAAATTATGAGGTTTATCCATCCTGGATAATTGGAACATAAACTTTCCCCAGTA
+	-	14329174	60	COLO-829-BL	@@HWI-EAS258_8310_FC30G9N_PE:1:60:67:258/2
+####################################################################################################
+27	TD 77	NT 2 "TA"	ChrID 20	BP 10106675	10106753	BP_range 10106675	10106753	Supports 1	1	+ 0	0	- 1	1	S1 2	SUM_MS 60	1	NumSupSamples 1	1	COLO-829-BL 0 0 0 0 1 1
+CTGTGAGAAGCCCCTATACTACATCTTTGAGAAAACTTACAGTAAAGATTTACATTCATCTTCTAGGTACCAGAA  cactgtgagaagcccctatactacatctttgagaaaacttacagtaaagatttacattcatcttctaggtaccag
+            CCTATACTACATCTTTGAGAAAACTTACAGTAAAGATTTACATTCATCTTCTAGGTACCAGAATACACTGTGATA
+	-	10107075	60	COLO-829-BL	@@HWUSI-EAS493_8289_FC30GNW_PE:6:96:603:197/1
+####################################################################################################
+28	TD 64	NT 26 "CTGTCACATACACACATACACATACT"	ChrID 20	BP 11297930	11297995	BP_range 11297930	11297995	Supports 1	1	+ 0	0	- 1	1	S1 2	SUM_MS 37	1	NumSupSamples 1	1	COLO-829-BL 0 0 0 0 1 1
+ACATACTCACACATATACACACATACACACATGCAGTCACACACAAACATACACGCACTGTCACACATACATGCA                          catatacacacatacacacatgcagtcacacacaaacatacacgcactgtcacacatacatgcatacacgcttaa
+                                                           GTCACACACACATGCACTGTCACATACACACATACACATACTCATATACACACATACACACATGCAGTCACACAC
+	-	11298265	37	COLO-829-BL	@@HWI-EAS255_8291_FC30GRN_PE:2:61:1092:334/1
+####################################################################################################
+29	TD 98	NT 7 "TCGCTAA"	ChrID 20	BP 12648388	12648487	BP_range 12648388	12648487	Supports 1	1	+ 1	1	- 0	0	S1 2	SUM_MS 25	1	NumSupSamples 1	1	COLO-829-BL 0 0 1 1 0 0
+AGTAGAGATGAGGTTTCACCATGTTGGCCAGGCTGGTCTCAAACTCCTGACCTCAGGTAATCCACCCACCTCATC       tttttttttttttttgtatttttagtagagatgaggtttcaccatgttggccaggctggtctcaaactcctgacc
+                                                                CCCACCGCATCTCGCTAATTTTTTTTTTTTTTTGTATTTTTAGTAGAGATGAGGTTTCACCATGTTGGCCAGGCT
+	+	12648216	25	COLO-829-BL	@@HWI-EAS138_4_FC30GP8:3:64:1261:697/1
+####################################################################################################
+30	TD 36	NT 20 "TCCATATATATATATATTCC"	ChrID 20	BP 13863066	13863103	BP_range 13863066	13863103	Supports 1	1	+ 0	0	- 1	1	S1 2	SUM_MS 37	1	NumSupSamples 1	1	COLO-829-BL 0 0 0 0 1 1
+ATATTCCATATATATATATTCCATATATATATATTCCATATATATATATTCCATATATATATTCCATATATATAT                    atatatatattccatatatatattccatatatatatattccatatatatatattccatatatatatatgtcacag
+                                            TATATTCCATATATATATTCCATATATATATTCCATATATATATATATTCCATATATATATTCCATATATATATT
+	-	13863208	37	COLO-829-BL	@@HWI-EAS138_4_FC30GP8:6:79:954:135/1
+####################################################################################################
+31	TD 42	NT 0 ""	ChrID 20	BP 15081108	15081151	BP_range 15081108	15081151	Supports 1	1	+ 0	0	- 1	1	S1 2	SUM_MS 37	1	NumSupSamples 1	1	COLO-829-BL 0 0 0 0 1 1
+TGGGGCACAGAGATAAGAGGTTGGGGGCGTGGAAATAAGGGATTGGGGCACAGAGATAAGAGGTTAGGGCATGGAaataagggattggggcacagagataagaggttagggcatggaaataagggatcggggcacagagataagaggtca
+                                         ATTGGGGCACAGAGATAAGAGGTCAGGGCACGGAAATAAGGGATCGGGGCACAGAGATAAGAGGTTGGGGCATGG
+	-	15081224	37	COLO-829-BL	@@HWI-EAS255_8305_FC30G7J_PE:3:70:1291:1236/1
+####################################################################################################
+32	TD 42	NT 0 ""	ChrID 20	BP 15081116	15081159	BP_range 15081116	15081159	Supports 1	1	+ 1	1	- 0	0	S1 2	SUM_MS 37	1	NumSupSamples 1	1	COLO-829-BL 0 0 1 1 0 0
+AGAGATAAGAGGTTGGGGGCGTGGAAATAAGGGATTGGGGCACAGAGATAAGAGGTTAGGGCATGGAAATAAGGGattggggcacagagataagaggttagggcatggaaataagggatcggggcacagagataagaggtcagggttcct
+                                        CACAGAGATAAGAGGTTGGGGCGTGGAAATAAGGGATTGGGGCACAGAGATAAGAGGTCAGGGCACGGAAATAAG
+	+	15080934	37	COLO-829-BL	@@HWI-EAS138_4_FC30GP8:5:106:272:1412/1
+####################################################################################################
+33	TD 42	NT 0 ""	ChrID 20	BP 15081119	15081162	BP_range 15081119	15081162	Supports 1	1	+ 0	0	- 1	1	S1 2	SUM_MS 37	1	NumSupSamples 1	1	COLO-829-BL 0 0 0 0 1 1
+GATAAGAGGTTGGGGGCGTGGAAATAAGGGATTGGGGCACAGAGATAAGAGGTTAGGGCATGGAAATAAGGGATCggggcacagagataagaggttagggcatggaaataagggatcggggcacagagataagaggtcagggttcctgcc
+                                        AGAGATAAGAGGTCAGGGCACGGAAATAAGGGATCGGGGCACAGAGATAAGAGGTTGGGGCATGGAAATAAGGGA
+	-	15081278	37	COLO-829-BL	@@HWI-EAS255_8282_FC30G79_PE:3:68:1766:539/2
+####################################################################################################
+34	TD 42	NT 0 ""	ChrID 20	BP 15081120	15081163	BP_range 15081120	15081163	Supports 2	2	+ 1	1	- 1	1	S1 4	SUM_MS 74	1	NumSupSamples 1	1	COLO-829-BL 0 0 1 1 1 1
+ATAAGAGGTTGGGGGCGTGGAAATAAGGGATTGGGGCACAGAGATAAGAGGTTAGGGCATGGAAATAAGGGATCGgggcacagagataagaggttagggcatggaaataagggatcggggcacagagataagaggtcagggttcctgccc
+                                        GAGATAAGAGGTCAGGGCACGGAAATAAGGGATCGGGGCACAGAGATAAGAGGTTGGGGCATGGAAATAAGGGAT
+	+	15081009	37	COLO-829-BL	@@HWI-EAS255_8282_FC30G79_PE:8:13:590:468/1
+                                       AGAGATAAGAGGTCAGGGCACGGAAATAAGGGATAGGGGCACAGAGATAAGAGGTTGGGGCATGGAAATAAGGGA
+	-	15081294	37	COLO-829-BL	@@HWI-EAS300_8282_FC30BVC_PE:6:84:1529:602/2
+####################################################################################################
+35	TD 42	NT 0 ""	ChrID 20	BP 15081127	15081170	BP_range 15081127	15081170	Supports 1	1	+ 1	1	- 0	0	S1 2	SUM_MS 37	1	NumSupSamples 1	1	COLO-829-BL 0 0 1 1 0 0
+GTTGGGGGCGTGGAAATAAGGGATTGGGGCACAGAGATAAGAGGTTAGGGCATGGAAATAAGGGATCGGGGCACAgagataagaggttagggcatggaaataagggatcggggcacagagataagaggtcagggttcctgcccctcccct
+                                           GTCAGGGCACGGAAATAAGGGATCGGGGCACAGAGATAAGAGGTTGGGGCATGGAAATAAGGGATCAGGGCACAG
+	+	15081016	37	COLO-829-BL	@@HWI-EAS107_8284_FC30GCE_PE:6:12:395:792/1
+####################################################################################################
+36	TD 54	NT 0 ""	ChrID 20	BP 15507229	15507284	BP_range 15507229	15507284	Supports 1	1	+ 1	1	- 0	0	S1 2	SUM_MS 37	1	NumSupSamples 1	1	COLO-829-BL 0 0 1 1 0 0
+CACAGAGAGATTCCATTTATGTACAGTATAACAACAAGAAAATGAATCTAAGCCATGAGAAGTCACAATGGAAGTtacagtataacaacaagaaaatgaatctaagccatgagaagtcacaatggaagttatcttccagagggcagtggc
+                                AACAAGAAAATGAAGCTAAGCCATGAGAAGTCACAATGGAAGTTACAGTATAACAACAAGAAAATGAATCTAAGC
+	+	15506957	37	COLO-829-BL	@@HWI-EAS258_8282_FC30GAE_PE:1:8:768:1614/2
+####################################################################################################
+37	TD 54	NT 0 ""	ChrID 20	BP 15507230	15507285	BP_range 15507230	15507285	Supports 2	2	+ 0	0	- 2	2	S1 3	SUM_MS 74	1	NumSupSamples 1	1	COLO-829-BL 0 0 0 0 2 2
+ACAGAGAGATTCCATTTATGTACAGTATAACAACAAGAAAATGAATCTAAGCCATGAGAAGTCACAATGGAAGTTacagtataacaacaagaaaatgaatctaagccatgagaagtcacaatggaagttatcttccagagggcagtggct
+                                                    CATGAGAAGTCACAATGGAAGTTACAGGATAACAAAAAGAAAATGAATCTAAGCCATGAGAAGTCACAATGGAAG
+	-	15507435	37	COLO-829-BL	@@HWI-EAS300_8282_FC30BVC_PE:1:78:1314:1381/2
+                                                    CATGAGAAGTCACAATGGAAGTTACAGTATAACAACAAGAAAATGAATCTAAGCCATGAGAAGTCAAAATGGAAG
+	-	15507591	37	COLO-829-BL	@@HWI-EAS138_4_FC30GP8:5:105:652:16/1
+####################################################################################################
+38	TD 477	NT 0 ""	ChrID 20	BP 16117015	16117493	BP_range 16117015	16117493	Supports 6	6	+ 6	6	- 0	0	S1 7	SUM_MS 222	1	NumSupSamples 1	1	COLO-829-BL 0 0 6 6 0 0
+GTGTGTGTGCAGTGCGGTGTGTGTAAGTACAGTGTTTACAGTACAGTGTGTGTGAAGTGCAGTGTGTATGCTGTAcagtgtgtgtagagtacagtgtctgtgcagtgcagcgtgtgtgcagtgcagtgtgtgtacagaacagtgtgtgtg
+                                               GTGTGTGAAGTGCAGTGTGTATGCTGTACAGTGTGTGTAGAGTACAGTGTCTGTGCAGTGCAGCGTGTGTGCAGT
+	+	16117327	37	COLO-829-BL	@@HWI-EAS255_8282_FC30G79_PE:4:80:454:1492/1
+                                          ACAGTGTGTGTGAAGTGCAGTGTGTATGCTGTACAGTGTGTGTAGAGTACAGTGTCTGTGCAGTGCAGCGTGTGT
+	+	16117340	37	COLO-829-BL	@@HWI-EAS258_8310_FC30G9N_PE:2:32:615:744/2
+                                         TACAGTGTGTGTGAAGTGCAGTGTGTATGCTGTACAGTGTGTGTAGAGTACAGTGTCTGTGCAGTGCAGCGTGTG
+	+	16117361	37	COLO-829-BL	@@HWUSI-EAS493_8289_FC30GNW_PE:6:87:553:352/2
+                                      CAGTACAGTGTGTGTGAAGTGCAGTGTGTATGCTGTACAGTGTGTGTAGAGTACAGTGTCTGTGCAGTGCAGCGT
+	+	16117353	37	COLO-829-BL	@@HWI-EAS255_8291_FC30GRN_PE:4:63:696:1869/1
+                                   TTACAGTACAGTGTGTGTGAAGTGCAGTGTGTATGCTGTACAGTGTGTGTAGAGTACAGTGTCTGTGCAGTGCAG
+	+	16117308	37	COLO-829-BL	@@HWI-EAS258_8282_FC30GAE_PE:1:80:1309:1029/1
+                                   TTACAGTACAGTGTGTGTGAAGTGCAGTGTGTATGCTGTACAGTGTGTGTAGAGTACAGTGTCTGTGCAGTGCAG
+	+	16117348	37	COLO-829-BL	@@HWI-EAS255_8282_FC30G79_PE:2:60:1325:1102/1
+####################################################################################################
+39	TD 70	NT 0 ""	ChrID 20	BP 16961348	16961419	BP_range 16961348	16961419	Supports 1	1	+ 1	1	- 0	0	S1 2	SUM_MS 37	1	NumSupSamples 1	1	COLO-829-BL 0 0 1 1 0 0
+TATATATGTGTATATATACATATATGTATATATATACATATGTTTGTGTATATATATACACATATATGTGTGTGTatgtgtatatatacatatatgtatatatatacatatgtttgtgtatatatatacacatatatgtgtgtgtgtata
+                               ATACATATATGTTTGTGTATATATATACACATATATGTGTGTGTGTGTGTATATATATATATATATATATATATA
+	+	16961281	37	COLO-829-BL	@@HWI-EAS255_8305_FC30G7J_PE:6:21:1418:1430/1
+####################################################################################################
+40	TD 97	NT 0 ""	ChrID 20	BP 17741787	17741885	BP_range 17741787	17741885	Supports 1	1	+ 1	1	- 0	0	S1 2	SUM_MS 37	1	NumSupSamples 1	1	COLO-829-BL 0 0 1 1 0 0
+TTGAGACCAGCCTGGCCAACATGGTGAAACCCCATCTCTACTAAAAATACAAAAATAGCTGGACGTGGTGGCAGGcggatcacccaaggtcaggagtttgagaccagcctggccaacatggtgaaaccccatctctactaaaaatacaaa
+                                                                   GAGGCAGGCGGATCACCCAAGGTCAGGAGTTTGAGACCAGCCTGGCCACCATGGTGAAACCCCATCTCTACTAAA
+	+	17741480	37	COLO-829-BL	@@HWI-EAS255_8282_FC30G79_PE:5:73:1176:1196/2
+####################################################################################################
+41	TD 40	NT 0 ""	ChrID 20	BP 18123225	18123266	BP_range 18123225	18123266	Supports 1	1	+ 1	1	- 0	0	S1 2	SUM_MS 23	1	NumSupSamples 1	1	COLO-829-BL 0 0 1 1 0 0
+CTCTGCCCGGCCGTGACCCCATCTGGGAGGTGAGGAGCCCCTCCGCCCGGCAGCCGCCCCGTCTGGGAAGTGAGGagcccctccgcccggcagccgccccgtctgggaagtgaggagcgtctccgcccggcagccaccccgtccgggagg
+                                       CCCCCGCCCGGCAGCCGCCCCGTCTGAGAAGTGAGGAGCCCCTCCGCCCGGCAGCCACCCCGTTTGGGAAGTGAG
+	+	18123085	23	COLO-829-BL	@@HWUSI-EAS493_8289_FC30GNW_PE:7:25:804:173/1
+####################################################################################################
+42	TD 41	NT 0 ""	ChrID 20	BP 18137784	18137826	BP_range 18137784	18137826	Supports 1	1	+ 1	1	- 0	0	S1 2	SUM_MS 37	1	NumSupSamples 1	1	COLO-829-BL 0 0 1 1 0 0
+CAGGCATGTATCCTTCCGTAGCTTCTCCACACCTACACGAACCTAGACGATTCCTTCCACACCTTCCCCACACCCacacgaacctagacgattccttccacaccttccccacacccacacgaacctagatgaattccttccacaccttct
+                                       AACCTAGACGGTTCCTTCCACACCTTCCCCACACCCACACGAACCTAGACGATTCCTTCCACACCTTCCCCACAC
+	+	18137675	37	COLO-829-BL	@@HWUSI-EAS493_8289_FC30GNW_PE:2:93:1151:10/2
+####################################################################################################
+43	TD 98	NT 0 ""	ChrID 20	BP 18431840	18431939	BP_range 18431840	18431939	Supports 1	1	+ 1	1	- 0	0	S1 2	SUM_MS 37	1	NumSupSamples 1	1	COLO-829-BL 0 0 1 1 0 0
+GGTAGAAAAGTCTGACCCAGAAATACAGAATTTAGGCTGAGCGTGGTGGCTCACACCTGTAATCCCAGCACTTTGctgaatatttgaatcggatgttaggtagaaaagtctgacccagaaatacagaatttaggctgagcgtggtggctc
+                                                              TCCCAGCAGGTTGCTGAATATTTTAATCGGATGTTAGGTAGAAAATTCTGACCCAGAAATACAGAATTTAGGCTG
+	+	18431585	37	COLO-829-BL	@@HWI-EAS255_8282_FC30G79_PE:4:26:191:283/2
+####################################################################################################
+44	TD 74	NT 0 ""	ChrID 20	BP 18604418	18604493	BP_range 18604418	18604493	Supports 1	1	+ 1	1	- 0	0	S1 2	SUM_MS 37	1	NumSupSamples 1	1	COLO-829-BL 0 0 1 1 0 0
+ACACATATATATGTGTAAATATACCTATGTGTATATTTACACACATATATGTAAATATACCTATGTGTATATTTAcacatatatatgtgtaaatatacctatgtgtatatttacacacatatatgtaaatatacctatgtgtatatttac
+                                                  GTAAATATGCCTATGTGTATGTTTACACATATATATGTGTAAATATACCTATGTGTATGTTTACACATATATATG
+	+	18604448	37	COLO-829-BL	@@HWUSI-EAS493_8289_FC30GNW_PE:5:60:475:819/2
+####################################################################################################
+45	TD 72	NT 0 ""	ChrID 20	BP 19029731	19029804	BP_range 19029731	19029804	Supports 1	1	+ 0	0	- 1	1	S1 2	SUM_MS 60	1	NumSupSamples 1	1	COLO-829-BL 0 0 0 0 1 1
+AAAATCCCACTGAGTGTGGCGCTCACTGTTGGAGAAGTCATTGTTGTTAGTCACTGTGGGGAGCTGGTCAGAACCatcccactgagtgtggcgctcactgttggagaagtcattgttgttagtcactgtggggagctggtcagaaccatc
+           GAGTGTGGCGCTCACTGTTGGAGAAGACATTGTTGGTAGTCACTGTCGGGAGCTGGTCAGAACCATCCCACTGGG
+	-	19029955	60	COLO-829-BL	@@HWI-EAS258_8310_FC30G9N_PE:8:13:243:920/1
+####################################################################################################
+46	TD 73	NT 0 ""	ChrID 20	BP 19050791	19050865	BP_range 19050791	19050865	Supports 6	6	+ 1	1	- 5	5	S1 12	SUM_MS 337	1	NumSupSamples 1	1	COLO-829-BL 0 0 1 1 5 5
+ATCTCATCTGTCATCTATCCATCCTATCTAATCTATTATCTATCTATCTATCTATCTATCTATCTATCTATCTATctcatctgtcatctatccatcctatctaatctattatctatctatctatctatctatctatctatctatctatct
+                             AATCTATCATCTATCTATCTGTCTATCTATCTATCTATCTATCTATCTCATCTGTCATCGATCCATCCTATCTAA
+	-	19051142	37	COLO-829-BL	@@HWI-EAS107_8284_FC30GCE_PE:6:70:699:1956/2
+                           CTAATCTATCATCTATCTATCTGTCTATCTATCTATCTATCTATCTATCTCATCTGTCATCTATCCATCCTATCT
+	+	19050435	60	COLO-829-BL	@@HWI-EAS255_8282_FC30G79_PE:5:97:744:302/1
+                        TATCTAATCTATCATCTATCTATCTGTCTATCTATCTATCTATCTATCTATCTCATCTGTCATCTATCCATCCTA
+	-	19051131	60	COLO-829-BL	@@HWUSI-EAS493_8289_FC30GNW_PE:2:21:912:250/1
+                        TATCTAATCTATCATCTATCTATCTGTCTATCTATCTATCTATCTATCTATCTCATCTGTCATCTATCCATCCTA
+	-	19051122	60	COLO-829-BL	@@HWI-EAS138_4_FC30GP8:2:83:1193:850/2
+              CTATCCATCCTATCTAATCTATCATCTATCTATCTGTCTATCTATCTATCTATCTATCTATCTCATCTGTCATCT
+	-	19050941	60	COLO-829-BL	@@HWUSI-EAS493_8289_FC30GNW_PE:6:9:134:2003/2
+              CTATCCATCCTATCTAATCTATCATCTATCTATCTGTCTATCTATCTATCTATCTATCTATCTCATCTGTCATCT
+	-	19050934	60	COLO-829-BL	@@HWI-EAS255_8291_FC30GRN_PE:6:56:224:1301/1
+####################################################################################################
+47	TD 64	NT 0 ""	ChrID 20	BP 19479509	19479574	BP_range 19479509	19479574	Supports 1	1	+ 0	0	- 1	1	S1 2	SUM_MS 60	1	NumSupSamples 1	1	COLO-829-BL 0 0 0 0 1 1
+GGCAGTAATGAAGAGCAAATGAGGCCAGAGGTGAGCACGGTAAGTAAATTAGACCCAAGTGGGCAGTGAAATCTGagagcaaatgaggccagaggtgagcacggtaagtaaattagacccaagtgggcagtgaaatctgagagcaaatga
+               CAAATGAGGCCAGAGGTGAGCACGGTAAGTAAATTAGACCCAAGTGGGCACTGAAATCTGAGAGCAAATGAGAGC
+	-	19479908	60	COLO-829-BL	@@HWUSI-EAS493_8289_FC30GNW_PE:5:92:485:1292/2
+####################################################################################################
+48	TD 83	NT 18 "GCGGGTGTAAACAATGGT"	ChrID 20	BP 17250555	17250639	BP_range 17250555	17250639	Supports 1	1	+ 0	0	- 1	1	S1 2	SUM_MS 37	1	NumSupSamples 1	1	COLO-829-BL 0 0 0 0 1 1
+AAAATAAAAATTATCGTTCATGCTTTGAAAATCTCTCTTGTGATGTACCTCTCTGCTACAGTACCTGGCATTTAG                  aaggaagaaaaataaaaattatcgttcatgctttgaaaatctctcttgtgatgtacctctctgctacagtacctg
+                                    CTTGTGATGTACCTCTCTGCTACAGTACCTGGCCTTTAGGCGGGTGTAAACAATGGTAAGGAAGAAAAATAAAAA
+	-	17250970	37	COLO-829-BL	@@HWI-EAS255_8305_FC30G7J_PE:7:20:1357:1928/1
+####################################################################################################
+49	TD 47	NT 41 "GAGCGCCCCCATCGCCCGCTCATTCAGGGGGACGTGGGTGG"	ChrID 20	BP 17959622	17959670	BP_range 17959622	17959670	Supports 1	1	+ 1	1	- 0	0	S1 2	SUM_MS 37	1	NumSupSamples 1	1	COLO-829-BL 0 0 1 1 0 0
+CCCACACATTCAGGGGGACGTGGGTGGCCAGAGAGGAGCCCTGGGCAAGACGGACTGATGCCAAGGCCCCTCCCA                                         cagagaggagccctgggcaagacggactgatgccaaggcccctcccaccactgaggctcacccatcttggtgctc
+                                                                  CCCCTCCCAGAGCGCCCCCATCGCCCGCTCATTCAGGGGGACGTGGGTGGCAGAGAGGAGCCCTGGGCAAGACGG
+	+	17959266	37	COLO-829-BL	@@HWUSI-EAS493_8289_FC30GNW_PE:6:31:1309:595/1
+####################################################################################################
+50	TD 68	NT 0 ""	ChrID 20	BP 20266156	20266225	BP_range 20266156	20266225	Supports 1	1	+ 1	1	- 0	0	S1 2	SUM_MS 37	1	NumSupSamples 1	1	COLO-829-BL 0 0 1 1 0 0
+ATAAATGGATGGATGGATGGATGGATAGATGGGTGGGTGGATGGATGGATGGATGGATGGATGGATGGATGGATAgatggatggatggatggatagatgggtgggtggatggatggatggatggatggatggatggatggatagatgtgg
+                                    GTGGATGGATGGATGGATGGATGGATGGATGGATGGATAGATGGGTGGATGGATGGATAGATGGGTGGGTGGATG
+	+	20266149	37	COLO-829-BL	@@HWUSI-EAS493_8289_FC30GNW_PE:7:42:540:1598/1
+####################################################################################################
+51	TD 65	NT 0 ""	ChrID 20	BP 20283497	20283563	BP_range 20283497	20283563	Supports 1	1	+ 1	1	- 0	0	S1 2	SUM_MS 37	1	NumSupSamples 1	1	COLO-829-BL 0 0 1 1 0 0
+TGTGAGGGGATGTGGTCACACTGAGAGGGGAGGTGGTCAGACTGTGTCAGAGGAGGTGGTCACACTGAGGGGAGGtgtggtcacactgagaggggaggtggtcagactgtgtcagaggaggtggtcacactgaggggaggtggtcacact
+                                           GTGTCAGAGGGGGTGGTCACTCTGAGGGGAGGTGGTCACACTGTGAGAGGGGAGGTGGTCAGACTCTGTCAGAGG
+	+	20283375	37	COLO-829-BL	@@HWI-EAS258_8310_FC30G9N_PE:4:62:211:154/2
+####################################################################################################
+52	TD 65	NT 0 ""	ChrID 20	BP 20283520	20283586	BP_range 20283520	20283586	Supports 1	1	+ 0	0	- 1	1	S1 2	SUM_MS 37	1	NumSupSamples 1	1	COLO-829-BL 0 0 0 0 1 1
+AGAGGGGAGGTGGTCAGACTGTGTCAGAGGAGGTGGTCACACTGAGGGGAGGTGGTCACACTGTGAGAGGGGAGGtggtcagactgtgtcagaggaggtggtcacactgaggggaggtggtcacactgtgagaggggaggtggtcacact
+                          GAGGAGGTGGTCACACTGAGGGGAGGTGGTCACACTGTGAGAGGGGGGGTGGTCAGACTCTGTCAGAGGAGGGGG
+	-	20283898	37	COLO-829-BL	@@HWI-EAS255_8305_FC30G7J_PE:5:86:361:1836/1
+####################################################################################################
+53	TD 59	NT 0 ""	ChrID 20	BP 20286658	20286718	BP_range 20286658	20286718	Supports 1	1	+ 1	1	- 0	0	S1 2	SUM_MS 37	1	NumSupSamples 1	1	COLO-829-BL 0 0 1 1 0 0
+GGAGGTGGTCACAGTGTGAGGGGAGGTGGTCACACTGAGGAGAGGTGGTCATAGTGTGAGGGGAGGTGGTCACACtgaggggaggtggtcacactgaggagaggtggtcatagtgtgaggggaggtggtcacactgaggggaggtggtca
+                                      GGAGAGGTGGTCATAGTGTGCGGGGAGGTGGTCACACTGAGGGGAGGTGGTCACACTGAGGGGAGGTGGTCACAG
+	+	20286652	37	COLO-829-BL	@@HWI-EAS255_8282_FC30G79_PE:7:28:958:322/2
+####################################################################################################
+54	TD 82	NT 0 ""	ChrID 20	BP 20387320	20387403	BP_range 20387320	20387403	Supports 1	1	+ 1	1	- 0	0	S1 2	SUM_MS 37	1	NumSupSamples 1	1	COLO-829-BL 0 0 1 1 0 0
+ATAGACCTATATATATATACACACACACACCTATATATATATATACACACACCTATATATATATACATACACACCtatatatatagacctatatatatatacacacacacacctatatatatatatacacacacctatatatatatacat
+                           CACCTATATATATATATACACACACCTATATATATATACATACACACCTATATATATAGACCTATATATATAGAC
+	+	20387066	37	COLO-829-BL	@@HWI-EAS255_8291_FC30GRN_PE:4:100:247:324/2
+####################################################################################################
+55	TD 95	NT 0 ""	ChrID 20	BP 21883550	21883646	BP_range 21883550	21883646	Supports 1	1	+ 1	1	- 0	0	S1 2	SUM_MS 60	1	NumSupSamples 1	1	COLO-829-BL 0 0 1 1 0 0
+ATGGGGGAAGTGAGTTTCTTGCAGGCAGCACATTGTTTGGTTATGTTTTGTTACCTATTCAGCTAATCTGTTTCTttcagtctcagtgtgtctttatgggggaagtgagtttcttgcaggcagcacattgtttggttatgttttgttacc
+                                                              CTAATCCGTTACTTTCAGTCTCAGTGTGTCTTTATGGGGGAAGTGAGTTTCTTGCAGGCAGCACATTGTTTGGTT
+	+	21883239	60	COLO-829-BL	@@HWI-EAS107_8284_FC30GCE_PE:8:43:1560:1374/2
+####################################################################################################
+56	TD 67	NT 0 ""	ChrID 20	BP 22881929	22881997	BP_range 22881929	22881997	Supports 1	1	+ 0	0	- 1	1	S1 2	SUM_MS 60	1	NumSupSamples 1	1	COLO-829-BL 0 0 0 0 1 1
+CCAGAAAGAGGCAGTCAGTAGATGCCATGGTGGTGGGGTGATGGGGCAACTCCCTTCTGATACACCTGCTCCTCAaggcagtcagtagatgccatggtggtggggtgatggggcaactcccttctgatacacctgctcctcaaggcagtc
+              TCAGTAGATGCCATGGTGGCGGGGTGATGGGGCAACTCCCTTCTGATACACCTGCTCCTCAAGGCAGTCAGAAGA
+	-	22882171	60	COLO-829-BL	@@HWI-EAS258_8310_FC30G9N_PE:8:76:559:1702/2
+####################################################################################################
+57	TD 57	NT 0 ""	ChrID 20	BP 23213857	23213915	BP_range 23213857	23213915	Supports 1	1	+ 1	1	- 0	0	S1 2	SUM_MS 60	1	NumSupSamples 1	1	COLO-829-BL 0 0 1 1 0 0
+TCTGTCCCATTTGTCTATGTGTCTGTTTTGGTACCAGTGCCATGCTGTTTTGGCTACCGGAGGCTTGTAGTCTATgtgtctgttttggtaccagtgccatgctgttttggctaccggaggcttgtagtctatgtatctgttttggtacca
+                                       CCATGCTGTTTTGGTTACTGGAGGCTTGTAGTCTATGTATCTGTTTTGGTACCAGTACCATGCTGTTTTGGTTAC
+	+	23213741	60	COLO-829-BL	@@HWI-EAS258_8310_FC30G9N_PE:1:70:1695:651/1
+####################################################################################################
+58	TD 109	NT 0 ""	ChrID 20	BP 23243298	23243408	BP_range 23243298	23243408	Supports 5	5	+ 2	2	- 3	3	S1 12	SUM_MS 185	1	NumSupSamples 1	1	COLO-829-BL 0 0 2 2 3 3
+TGGAGGTCTCAGGCTCCAAGAGAGTGAGAATGGGAGTTCTCGAGACCAGAACTAGAATGTCATTCCTCCAGTCTGcttcccacaggctgcaccatacttccacctatcatggaggtctcaggctccaagagagtgagaatgggagttctc
+                                                                 CTCCAGTCTGCTTCCCACAGGCTGCACCATACTTCCACCTATCATGGAGGTCTCAGGCTCCAAGAGAGTGAGAAT
+	+	23243063	37	COLO-829-BL	@@HWI-EAS255_8305_FC30G7J_PE:4:97:1136:1615/2
+                                                   CTAGAATGTCATTCCTCCAGTCTGCTTCCCACAGGCTGCACCATACTTCCACCTATCATGGAGGTCTCAGGCTCC
+	-	23243679	37	COLO-829-BL	@@HWI-EAS300_8282_FC30BVC_PE:7:3:1676:236/1
+                                        CGAGACCAGAACTAGAATGTCATTCCTCCAGTCTGCTTCCCACAGGCTGCACCATACTTCCACCTATCATGGAGG
+	+	23243011	37	COLO-829-BL	@@HWUSI-EAS493_8289_FC30GNW_PE:5:82:916:1313/2
+                                        CGAGACCAGAACTAGAATGTCATTCCTCCAGTCTGCTTCCCACAGGCTGCACCATACTTCCACCTATCATGGAGG
+	-	23243658	37	COLO-829-BL	@@HWI-EAS138_4_FC30GP8:4:47:1116:936/1
+                        TGAGAATGGGAGTTCTCGAGACCAGAACTAGAATGTCATTCCTCCAGTCTGCTTCCCACAGGCTGCACCATACTT
+	-	23243639	37	COLO-829-BL	@@HWUSI-EAS493_8289_FC30GNW_PE:1:13:1652:1468/1
+####################################################################################################
+59	TD 58	NT 0 ""	ChrID 20	BP 23760315	23760374	BP_range 23760315	23760374	Supports 1	1	+ 0	0	- 1	1	S1 2	SUM_MS 60	1	NumSupSamples 1	1	COLO-829-BL 0 0 0 0 1 1
+CCTAAACTATGGGCCAATATTGGTAACACATTTGGCTCTGCTAGGACATGTGGATGCTTCTAAACTATGGGCCCAtattggtaacacatttggctctgctaggacatgtggatgcttctaaactatgggcccatgttggtatcacatttg
+                                   CTCTGCTAGAACATGTGGATGCTTCTAAACTATGGGCCCATGTTGGTAACACATTTCGCTCTGCTAGGACATGTG
+	-	23760512	60	COLO-829-BL	@@HWI-EAS255_8305_FC30G7J_PE:5:16:386:1866/2
+####################################################################################################
+60	TD 88	NT 0 ""	ChrID 20	BP 24700804	24700893	BP_range 24700804	24700893	Supports 2	2	+ 1	1	- 1	1	S1 4	SUM_MS 74	1	NumSupSamples 1	1	COLO-829-BL 0 0 1 1 1 1
+GTGTGTGTCTGTTGGTGTCTCTGTGTGTGTCTGTGTGTTTCTCTGTGCCTATGTGTGTCTCTGTGTGTGTGTCCGtgtgtgtgtgtgtgtgtgtgtctgttggtgtctctgtgtgtgtctgtgtgtttctctgtgcctatgtgtgtctct
+                                                           TCTGTGTGTGTGTCCGTGTGTGTGTGTGTGTGTGTGTCTGTTGGTGTCTATGTGTGTGTTTGTGTGTTTCTCTGT
+	-	24701059	37	COLO-829-BL	@@HWI-EAS107_8284_FC30GCE_PE:3:34:958:619/1
+                                           TGTGCTTATGTGTGTCTCTGTGTGTGTGTCCGTGTGTGTGTGTGTGTGTGTGTCTGTTGGTGTCTCTGTGTGTGT
+	+	24700552	37	COLO-829-BL	@@HWI-EAS138_4_FC30GP8:2:42:202:1603/1
+####################################################################################################
+61	TD 82	NT 0 ""	ChrID 20	BP 24865741	24865824	BP_range 24865741	24865824	Supports 1	1	+ 1	1	- 0	0	S1 2	SUM_MS 60	1	NumSupSamples 1	1	COLO-829-BL 0 0 1 1 0 0
+GACATCATGCGTTACAGGAAGGAGAGGATGGGGAGCAACAACACAGGTTAAATCAAAGCTTCTCAAACCTTGGAGgccagaggacatcatgcgttacaggaaggagaggatggggagcaacaacacaggttaaatcaaagcttctcaaac
+                                                              TCACACCATGGAGGCCAGAGGACATCATGCTTTACAGGAAGGAGAGGATGGGAAGCAACAACACAGGTTAAATCA
+	+	24865457	60	COLO-829-BL	@@HWI-EAS138_4_FC30GP8:8:24:1735:591/2
+####################################################################################################
+62	TD 57	NT 0 ""	ChrID 20	BP 24910753	24910811	BP_range 24910753	24910811	Supports 1	1	+ 1	1	- 0	0	S1 2	SUM_MS 37	1	NumSupSamples 1	1	COLO-829-BL 0 0 1 1 0 0
+CTGTGATTCCAATGCCATAAGCTGAGCCCAGGAGAGAGGTCCCTGTTGGCTGTGATGGTTCCACTGCCATTCTGAaagctgagcccaggagagaggtccctgttggctgtgatggttccactgccattctgaaagctgagcccaggagag
+                                  AGAGGTCCCTGTTGGCTGTGATGGTCCCACTGCCATTCCGAAAGCTGAGCCCAGGAGAGAGGTCCCTGTTGGCTG
+	+	24910584	37	COLO-829-BL	@@HWI-EAS255_8282_FC30G79_PE:4:33:1420:1878/2
+####################################################################################################
+63	TD 87	NT 27 "ACGCACATGCTCACACACAAATACACA"	ChrID 20	BP 22582825	22582913	BP_range 22582825	22582913	Supports 1	1	+ 1	1	- 0	0	S1 2	SUM_MS 37	1	NumSupSamples 1	1	COLO-829-BL 0 0 1 1 0 0
+TGCACACATGCACACAGACGGACACACAGCCACACATACCTTTACACGCACAGATGCATACAAACCTACACACAC                           tgcacacagatatgcacacatgcacacagacggacacacagccacacatacctttacacgcacagatgcatacaa
+                                         TTACACGCACAGATGCATACAAACCTACACACACACGCACATGCTCACACACAAATACACATGCACACAGATAGG
+	+	22582578	37	COLO-829-BL	@@HWI-EAS138_4_FC30GP8:4:18:1503:902/1
+####################################################################################################
+64	TD 89	NT 0 ""	ChrID 20	BP 25146336	25146426	BP_range 25146336	25146426	Supports 2	2	+ 0	0	- 2	2	S1 3	SUM_MS 74	1	NumSupSamples 1	1	COLO-829-BL 0 0 0 0 2 2
+TCTCCTCCTCCTCCTTCTCCCGCCTCCTCTGCCCTCCTCCTTCATCCTTTAATGTGTCTACAGTATACGCACATTcacccagacctctctctcctcctcctccttctcccgcctcctctgccctcctccttcatcctttaatgtgtctac
+                                        TTCATCCTTTAATGTGTCTACAGTATACGCACATTCACCCAGACCTCTCTCTCCTCCTCCTCCTTCTCCCGCCTC
+	-	25146696	37	COLO-829-BL	@@HWI-EAS255_8291_FC30GRN_PE:2:81:1414:761/2
+                                  TCCTCCTTCATCCTTTAATGTGTCTACAGTATACGCACATTCACCCAGACCTCTCTCTCCTCCTCCTCCTTCTCC
+	-	25146690	37	COLO-829-BL	@@HWI-EAS255_8282_FC30G79_PE:6:18:469:112/1
+####################################################################################################
+65	TD 89	NT 0 ""	ChrID 20	BP 25146337	25146427	BP_range 25146337	25146427	Supports 2	2	+ 0	0	- 2	2	S1 3	SUM_MS 74	1	NumSupSamples 1	1	COLO-829-BL 0 0 0 0 2 2
+CTCCTCCTCCTCCTTCTCCCGCCTCCTCTGCCCTCCTCCTTCATCCTTTAATGTGTCTACAGTATACGCACATTCacccagacctctctctcctcctcctccttctcccgcctcctctgccctcctccttcatcctttaatgtgtctaca
+                                                       TCTACAGTATACGCACATTCACCCAGACCTCTCTCTCCTCCTCCTCCTTCTCCCGCCTCCTCTGCCCTCCTCCTT
+	-	25146686	37	COLO-829-BL	@@HWI-EAS258_8310_FC30G9N_PE:2:43:347:1128/2
+                                                 AATGTGTCTACAGTATACGCACATTCACCCAGACCTCTCTCTCCTCCTCCTCCTTCTCCCGCCTCCTCTGCCCTC
+	-	25146703	37	COLO-829-BL	@@HWI-EAS255_8282_FC30G79_PE:8:38:1163:1175/2
+####################################################################################################
+66	TD 86	NT 0 ""	ChrID 20	BP 25146371	25146458	BP_range 25146371	25146458	Supports 1	1	+ 1	1	- 0	0	S1 2	SUM_MS 60	1	NumSupSamples 1	1	COLO-829-BL 0 0 1 1 0 0
+CCTCCTCCTTCATCCTTTAATGTGTCTACAGTATACGCACATTCACCCAGACCTCTCTCTCCTCCTCCTCCTCCCgcctcctctgccctcctccttcatcctttaatgtgtctacagtatacgcacattcacccagacctctctctcctc
+                                            ACCCAGACCTCGCTCTCCTCCTCCTCCTCCCACCTCCTCTGTCCTCCTCCTTCATCCTTTAATGTGTCTACAGTA
+	+	25146278	60	COLO-829-BL	@@HWI-EAS255_8291_FC30GRN_PE:4:80:644:1577/2
+####################################################################################################
+67	TD 47	NT 0 ""	ChrID 20	BP 25489621	25489669	BP_range 25489621	25489669	Supports 3	3	+ 3	3	- 0	0	S1 4	SUM_MS 99	1	NumSupSamples 1	1	COLO-829-BL 0 0 3 3 0 0
+CTCTCCCTCTCCCTCTCCCTCTCTCTCTCCCTCCTCTCCCTCTCCCTCTCTTTCCACGGTCTCCCTCTCCCTCTCccctcctctccctctccctctctttccacggtctccctctccctctcccctcctctccctctccctctctctctc
+                                        TCTCCTTCTCTTTCCACGGTCTCCCTCTCCCTCTCCCCTCCTCTCCCTCTCCCTCTCTTTCCACGGTCTCCCTCT
+	+	25489497	37	COLO-829-BL	@@HWI-EAS255_8305_FC30G7J_PE:4:18:573:1756/1
+                                    TCCCTCGCCCTCTCTTTCCACGGTCGCCCTCTCCCTCTCCCCTCCTCTCCCTCTCCCTCTCTTTCCACGGTCTCC
+	+	25489474	37	COLO-829-BL	@@HWI-EAS255_8291_FC30GRN_PE:6:99:569:1774/2
+                                    TCCCTCTCCCTCTCTTTCCACGGTCTCCCTCTCCCTCTCCCCTCCTCTCCCTCTCCCTCTCTTTCCACGGTCTCC
+	+	25489512	25	COLO-829-BL	@@HWI-EAS138_4_FC30GP8:4:33:36:840/2
+####################################################################################################
+68	TD 937	NT 0 ""	ChrID 20	BP 25685118	25686056	BP_range 25685118	25686056	Supports 8	8	+ 8	8	- 0	0	S1 9	SUM_MS 220	1	NumSupSamples 1	1	COLO-829-BL 0 0 8 8 0 0
+AACATGCTTAGAATGGTGCCATGTGCATCGTCACCATCCAGTACATATGGGCCATCATGCCTGAATCCCAGATGGattaaaagtccctctgagcttaccttctctaaaaaaatgtaagaaaaagagcctgtgggaaggactatgaagcag
+                                              ATGGGCCATCATGTCTGAATCCCAGATGGATTAAAAGTCCCTCTGAGCTTACCTTCTCTAAAACAATGTAAGAAA
+	+	25685693	23	COLO-829-BL	@@HWI-EAS258_8310_FC30G9N_PE:5:9:1392:54/1
+                                       AGTACATATGGGCCATCATGTCTGAATCCCAGATGGATTAAAAGTCCCTCTGAGCTTACCTTCTCTAAAACAATG
+	+	25685694	23	COLO-829-BL	@@HWUSI-EAS493_8289_FC30GNW_PE:2:75:734:1122/2
+                                       AGTACATATGGGCCATCATGTCTGAATCCCAGATGGATTAAAAGTCCCTCTGAGCTTACCTTCTCTAAAACAATG
+	+	25685695	37	COLO-829-BL	@@HWI-EAS107_8284_FC30GCE_PE:1:25:1222:1208/2
+                                     CCAGTACATATGGGCCATCATGCCTGAATCCTGGATGGATTAAAAGTCCCTCTGAGCTTACCTTCTCTAAAAAAA
+	+	25685677	25	COLO-829-BL	@@HWI-EAS138_4_FC30GP8:2:107:46:1772/2
+                                     CCAGTACATATGGGCCATCATGTCTGAATCCCAGATGGATTAAAAGTCCCTCTGAGCTTACCTTCTCTAAAACAA
+	+	25685716	25	COLO-829-BL	@@HWI-EAS138_4_FC30GP8:2:20:1486:1251/1
+                            CGTCACCATCCAGTACATATGGGCCATCATGCCTGAATCCTGGATGGATTAAAAGTCCCTCTGAGCTTACCTTCT
+	+	25685699	37	COLO-829-BL	@@HWI-EAS258_8282_FC30GAE_PE:2:14:1400:1848/2
+                         CATCGTCACCATCCAGTACATATGGGCCATCATGCCTGAATCCTGGATGGATTAAAAGTCCCTCTGAGCTTACCT
+	+	25685670	25	COLO-829-BL	@@HWI-EAS258_8310_FC30G9N_PE:4:95:1747:1777/1
+                    ATGCGCATCGTCACCATCCAGTACATATGGGCCATCATGTCTGAATCCCAGATGGATTAAAAGTCCCTCTGAGCT
+	+	25685703	25	COLO-829-BL	@@HWI-EAS255_8305_FC30G7J_PE:5:89:570:95/1
+####################################################################################################
+69	TD 69	NT 0 ""	ChrID 20	BP 26156987	26157057	BP_range 26156987	26157057	Supports 2	2	+ 1	1	- 1	1	S1 4	SUM_MS 97	1	NumSupSamples 1	1	COLO-829-BL 0 0 1 1 1 1
+TGCAAGAGTCATACTTCATTGATACTTAATCATAATCTTGGACATTGCGGGTTCCAGTAACCAATATTTAATGCAagtcatacttcattgatacttaatcataatcttggacattgcgggttccagtaaccaatatttaatgcaagactg
+                                                               ATATTTGCTGCAAGTCATACTTCATTGATACTTAATCATAATCTTGGACATTGCGGGTTCCAATAACCAATATTT
+	+	26156837	60	COLO-829-BL	@@HWI-EAS138_4_FC30GP8:7:26:564:426/1
+                                                               ATATTTGCTGCAAGTCATACTTCATTGATACTTAATCATAATCTTGGACATTGCGGGTTCCAATAACCAATATTT
+	-	26157176	37	COLO-829-BL	@@HWI-EAS138_4_FC30GP8:3:80:326:1652/2
+####################################################################################################
+70	TD 335	NT 0 ""	ChrID 20	BP 26221763	26222099	BP_range 26221763	26222099	Supports 3	3	+ 0	0	- 3	3	S1 4	SUM_MS 73	1	NumSupSamples 1	1	COLO-829-BL 0 0 0 0 3 3
+TCACAAAAACTAGACAGAAGCATTCTCAGAAACTTCTTTGTGATGTGTGCATTCAACTTTTTCTTTTGATAGAGCagttttgaaacactctttttgtagaatctacaactggacatttggagtgctttgaggcctatggtgaaaaaggaa
+                                            GTGTGTATTCAACTCTTTCTTTTGATAGAGCAGTTTTGAAACACTCTTTTTGTAGAATCTGCAACTGGACATTTG
+	-	26221952	23	COLO-829-BL	@@HWI-EAS258_8310_FC30G9N_PE:5:14:342:1850/1
+                                         GATGTGTGTATTCAACTCTTTCTTTTGATAGAGCAGTTTTGAAACACTCTTTTTGTGGAATCTGCAACTGGACAT
+	-	26222135	25	COLO-829-BL	@@HWI-EAS255_8291_FC30GRN_PE:3:51:1714:1509/2
+                               ACTTCTTTGTGATGTGTGCATTCAACTCTTTCTTTTGATAGAGCAGTTTTAAAACACTCTTTTTGTAGAATCTCC
+	-	26221940	25	COLO-829-BL	@@HWI-EAS138_4_FC30GP8:8:5:601:468/1
+####################################################################################################
+71	TD 67	NT 18 "ATCCCACTCTACAGACAC"	ChrID 20	BP 25530179	25530247	BP_range 25530179	25530247	Supports 1	1	+ 1	1	- 0	0	S1 2	SUM_MS 37	1	NumSupSamples 1	1	COLO-829-BL 0 0 1 1 0 0
+CTACTACACCCACTAAGCACACACACACAACCCTTCTAGACACACCCAGTGTGACATGCACACCCCCTACACACA                  cccactaagcacacacacacaacccttctagacacacccagtgtgacatgcacaccccctacacacacctctcca
+                               CCTTCTAGACACACCCAGTGTGACATGCACACCCCCTACACACAATCCCACTCTACAGACACCCCACTCAGCACA
+	+	25529904	37	COLO-829-BL	@@HWI-EAS258_8310_FC30G9N_PE:3:88:537:1375/1
+####################################################################################################
+72	TD 51	NT 16 "TATTCTATCTGCTATC"	ChrID 20	BP 26124408	26124460	BP_range 26124408	26124460	Supports 1	1	+ 0	0	- 1	1	S1 2	SUM_MS 37	1	NumSupSamples 1	1	COLO-829-BL 0 0 0 0 1 1
+AAAAATACTTCATGATCTCACTTATATGTGCTATCTAAAAACAAGCCAAGTATATAGAAACAGTAGAATGGTGGC                tatgtgctatctaaaaacaagccaagtatatagaaacagtagaatggtggccatcagggataaggattaagagga
+                                                            CAGTAGAATGGTGGCTATTCTATCTGCTATCTATGTGCTATCTAAAAACAAGCCAAGTATATAGAAACAGTAGAA
+	-	26124484	37	COLO-829-BL	@@HWI-EAS255_8305_FC30G7J_PE:1:38:1212:1319/2

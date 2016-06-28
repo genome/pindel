@@ -36,8 +36,8 @@ pindel:	$(SOURCES:.cpp=.o)
 	$(CXX) $(LDFLAGS) $(HTSLIB_LDFLAGS) $^ -O3 -fopenmp -lhts -lm -lz -o $@
 #	$(CXX) $(LDFLAGS) $(HTSLIB_LDFLAGS) $^ -O3 -fopenmp -Bstatic -static-libgcc -static  -lhts -lm -lz -o $@
 	$(CXX) -O3 SAM_2_PINDEL_cin_2011Sept26.cpp -o sam2pindel
-	$(CXX) -O3 vcfcreator.cpp -o pindel2vcf
-	$(CXX) -O3 vcfcreator4tcga.cpp -o pindel2vcf4tcga
+	$(CXX) -O3 pindel2vcf.cpp -o pindel2vcf
+	$(CXX) -O3 pindel2vcf4tcga.cpp -o pindel2vcf4tcga
 clean:
 	$(RM) pindel pindel2vcf pindel2vcf4tcga pindel-debug $(OBJECTS) $(OBJECTS_DEBUG) $(CPPCHECKS) \
 	    *.gcov *.gcda *.gcno gmon.out *.d *.o

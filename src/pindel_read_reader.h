@@ -17,29 +17,29 @@ class LineReader;
 
 class PindelReadReader
 {
-	
-	private:
-		
-		virtual void advance();
-		
-		LineReader &reader;
-		SPLIT_READ buffer;
-	
-	public:
-		
-		PindelReadReader(LineReader &_reader);
-		
-		
-		virtual ~PindelReadReader();
-		
-		
-		virtual void Reset();
-			
-			
-		virtual bool HasNext();
-			
-			
-		SPLIT_READ NextRead();
+
+private:
+
+   virtual void advance();
+
+   LineReader &reader;
+   SPLIT_READ buffer;
+
+public:
+
+   PindelReadReader(LineReader &_reader);
+
+
+   virtual ~PindelReadReader();
+
+
+   virtual void Reset();
+
+
+   virtual bool HasNext();
+
+
+   SPLIT_READ NextRead();
 };
 
 

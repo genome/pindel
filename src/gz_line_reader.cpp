@@ -18,78 +18,78 @@ const int GZLineReader::BUFFER_SIZE = 128;
 
 void GZLineReader::Open()
 {
-	in = gzopen(filename.c_str(), "rb");
-	cBuffer = new char[BUFFER_SIZE];
-	eof = false;
-	Advance();
+   in = gzopen(filename.c_str(), "rb");
+   cBuffer = new char[BUFFER_SIZE];
+   eof = false;
+   Advance();
 }
 
 
 void GZLineReader::Close()
 {
-	gzclose(in);
+   gzclose(in);
 }
 
 
 void GZLineReader::Advance()
 {
-	if (eof)
-		return;
-	oss.str("");
-	
-	do
-	{
-		memset(cBuffer, ' ', BUFFER_SIZE);
-		const char *returnCode = gzgets(in, cBuffer, BUFFER_SIZE);
-		if (returnCode == NULL)
-		{
-			eof = true;
-			break;
-		}
-		
-		// Strip newline if present
-		
-		newLinePtr = strchr(cBuffer, int('\n'));
-		if (newLinePtr != NULL)
-			oss << std::string(cBuffer, newLinePtr - cBuffer);
-		else
-			oss << cBuffer;
-	} while (newLinePtr == NULL);
-	buffer = oss.str();
+   if (eof) {
+      return;
+   }
+   oss.str("");
+
+   do {
+      memset(cBuffer, ' ', BUFFER_SIZE);
+      const char *returnCode = gzgets(in, cBuffer, BUFFER_SIZE);
+      if (returnCode == NULL) {
+         eof = true;
+         break;
+      }
+
+      // Strip newline if present
+
+      newLinePtr = strchr(cBuffer, int('\n'));
+      if (newLinePtr != NULL) {
+         oss << std::string(cBuffer, newLinePtr - cBuffer);
+      } else {
+         oss << cBuffer;
+      }
+   } while (newLinePtr == NULL);
+   buffer = oss.str();
 }
 
 GZLineReader::GZLineReader(const char *_filename):LineReader(), filename(_filename)
 {
-	Open();
-	cBuffer = new char[BUFFER_SIZE];
-	Advance();
+   Open();
+   cBuffer = new char[BUFFER_SIZE];
+   Advance();
 }
 
 
 GZLineReader::~GZLineReader()
 {
-	Close();
+   Close();
 }
 
 
 void GZLineReader::Reset()
 {
-	// Sinze gzseek can be extremely slow when a file is opened in read mode, we simply reopen the file
-	
-	Close();
-	Open();
+   // Sinze gzseek can be extremely slow when a file is opened in read mode, we simply reopen the file
+
+   Close();
+   Open();
 }
 
 
 bool GZLineReader::HasNext()
 {
-	return !eof && buffer.length() > 0;
+   return !eof && buffer.length() > 0;
 }
 
 
 string GZLineReader::NextLine()
 {
-	std::string tmp = buffer;
-	Advance();
-	return tmp;
+   std::string tmp = buffer;
+   Advance();
+   return tmp;
 }

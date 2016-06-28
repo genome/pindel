@@ -13,41 +13,46 @@
 #include <vector>
 #include <stdlib.h>
 
-template <class T> 
-class ShiftedVector {
+template <class T>
+class ShiftedVector
+{
 
 public:
-	ShiftedVector(unsigned int start, unsigned int end, T fillValue );
-	T& operator[](unsigned int position);
+   ShiftedVector(unsigned int start, unsigned int end, T fillValue );
+   T& operator[](unsigned int position);
 
 private:
-	ShiftedVector();
-	std::vector<T> m_contents;
-	unsigned int m_start;
-	unsigned int m_end;
+   ShiftedVector();
+   std::vector<T> m_contents;
+   unsigned int m_start;
+   unsigned int m_end;
 };
 
 template< class T>
 ShiftedVector<T>::ShiftedVector(unsigned int start, unsigned int end, T fillValue )
 {
-	unsigned int size = ( end - start ) + 1;
-	m_contents.resize( size, fillValue );
-	m_start = start;
-	m_end = end;
+   unsigned int size = ( end - start ) + 1;
+   m_contents.resize( size, fillValue );
+   m_start = start;
+   m_end = end;
 }
 
 template< class T >
 T& ShiftedVector<T>::operator[]( unsigned int position )
 {
-	if (position>m_end) position=m_end;
-	if (position<m_start) position=m_start;
-	if ( (position>m_end) || (position<m_start) ) {
-		std::cout << "ShiftedVector out-of-range error: position " << position << " falls outside range " << 
-				m_start << "-" << m_end << std::endl;
-		exit( EXIT_FAILURE );
-	} else {
-		return m_contents[ position - m_start ];
-	}
+   if (position>m_end) {
+      position=m_end;
+   }
+   if (position<m_start) {
+      position=m_start;
+   }
+   if ( (position>m_end) || (position<m_start) ) {
+      std::cout << "ShiftedVector out-of-range error: position " << position << " falls outside range " <<
+                m_start << "-" << m_end << std::endl;
+      exit( EXIT_FAILURE );
+   } else {
+      return m_contents[ position - m_start ];
+   }
 }
 
 #endif // SHIFTED_VECTOR_H

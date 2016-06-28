@@ -62,7 +62,7 @@ bool contains_subseq_any_strand(const std::string& query, const std::string& db,
 // Construct a mapping from read group ID to sample name given a BAM header.
 std::map<std::string, std::string> get_sample_dictionary(bam_hdr_t* header);
 
-void get_sample_name(std::string& read_group, std::map<std::string, std::string>& sample_dictionary, 
+void get_sample_name(std::string& read_group, std::map<std::string, std::string>& sample_dictionary,
                      std::string& sample_name);
 
 void cleanup_reads(std::vector<simple_read*>& read_vector);

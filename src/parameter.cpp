@@ -45,20 +45,19 @@ Parameter::Parameter (const std::string & shortName, const std::string & longNam
 const std::string
 Parameter::getWord (std::string & line, bool& forceLineEnd) const
 {
-    forceLineEnd = false;
+   forceLineEnd = false;
    std::string head, tail;
    size_t endPos = line.find (" ");
    size_t returnPos = line.find("\n");
-    if (returnPos<endPos) {
-        endPos=returnPos;
-        forceLineEnd=true;
-        
-    }
+   if (returnPos<endPos) {
+      endPos=returnPos;
+      forceLineEnd=true;
+
+   }
    if (endPos == line.npos) {
       head = line;
       tail = "";
-   }
-   else {
+   } else {
       head = line.substr (0, endPos);
       tail = line.substr (endPos + 1);
    }
@@ -75,7 +74,7 @@ const std::string Parameter::makeNiceLine (const std::string & rawDescription) c
    const size_t LIMIT = d_MAX_LINE_WIDTH - d_DESCRIBE_WIDTH;
    size_t lineSize = 0;
    while (words.size () > 0) {
-       bool forceLineEnd = false;
+      bool forceLineEnd = false;
       std::string newWord = getWord (words, forceLineEnd);
       // if (forceLineEnd) { while (newWord[newWord.length()-1]==' ') { newWord=newWord.substr(0,newWord.length()-1); }}; // working on this later. April 11 2012
       if (newWord.size () + lineSize > LIMIT || forceLineEnd) {

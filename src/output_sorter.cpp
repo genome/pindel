@@ -68,7 +68,7 @@ int OutputSorter::DoSortAndOutputInversions (ControlState& currentState, std::ve
    std::vector<SPLIT_READ> GoodIndels;
    std::vector<Indel4output> IndelEvents;
    int ReportedEventCount = 0;
-	//UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
+   //UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
 
    for (unsigned Box_index = 0; Box_index < NumBoxes; Box_index++) {
       if (Inv[Box_index].size () >= userSettings->NumRead2ReportCutOff) {
@@ -78,43 +78,36 @@ int OutputSorter::DoSortAndOutputInversions (ControlState& currentState, std::ve
             for (unsigned int Second = First + 1; Second < InversionsNum; Second++) {
 //               LOG_DEBUG (*logStream << InputIndels[First].BPLeft << "\t" << InputIndels[First].BPRight << "\t"
 //                          InputIndels[Second].BPLeft << "\t" << InputIndels[Second].BPRight << std::endl);
-               {  
-                  CompareResult = 0; 
+               {
+                  CompareResult = 0;
                   if (Reads[Inv[Box_index][First]].BPLeft + Reads[Inv[Box_index][First]].BPRight < Reads[Inv[Box_index][Second]].BPLeft + Reads[Inv[Box_index][Second]].BPRight) {
                      continue;
-                  }
-                  else if (Reads[Inv[Box_index][First]].BPLeft + Reads[Inv[Box_index][First]].BPRight > Reads[Inv[Box_index][Second]].BPLeft + Reads[Inv[Box_index][Second]].BPRight) {
+                  } else if (Reads[Inv[Box_index][First]].BPLeft + Reads[Inv[Box_index][First]].BPRight > Reads[Inv[Box_index][Second]].BPLeft + Reads[Inv[Box_index][Second]].BPRight) {
                      CompareResult = 1;
-                  }
-                  else if (Reads[Inv[Box_index][First]].IndelSize > Reads[Inv[Box_index][Second]].IndelSize) { // IndelSize: larger ones first
+                  } else if (Reads[Inv[Box_index][First]].IndelSize > Reads[Inv[Box_index][Second]].IndelSize) { // IndelSize: larger ones first
                      continue;
-                  }
-                  else if (Reads[Inv[Box_index][First]].IndelSize < Reads[Inv[Box_index][Second]].IndelSize) {
+                  } else if (Reads[Inv[Box_index][First]].IndelSize < Reads[Inv[Box_index][Second]].IndelSize) {
                      CompareResult = 1;
-                  }
-                  else if (Reads[Inv[Box_index][First]].BPLeft < Reads[Inv[Box_index][Second]].BPLeft) {
+                  } else if (Reads[Inv[Box_index][First]].BPLeft < Reads[Inv[Box_index][Second]].BPLeft) {
                      continue;
-                  }
-                  else if (Reads[Inv[Box_index][First]].BPLeft > Reads[Inv[Box_index][Second]].BPLeft) {
+                  } else if (Reads[Inv[Box_index][First]].BPLeft > Reads[Inv[Box_index][Second]].BPLeft) {
                      CompareResult = 1;
-                  }
-                  else if (Reads[Inv[Box_index][First]].BPLeft == Reads[Inv[Box_index][Second]].BPLeft) {
+                  } else if (Reads[Inv[Box_index][First]].BPLeft == Reads[Inv[Box_index][Second]].BPLeft) {
                      if (Reads[Inv[Box_index][First]].BPRight < Reads[Inv[Box_index][Second]].BPRight) {
                         continue;
-                     }
-                     else if (Reads[Inv[Box_index][First]].BPRight > Reads[Inv[Box_index][Second]].BPRight) {
+                     } else if (Reads[Inv[Box_index][First]].BPRight > Reads[Inv[Box_index][Second]].BPRight) {
                         CompareResult = 1;
-                     }
-                     else if (isNonTemplateInversion) {
+                     } else if (isNonTemplateInversion) {
                         if (Reads[Inv[Box_index][First]].NT_size < Reads[Inv[Box_index][Second]].NT_size) {
                            continue;
-                        }
-                        else if (Reads[Inv[Box_index][First]].NT_size > Reads[Inv[Box_index][Second]].NT_size) {
+                        } else if (Reads[Inv[Box_index][First]].NT_size > Reads[Inv[Box_index][Second]].NT_size) {
+                           CompareResult = 1;
+                        } else if (Reads[Inv[Box_index][First]].BP > Reads[Inv[Box_index][Second]].BP) {
                            CompareResult = 1;
                         }
-                        else if (Reads[Inv[Box_index][First]].BP > Reads[Inv[Box_index][Second]].BP) CompareResult = 1; 
+                     } else if (Reads[Inv[Box_index][First]].BP > Reads[Inv[Box_index][Second]].BP) {
+                        CompareResult = 1;
                      }
-                    else if (Reads[Inv[Box_index][First]].BP > Reads[Inv[Box_index][Second]].BP) CompareResult = 1;
                   }
                   if (CompareResult == 1) {
                      Temp4Exchange = Inv[Box_index][First];
@@ -124,15 +117,16 @@ int OutputSorter::DoSortAndOutputInversions (ControlState& currentState, std::ve
                }
             }
          }
-          for (unsigned int First = 0; First < InversionsNum - 1; First++) {
-              for (unsigned int Second = First + 1; Second < InversionsNum; Second++) {
-                  if (Reads[Inv[Box_index][First]].LeftMostPos == Reads[Inv[Box_index][Second]].LeftMostPos || Reads[Inv[Box_index][First]].LeftMostPos + Reads[Inv[Box_index][First]].getReadLength() == Reads[Inv[Box_index][Second]].LeftMostPos + Reads[Inv[Box_index][Second]].getReadLength()) {
+         for (unsigned int First = 0; First < InversionsNum - 1; First++) {
+            for (unsigned int Second = First + 1; Second < InversionsNum; Second++) {
+               if (Reads[Inv[Box_index][First]].LeftMostPos == Reads[Inv[Box_index][Second]].LeftMostPos || Reads[Inv[Box_index][First]].LeftMostPos + Reads[Inv[Box_index][First]].getReadLength() == Reads[Inv[Box_index][Second]].LeftMostPos + Reads[Inv[Box_index][Second]].getReadLength()) {
 
-                          if (Reads[Inv[Box_index][First]].MatchedD == Reads[Inv[Box_index][Second]].MatchedD)
-                              Reads[Inv[Box_index][Second]].UniqueRead = false; 
+                  if (Reads[Inv[Box_index][First]].MatchedD == Reads[Inv[Box_index][Second]].MatchedD) {
+                     Reads[Inv[Box_index][Second]].UniqueRead = false;
                   }
-              }
-          }
+               }
+            }
+         }
 
          GoodIndels.clear ();
          IndelEvents.clear ();
@@ -160,8 +154,7 @@ int OutputSorter::DoSortAndOutputInversions (ControlState& currentState, std::ve
                        "\t" << OneIndelEvent.BPRight << std::endl);
             if (GoodIndels[GoodIndex].BPLeft + GoodIndels[GoodIndex].BPRight == OneIndelEvent.BPLeft + OneIndelEvent.BPRight) {
                OneIndelEvent.End = GoodIndex;
-            }
-            else {
+            } else {
                // change breakpoints
                // step 1 find the largest event
                unsigned MaxSize = 0;
@@ -177,21 +170,23 @@ int OutputSorter::DoSortAndOutputInversions (ControlState& currentState, std::ve
                      //*logStream << "Skip one inversion 1!" << std::endl;
                      break;
                   }
-                  if (MaxSize < GoodIndels[i].IndelSize) std::cout << "something is wrong here! MaxSize < GoodIndels[i].IndelSize " << std::endl;
-                   short Diff = (MaxSize - GoodIndels[i].IndelSize) / 2;
+                  if (MaxSize < GoodIndels[i].IndelSize) {
+                     std::cout << "something is wrong here! MaxSize < GoodIndels[i].IndelSize " << std::endl;
+                  }
+                  short Diff = (MaxSize - GoodIndels[i].IndelSize) / 2;
                   GoodIndels[i].IndelSize = MaxSize;
                   GoodIndels[i].BPLeft = GoodIndels[i].BPLeft - Diff;
                   GoodIndels[i].BPRight = GoodIndels[i].BPRight + Diff;
-                   
+
                   // for plus
                   if (GoodIndels[i].MatchedD == '+') {
-                       if (GoodIndels[i].BP > Diff) {
-                          GoodIndels[i].BP = GoodIndels[i].BP - Diff;
-                      }
-                  }
-                  else {
-                       if (GoodIndels[i].BP + Diff < GoodIndels[i].getReadLengthMinus())
-                     GoodIndels[i].BP = GoodIndels[i].BP + Diff;   // for minus
+                     if (GoodIndels[i].BP > Diff) {
+                        GoodIndels[i].BP = GoodIndels[i].BP - Diff;
+                     }
+                  } else {
+                     if (GoodIndels[i].BP + Diff < GoodIndels[i].getReadLengthMinus()) {
+                        GoodIndels[i].BP = GoodIndels[i].BP + Diff;   // for minus
+                     }
                   }
                }
                OneIndelEvent.RealStart = GoodIndels[OneIndelEvent.Start].BPLeft; // largest one
@@ -224,19 +219,22 @@ int OutputSorter::DoSortAndOutputInversions (ControlState& currentState, std::ve
                OneIndelEvent.WhetherReport = false;
                break;
             }
-		if (MaxSize < GoodIndels[i].IndelSize) std::cout << "something is wrong: MaxSize < GoodIndels[i].IndelSize" << std::endl;
+            if (MaxSize < GoodIndels[i].IndelSize) {
+               std::cout << "something is wrong: MaxSize < GoodIndels[i].IndelSize" << std::endl;
+            }
             short Diff = (MaxSize - GoodIndels[i].IndelSize) / 2;
             GoodIndels[i].IndelSize = MaxSize;
             GoodIndels[i].BPLeft = GoodIndels[i].BPLeft - Diff;
             GoodIndels[i].BPRight = GoodIndels[i].BPRight + Diff;
             // for plus
             if (GoodIndels[i].MatchedD == '+') {
-               if (GoodIndels[i].BP > Diff)  
-                   GoodIndels[i].BP = GoodIndels[i].BP - Diff;
-            }
-            else {
-                if (GoodIndels[i].BP + Diff < GoodIndels[i].getReadLengthMinus())
-                   GoodIndels[i].BP = GoodIndels[i].BP + Diff;   // for minus
+               if (GoodIndels[i].BP > Diff) {
+                  GoodIndels[i].BP = GoodIndels[i].BP - Diff;
+               }
+            } else {
+               if (GoodIndels[i].BP + Diff < GoodIndels[i].getReadLengthMinus()) {
+                  GoodIndels[i].BP = GoodIndels[i].BP + Diff;   // for minus
+               }
             }
             //if (GoodIndels[i].BP < 0) *logStream << "there " << Diff << " " << GoodIndels[i].BP << std::endl;
          }
@@ -250,122 +248,131 @@ int OutputSorter::DoSortAndOutputInversions (ControlState& currentState, std::ve
          if (OneIndelEvent.WhetherReport) {
             IndelEvents.push_back (OneIndelEvent);
          }
-          //*logStream << "in8" << std::endl;
+         //*logStream << "in8" << std::endl;
          LOG_DEBUG (*logStream << "IndelEvent: " << IndelEvents.size () << std::endl);
 
          if (!IndelEvents.empty ()) {
             ReportedEventCount += ReportIndelEvents (currentState, IndelEvents, GoodIndels);
          }
-          //*logStream << "in9" << std::endl;
+         //*logStream << "in9" << std::endl;
       }
    }
-    //*logStream << "end" << std::endl;
+   //*logStream << "end" << std::endl;
    return ReportedEventCount;
 }
 
-bool IsGoodINV(std::vector < SPLIT_READ > & GoodIndels, Indel4output & OneIndelEvent, unsigned RealStart, unsigned RealEnd, ControlState& currentState) {
-    
-    if (RealEnd < RealStart || RealStart == 0) {
-        //std::cout << "RealEnd < RealStart false" << std::endl;
-        return false;
-    }
-    
-    
-    //UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
-    
-    //if (userSettings->pindelConfigFileAsInput() ||userSettings->singlePindelFileAsInput()) return true;
-    //std::cout << "three " << userSettings->pindelConfigFileAsInput() << " || " << userSettings->singlePindelFileAsInput() << " || " << userSettings->NormalSamples << std::endl;
-    if (userSettings->pindelConfigFileAsInput() || userSettings->singlePindelFileAsInput() || userSettings->NormalSamples == false) return true;
-    //return true;
-    
-    //std::cout << "IsGoodINV " << std::endl;
-    unsigned Cutoff = (OneIndelEvent.End - OneIndelEvent.Start + 1) / 2;
-    if (Cutoff < 5) Cutoff = 5;
-    //std::cout << "Real Start and End: INV " << RealStart << " " << RealEnd << " " << (OneIndelEvent.End - OneIndelEvent.Start + 1)
-                //<< " " << RP_support_D(currentState, OneIndelEvent, RealStart, RealEnd)
-    //            << " " << Cutoff << std::endl;
-    bool LeftGood = false;
-    bool RightGood = false;
-    unsigned CountLeft = 0;
-    unsigned CountRight = 0;
-    //bool WhetherIsGood;
+bool IsGoodINV(std::vector < SPLIT_READ > & GoodIndels, Indel4output & OneIndelEvent, unsigned RealStart, unsigned RealEnd, ControlState& currentState)
+{
 
-    if (RealEnd - RealStart < (unsigned)GoodIndels[OneIndelEvent.Start].getReadLength() * 2) {
-        //std::cout << "< readlength, good" << std::endl;
-        return true;
-    }
-    else {
-        //std::cout << "to the business " << currentState.Reads_RP_Discovery.size() << std::endl;
-        for (unsigned index = 0; index < currentState.Reads_RP_Discovery.size(); index++) {
-            //std::cout << CountLeft << " " << CountRight << " " << (OneIndelEvent.End - OneIndelEvent.Start + 1) << std::endl;
-            if (CountLeft >= Cutoff) LeftGood = true;
-            if (CountRight >= Cutoff) RightGood = true;
-            if (LeftGood && RightGood) {
-                //std::cout << "Reporting true for INV " << Cutoff << " " << CountLeft << " " << CountRight << std::endl;
-                return true;
+   if (RealEnd < RealStart || RealStart == 0) {
+      //std::cout << "RealEnd < RealStart false" << std::endl;
+      return false;
+   }
+
+
+   //UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
+
+   //if (userSettings->pindelConfigFileAsInput() ||userSettings->singlePindelFileAsInput()) return true;
+   //std::cout << "three " << userSettings->pindelConfigFileAsInput() << " || " << userSettings->singlePindelFileAsInput() << " || " << userSettings->NormalSamples << std::endl;
+   if (userSettings->pindelConfigFileAsInput() || userSettings->singlePindelFileAsInput() || userSettings->NormalSamples == false) {
+      return true;
+   }
+   //return true;
+
+   //std::cout << "IsGoodINV " << std::endl;
+   unsigned Cutoff = (OneIndelEvent.End - OneIndelEvent.Start + 1) / 2;
+   if (Cutoff < 5) {
+      Cutoff = 5;
+   }
+   //std::cout << "Real Start and End: INV " << RealStart << " " << RealEnd << " " << (OneIndelEvent.End - OneIndelEvent.Start + 1)
+   //<< " " << RP_support_D(currentState, OneIndelEvent, RealStart, RealEnd)
+   //            << " " << Cutoff << std::endl;
+   bool LeftGood = false;
+   bool RightGood = false;
+   unsigned CountLeft = 0;
+   unsigned CountRight = 0;
+   //bool WhetherIsGood;
+
+   if (RealEnd - RealStart < (unsigned)GoodIndels[OneIndelEvent.Start].getReadLength() * 2) {
+      //std::cout << "< readlength, good" << std::endl;
+      return true;
+   } else {
+      //std::cout << "to the business " << currentState.Reads_RP_Discovery.size() << std::endl;
+      for (unsigned index = 0; index < currentState.Reads_RP_Discovery.size(); index++) {
+         //std::cout << CountLeft << " " << CountRight << " " << (OneIndelEvent.End - OneIndelEvent.Start + 1) << std::endl;
+         if (CountLeft >= Cutoff) {
+            LeftGood = true;
+         }
+         if (CountRight >= Cutoff) {
+            RightGood = true;
+         }
+         if (LeftGood && RightGood) {
+            //std::cout << "Reporting true for INV " << Cutoff << " " << CountLeft << " " << CountRight << std::endl;
+            return true;
+         }
+         RP_READ & currentread = currentState.Reads_RP_Discovery[index];
+
+
+         if (currentread.DA != currentread.DB) {
+            continue;
+         }
+         if (currentread.ChrNameA != currentread.ChrNameB) {
+            continue;
+         }
+
+         //std::cout << currentread.ChrNameA << " " << currentread.PosA << " " << currentread.DA << " "
+         //<< currentread.ChrNameB << " " << currentread.PosB << " " << currentread.DB << " "
+         //<< currentread.Experimental_InsertSize << std::endl;
+         //std::cout << currentread.DA
+         if (currentread.DA == '+') {
+            if (currentread.PosA < currentread.PosB) {
+               if (currentread.PosA < RealStart + currentread.ReadLength && currentread.PosB + currentread.ReadLength > RealStart && currentread.PosB < RealEnd + currentread.ReadLength) {
+                  if (currentread.PosA + currentread.Experimental_InsertSize + currentread.ReadLength > RealStart) {
+                     if (currentread.PosB + currentread.Experimental_InsertSize + currentread.ReadLength > RealEnd) {
+                        CountLeft++;
+                     }
+                  }
+               }
+            } else {
+               if (currentread.PosB < RealStart +currentread.ReadLength && currentread.PosA + currentread.ReadLength > RealStart && currentread.PosA < RealEnd + currentread.ReadLength) {
+                  if (currentread.PosB + currentread.Experimental_InsertSize + currentread.ReadLength > RealStart) {
+                     if (currentread.PosA + currentread.Experimental_InsertSize + currentread.ReadLength > RealEnd) {
+                        CountLeft++;
+                     }
+                  }
+               }
             }
-            RP_READ & currentread = currentState.Reads_RP_Discovery[index];
-
-
-            if (currentread.DA != currentread.DB) continue;
-            if (currentread.ChrNameA != currentread.ChrNameB) continue;
-
-            //std::cout << currentread.ChrNameA << " " << currentread.PosA << " " << currentread.DA << " "
-            //<< currentread.ChrNameB << " " << currentread.PosB << " " << currentread.DB << " "
-            //<< currentread.Experimental_InsertSize << std::endl;
-            //std::cout << currentread.DA
-            if (currentread.DA == '+') {
-                if (currentread.PosA < currentread.PosB) {
-                    if (currentread.PosA < RealStart + currentread.ReadLength && currentread.PosB + currentread.ReadLength > RealStart && currentread.PosB < RealEnd + currentread.ReadLength) {
-                        if (currentread.PosA + currentread.Experimental_InsertSize + currentread.ReadLength > RealStart) {
-                            if (currentread.PosB + currentread.Experimental_InsertSize + currentread.ReadLength > RealEnd) {
-                                CountLeft++;
-                            }
-                        }
-                    }
-                }
-                else {
-                    if (currentread.PosB < RealStart +currentread.ReadLength && currentread.PosA + currentread.ReadLength > RealStart && currentread.PosA < RealEnd + currentread.ReadLength) {
-                        if (currentread.PosB + currentread.Experimental_InsertSize + currentread.ReadLength > RealStart) {
-                            if (currentread.PosA + currentread.Experimental_InsertSize + currentread.ReadLength > RealEnd) {
-                                CountLeft++;
-                            }
-                        }
-                    }
-                }
+         } else { // --
+            if (currentread.PosA < currentread.PosB) {
+               if (currentread.PosA + currentread.ReadLength > RealStart && currentread.PosA < RealEnd + currentread.ReadLength && currentread.PosB + currentread.ReadLength > RealEnd) {
+                  if (currentread.PosA < RealStart + currentread.Experimental_InsertSize + currentread.ReadLength) {
+                     if (currentread.PosB < RealEnd + currentread.Experimental_InsertSize + currentread.ReadLength) {
+                        CountRight++;
+                     }
+                  }
+               }
+            } else {
+               if (currentread.PosB + currentread.ReadLength > RealStart && currentread.PosB < RealEnd + currentread.ReadLength && currentread.PosA + currentread.ReadLength > RealEnd) {
+                  if (currentread.PosB < RealStart + currentread.Experimental_InsertSize + currentread.ReadLength) {
+                     if (currentread.PosA < RealEnd + currentread.Experimental_InsertSize + currentread.ReadLength) {
+                        CountRight++;
+                     }
+                  }
+               }
             }
-            else { // --
-                if (currentread.PosA < currentread.PosB) {
-                    if (currentread.PosA + currentread.ReadLength > RealStart && currentread.PosA < RealEnd + currentread.ReadLength && currentread.PosB + currentread.ReadLength > RealEnd) {
-                        if (currentread.PosA < RealStart + currentread.Experimental_InsertSize + currentread.ReadLength) {
-                            if (currentread.PosB < RealEnd + currentread.Experimental_InsertSize + currentread.ReadLength) {
-                                CountRight++;
-                            }
-                        }
-                    }
-                }
-                else {
-                    if (currentread.PosB + currentread.ReadLength > RealStart && currentread.PosB < RealEnd + currentread.ReadLength && currentread.PosA + currentread.ReadLength > RealEnd) {
-                        if (currentread.PosB < RealStart + currentread.Experimental_InsertSize + currentread.ReadLength) {
-                            if (currentread.PosA < RealEnd + currentread.Experimental_InsertSize + currentread.ReadLength) {
-                                CountRight++;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
+         }
+      }
+   }
 
-    //std::cout << "Return false " << CountLeft << " " << CountRight << " cutoff " << Cutoff <<  std::endl;
-    return false;
+   //std::cout << "Return false " << CountLeft << " " << CountRight << " cutoff " << Cutoff <<  std::endl;
+   return false;
 }
 
 int OutputSorter::ReportIndelEvents (ControlState& currentState, std::vector<Indel4output> &IndelEvents,
-                                 std::vector<SPLIT_READ> &GoodIndels)
-{  
+                                     std::vector<SPLIT_READ> &GoodIndels)
+{
    int ReportedEventCount = 0;
-	//UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
+   //UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
 
    for (unsigned EventIndex = 0; EventIndex < IndelEvents.size (); EventIndex++) {
       LOG_DEBUG (*logStream << IndelEvents[EventIndex].Start << "\t" << IndelEvents[EventIndex].End << "\t" << IndelEvents[EventIndex].Support << std::endl);
@@ -374,12 +381,13 @@ int OutputSorter::ReportIndelEvents (ControlState& currentState, std::vector<Ind
       if (IndelEvents[EventIndex].Support < userSettings->NumRead2ReportCutOff) {
          continue;
       }
-      if (IsGoodINV(GoodIndels, IndelEvents[EventIndex], RealStart, RealEnd, currentState) == false) continue;
+      if (IsGoodINV(GoodIndels, IndelEvents[EventIndex], RealStart, RealEnd, currentState) == false) {
+         continue;
+      }
       if (GoodIndels[IndelEvents[EventIndex].Start].IndelSize < userSettings->BalanceCutoff) {
          OutputInversions (GoodIndels, *CurrentChr, IndelEvents[EventIndex].Start, IndelEvents[EventIndex].End, RealStart, RealEnd, *InvOutf);
          ReportedEventCount++;
-      }
-      else if (ReportEvent(GoodIndels, IndelEvents[EventIndex].Start, IndelEvents[EventIndex].End)) {
+      } else if (ReportEvent(GoodIndels, IndelEvents[EventIndex].Start, IndelEvents[EventIndex].End)) {
          OutputInversions (GoodIndels, *CurrentChr, IndelEvents[EventIndex].Start, IndelEvents[EventIndex].End, RealStart, RealEnd, *InvOutf);
          ReportedEventCount++;
       }

@@ -23,29 +23,31 @@
 
 typedef std::vector <unsigned> PosVector;
 
-class FarEndSearchPerRegion {
-public:
-FarEndSearchPerRegion( const Chromosome* Chromosome, unsigned short NumberOfErrors, unsigned size)
-: CurrentChromosome ( Chromosome )
+class FarEndSearchPerRegion
 {
-    PosVector emptyPosVector;
-    emptyPosVector.reserve(size);
-    PD_Plus.assign( NumberOfErrors, emptyPosVector);
-    PD_Minus.assign( NumberOfErrors, emptyPosVector);
-    emptyPosVector.clear();
-}
+public:
+   FarEndSearchPerRegion( const Chromosome* Chromosome, unsigned short NumberOfErrors, unsigned size)
+      : CurrentChromosome ( Chromosome )
+   {
+      PosVector emptyPosVector;
+      emptyPosVector.reserve(size);
+      PD_Plus.assign( NumberOfErrors, emptyPosVector);
+      PD_Minus.assign( NumberOfErrors, emptyPosVector);
+      emptyPosVector.clear();
+   }
 
-~FarEndSearchPerRegion() {
-	//emptyPosVector.clear();
-	PD_Plus.clear();
-	PD_Minus.clear();
-}
-    
+   ~FarEndSearchPerRegion()
+   {
+      //emptyPosVector.clear();
+      PD_Plus.clear();
+      PD_Minus.clear();
+   }
 
-    const Chromosome * CurrentChromosome;
-    std::vector< PosVector > PD_Plus;
-    std::vector< PosVector > PD_Minus;
-    //FarEndSearchPerRegion( const Chromosome* Chromosome, unsigned short NumberOfErrors, unsigned size);
+
+   const Chromosome * CurrentChromosome;
+   std::vector< PosVector > PD_Plus;
+   std::vector< PosVector > PD_Minus;
+   //FarEndSearchPerRegion( const Chromosome* Chromosome, unsigned short NumberOfErrors, unsigned size);
 };
 
 

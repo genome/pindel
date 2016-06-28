@@ -2,18 +2,19 @@
 
 	Created by Eric-Wubbo Lameijer, Leiden University Medical Center, July 21st 2011, e.m.w.lameijer@lumc.nl */
 
-class OutputFileData {
+class OutputFileData
+{
 public:
-	OutputFileData();
+   OutputFileData();
    int getSvIndex() const;
-	int getTemplateSvCounter() const;
-	int getNonTemplateSvCounter() const;
-	void increaseTemplateSvCounter();
-	void increaseNonTemplateSvCounter();
+   int getTemplateSvCounter() const;
+   int getNonTemplateSvCounter() const;
+   void increaseTemplateSvCounter();
+   void increaseNonTemplateSvCounter();
 
 private:
    int m_templateCounter;
-	int m_nonTemplateCounter;
+   int m_nonTemplateCounter;
 };
 
 

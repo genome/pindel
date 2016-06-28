@@ -26,7 +26,6 @@ cd $TEST_DIR
                    -o TargetOutput/sim1chrVs20305 >  ../../../../../small.log
 
 cd ../../
-svn commit --message="Updating results after pindel improvement"
 
 
 
