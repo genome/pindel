@@ -47,7 +47,7 @@ if [ "$?" -ne 0 ]; then
     echo "and run 'make'."
     echo " "
     echo "For further help, see the FAQ file included in this directory"
-    echo "Or contact us on kye@genome.wustl.edu" 
+    echo "Or contact us on kaiye@xjtu.edu.cn" 
     exit 1
 else
     echo "  "
@@ -62,6 +62,6 @@ else
     echo " " 
     echo "For help and background information, see the pindel wiki and its FAQ on gmt.genome.wustl.edu/packages/pindel, as well as"
     echo "the FAQ file in the Pindel root directory (the same directory as this INSTALL script is located)"
-    echo "or contact us on kye@genome.wustl.edu" 
+    echo "or contact us on kaiye@xjtu.edu.cn" 
     echo " "
 fi 

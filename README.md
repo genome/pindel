@@ -15,9 +15,9 @@ if you give the commands "make" and "sudo make install".)
 
 To compile Pindel on OS X, you may need to do more work - 'regular' 
 installation under OS X may work, but in some cases OS X gives problems with
-the OpenMP library Pindel uses for speedup. In those cases, see the instructions
-in the FAQ, and please let us know if for whatever reason those do not work 
-in your case.
+the OpenMP library Pindel uses for speedup. In those cases, please follow the instruction on the following page to update your gcc
+
+http://www.ficksworkshop.com/blog/14-coding/65-installing-gcc-on-mac
 
 If htslib has been cloned and installed, go to the pindel directory 
 ([my-path]/pindel) and use the INSTALL script there in the following way:
@@ -39,5 +39,5 @@ If there are any problems with installing or running Pindel, you may be
 able to find the solution in the FAQ (the FAQ file stored in the same
 directory as the INSTALL script), otherwise, feel free to open an issue 
 on github (https://github.com/genome/pindel/issues) or to contact the
-main author, Kai Ye, at kye@genome.wustl.edu
+main author, Kai Ye, at kaiye@xjtu.edu.cn
 

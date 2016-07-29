@@ -1,5 +1,5 @@
 
-This is the initial implementation of somatic indel filtering for Pindel indel calls based on ICGC DREAM challenge round 3 test result. Please advise. contact kye@genome.wustl.edu
+This is the initial implementation of somatic indel filtering for Pindel indel calls based on ICGC DREAM challenge round 3 test result. Please advise. contact kaiye@xjtu.edu.cn
 
 step 1: extract indel summary lines using
 grep ChrID pindel_output_D > D.head

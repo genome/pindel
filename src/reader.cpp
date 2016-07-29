@@ -902,7 +902,7 @@ void build_record_SR (const bam1_t * mapped_read, const bam1_t * unmapped_read, 
       *logStream << "in paired end sequencing, the insert size is the total size of the fragment to be sequenced, with a read length of 100 bp the entire fragment may for example look like\n\n";
       *logStream << "|----100 bp: first read of the read pair--|-------------------300 bp: unsequenced DNA---------------------|----100 bp: second read of the read pair--|\n";
       *logStream << "<-----------------------------------------------------------insert size=500 ------------------------------------------------------------------------->\n\n";
-      *logStream << "In the configuration file (the -i option) please check/correct the insert size (second item on each line). If you continue to have problems, please contact us (Kai Ye, kye@genome.wustl.edu)\n";
+      *logStream << "In the configuration file (the -i option) please check/correct the insert size (second item on each line). If you continue to have problems, please contact us (Kai Ye, kaiye@xjtu.edu.cn)\n";
       exit( EXIT_FAILURE );
    }
    Temp_One_Read.Tag = Tag;
