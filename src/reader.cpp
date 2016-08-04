@@ -49,6 +49,7 @@ static int fetch_func_SR (const bam1_t * b1, void *data);
 static int fetch_func_RP (const bam1_t * b1, void *data);
 static int fetch_func_RP_Discovery (const bam1_t * b1, void *data);
 int32_t bam_cigar2mismatch( const bam1_core_t *readCore, const uint32_t *cigar);
+unsigned int cigarToIndelCount(const bam1_core_t *bamCore, const uint32_t *cigar);
 
 const int BUFFER_SIZE = 50000;
 
@@ -640,6 +641,12 @@ bool isRefRead ( const flags_hit *read, const bam1_t * bamOfRead )
 	// if there is a 1 or 2 base insertion/deletion?
    uint32_t *cigar_pointer = bam_get_cigar (bamOfRead);
    int cigarMismatchedBases = bam_cigar2mismatch (bamCore, cigar_pointer);
+
+	// this should take care of a 1 or 2 base indel with perfect matches for the rest
+	// note that things like _two_ one-base indels may still produce problems 
+	if (cigarToIndelCount( bamCore, cigar_pointer ) != 0 ) {
+		return false;
+	}
    if (read->mapped && read->edits <= 2 && cigarMismatchedBases <= 2) {
       return true;
    } else {
@@ -681,30 +688,29 @@ bool isWeirdRead( const flags_hit *read, const bam1_t * bamOfRead )
    return false;
 }
 
+/** "cigarToIndelCount" returns the number of indels reported by the cigar string.
+    TODO Can you get the cigar string from the bam1_core_t argument? */
+unsigned int cigarToIndelCount(const bam1_core_t *bamCore, const uint32_t *cigar)
+{
+	unsigned int indelCount = 0;
+   for (uint32_t cigarIndex = 0; cigarIndex < bamCore->n_cigar; cigarIndex++ ) {
+      int cigarElement = cigar[ cigarIndex ] & BAM_CIGAR_MASK;
+      if ( cigarElement == BAM_CINS || cigarElement == BAM_CDEL ) {
+         indelCount++;
+      }
+   }
+   return indelCount;
+}
+
+
 bool WhetherSimpleCigar(const bam1_t * unmapped_read, const bam1_core_t * c, const uint32_t * cigar, SPLIT_READ & SR_Read, int & indelsize)
 {
-   //std::cout << "entering WhetherSimpleCigar" << std::endl;
-   /*	const uint8_t *nm = bam_aux_get(unmapped_read, "NM");
-   	if (nm) {
-   		int32_t nm_value = bam_aux2i(nm);
-   		if (nm_value) {
-   			//std::cout << "nm" << std::endl;
-   			return false;
-   		}
-   	}
-   */
-   uint32_t k;
    unsigned CountNonM = 0;
    unsigned CountIndel = 0;
    unsigned CountM = 0;
-//	if (SR_Read.Name == "@1_13911_14618_0_1_0_0_1:0:0_1:0:0_2e3d0/1" || SR_Read.Name == "@1_13911_14618_0_1_0_0_1:0:0_1:0:0_2e3d0/2")
-//		std::cout << "Standard: \tMatch " << BAM_CMATCH << "\tINS " << BAM_CINS << "\tDEL " << BAM_CDEL << std::endl;
-   //std::cout << "here" << std::endl;
-   for (k = 0; k < c->n_cigar; ++k) {
+   for (uint32_t k = 0; k < c->n_cigar; ++k) {
 
       int op = cigar[k] & BAM_CIGAR_MASK;
-//		if (SR_Read.Name == "@1_13911_14618_0_1_0_0_1:0:0_1:0:0_2e3d0/1" || SR_Read.Name == "@1_13911_14618_0_1_0_0_1:0:0_1:0:0_2e3d0/2")
-//			std::cout << k << "\t" << op << "\t" << (cigar[k] >> BAM_CIGAR_SHIFT) << std::endl;
       if (op == BAM_CMATCH) {
          CountM++;
       } else {
@@ -714,19 +720,13 @@ bool WhetherSimpleCigar(const bam1_t * unmapped_read, const bam1_core_t * c, con
          CountIndel++;
       }
    }
-//	if (SR_Read.Name == "@1_13911_14618_0_1_0_0_1:0:0_1:0:0_2e3d0/1" || SR_Read.Name == "@1_13911_14618_0_1_0_0_1:0:0_1:0:0_2e3d0/2")
-   //std::cout << "##################\t" << CountM << " " << CountNonM << " " << CountIndel << std::endl;
-   //if (CountNonM + CountIndel) std::cout << "##################\t" << CountM << " " << CountNonM << " " << CountIndel << std::endl;
    if (CountM == 2 && CountNonM == 1 && CountIndel == 1) {
-      //std::cout << "##################\t" << CountM << " " << CountNonM << " " << CountIndel << std::endl;
-      //std::cout << "########################good splitmapper" << std::endl;
       int op = cigar[1] & BAM_CIGAR_MASK;
       if (op == BAM_CDEL) {
          indelsize = (cigar[1] >> BAM_CIGAR_SHIFT) * (-1);
       } else if (op == BAM_CINS) {
          indelsize = (cigar[1] >> BAM_CIGAR_SHIFT);
       }
-      //std::cout << "sr" << std::endl;
       g_NumberOfGapAlignedReads++;
       return true; // this read just contains one indel mapped by the aligner
    } else {
