@@ -806,13 +806,9 @@ void build_record_SR (const bam1_t * mapped_read, const bam1_t * unmapped_read, 
    // Determine sample name for read.
    get_read_group(mapped_read, Temp_One_Read.read_group);
 
-   //if (Temp_One_Read.Name == "@DD7DT8Q1:4:1106:17724:13906#GTACCT/1") {
-   //    std::cout << "I am here." << std::endl;
-   //}
    std::string c_sequence;
-   int i;
    uint8_t *s = bam_get_seq (unmapped_read);
-   for (i = 0; i < unmapped_core->l_qseq; ++i) {
+   for (int i = 0; i < unmapped_core->l_qseq; ++i) {
       c_sequence.append (1, seq_nt16_str[bam_seqi (s, i)]);
    }
    //rudimentary n filter
@@ -845,7 +841,6 @@ void build_record_SR (const bam1_t * mapped_read, const bam1_t * unmapped_read, 
    }
    Temp_One_Read.MatchedRelPos = mapped_core->pos;
    uint32_t *cigar_pointer_mapped = bam_get_cigar (mapped_read);
-   //uint32_t *cigar_pointer_unmapped = bam_get_cigar (unmapped_read);
    if (mapped_core->flag & BAM_FREVERSE) {
       Temp_One_Read.MatchedD = '-';
 
@@ -853,7 +848,6 @@ void build_record_SR (const bam1_t * mapped_read, const bam1_t * unmapped_read, 
       Temp_One_Read.MatchedRelPos += Rlength;// + InsertSize;
    } else {
       Temp_One_Read.MatchedD = '+';
-      //Temp_One_Read.MatchedRelPos -= InsertSize;
    }
 
    //FIXME pass these through from the command line with a struct
@@ -869,16 +863,6 @@ void build_record_SR (const bam1_t * mapped_read, const bam1_t * unmapped_read, 
    Temp_One_Read.Tag = Tag;
 
    Temp_One_Read.FragName = header->target_name[mapped_core->tid];
-   //Temp_One_Read.FragName = FragName;
-//    LOG_DEBUG(*logStream << Temp_One_Read.Name << std::endl
-//              << Temp_One_Read.getUnmatchedSeq() << std::endl);
-//    LOG_DEBUG(*logStream << Temp_One_Read.MatchedD <<
-//              "\t" << Temp_One_Read.FragName <<
-//              "\t" << Temp_One_Read.MatchedRelPos <<
-//              "\t" << Temp_One_Read.MS <<
-//              "\t" << Temp_One_Read.InsertSize <<
-//              "\t" << Temp_One_Read.Tag << std::endl);
-
 
    g_NumReadInWindow++;
 
@@ -893,17 +877,8 @@ void build_record_SR (const bam1_t * mapped_read, const bam1_t * unmapped_read, 
    if (Temp_One_Read.MatchedRelPos < 1) {
       Temp_One_Read.MatchedRelPos = 0;
    }
-   //if (Temp_One_Read.Name == "@DD7DT8Q1:4:1106:17724:13906#GTACCT/1") {
-   //    std::cout << "I am there." << std::endl;
-   //}
-   /*
-   int IndelSize;
-    if (WhetherSimpleCigar(unmapped_read, unmapped_core, cigar_pointer_unmapped, Temp_One_Read, IndelSize)) {
-        AddUniquePoint(unmapped_read, unmapped_core, cigar_pointer_unmapped, Temp_One_Read, IndelSize);
-    }
-   */
-
-   data_for_bam->readBuffer->addRead(Temp_One_Read);
+   
+	data_for_bam->readBuffer->addRead(Temp_One_Read);
    return;
 }
 
