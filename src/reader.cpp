@@ -49,6 +49,7 @@ static int fetch_func_SR (const bam1_t * b1, void *data);
 static int fetch_func_RP (const bam1_t * b1, void *data);
 static int fetch_func_RP_Discovery (const bam1_t * b1, void *data);
 int32_t bam_cigar2mismatch( const bam1_core_t *readCore, const uint32_t *cigar);
+unsigned int cigarToIndelCount(const bam1_core_t *bamCore, const uint32_t *cigar);
 
 const int BUFFER_SIZE = 50000;
 
@@ -607,54 +608,45 @@ bool isGoodAnchor( const flags_hit *read, const bam1_t * bamOfRead ) //bam_get_q
    if (bamCore->flag & BAM_FSECONDARY || bamCore->flag & BAM_FQCFAIL || bamCore->flag & BAM_FDUP) {
       return false;
    }
-   //std::cout << "2";
-   //UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
-
-
-   //std::cout << "5";
    return true;
-   /*
-   	if (read->unique || read->sw) return false;
-
-
-
-   	if (read->edits > maxEdits) return false;
-   	if (read->suboptimal) return false;
-   */
 }
 
+/** 'isRefRead' ascertains whether this read likely matches to the reference instead
+	of to an alt allele. 
+   FIXME: if the SV is small (say a 1 or 2-base insertion), the read may be misclassified
+   as a reference allele while it actually is an alternative allele; so isRefRead, if 
+   we need accuracy, must take the proposed alt allele into account. */
 bool isRefRead ( const flags_hit *read, const bam1_t * bamOfRead )
 {
    const bam1_core_t *bamCore = &bamOfRead->core;
 
+	// Check whether the read is a normal, valid mapped read - it should be the main mapping 
+	// (so not a secondary mapping), not be a duplicate, and pass quality control.
    if (bamCore->flag & BAM_FSECONDARY || bamCore->flag & BAM_FQCFAIL || bamCore->flag & BAM_FDUP) {
       return false;
    }
 
-   //std::cout << "isRefRead 1" << std::endl;
-   //UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
-   //std::cout << "isRefRead 2" << std::endl;
+	// Now check if there are not too many mismatches with the reference ("NM" indicates
+	// the edit distance).
    const uint8_t *nm = bam_aux_get(bamOfRead, "NM");
-   //std::cout << "isRefRead 3" << std::endl;
-   //const bam1_core_t *bamCore = &bamOfRead->core;
-   int maxEdits = int (bamCore->l_qseq * userSettings->MaximumAllowedMismatchRate) + 1;
-   //std::cout << "isRefRead 4" << std::endl;
-   uint32_t *cigar_pointer = bam_get_cigar (bamOfRead);
-   int cigarMismatchedBases = bam_cigar2mismatch (bamCore, cigar_pointer);
-   //std::cout << "isRefRead 5" << std::endl;
-
    if (nm) {
       int32_t nm_value = bam_aux2i(nm);
-      //std::string NR = bam_get_qname(bamOfRead);
-      //std::string seq;
-      //GetReadSeq(bamOfRead, seq);
-      //if (NR == "HWI-ST568:267:C1BD9ACXX:4:2101:18037:80445")
-      //	std::cout << "isRefRead " << nm_value << " " << userSettings->NM << " " << seq << std::endl;
+	   int maxEdits = int (bamCore->l_qseq * userSettings->MaximumAllowedMismatchRate) + 1;
       if ((nm_value > userSettings->NM) || (nm_value > maxEdits)) {
          return false;
       }
    }
 
+	// If we get here, the read does not differ too much from a reference read. But what
+	// if there is a 1 or 2 base insertion/deletion?
+   uint32_t *cigar_pointer = bam_get_cigar (bamOfRead);
+   int cigarMismatchedBases = bam_cigar2mismatch (bamCore, cigar_pointer);
+
+	// this should take care of a 1 or 2 base indel with perfect matches for the rest
+	// note that things like _two_ one-base indels may still produce problems 
+	if (cigarToIndelCount( bamCore, cigar_pointer ) != 0 ) {
+		return false;
+	}
    if (read->mapped && read->edits <= 2 && cigarMismatchedBases <= 2) {
       return true;
    } else {
@@ -662,20 +654,18 @@ bool isRefRead ( const flags_hit *read, const bam1_t * bamOfRead )
    }
 }
 
+/** 'isWeirdRead' checks whether a read is worth split-read analysis, that is when it could not be mapped,
+    or when the aligner detects insertions, deletions or clips, or if there are any mismatches detected by any
+    method. */
 bool isWeirdRead( const flags_hit *read, const bam1_t * bamOfRead )
 {
-
-   //return true;
-
-   const bam1_core_t *bamCore = &bamOfRead->core;
-   uint32_t *cigar_pointer = bam_get_cigar (bamOfRead);
-
    if (!(read->mapped)) {
       return true;
    }
 
-   uint32_t k;
-   for (k = 0; k < bamCore->n_cigar; ++k) {
+   const bam1_core_t *bamCore = &bamOfRead->core;
+   uint32_t *cigar_pointer = bam_get_cigar (bamOfRead);
+   for (uint32_t k = 0; k < bamCore->n_cigar; ++k) {
       int op = cigar_pointer[k] & BAM_CIGAR_MASK;
       if (op == BAM_CINS || op == BAM_CDEL || op == BAM_CREF_SKIP || op == BAM_CSOFT_CLIP || op == BAM_CHARD_CLIP || op == BAM_CPAD) {
          return true;
@@ -683,62 +673,44 @@ bool isWeirdRead( const flags_hit *read, const bam1_t * bamOfRead )
    }
 
    const uint8_t *nm = bam_aux_get(bamOfRead, "NM");
-   //UserDefinedSettings* userSettings = UserDefinedSettings::Instance();
-
    if (nm) {
       int32_t nm_value = bam_aux2i(nm);
-      //std::string NR = bam_get_qname(bamOfRead);
-      //std::string seq;
-      //GetReadSeq(bamOfRead, seq);
-      //if (NR == "HWI-ST568:267:C1BD9ACXX:4:2101:18037:80445")
-      //	std::cout << "isWeirdRead " << nm_value << " " << userSettings->NM << " " << seq << std::endl;
       if (nm_value) {
          return true;
       }
    }
 
-   //int maxEdits = int (bamCore->l_qseq * userSettings->MaximumAllowedMismatchRate) + 1;
-
    int cigarMismatchedBases = bam_cigar2mismatch (&bamOfRead->core, cigar_pointer);
-
    if ( read->edits + cigarMismatchedBases > 0) {
       return true;
    }
-   //else {
-   //	return false;
-   //}
 
-   // check speed here!
-
-   //if (bamCore->flag & BAM_FSECONDARY || bamCore->flag & BAM_FQCFAIL || bamCore->flag & BAM_FDUP) return false;
-//http://samtools.sourceforge.net/samtools/bam/PDefines/PDefines.html
    return false;
 }
 
+/** "cigarToIndelCount" returns the number of indels reported by the cigar string.
+    TODO Can you get the cigar string from the bam1_core_t argument? */
+unsigned int cigarToIndelCount(const bam1_core_t *bamCore, const uint32_t *cigar)
+{
+	unsigned int indelCount = 0;
+   for (uint32_t cigarIndex = 0; cigarIndex < bamCore->n_cigar; cigarIndex++ ) {
+      int cigarElement = cigar[ cigarIndex ] & BAM_CIGAR_MASK;
+      if ( cigarElement == BAM_CINS || cigarElement == BAM_CDEL ) {
+         indelCount++;
+      }
+   }
+   return indelCount;
+}
+
+
 bool WhetherSimpleCigar(const bam1_t * unmapped_read, const bam1_core_t * c, const uint32_t * cigar, SPLIT_READ & SR_Read, int & indelsize)
 {
-   //std::cout << "entering WhetherSimpleCigar" << std::endl;
-   /*	const uint8_t *nm = bam_aux_get(unmapped_read, "NM");
-   	if (nm) {
-   		int32_t nm_value = bam_aux2i(nm);
-   		if (nm_value) {
-   			//std::cout << "nm" << std::endl;
-   			return false;
-   		}
-   	}
-   */
-   uint32_t k;
    unsigned CountNonM = 0;
    unsigned CountIndel = 0;
    unsigned CountM = 0;
-//	if (SR_Read.Name == "@1_13911_14618_0_1_0_0_1:0:0_1:0:0_2e3d0/1" || SR_Read.Name == "@1_13911_14618_0_1_0_0_1:0:0_1:0:0_2e3d0/2")
-//		std::cout << "Standard: \tMatch " << BAM_CMATCH << "\tINS " << BAM_CINS << "\tDEL " << BAM_CDEL << std::endl;
-   //std::cout << "here" << std::endl;
-   for (k = 0; k < c->n_cigar; ++k) {
+   for (uint32_t k = 0; k < c->n_cigar; ++k) {
 
       int op = cigar[k] & BAM_CIGAR_MASK;
-//		if (SR_Read.Name == "@1_13911_14618_0_1_0_0_1:0:0_1:0:0_2e3d0/1" || SR_Read.Name == "@1_13911_14618_0_1_0_0_1:0:0_1:0:0_2e3d0/2")
-//			std::cout << k << "\t" << op << "\t" << (cigar[k] >> BAM_CIGAR_SHIFT) << std::endl;
       if (op == BAM_CMATCH) {
          CountM++;
       } else {
@@ -748,19 +720,13 @@ bool WhetherSimpleCigar(const bam1_t * unmapped_read, const bam1_core_t * c, con
          CountIndel++;
       }
    }
-//	if (SR_Read.Name == "@1_13911_14618_0_1_0_0_1:0:0_1:0:0_2e3d0/1" || SR_Read.Name == "@1_13911_14618_0_1_0_0_1:0:0_1:0:0_2e3d0/2")
-   //std::cout << "##################\t" << CountM << " " << CountNonM << " " << CountIndel << std::endl;
-   //if (CountNonM + CountIndel) std::cout << "##################\t" << CountM << " " << CountNonM << " " << CountIndel << std::endl;
    if (CountM == 2 && CountNonM == 1 && CountIndel == 1) {
-      //std::cout << "##################\t" << CountM << " " << CountNonM << " " << CountIndel << std::endl;
-      //std::cout << "########################good splitmapper" << std::endl;
       int op = cigar[1] & BAM_CIGAR_MASK;
       if (op == BAM_CDEL) {
          indelsize = (cigar[1] >> BAM_CIGAR_SHIFT) * (-1);
       } else if (op == BAM_CINS) {
          indelsize = (cigar[1] >> BAM_CIGAR_SHIFT);
       }
-      //std::cout << "sr" << std::endl;
       g_NumberOfGapAlignedReads++;
       return true; // this read just contains one indel mapped by the aligner
    } else {
@@ -817,19 +783,14 @@ void AddUniquePoint(const bam1_t * unmapped_read, const bam1_core_t * c, const u
 
 void build_record_SR (const bam1_t * mapped_read, const bam1_t * unmapped_read, void *data)
 {
-   // userSettings->minimalAnchorQuality
-   //UserDefinedSettings *userSettings = UserDefinedSettings::Instance();
    SPLIT_READ Temp_One_Read;
    fetch_func_data_SR *data_for_bam = (fetch_func_data_SR *) data;
    bam_hdr_t *header = (bam_hdr_t *) data_for_bam->header;
-   //std::string & CurrentChrSeq = *(std::string *) data_for_bam->CurrentChrSeq; //
    std::string Tag = (std::string) data_for_bam->Tag;
    int InsertSize = (int) data_for_bam->InsertSize;
 
-   const bam1_core_t *mapped_core;
-   const bam1_core_t *unmapped_core;
-   mapped_core = &mapped_read->core;
-   unmapped_core = &unmapped_read->core;
+   const bam1_core_t *mapped_core = &(mapped_read->core);
+   const bam1_core_t *unmapped_core = &(unmapped_read->core);
    Temp_One_Read.MS = mapped_core->qual;
    if ((short)Temp_One_Read.MS < (short)userSettings->minimalAnchorQuality) {
       return;
@@ -845,13 +806,9 @@ void build_record_SR (const bam1_t * mapped_read, const bam1_t * unmapped_read, 
    // Determine sample name for read.
    get_read_group(mapped_read, Temp_One_Read.read_group);
 
-   //if (Temp_One_Read.Name == "@DD7DT8Q1:4:1106:17724:13906#GTACCT/1") {
-   //    std::cout << "I am here." << std::endl;
-   //}
    std::string c_sequence;
-   int i;
    uint8_t *s = bam_get_seq (unmapped_read);
-   for (i = 0; i < unmapped_core->l_qseq; ++i) {
+   for (int i = 0; i < unmapped_core->l_qseq; ++i) {
       c_sequence.append (1, seq_nt16_str[bam_seqi (s, i)]);
    }
    //rudimentary n filter
@@ -884,7 +841,6 @@ void build_record_SR (const bam1_t * mapped_read, const bam1_t * unmapped_read, 
    }
    Temp_One_Read.MatchedRelPos = mapped_core->pos;
    uint32_t *cigar_pointer_mapped = bam_get_cigar (mapped_read);
-   //uint32_t *cigar_pointer_unmapped = bam_get_cigar (unmapped_read);
    if (mapped_core->flag & BAM_FREVERSE) {
       Temp_One_Read.MatchedD = '-';
 
@@ -892,7 +848,6 @@ void build_record_SR (const bam1_t * mapped_read, const bam1_t * unmapped_read, 
       Temp_One_Read.MatchedRelPos += Rlength;// + InsertSize;
    } else {
       Temp_One_Read.MatchedD = '+';
-      //Temp_One_Read.MatchedRelPos -= InsertSize;
    }
 
    //FIXME pass these through from the command line with a struct
@@ -908,16 +863,6 @@ void build_record_SR (const bam1_t * mapped_read, const bam1_t * unmapped_read, 
    Temp_One_Read.Tag = Tag;
 
    Temp_One_Read.FragName = header->target_name[mapped_core->tid];
-   //Temp_One_Read.FragName = FragName;
-//    LOG_DEBUG(*logStream << Temp_One_Read.Name << std::endl
-//              << Temp_One_Read.getUnmatchedSeq() << std::endl);
-//    LOG_DEBUG(*logStream << Temp_One_Read.MatchedD <<
-//              "\t" << Temp_One_Read.FragName <<
-//              "\t" << Temp_One_Read.MatchedRelPos <<
-//              "\t" << Temp_One_Read.MS <<
-//              "\t" << Temp_One_Read.InsertSize <<
-//              "\t" << Temp_One_Read.Tag << std::endl);
-
 
    g_NumReadInWindow++;
 
@@ -932,49 +877,33 @@ void build_record_SR (const bam1_t * mapped_read, const bam1_t * unmapped_read, 
    if (Temp_One_Read.MatchedRelPos < 1) {
       Temp_One_Read.MatchedRelPos = 0;
    }
-   //if (Temp_One_Read.Name == "@DD7DT8Q1:4:1106:17724:13906#GTACCT/1") {
-   //    std::cout << "I am there." << std::endl;
-   //}
-   /*
-   int IndelSize;
-    if (WhetherSimpleCigar(unmapped_read, unmapped_core, cigar_pointer_unmapped, Temp_One_Read, IndelSize)) {
-        AddUniquePoint(unmapped_read, unmapped_core, cigar_pointer_unmapped, Temp_One_Read, IndelSize);
-    }
-   */
-
-   data_for_bam->readBuffer->addRead(Temp_One_Read);
+   
+	data_for_bam->readBuffer->addRead(Temp_One_Read);
    return;
 }
 
 
+/** 'build_record_RefRead' adds a reference read to the vector containing all reads that support
+    the reference, as long as the quality of the mapping is sufficient. */
 void build_record_RefRead (const bam1_t * mapped_read, const bam1_t * ref_read, void *data)
 {
-   // std::vector <REF_READ> *RefSupportingReads;
-   // UserDefinedSettings *userSettings = UserDefinedSettings::Instance();
-   REF_READ One_RefRead;
    fetch_func_data_SR *data_for_bam = (fetch_func_data_SR *) data;
-   bam_hdr_t *header = (bam_hdr_t *) data_for_bam->header;
-   //std::string CurrentChrSeq = *(std::string *) data_for_bam->CurrentChrSeq;
-   //std::string Tag = (std::string) data_for_bam->Tag;
-   //int InsertSize = (int) data_for_bam->InsertSize;
-
-   //const bam1_core_t *mapped_core;
-   const bam1_core_t *Ref_read_core;
-   //mapped_core = &mapped_read->core;
-   Ref_read_core = &ref_read->core;
-
+   const bam1_core_t *Ref_read_core = &ref_read->core;
 
    if (Ref_read_core->qual < userSettings->minimalAnchorQuality) {
       return;
    }
 
+   REF_READ One_RefRead;
    One_RefRead.Pos = Ref_read_core->pos; // mapped_core->pos;
    One_RefRead.Tag = (std::string) data_for_bam->Tag;
    One_RefRead.MQ = Ref_read_core->qual;
+   
+	bam_hdr_t *header = (bam_hdr_t *) data_for_bam->header;
    One_RefRead.FragName = header->target_name[Ref_read_core->tid];
    One_RefRead.ReadLength = Ref_read_core->l_qseq;
 
-   data_for_bam->RefSupportingReads->push_back(One_RefRead);// addRead(Temp_One_Read);
+   data_for_bam->RefSupportingReads->push_back(One_RefRead);
    return;
 }
 

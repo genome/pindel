@@ -668,7 +668,7 @@ aaaatgaggtatgtcacaagcatgattaaggtacaataggaagccaaggttgatgttagacagagtcatcatgcatgagt
         GTATGTCACAAGCATGATTAAGGTACAATAGGAAGCCAAGGTTGATGTTAGACAGAGTCATCATGCATGAGTGTTATCAGGCCCCTGCTATAATTTACTG                                                                                           	-	50658	37	SIM1CHRVS2	@50428/1
         GTATGTCACAAGCATGATTAAGGTACAATAGGAAGCCAAGGTTGATGTTAGACAGAGTCATCATGCATGAGTGTTATCAGGCCCCTGCTATAATTTACTG                                                                                           	-	50658	37	SIM1CHRVS2	@50428/2
 ####################################################################################################
-1	INV 200	NT 0:0 "":""	ChrID 1	BP 60000	60201	BP_range 60000	60201	Supports 312	78	+ 0	0	- 312	78	S1 313	SUM_MS 5772	1	NumSupSamples 1	1	SIM1CHRVS2 20 24 0 0 312 78
+1	INV 200	NT 0:0 "":""	ChrID 1	BP 60000	60201	BP_range 60000	60201	Supports 312	78	+ 0	0	- 312	78	S1 313	SUM_MS 5772	1	NumSupSamples 1	1	SIM1CHRVS2 16 24 0 0 312 78
 GCAGTTGTGGACTCGGCCGTATGGCGAACCCTGGGCCACTGCAGTTAAATTCGGTTATTCACCGTTAATCTGGAACTACTTCACTTATTACTCGGACGAAcccctggtgtctacaagagatgacctgttgctcggtttgggtgtgtcccatcaaggaactagaggtaaagttagcagcgttggcagaatggctcccggaa
 ----------------------------------------------------------------------------------------------------
 cactatggctccctatgggcgaacggacatgcacccggatccagcgaatccagcaacagttatgtgagatgttgcagtgtgttcttcgcctacacagcaaAAGACGGTCATCCGGACCTCTAGTCTATCGCCGTGTGAGTAGACATCGACTTCGTGCTCTCGAACGTTTGTTATCAGGGGTGGAACGCATACCCCTTCGG
@@ -1322,7 +1322,7 @@ AGATGAACGTGGGTTAGAGCATGCTCATGCTGTACCACTGACCTAATGACTCACGAGGTAAGGTGTCGCACCCGACGATG
 ----------------------------------------------------------------------------------------------------
 taggacaagagctgggcttgggtcggtcaacaaactgaccaagaagggcctatagaggataagacccctcgattcccctacgcgctagctctgatactggGGCGAGAACTGTTTGATGGGTTCTTGTCTTGCCTACCAGGTACTTATGGGACCCAAATCTGTCAGCCTCTCCTGATGTCACGCGTCGTCTTTGATACCTG
 ####################################################################################################
-3	INV 800	NT 0:0 "":""	ChrID 1	BP 90000	90801	BP_range 90000	90801	Supports 1328	332	+ 664	166	- 664	166	S1 442225	SUM_MS 24568	1	NumSupSamples 1	1	SIM1CHRVS2 12 16 664 166 664 166
+3	INV 800	NT 0:0 "":""	ChrID 1	BP 90000	90801	BP_range 90000	90801	Supports 1328	332	+ 664	166	- 664	166	S1 442225	SUM_MS 24568	1	NumSupSamples 1	1	SIM1CHRVS2 12 12 664 166 664 166
 GGGAACCCCGCGGCGGAATCGCGAAAACTGGCAAGAGTGTCTCAAAGAAGGGTAGTAGATAGCCTTCCGTATGGTTGGTGACATGGTGATGCGTGCGTGAaacggttggaacaatatggcgcaaatccatagccgacgcaaactaccctaacccggggagcttattgagagatactcaacttgggagtaagatacgacgc
                                                                                             GTGCGTGAAACGGTTGGAACAATATGGCGCAAATCCATAGCCGACGCAAACTACCCTAACCCGGGGAGCTTATTGAGAGATACTCAACTTGGGAGTAAGA       	+	89542	37	SIM1CHRVS2	@89902/2
                                                                                             GTGCGTGAAACGGTTGGAACAATATGGCGCAAATCCATAGCCGACGCAAACTACCCTAACCCGGGGAGCTTATTGAGAGATACTCAACTTGGGAGTAAGA       	+	89542	0	SIM1CHRVS2	@89902/1
@@ -2655,7 +2655,7 @@ tatagagcggagccctgtttttccaattaactcgcactcaagactgtgttgggacctgcctgcaactctgtggccagtta
         GGAGCCCTGTTTTTCCAATTAACTCGCACTCAAGACTGTGTTGGGACCTGCCTGCAACTCTGTGGCCAGTTAACACATTGGTTGCTATGACACAGAGGTC                                                                                           	-	91258	37	SIM1CHRVS2	@91068/1
         GGAGCCCTGTTTTTCCAATTAACTCGCACTCAAGACTGTGTTGGGACCTGCCTGCAACTCTGTGGCCAGTTAACACATTGGTTGCTATGACACAGAGGTC                                                                                           	-	91258	37	SIM1CHRVS2	@91068/2
 ####################################################################################################
-4	INV 800	NT 0:0 "":""	ChrID 1	BP 100000	100801	BP_range 100000	100801	Supports 648	161	+ 0	0	- 648	161	S1 649	SUM_MS 12062	1	NumSupSamples 1	1	SIM1CHRVS2 14 20 0 0 648 161
+4	INV 800	NT 0:0 "":""	ChrID 1	BP 100000	100801	BP_range 100000	100801	Supports 648	161	+ 0	0	- 648	161	S1 649	SUM_MS 12062	1	NumSupSamples 1	1	SIM1CHRVS2 12 20 0 0 648 161
 GTTGAAGAGATTATTAAGAGCATTGGACCCAACAGCACCTCAGCTCGATGGAGCAAAAGCGGCTGAATCCGGCAAAGGACATGGAGGAGAGATTTCTTAAtcggtccgtgcagttagttgccggcgcccgtcccaacgattcagatatccatttatagcaagaatctctggacccacgtggagttcctgtttggacgatg
 ----------------------------------------------------------------------------------------------------
 tgagataagacttgcgaatcttgtgcgtcgtacactctggagccgaggctgtacattttaagtctcaggtatacgtggtcgcgccatggccggcaagactCAGTGTCACTGGAGTTGTAGGGGTAAAGCGGGGACCTGCAGTGGCCCTCGCTATGAAGGCCAATACAAACAGATACACCCTGATGTAGCGTGTTGTCGTC
@@ -3982,7 +3982,7 @@ CGGAATCCCGCCTAAGGCTCTATACTTTCTCTCATGTATAGCCCCGATTTAGTATATGAAGCTTCGCATCCCGGTTATGA
 ----------------------------------------------------------------------------------------------------
 acagtcgagaaagaacatatttccgtattccccgaggctgcttaaacaaagcccagtgcctgcgtggaatgatttttacggaaggcacggaaggttcgctTTGGTGGGAATAAATAAGGCAAAGGAGTTTGTGACCGTTGATTATGAACTCCTCTGGCCCATAGTGTCCTACGTGCCGCGCGTCAGTGAATATATGGGTT
 ####################################################################################################
-7	INV 199	NT 9:0 "GTTGGACTC":""	ChrID 1	BP 60001	60201	BP_range 60001	60201	Supports 296	74	+ 296	74	- 0	0	S1 297	SUM_MS 5476	1	NumSupSamples 1	1	SIM1CHRVS2 20 24 296 74 0 0
+7	INV 199	NT 9:0 "GTTGGACTC":""	ChrID 1	BP 60001	60201	BP_range 60001	60201	Supports 296	74	+ 296	74	- 0	0	S1 297	SUM_MS 5476	1	NumSupSamples 1	1	SIM1CHRVS2 16 24 296 74 0 0
 CAGTTGTGGACTCGGCCGTATGGCGAACCCTGGGCCACTGCAGTTAAATTCGGTTATTCACCGTTAATCTGGAACTACTTCACTTATTACTCGGACGAAT         cccctggtgtctacaagagatgacctgttgctcggtttgggtgtgtcccatcaaggaactagaggtaaagttagcagcgttggcagaatggctcccggaa
                                                                                             GGACGAATGTTGGACTCCCCCTGGTGTCTACAAGAGATGACCTGTTGCTCGGTTTGGGTGTGTCCCATCAAGGAACTAGAGGTAAAGTTAGCAGCGTTGG       	+	59543	37	SIM1CHRVS2	@59863/2
                                                                                             GGACGAATGTTGGACTCCCCCTGGTGTCTACAAGAGATGACCTGTTGCTCGGTTTGGGTGTGTCCCATCAAGGAACTAGAGGTAAAGTTAGCAGCGTTGG       	+	59543	0	SIM1CHRVS2	@59863/1
@@ -4584,7 +4584,7 @@ taggacaagagctgggcttgggtcggtcaacaaactgaccaagaagggcctatagaggataagacccctcgattccccta
                  TTGGGTCGGTCAACAAACTGACCAAGAAGGGCCTATAGAGGATAAGACCCCTCGATTCCCCTACGCGCTAGCTCTGATACTGGTTGATGGTGCGGCGAGA                                                                                  	-	70657	37	SIM1CHRVS2	@70447/1
                  TTGGGTCGGTCAACAAACTGACCAAGAAGGGCCTATAGAGGATAAGACCCCTCGATTCCCCTACGCGCTAGCTCTGATACTGGTTGATGGTGCGGCGAGA                                                                                  	-	70657	37	SIM1CHRVS2	@70447/2
 ####################################################################################################
-9	INV 200	NT 10:10 "CTGACACCAT":"AGTAGCTCCA"	ChrID 1	BP 80000	80201	BP_range 80000	80201	Supports 584	146	+ 292	73	- 292	73	S1 85849	SUM_MS 10804	1	NumSupSamples 1	1	SIM1CHRVS2 18 34 292 73 292 73
+9	INV 200	NT 10:10 "CTGACACCAT":"AGTAGCTCCA"	ChrID 1	BP 80000	80201	BP_range 80000	80201	Supports 584	146	+ 292	73	- 292	73	S1 85849	SUM_MS 10804	1	NumSupSamples 1	1	SIM1CHRVS2 16 32 292 73 292 73
 ATATAACCCAACGCAGTGGTCCGCCCACAGCACCACCCTGCTTAAAGTGATTGCATGCAGTGGATGCCTATCATCATTACATAGACCGGCACTGCTCGAA          aggcgacgaagcatagagagataactttaccgtgattattttacgcgccagtcaacgcgccggtgtatatgcagtctcgcgcgagtgatttctgtgtacg
                                                                                             TGCTCGAACTGACACCATAGGCGACGAAGCATAGAGAGATAACTTTACCGTGATTATTTTACGCGCCAGTCAACGCGCCGGTGTATATGCAGTCTCGCGC       	+	79542	37	SIM1CHRVS2	@79882/2
                                                                                             TGCTCGAACTGACACCATAGGCGACGAAGCATAGAGAGATAACTTTACCGTGATTATTTTACGCGCCAGTCAACGCGCCGGTGTATATGCAGTCTCGCGC       	+	79542	0	SIM1CHRVS2	@79882/1
@@ -5173,7 +5173,7 @@ ttgggcgcgcgggtccttactagaggcaactaaaaatagtgtaatcagttggcttcctaactttatctgtgctgtacatc
                   ACTAGAGGCAACTAAAAATAGTGTAATCAGTTGGCTTCCTAACTTTATCTGTGCTGTACATCCTGTCTACCCACGACCAGAAAGTAGCTCCATTGTAGGT                                                                                 	-	80658	37	SIM1CHRVS2	@80468/1
                   ACTAGAGGCAACTAAAAATAGTGTAATCAGTTGGCTTCCTAACTTTATCTGTGCTGTACATCCTGTCTACCCACGACCAGAAAGTAGCTCCATTGTAGGT                                                                                 	-	80658	37	SIM1CHRVS2	@80468/2
 ####################################################################################################
-10	INV 800	NT 10:0 "TTCAAGAATA":""	ChrID 1	BP 100000	100801	BP_range 100000	100801	Supports 580	143	+ 580	143	- 0	0	S1 581	SUM_MS 10730	1	NumSupSamples 1	1	SIM1CHRVS2 14 20 580 143 0 0
+10	INV 800	NT 10:0 "TTCAAGAATA":""	ChrID 1	BP 100000	100801	BP_range 100000	100801	Supports 580	143	+ 580	143	- 0	0	S1 581	SUM_MS 10730	1	NumSupSamples 1	1	SIM1CHRVS2 12 20 580 143 0 0
 GTTGAAGAGATTATTAAGAGCATTGGACCCAACAGCACCTCAGCTCGATGGAGCAAAAGCGGCTGAATCCGGCAAAGGACATGGAGGAGAGATTTCTTAA          tcggtccgtgcagttagttgccggcgcccgtcccaacgattcagatatccatttatagcaagaatctctggacccacgtggagttcctgtttggacgatg
                                                                                             TTTCTTAATTCAAGAATATCGGTCCGTGCAGTTAGTTGCCGGCGCCCGTCCCAACGATTCAGATATCCATTTATAGCAAGAATCTCTGGACCCACGTGGA       	+	99542	37	SIM1CHRVS2	@99902/2
                                                                                             TTTCTTAATTCAAGAATATCGGTCCGTGCAGTTAGTTGCCGGCGCCCGTCCCAACGATTCAGATATCCATTTATAGCAAGAATCTCTGGACCCACGTGGA       	+	99542	0	SIM1CHRVS2	@99902/1
