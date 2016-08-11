@@ -50,6 +50,7 @@ static int fetch_func_RP (const bam1_t * b1, void *data);
 static int fetch_func_RP_Discovery (const bam1_t * b1, void *data);
 int32_t bam_cigar2mismatch( const bam1_core_t *readCore, const uint32_t *cigar);
 unsigned int cigarToIndelCount(const bam1_core_t *bamCore, const uint32_t *cigar);
+bool HasIndel(const bam1_core_t *bamCore, const uint32_t *cigar);
 
 const int BUFFER_SIZE = 50000;
 
@@ -644,7 +645,7 @@ bool isRefRead ( const flags_hit *read, const bam1_t * bamOfRead )
 
 	// this should take care of a 1 or 2 base indel with perfect matches for the rest
 	// note that things like _two_ one-base indels may still produce problems 
-	if (cigarToIndelCount( bamCore, cigar_pointer ) != 0 ) {
+	if (HasIndel( bamCore, cigar_pointer )) {
 		return false;
 	}
    if (read->mapped && read->edits <= 2 && cigarMismatchedBases <= 2) {
@@ -700,6 +701,20 @@ unsigned int cigarToIndelCount(const bam1_core_t *bamCore, const uint32_t *cigar
       }
    }
    return indelCount;
+}
+
+bool HasIndel(const bam1_core_t *bamCore, const uint32_t *cigar)
+{
+    if (bamCore->n_cigar <= 2) return false; // there are must be at least two M and one indel to establish the indel status
+    //unsigned int indelCount = 0;
+    for (uint32_t cigarIndex = 0; cigarIndex < bamCore->n_cigar; cigarIndex++ ) {
+        int cigarElement = cigar[ cigarIndex ] & BAM_CIGAR_MASK;
+        if ( cigarElement == BAM_CINS)
+            return true;
+        if ( cigarElement == BAM_CDEL )
+            return true;
+    }
+    return false;
 }
 
 
