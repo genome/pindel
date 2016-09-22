@@ -2067,8 +2067,8 @@ void createParameters()
       new IntParameter( &g_par.maxPostRepeatLength, "-pl", "--max_postindel_repeatlength", "Filters out all indels where the inserted/deleted sequence is followed by a repetition of  the fundamental repeat unit of the inserted/deleted sequence; the maximum size of that 'fundamental unit' given by the value of -pl (default infinite) For example: TCAG->TCAGCAG has insertion CAG and post-insertion sequence CAG. This insertion would be filtered out if -pl has been set to 3 or above, but would be deemed 'sufficiently unrepetitive' if -pl is 2", false, -1 ) );
    parameters.push_back(
       new BoolParameter( &g_par.onlyBalancedSamples, "-sb", "--only_balanced_samples", "Only count a sample as supporting an event if it is supported by reads on both strands, minimum reads per strand given by the -ss parameter. (default false)", false, 0 ) );
-   parameters.push_back(
-//      new BoolParameter( &g_par.somatic, "-so", "--somatic_p", "compute somatic p value when two samples are present, assume the order is normal and tumor. (default false)", false, 0 ) );
+//   parameters.push_back(
+  //    new BoolParameter( &g_par.somatic, "-so", "--somatic_p", "compute somatic p value when two samples are present, assume the order is normal and tumor. (default false)", false, 0 ) );
 
    parameters.push_back(
       new IntParameter( &g_par.minimumStrandSupport, "-ss", "--minimum_strand_support", "Only count a sample as supporting an event if at least one of its strands is supported by X reads (default 1)", false, 1 ) );
