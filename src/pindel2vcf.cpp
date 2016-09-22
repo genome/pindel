@@ -784,37 +784,6 @@ void createHeader(ofstream &outFile, const string& sourceProgram, const string& 
    outFile << "\n";
 }
 
-
-/* 'StringCollection' can save various separate strings, outputting them when needed as one ';'-separated string, but also offering access to its individual
- elements. */
-class StringCollection
-{
-public:
-   StringCollection() {};
-   string totalString() const;
-   void addString(const string& inputString)
-   {
-      d_contents.push_back( inputString );
-   };
-
-private:
-   vector< string > d_contents;
-
-};
-
-string StringCollection::totalString() const
-{
-   string returnString="";
-   int numItems = d_contents.size();
-   if (numItems>=1) {
-      returnString+=d_contents[ 0 ];
-   }
-   for (int counter=1; counter<=numItems; counter++ ) {
-      returnString += ";" + d_contents[counter];
-   } //for
-   return returnString;
-}
-
 /* 'Pair' contains a pair of strings, outputted as "str1:str2". e*/
 class Pair
 {
@@ -1188,7 +1157,6 @@ private:
    Genome* d_genome_ptr;
    string d_chromosome;
    string d_id; // default '.', as we don't mine variant databases yet
-   //StringCollection d_alternatives;
    string d_quality; // '.' by default, but can be floating-point number
    string d_filter;  // "PASS" by default
    string d_svtype;
