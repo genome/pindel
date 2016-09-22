@@ -2068,7 +2068,7 @@ void createParameters()
    parameters.push_back(
       new BoolParameter( &g_par.onlyBalancedSamples, "-sb", "--only_balanced_samples", "Only count a sample as supporting an event if it is supported by reads on both strands, minimum reads per strand given by the -ss parameter. (default false)", false, 0 ) );
    parameters.push_back(
-      new BoolParameter( &g_par.somatic, "-so", "--somatic_p", "compute somatic p value when two samples are present, assume the order is normal and tumor. (default false)", false, 0 ) );
+//      new BoolParameter( &g_par.somatic, "-so", "--somatic_p", "compute somatic p value when two samples are present, assume the order is normal and tumor. (default false)", false, 0 ) );
 
    parameters.push_back(
       new IntParameter( &g_par.minimumStrandSupport, "-ss", "--minimum_strand_support", "Only count a sample as supporting an event if at least one of its strands is supported by X reads (default 1)", false, 1 ) );
