@@ -1,6 +1,8 @@
 src/*.o
 src/*.d
 devtools/installer_output.txt
+.project
+devtools/test_results
 pindel
 pindel2vcf
 pindel2vcf4tcga
