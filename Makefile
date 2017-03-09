@@ -46,7 +46,7 @@ Makefile.local:
 	@if [ -z "$(HTSLIB)" ]; then \
 	     echo "HTSLIB_LDFLAGS=" >> $@; \
 	 elif [ -d $(HTSLIB)/lib ]; then \
-	     echo "HTSLIB_LDFLAGS=-L$(HTSLIB) -Wl,-rpath $(HTSLIB)/lib" >> $@; \
+	     echo "HTSLIB_LDFLAGS=-L$(HTSLIB)/lib -Wl,-rpath $(HTSLIB)/lib" >> $@; \
 	 else \
 	     echo "HTSLIB_LDFLAGS=-L$(HTSLIB) -Wl,-rpath $(HTSLIB)" >> $@; \
 	 fi
