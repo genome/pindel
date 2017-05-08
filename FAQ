@@ -5,6 +5,8 @@
 -How do I run pindel?
 -Compile time errors
 -Runtime problems
+-What do the terms and numbers in the Pindel output file (sample_D,
+ sample_SI, sample_TD etc.) and in the VCF output file mean?
 -Contacting the author(s)
 
 ** How do I run pindel? **
@@ -205,6 +207,50 @@ scripts that TCGA partners possess into full-blown TCGA files. This does not
 mean that pindel2vcf4tcga will never be working as a 'stand-alone' script,
 but for now it is simply for use by certain TCGA-affiliated users, regular
 Pindel users should not try to apply it to their own Pindel output.
+
+** What do the terms and numbers in the Pindel output file (sample_D,
+ sample_SI, sample_TD etc.) and in the VCF output file mean? **
+
+* contents *
+-in the pindel output file, what do the six numbers after every sample name
+ mean?
+
+
+* In the Pindel output file, what do the six numbers after every sample name mean? *
+
+In the Pindel output file (sample_D, sample_SI etc.) each event is 
+represented by one line of data about the event, and multiple lines
+representing raw reads. The data line starts with an index (the 0th event,
+1st event, 2nd event etc.) followed by an SV type (D means deletion, for
+example), and ends with a group of seven items for each sample,
+consisting of the sample name and six numbers, like 
+"SIMCHRVS2 392 12 1 1 0 0".
+What do those numbers mean?
+The first number is the read depth (as calculated by samtools) at the
+left breakpoint of the SV, which indicates how many reads nicely map 
+/cover the left breakpoint. If this number is high (or at least much higher
+than the last four numbers), then this region maps 'normally', which
+indicates that this SV may be a false positive, though there are still
+cases in which you may want to check it further. Somatic mutations
+in cancer, for example, may have much lower alt coverage than the 
+'reference coverage' given by the first two numbers, but still be a real
+and possibly damaging mutation; it is just not present in all cells in 
+the sample.
+Similarly, the second number represents the read depth at the right 
+breakpoint of the SV.
+The third and fourth numbers represent the number of reads on the + 
+strand mapping to the alternative allele, and the number of unique reads
+on the + strand mapping to the alternative allele. This second number is
+given because in some cases reads have exactly the same sequence and 
+the same start and end positions; this could be a coincidence, but often 
+it is just an artifact from PCR/sequencing, and does not indicate extra
+certainty that the event exists; the fourth number basically gives 
+the number of truly independent reads supporting the event, so may be 
+more reliable than the third number in ascertaining how likely it is that
+the alternative allele really exists.
+The fifth and sixth numbers are similar to the third and fourth numbers;
+they represent the total and unique numbers of reads that map to the 
+- strand and support the alternative allele.
 
 
 ** Contacting the authors **
