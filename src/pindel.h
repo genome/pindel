@@ -740,4 +740,9 @@ void safeGetline(std::istream& is, std::string& t);
 
 void SearchFarEnds( const std::string & chromosomeSeq, std::vector<SPLIT_READ>& reads, const Chromosome& currentChromosome);
 
+static inline unsigned diff(unsigned a, unsigned b)
+{
+    return (a > b)? a - b : b - a;
+}
+
 #endif /* PINDEL_H */
