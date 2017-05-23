@@ -1554,7 +1554,7 @@ void MergeInterChr(ControlState& currentState, UserDefinedSettings *usersettings
             continue;
          }
          if (All[index_a].FirstChrName == All[index_b].FirstChrName && All[index_a].SecondChrName == All[index_b].SecondChrName) {
-            if (abs(All[index_a].FirstPos - All[index_b].FirstPos) < 10 && abs(All[index_a].SecondPos - All[index_b].SecondPos) < 10 && All[index_a].NumSupport + All[index_b].NumSupport >= cutoff) {
+            if (diff(All[index_a].FirstPos, All[index_b].FirstPos) < 10 && diff(All[index_a].SecondPos, All[index_b].SecondPos) < 10 && All[index_a].NumSupport + All[index_b].NumSupport >= cutoff) {
 
                INToutputfile << "chr\t" << All[index_a].FirstChrName << "\tpos\t" << unsigned((All[index_a].FirstPos + All[index_b].FirstPos) / 2) << "\tchr\t" << All[index_a].SecondChrName << "\tpos\t"
                              << unsigned((All[index_a].SecondPos + All[index_b].SecondPos) / 2) << "\tseq\t" << All[index_a].InsertedSequence << "\tsupport\t" << All[index_a].NumSupport + All[index_b].NumSupport << "\tINFOR\t"
