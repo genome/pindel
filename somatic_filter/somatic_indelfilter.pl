@@ -34,11 +34,15 @@ my $input_fh = IO::File->new( $paras{'input'} ) or die " could not open input in
 my ( undef, $nocomplex_output ) = tempfile();
 my $nocomplex_output_fh = IO::File->new( $nocomplex_output, ">" ) or die "Temporary file could not be created. $!";
 map { chomp; my @t = split;
-    if ($t[32] + $t[34] + $t[36] >= $paras{'cov'} && $t[33] + $t[34] + $t[36] >= $paras{'cov'} && $t[39] + $t[41] + $t[43] >= $paras{'cov'} && $t[40] + $t[41] + $t[43] >= $paras{'cov'}) {
-        if ( ($t[34] + $t[36])  == 0 && ($t[41] + $t[43])/($t[39] + $t[41] + $t[43]) >= $paras{'vaf'} && (($t[41] + $t[43])/($t[40] + $t[41] + $t[43]) >= $paras{'vaf'} ) ) {
+    if (($t[32] + $t[34] + $t[36] >= $paras{'cov'}) && # Sample 1: Upstream coverage + left breakpoint coverage
+        ($t[33] + $t[34] + $t[36] >= $paras{'cov'}) && # Sample 1: Upstream coverage + right breakpoint coverage
+        ($t[39] + $t[41] + $t[43] >= $paras{'cov'}) && # Sample 2: Upstream coverage + left breakpoint coverage
+        ($t[40] + $t[41] + $t[43] >= $paras{'cov'})) { # Sample 2: Upstream coverage + right breakpoint coverage
+        if ((($t[34] + $t[36])  == 0) && # Normal has zero variant frequency
+            ($t[41] + $t[43])/($t[39] + $t[41] + $t[43]) >= $paras{'vaf'} && (($t[41] + $t[43])/($t[40] + $t[41] + $t[43]) >= $paras{'vaf'} )) { #Tumor has adequete variant frequency
             #print; print "\n";
             # allow complex
-            if ( $t[1] eq "I" || ($t[1] eq "D" && $t[4] == 0) || ($t[1] eq "D" && $t[4] > 0) ) {
+            if ( $t[1] eq "I" || ($t[1] eq "D" && $t[4] == 0) || ($t[1] eq "D" && $t[4] > 0) ) { # Variation is an insertion or deletion
                 $nocomplex_output_fh->print($_."\n");
             }
         }
@@ -63,13 +67,13 @@ my $filter_output_fh = IO::File->new( $paras{'output'}, ">" ) or die "Filtered o
 my $pindel2vcf_output_fh = IO::File->new( $pindel2vcf_output ) or die "Temporary file could not be opened. $!";
 while ( <$pindel2vcf_output_fh> ) {
     print;
-    if ( /^#/ ) { $filter_output_fh->print($_); next };
-    my @a= split /\t/; 
-    my @b = split/\;/, $a[7]; 
+    if ( /^#/ ) { $filter_output_fh->print($_); next }; #Preserve headers
+    my @a= split /\t/; # Split the VCF line
+    my @b = split/\;/, $a[7]; #Split the INFO field
     for ( my $i=0; $i<scalar(@b); $i++) { 
         if ( $b[$i]=~/^HOMLEN/ ) { 
             my @c = split/=/, $b[$i]; 
-            if ( $c[1] <= $paras{'hom'} ) { $filter_output_fh->print($_); last; } 
+            if ( $c[1] <= $paras{'hom'} ) { $filter_output_fh->print($_); last; } #Check for whether HOMLEN is shorter or equal to the hom parameter in input.
         } 
     }
 } <$pindel2vcf_output_fh>;
