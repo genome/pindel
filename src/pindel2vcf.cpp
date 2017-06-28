@@ -760,7 +760,7 @@ void createHeader(ofstream &outFile, const string& sourceProgram, const string& 
    outFile << "##INFO=<ID=SVLEN,Number=1,Type=Integer,Description=\"Difference in length between REF and ALT alleles\">" << endl;
    outFile << "##INFO=<ID=SVTYPE,Number=1,Type=String,Description=\"Type of structural variant\">" << endl;
    outFile << "##INFO=<ID=NTLEN,Number=.,Type=Integer,Description=\"Number of bases inserted in place of deleted code\">" << endl;
-   if (g_par.somatic) {
+   if ( g_par.somatic && pindel024uOrLater ){ {
       // The field name of VarScan's similar statistic is used here.
       outFile << "##INFO=<ID=SPV,Number=1,Type=Float,Description=\"Fisher's p-value for somatic events between the first two samples\">" << endl;
    }
@@ -1520,21 +1520,20 @@ int FACT(int n)
    return fact;
 }
 
-double fisher_test(int a, int c, int b, int d)
-{
-   double p = 0.0;
-   int n = a + b + c + d;
-   p = (FACT(a+b)*FACT(c+d)*FACT(a+c)*FACT(d+b)) / (double)(FACT(a)*FACT(b)*FACT(c)*FACT(d)*FACT(n));
-   std::cout << a << " " << c << " " << b << " " << d << " " << p << std::endl;
-   return p;
-}
+//double fisher_test(int a, int c, int b, int d, double *_left, double *_right, double *_two)
+//{
+//   double p = 0.0, left = 0.0, right = 0.0, two = 0.0;
+//   int n = a + b + c + d;
+//   //p = (FACT(a+b)*FACT(c+d)*FACT(a+c)*FACT(d+b)) / (double)(FACT(a)*FACT(b)*FACT(c)*FACT(d)*FACT(n));
+//   p = kt_fisher_exact (a, b, c, d, &left, &right, &two);
+//   std::cout << a << "|" << c << "|" << b << "|" << d << "|" << p << "|" << two << std::endl;
+//   return p;
+//}
 
 
 ostream& operator<<(ostream& os, const SVData& svd)
 {
-   double somatic_p_value = 0.0;
-
-
+   double somatic_p_value, left, right, twotail;
 
    os << svd.d_chromosome << "\t";
    os << svd.getPosition() << "\t";
@@ -1542,10 +1541,8 @@ ostream& operator<<(ostream& os, const SVData& svd)
    os << svd.getOutputFormattedReference() << "\t";
    os << svd.getOutputFormattedAlternative() << "\t";
    os << svd.d_quality << "\t";
-   if (svd.d_format.size() == 2 && g_par.somatic) {
-
-      somatic_p_value = fisher_test(svd.d_format[0].getTotalReads(), svd.d_format[0].getTotalRefSupport(), svd.d_format[1].getTotalReads(), svd.d_format[1].getTotalRefSupport());
-      //if (somatic_p_value < 0.05) svd.d_filter = "PASS";
+   if (svd.d_format.size() == 2 && g_par.somatic && pindel024uOrLater) {
+      somatic_p_value = kt_fisher_exact (svd.d_format[0].getTotalReads(), svd.d_format[0].getTotalRefSupport(), svd.d_format[1].getTotalReads(), svd.d_format[1].getTotalRefSupport(), &left, &right, &twotail);
    }
    if (somatic_p_value < 0.05) {
       os << "PASS\t";
@@ -1575,8 +1572,8 @@ ostream& operator<<(ostream& os, const SVData& svd)
       os << "," << svd.d_replaceLenTwo;
    }
 
-   if (svd.d_format.size() == 2 && g_par.somatic) {
-      os << ";" << ";SPV=" << somatic_p_value;
+   if (svd.d_format.size() == 2 && g_par.somatic && pindel024uOrLater ) {
+      os << ";SPV=" << twotail;
    }
 
 
@@ -2354,6 +2351,9 @@ int main(int argc, char* argv[])
    showSet( sampleNames );
    cout << "Chromosomes in which SVs have been found:\n";
    showSet( chromosomeNames );
+   if ( g_par.somatic && ! pindel024uOrLater){
+      cout << "P-values for somatic variations can only be calculated for pindel outputs after 0.2.4u.\n"
+   }
 
    map< string, int > sampleMap;
    makeSampleMap( sampleNames, sampleMap );
