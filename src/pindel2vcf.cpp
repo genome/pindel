@@ -760,6 +760,10 @@ void createHeader(ofstream &outFile, const string& sourceProgram, const string& 
    outFile << "##INFO=<ID=SVLEN,Number=1,Type=Integer,Description=\"Difference in length between REF and ALT alleles\">" << endl;
    outFile << "##INFO=<ID=SVTYPE,Number=1,Type=String,Description=\"Type of structural variant\">" << endl;
    outFile << "##INFO=<ID=NTLEN,Number=.,Type=Integer,Description=\"Number of bases inserted in place of deleted code\">" << endl;
+   if (g_par.somatic) {
+      // The field name of VarScan's similar statistic is used here.
+      outFile << "##INFO=<ID=SPV,Number=1,Type=Float,Description=\"Fisher's p-value for somatic events between the first two samples\">" << endl;
+   }
    outFile << "##FORMAT=<ID=PL,Number=3,Type=Integer,Description=\"Normalized, Phred-scaled likelihoods for genotypes as defined in the VCF specification\">" << endl;
    //outFile << "##ALT=<ID=DEL,Description=\"Deletion\">" << endl; /*EWL040311: probably not needed, as our calls are precise so we should rather give the exact replacing sequence instead of a label. */
    //outFile << "##ALT=<ID=DUP,Description=\"Duplication\">" << endl;
@@ -1572,7 +1576,7 @@ ostream& operator<<(ostream& os, const SVData& svd)
    }
 
    if (svd.d_format.size() == 2 && g_par.somatic) {
-      os << ";" << somatic_p_value;
+      os << ";" << ";SPV=" << somatic_p_value;
    }
 
 
