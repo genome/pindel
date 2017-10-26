@@ -30,6 +30,7 @@
 #include "htslib/kstring.h"
 #include "htslib/kseq.h"
 #include "htslib/khash.h"
+#define hts_drand48(void) drand48() //HTSLIB 1.6 compatibility
 #include "htslib/ksort.h"
 
 // Pindel header files
