@@ -7,6 +7,7 @@
  e.m.w.lameijer@gmail.com
  +31(0)71-5 125 831
 
+Version 0.6.4 [December 19th, 2017] Add more fields to INFO column, SAF and SAR
  Version 0.6.3 [February 19th, 2014] Clearer text on usage of -P option
  Version 0.6.2 [December 12th, 2014] Now robust against fasta files that have non-standard line lengths (C++'s getline does not work well on lines of over a million characters)
  Version 0.6.1 [December 12th, 2014] Now has special code to recognize lines that contain SV-data, instead of relying on indirect establishment of their identity from context
@@ -774,6 +775,8 @@ void createHeader(ofstream &outFile, const string& sourceProgram, const string& 
    outFile << "##FORMAT=<ID=PL,Number=3,Type=Integer,Description=\"Normalized, Phred-scaled likelihoods for AA,AB,BB genotypes where A=ref and B=alt; "
            << "not applicable if site is not biallelic\">" << endl;
 
+   outFile << "##FORMAT=<ID=SAF,Number=A,Type=Integer,Description=\"Alternate allele observations on the forward strand\">" << endl;
+   outFile << "##FORMAT=<ID=SAR,Number=A,Type=Integer,Description=\"Alternate allele observations on the reverse strand\">" << endl;
 
    //outFile << "##INFO=<ID=DP,Number=1,Type=Integer,Description=\"Total Depth across samples\">" << endl;
    //outFile << "##INFO=<ID=DP,Number=1,Type=Integer,Description=\"Total Depth across samples\">" << endl;
@@ -883,6 +886,7 @@ public:
    }
    const string getSampleDataOfEvent() const;
    const string getGTAD() const;
+   const string getGTADSAFSAR() const;
 
 private:
    int d_readDepthPlus;
@@ -1025,7 +1029,8 @@ const string Genotype::getSampleDataOfEvent() const
       << getTotalRefSupport() + getTotalReads() << ":" // DP
       << "." << ":" // BQ (TODO)
       << 2 << ":" // SS (TODO)
-      << getTotalRefSupport() << "," << getTotalReads(); // AD
+      << getTotalRefSupport() << "," << getTotalReads() // AD
+      << getReadDepthPlus() << ":" << getReadDepthMinus(); // SAF:SAR
    return ss.str();
 }
 
@@ -1033,6 +1038,13 @@ const string Genotype::getGTAD() const
 {
    stringstream ss;
    ss << getGTold() << ":" << getTotalReads();
+   return ss.str();
+}
+
+const string Genotype::getGTADSAFSAR() const
+{
+   stringstream ss;
+   ss << getGTold() << ":" << getTotalReads() << ":" << getReadDepthPlus() << ":" << getReadDepthMinus();
    return ss.str();
 }
 
@@ -1617,14 +1629,14 @@ ostream& operator<<(ostream& os, const SVData& svd)
       os << ";" << somatic_p_value;
    }
 
-   os << "\tGT:DP:BQ:SS:AD";
+   os << "\tGT:DP:BQ:SS:AD:SAF:SAR";
 
    for (int counter=0; counter<svd.d_format.size(); counter++ ) {
       os << "\t";
       if (pindel024uOrLater && svd.getAlternative()!="<INS>") {
          os << svd.d_format[ counter ].getSampleDataOfEvent();
       } else {
-         os << svd.d_format[ counter ].getGTAD();
+         os << svd.d_format[ counter ].getGTADSAFSAR();
       }
    }
 

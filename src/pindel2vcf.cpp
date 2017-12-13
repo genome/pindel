@@ -7,6 +7,7 @@
  e.m.w.lameijer@gmail.com
  +31(0)71-5 125 831
 
+ Version 0.6.4 [December 19th, 2017] Add more fields to INFO column, SAF and SAR
  Version 0.6.3 [February 19th, 2014] Clearer text on usage of -P option
  Version 0.6.2 [December 12th, 2014] Now robust against fasta files that have non-standard line lengths (C++'s getline does not work well on lines of over a million characters)
  Version 0.6.1 [December 12th, 2014] Now has special code to recognize lines that contain SV-data, instead of relying on indirect establishment of their identity from context
@@ -773,6 +774,8 @@ void createHeader(ofstream &outFile, const string& sourceProgram, const string& 
    }
    outFile << "##FORMAT=<ID=AD,Number=2,Type=Integer,Description=\"Allele depth, how many reads support this allele\">" << endl;
 
+   outFile << "##FORMAT=<ID=SAF,Number=A,Type=Integer,Description=\"Alternate allele observations on the forward strand\">" << endl;
+   outFile << "##FORMAT=<ID=SAR,Number=A,Type=Integer,Description=\"Alternate allele observations on the reverse strand\">" << endl;
    // headers of columns
    outFile << "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO";
    if (samples.size()>0) {
@@ -847,7 +850,9 @@ public:
       return d_totalRefSupport;
    }
    const string getGTRDAD() const;
+   const string getGTRDADSAFSAR() const;
    const string getGTAD() const;
+   const string getGTADSAFSAR() const;
 
 private:
    int d_readDepthPlus;
@@ -981,6 +986,13 @@ const string Genotype::getGTnew() const
    return deriveGenotype( *this );
 }
 
+const string Genotype::getGTRDADSAFSAR() const
+{
+   stringstream ss;
+   ss << getGTnew() << ":" << getTotalRefSupport() << "," << getTotalReads()  << ":" << getReadDepthPlus() << ":" << getReadDepthMinus();
+   return ss.str();
+}
+
 const string Genotype::getGTRDAD() const
 {
    stringstream ss;
@@ -992,6 +1004,13 @@ const string Genotype::getGTAD() const
 {
    stringstream ss;
    ss << getGTold() << ":" << getTotalReads();
+   return ss.str();
+}
+
+const string Genotype::getGTADSAFSAR() const
+{
+   stringstream ss;
+   ss << getGTold() << ":" << getTotalReads() << ":" << getReadDepthPlus() << ":" << getReadDepthMinus();
    return ss.str();
 }
 
@@ -1577,17 +1596,17 @@ ostream& operator<<(ostream& os, const SVData& svd)
 
 
    if (pindel024uOrLater && svd.getAlternative()!="<INS>") {
-      os << "\tGT:AD";
+      os << "\tGT:AD:SAF:SAR";
    } else {
-      os << "\tGT:AD";
+      os << "\tGT:AD:SAF:SAR";
    }
 
    for (int counter=0; counter<svd.d_format.size(); counter++ ) {
       os << "\t";
       if (pindel024uOrLater && svd.getAlternative()!="<INS>") {
-         os << svd.d_format[ counter ].getGTRDAD();
+         os << svd.d_format[ counter ].getGTRDADSAFSAR();
       } else {
-         os << svd.d_format[ counter ].getGTAD();
+         os << svd.d_format[ counter ].getGTADSAFSAR();
       }
    }
 
