@@ -315,7 +315,7 @@ struct SPLIT_READ {
    char MatchedFarD;
    unsigned int MatchedRelPos;
    short MS; // rename MappingQuality ?
-   short InsertSize;
+   int InsertSize;
    std::string Tag; // rename SampleName ?
    std::map <std::string, unsigned> SampleName2Number;
    unsigned Thickness;
