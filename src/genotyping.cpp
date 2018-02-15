@@ -124,7 +124,7 @@ void doGenotyping (ControlState & CurrentState, UserDefinedSettings* userSetting
    // step 4 for each variant, do genotyping
    for (unsigned SV_index =0; SV_index < AllSV4Genotyping.size(); SV_index++) {
       // step 4.1 if type == DEL, GenotypeDel
-      if (AllSV4Genotyping[SV_index].ChrA == AllSV4Genotyping[SV_index].ChrB && abs(AllSV4Genotyping[SV_index].PosA - AllSV4Genotyping[SV_index].PosB) < SV_Genotype_Cutoff) {
+     if (AllSV4Genotyping[SV_index].ChrA == AllSV4Genotyping[SV_index].ChrB && abs((long long int) AllSV4Genotyping[SV_index].PosA - (long long int) AllSV4Genotyping[SV_index].PosB) < SV_Genotype_Cutoff) {
          std::cout << "Skip One SV " << OneSV.Type << " " << OneSV.ChrA << " " << OneSV.PosA << " "
                    << OneSV.CI_A << " " << OneSV.ChrB << " " << OneSV.PosB << " "
                    << OneSV.CI_B << std::endl;
