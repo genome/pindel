@@ -313,7 +313,7 @@ string InputReader::getLine()
 {
    if (canReadMore()) {
       string line;
-      getline( m_currentFile, line );
+      std::getline( m_currentFile, line );
       return line;
    } else {
       return "";
@@ -659,7 +659,7 @@ void Chromosome::readFromFile()
    string refLine, refName, currentLine;
    string tempChromosome = "";
 
-   getline(referenceFile,refLine); // FASTA format always has a first line with the name of the reference in it
+   std::getline(referenceFile,refLine); // FASTA format always has a first line with the name of the reference in it
    // loop over each chromosome
    bool targetChromosomeRead = false;
    do {
@@ -674,21 +674,16 @@ void Chromosome::readFromFile()
          targetChromosomeRead = true;
          tempChromosome+="N"; // for 1-shift
       }
-      char ch;
-      referenceFile.get( ch );
-      while (!referenceFile.eof() && ch != '>') {
+      std::getline(referenceFile,currentLine);
+      while (!referenceFile.eof() && currentLine[0]!='>') {
          if (refName == d_identifier ) {
-            char niceCh = toupper( ch );
-            if (niceCh >='A' && niceCh<= 'Z' ) { // skip all spaces and tab stops etc.
-               tempChromosome += niceCh;
-            }
+            tempChromosome += convertToUppercase( currentLine );
          }
-         referenceFile.get( ch );
+         std::getline(referenceFile,currentLine);
       }
       makeStrangeBasesN(tempChromosome);
       d_sequence = new string( tempChromosome );
-      referenceFile.putback( ch );
-      getline(referenceFile,refLine); // FASTA format always has a first line with the name of the reference in it
+      refLine = currentLine;
    } while (!referenceFile.eof() && !targetChromosomeRead);
 }
 
@@ -1956,7 +1951,7 @@ void readReference( const string& referenceName, Genome& genome )
    //reference="N"; // trick to make the reference automatically 1-positioned
    string refLine, refName, currentLine;
 
-   getline(referenceFile,refLine); // FASTQ format always has a first line with the name of the reference in it
+   std::getline(referenceFile,refLine); // FASTQ format always has a first line with the name of the reference in it
    // loop over each chromosome
    do {
 
@@ -1967,9 +1962,9 @@ void readReference( const string& referenceName, Genome& genome )
       } while ( counter<refLine.size() && (refLine[ counter ] != ' ') && (refLine[ counter ] != '\t') && (refLine[ counter ] != '\n') && (refLine[ counter ] != '\r'));
       cout << "Scanning chromosome: " << refName << endl;
       Chromosome newChrom( refName, referenceName );
-      getline(referenceFile,currentLine);
+      std::getline(referenceFile,currentLine);
       while (!referenceFile.eof() && currentLine[0]!='>') {
-         getline(referenceFile,currentLine);
+         std::getline(referenceFile,currentLine);
       }
       genome.addChromosome( newChrom );
       refLine = currentLine;
