@@ -674,21 +674,16 @@ void Chromosome::readFromFile()
          targetChromosomeRead = true;
          tempChromosome+="N"; // for 1-shift
       }
-      char ch;
-      referenceFile.get( ch );
-      while (!referenceFile.eof() && ch != '>') {
+      std::getline(referenceFile,currentLine);
+      while (!referenceFile.eof() && currentLine[0]!='>') {
          if (refName == d_identifier ) {
-            char niceCh = toupper( ch );
-            if (niceCh >='A' && niceCh<= 'Z' ) { // skip all spaces and tab stops etc.
-               tempChromosome += niceCh;
-            }
+             tempChromosome += convertToUppercase( currentLine );
          }
-         referenceFile.get( ch );
+         std::getline(referenceFile,currentLine);
       }
       makeStrangeBasesN(tempChromosome);
       d_sequence = new string( tempChromosome );
-      referenceFile.putback( ch );
-      getline(referenceFile,refLine); // FASTA format always has a first line with the name of the reference in it
+      refLine = currentLine;
    } while (!referenceFile.eof() && !targetChromosomeRead);
 }
 
