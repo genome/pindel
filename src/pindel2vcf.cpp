@@ -1673,7 +1673,7 @@ void getSampleNamesAndChromosomeNames(InputReader& pindelInput, set<string>& sam
       // find the next 'B-line' (the line containing the sample names, coverage etc.)
       do {
          line = pindelInput.getLine();
-      } while (!pindelInput.eof() && !isSVSummarizingLine( line ));
+      } while (!pindelInput.eof() && (!isdigit( line[0] ) || !isSVSummarizingLine( line )));
 
       if (pindelInput.eof()) {
          //cout << "DEBUG:end GetSampleNamesAndChromosomeNames\n";
@@ -1753,7 +1753,7 @@ void convertIndelToSVdata( InputReader& pindelInput, map< string, int>& sampleMa
    svd.setGenome( genome );
    do {
       line = pindelInput.getLine();
-   } while (!pindelInput.eof() && !isSVSummarizingLine( line ));
+   } while (!pindelInput.eof() && (!isdigit( line[0] ) || !isSVSummarizingLine( line )));
 
    if (pindelInput.eof()) {
       return;
