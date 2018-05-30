@@ -286,6 +286,9 @@ void createComplement( const string& dna, string& complement )
    }
 }
 
+typedef std::map<string, int> chrPos;
+typedef std::vector<chrPos>  fileMaps;
+
 /** 'InputReader' can house a vector of files, allowing access as if it were one huge file. */
 class InputReader
 {
@@ -296,13 +299,22 @@ public:
    string getLine();
    bool eof();
    void addFile(const string filename);
-   void rewind();
+   void addChrPos( string chromosomeName );
 
+   void rewind();
+   bool chrSeenInFile( string chromosomeName );
+   void setChrTarget( string chromosomeName ); 
+   void pastChrTarget();
 
 private:
    vector<string> m_filenames;
+   fileMaps m_positions;
+
    int m_nextFileIndex;
+   int m_currentFileIndex;
+   int m_prevPos;
    bool m_readable;
+   string m_chromosomeTarget;
    ifstream m_currentFile;
 
    bool canReadMore();
@@ -313,6 +325,7 @@ string InputReader::getLine()
 {
    if (canReadMore()) {
       string line;
+      m_prevPos = m_currentFile.tellg();
       getline( m_currentFile, line );
       return line;
    } else {
@@ -341,19 +354,58 @@ void InputReader::moveToNextFile()
 {
    if (m_nextFileIndex<m_filenames.size()) {
       m_currentFile.close();
+      m_currentFileIndex = m_nextFileIndex;
       m_currentFile.open( m_filenames[ m_nextFileIndex ].c_str() );
       m_nextFileIndex++;
+      if ( ! m_chromosomeTarget.empty() ) {  // if target set, seek to first line of that target
+         if ( ! m_positions.empty() && ! m_positions[ m_currentFileIndex ].empty() ) {
+            map<string, int>::iterator it = m_positions[ m_currentFileIndex ].find( m_chromosomeTarget );
+            if ( it != m_positions[ m_currentFileIndex].end() ) {
+               m_currentFile.seekg( it->second );
+            }
+         }
+      }
+      else {
+         m_prevPos = 0;
+      }
+
    } else {
       m_readable = false;
    }
 }
 
+bool InputReader::chrSeenInFile( string chromosomeName )
+{
+   bool found = false;
+   if ( ! m_positions.empty() && ! m_positions[ m_currentFileIndex ].empty() ) {
+      map<string, int>::iterator it = m_positions[ m_currentFileIndex ].find( chromosomeName );
+      if ( it != m_positions[ m_currentFileIndex].end() ) {
+         found = true;
+      } else {
+         found = false;
+      }
+   } else {
+      found =  false;
+   }
+   return( found );
+}
 
+void InputReader::setChrTarget( string chromosomeName )
+{
+   m_chromosomeTarget = chromosomeName;
+}
+
+void InputReader::pastChrTarget()  // call when past what is sought
+{
+   moveToNextFile();
+}
 
 void InputReader::rewind()
 {
    m_currentFile.open("");
    m_nextFileIndex = 0;
+   m_currentFileIndex = 0;
+   m_prevPos = 0;
    m_readable = true;
 }
 
@@ -364,7 +416,14 @@ InputReader::InputReader()
 
 void InputReader::addFile(const string filename)
 {
+   chrPos tempPos;
    m_filenames.push_back( filename );
+   m_positions.push_back( tempPos );
+}
+
+void InputReader::addChrPos( string chromosomeName)
+{
+    m_positions[ m_currentFileIndex].insert( std::make_pair(chromosomeName, m_prevPos) );
 }
 
 bool InputReader::eof()
@@ -674,21 +733,16 @@ void Chromosome::readFromFile()
          targetChromosomeRead = true;
          tempChromosome+="N"; // for 1-shift
       }
-      char ch;
-      referenceFile.get( ch );
-      while (!referenceFile.eof() && ch != '>') {
+      std::getline(referenceFile,currentLine);
+      while (!referenceFile.eof() && currentLine[0]!='>') {
          if (refName == d_identifier ) {
-            char niceCh = toupper( ch );
-            if (niceCh >='A' && niceCh<= 'Z' ) { // skip all spaces and tab stops etc.
-               tempChromosome += niceCh;
-            }
+             tempChromosome += convertToUppercase( currentLine );
          }
-         referenceFile.get( ch );
+         std::getline(referenceFile,currentLine);
       }
       makeStrangeBasesN(tempChromosome);
       d_sequence = new string( tempChromosome );
-      referenceFile.putback( ch );
-      getline(referenceFile,refLine); // FASTA format always has a first line with the name of the reference in it
+      refLine = currentLine;
    } while (!referenceFile.eof() && !targetChromosomeRead);
 }
 
@@ -1678,7 +1732,7 @@ void getSampleNamesAndChromosomeNames(InputReader& pindelInput, set<string>& sam
       // find the next 'B-line' (the line containing the sample names, coverage etc.)
       do {
          line = pindelInput.getLine();
-      } while (!pindelInput.eof() && !isSVSummarizingLine( line ));
+      } while (!pindelInput.eof() && (!isdigit( line[0] ) || !isSVSummarizingLine( line )));
 
       if (pindelInput.eof()) {
          //cout << "DEBUG:end GetSampleNamesAndChromosomeNames\n";
@@ -1699,6 +1753,9 @@ void getSampleNamesAndChromosomeNames(InputReader& pindelInput, set<string>& sam
       if ( svType.compare("LI")==0 ) {
          string chromosomeName = fetchElement( lineStream, 2 );
          chromosomeNames.insert( chromosomeName );
+         if ( ! pindelInput.chrSeenInFile(chromosomeName) ) {
+            pindelInput.addChrPos(chromosomeName);
+         }
          string firstSampleName = fetchElement( lineStream, 7);
          sampleNames.insert( firstSampleName );
          string newSampleName = fetchElement( lineStream, 5 );
@@ -1710,6 +1767,9 @@ void getSampleNamesAndChromosomeNames(InputReader& pindelInput, set<string>& sam
       }
       string chromosomeName = fetchElement( lineStream, 6 );
       chromosomeNames.insert( chromosomeName );
+      if ( ! pindelInput.chrSeenInFile(chromosomeName) ) {
+         pindelInput.addChrPos(chromosomeName);
+      }
       //		cout << "Studying chromosome " << chromosome << endl;
 
       // 8 = 2+6, so corrects for previous reads
@@ -1758,7 +1818,7 @@ void convertIndelToSVdata( InputReader& pindelInput, map< string, int>& sampleMa
    svd.setGenome( genome );
    do {
       line = pindelInput.getLine();
-   } while (!pindelInput.eof() && !isSVSummarizingLine( line ));
+   } while (!pindelInput.eof() && (!isdigit( line[0] ) || !isSVSummarizingLine( line )));
 
    if (pindelInput.eof()) {
       return;
@@ -1778,6 +1838,7 @@ void convertIndelToSVdata( InputReader& pindelInput, map< string, int>& sampleMa
       }
       svd.setChromosome( chromosomeID );
       if (chromosomeID!=targetChromosomeID) {
+         pindelInput.pastChrTarget();
          return;
       }
       int beforeStartPos = atoi( fetchElement( lineStream, 1 ).c_str() );
@@ -1865,6 +1926,7 @@ void convertIndelToSVdata( InputReader& pindelInput, map< string, int>& sampleMa
 
    string chromosomeID = fetchElement( lineStream, 2); // now at position 8
    if (chromosomeID!=targetChromosomeID) {
+      pindelInput.pastChrTarget();
       return;
    }
    const string* reference = genome.getChromosome( chromosomeID );
@@ -2263,6 +2325,7 @@ void reportSVsInChromosome(
    int regionEnd = 0;
    SVData backupSV(sampleNames.size() );
    bool backupAvailable = false;
+   pindelInput.setChrTarget( chromosomeID);
    do {
       cout << "reportSVsInChromosome: start reading region.\n";
       regionEnd = regionStart + g_par.windowSize*1000000;
