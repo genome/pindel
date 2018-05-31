@@ -29,6 +29,7 @@
 #include <set>
 #include <map>
 #include <sstream>
+#include <cstdlib>
 
 // Pindel header files
 #include "logstream.h"
@@ -659,14 +660,16 @@ std::string convertToXBaiFilename( const std::string& bamFileName )
 void readBamConfigFile(std::string& bamConfigFilename, ControlState& currentState )
 {
    int sampleCounter=0;
+   std::string tempInsertSize;
    std::ifstream BamConfigFile( bamConfigFilename.c_str() );
    if (BamConfigFile) {
       while (BamConfigFile.good()) {
          bam_info tempBamInfo;
-         BamConfigFile >> tempBamInfo.BamFile >> tempBamInfo.InsertSize;
+         BamConfigFile >> tempBamInfo.BamFile >> tempInsertSize;
          if (!BamConfigFile.good()) {
             break;
          }
+         tempBamInfo.InsertSize = strtol( tempInsertSize.c_str(), NULL, 10 );
          tempBamInfo.Tag = "";
          BamConfigFile >> tempBamInfo.Tag;
          if (tempBamInfo.Tag=="") {
