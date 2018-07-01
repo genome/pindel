@@ -10,10 +10,10 @@
     to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
     copies of the Software, and to permit persons to whom the Software is
     furnished to do so, subject to the following conditions:
-
+    
     The above copyright notice and this permission notice shall be included in
     all copies or substantial portions of the Software.
-
+    
     THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
     IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
     FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -23,14 +23,12 @@
     THE SOFTWARE.
 */
 
-#include <config.h>
-
 #include <stdarg.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <ctype.h>
 #include <string.h>
 #include <htslib/regidx.h>
-#include "hts_internal.h"
 
 void error(const char *format, ...)
 {
@@ -49,18 +47,18 @@ int custom_parse(const char *line, char **chr_beg, char **chr_end, reg_t *reg, v
 
     // Skip the fields that were parsed above
     char *ss = (char*) line;
-    while ( *ss && isspace_c(*ss) ) ss++;
+    while ( *ss && isspace(*ss) ) ss++;
     for (i=0; i<3; i++)
     {
-        while ( *ss && !isspace_c(*ss) ) ss++;
+        while ( *ss && !isspace(*ss) ) ss++;
         if ( !*ss ) return -2;  // wrong number of fields
-        while ( *ss && isspace_c(*ss) ) ss++;
+        while ( *ss && isspace(*ss) ) ss++;
     }
     if ( !*ss ) return -2;
 
     // Parse the payload
     char *se = ss;
-    while ( *se && !isspace_c(*se) ) se++;
+    while ( *se && !isspace(*se) ) se++;
     char **dat = (char**) payload;
     *dat = (char*) malloc(se-ss+1);
     memcpy(*dat,ss,se-ss+1);
@@ -89,7 +87,7 @@ int main(int argc, char **argv)
     // Finish initialization
     regidx_insert(idx,NULL);
 
-    // Test
+    // Test 
     regitr_t itr;
     int from, to;
 
@@ -111,7 +109,7 @@ int main(int argc, char **argv)
 
     // Clean up
     regidx_destroy(idx);
-
+    
     return 0;
 }
 

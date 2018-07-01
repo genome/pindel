@@ -22,21 +22,16 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.  */
 
-#include <config.h>
-
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
-#include <strings.h>
 #include <limits.h>
 #include <errno.h>
+#include <ctype.h>
 #include <sys/stat.h>
 #include "htslib/synced_bcf_reader.h"
 #include "htslib/kseq.h"
 #include "htslib/khash_str2int.h"
-#include "htslib/bgzf.h"
-#include "htslib/thread_pool.h"
-#include "bcf_sr_sort.h"
 
 #define MAX_CSI_COOR 0x7fffffff     // maximum indexable coordinate of .csi
 
@@ -53,13 +48,6 @@ typedef struct _region_t
 }
 region_t;
 
-#define BCF_SR_AUX(x) ((aux_t*)((x)->aux))
-typedef struct
-{
-    sr_sort_t sort;
-}
-aux_t;
-
 static void _regions_add(bcf_sr_regions_t *reg, const char *chr, int start, int end);
 static bcf_sr_regions_t *_regions_init_string(const char *str);
 static int _regions_match_alleles(bcf_sr_regions_t *reg, int als_idx, bcf1_t *rec);
@@ -68,48 +56,20 @@ char *bcf_sr_strerror(int errnum)
 {
     switch (errnum)
     {
-        case open_failed:
-            return strerror(errno);
+        case open_failed: 
+            return strerror(errno); break;
         case not_bgzf:
-            return "not compressed with bgzip";
+            return "not compressed with bgzip"; break;
         case idx_load_failed:
-            return "could not load index";
+            return "could not load index"; break;
         case file_type_error:
-            return "unknown file type";
+            return "unknown file type"; break;
         case api_usage_error:
-            return "API usage error";
+            return "API usage error"; break;
         case header_error:
-            return "could not parse header";
-        case no_eof:
-            return "no BGZF EOF marker; file may be truncated";
-        case no_memory:
-            return "Out of memory";
-        case vcf_parse_error:
-            return "VCF parse error";
-        case bcf_read_error:
-            return "BCF read error";
-        default: return "";
+            return "could not parse header"; break;
+        default: return ""; 
     }
-}
-
-int bcf_sr_set_opt(bcf_srs_t *readers, bcf_sr_opt_t opt, ...)
-{
-    va_list args;
-    switch (opt)
-    {
-        case BCF_SR_REQUIRE_IDX:
-            readers->require_index = 1;
-            return 0;
-
-        case BCF_SR_PAIR_LOGIC:
-            va_start(args, opt);
-            BCF_SR_AUX(readers)->sort.pair = va_arg(args, int);
-            return 0;
-
-        default:
-            break;
-    }
-    return 1;
 }
 
 static int *init_filters(bcf_hdr_t *hdr, const char *filters, int *nfilters)
@@ -123,17 +83,14 @@ static int *init_filters(bcf_hdr_t *hdr, const char *filters, int *nfilters)
         {
             out = (int*) realloc(out, (nout+1)*sizeof(int));
             if ( tmp-prev==1 && *prev=='.' )
-            {
                 out[nout] = -1;
-                nout++;
-            }
             else
             {
                 str.l = 0;
                 kputsn(prev, tmp-prev, &str);
                 out[nout] = bcf_hdr_id2int(hdr, BCF_DT_ID, str.s);
-                if ( out[nout]>=0 ) nout++;
             }
+            nout++;
             if ( !*tmp ) break;
             prev = tmp+1;
         }
@@ -149,7 +106,7 @@ int bcf_sr_set_regions(bcf_srs_t *readers, const char *regions, int is_file)
     assert( !readers->regions );
     if ( readers->nreaders )
     {
-        hts_log_error("Must call bcf_sr_set_regions() before bcf_sr_add_reader()");
+        fprintf(stderr,"[%s:%d %s] Error: bcf_sr_set_regions() must be called before bcf_sr_add_reader()\n", __FILE__,__LINE__,__FUNCTION__);
         return -1;
     }
     readers->regions = bcf_sr_regions_init(regions,is_file,0,1,-2);
@@ -172,31 +129,6 @@ int bcf_sr_set_targets(bcf_srs_t *readers, const char *targets, int is_file, int
     return 0;
 }
 
-int bcf_sr_set_threads(bcf_srs_t *files, int n_threads)
-{
-    if (!(files->n_threads = n_threads))
-        return 0;
-
-    files->p = calloc(1, sizeof(*files->p));
-    if (!files->p) {
-        files->errnum = no_memory;
-        return -1;
-    }
-    if (!(files->p->pool = hts_tpool_init(n_threads)))
-        return -1;
-
-    return 0;
-}
-
-void bcf_sr_destroy_threads(bcf_srs_t *files) {
-    if (!files->p)
-        return;
-
-    if (files->p->pool)
-        hts_tpool_destroy(files->p->pool);
-    free(files->p);
-}
-
 int bcf_sr_add_reader(bcf_srs_t *files, const char *fname)
 {
     htsFile* file_ptr = hts_open(fname, "r");
@@ -214,17 +146,6 @@ int bcf_sr_add_reader(bcf_srs_t *files, const char *fname)
     reader->file = file_ptr;
 
     files->errnum = 0;
-
-    if ( reader->file->format.compression==bgzf )
-    {
-        BGZF *bgzf = hts_get_bgzfp(reader->file);
-        if ( bgzf && bgzf_check_EOF(bgzf) == 0 ) {
-            files->errnum = no_eof;
-            hts_log_warning("No BGZF EOF marker; file '%s' may be truncated", fname);
-        }
-        if (files->p)
-            bgzf_thread_pool(bgzf, files->p->pool, files->p->qsize);
-    }
 
     if ( files->require_index )
     {
@@ -284,13 +205,13 @@ int bcf_sr_add_reader(bcf_srs_t *files, const char *fname)
     if ( files->streaming && files->nreaders>1 )
     {
         files->errnum = api_usage_error;
-        hts_log_error("Must set require_index when the number of readers is greater than one");
+        fprintf(stderr,"[%s:%d %s] Error: %d readers, yet require_index not set\n", __FILE__,__LINE__,__FUNCTION__,files->nreaders);
         return 0;
     }
     if ( files->streaming && files->regions )
     {
         files->errnum = api_usage_error;
-        hts_log_error("Cannot tabix-jump in streaming mode");
+        fprintf(stderr,"[%s:%d %s] Error: cannot tabix-jump in streaming mode\n", __FILE__,__LINE__,__FUNCTION__);
         return 0;
     }
     if ( !reader->header )
@@ -299,7 +220,7 @@ int bcf_sr_add_reader(bcf_srs_t *files, const char *fname)
         return 0;
     }
 
-    reader->fname = strdup(fname);
+    reader->fname = fname;
     if ( files->apply_filters )
         reader->filter_ids = init_filters(reader->header, files->apply_filters, &reader->nfilter_ids);
 
@@ -324,14 +245,11 @@ int bcf_sr_add_reader(bcf_srs_t *files, const char *fname)
 bcf_srs_t *bcf_sr_init(void)
 {
     bcf_srs_t *files = (bcf_srs_t*) calloc(1,sizeof(bcf_srs_t));
-    files->aux = (aux_t*) calloc(1,sizeof(aux_t));
-    bcf_sr_sort_init(&BCF_SR_AUX(files)->sort);
     return files;
 }
 
 static void bcf_sr_destroy1(bcf_sr_t *reader)
 {
-    free(reader->fname);
     if ( reader->tbx_idx ) tbx_destroy(reader->tbx_idx);
     if ( reader->bcf_idx ) hts_idx_destroy(reader->bcf_idx);
     bcf_hdr_destroy(reader->header);
@@ -344,7 +262,6 @@ static void bcf_sr_destroy1(bcf_sr_t *reader)
     free(reader->samples);
     free(reader->filter_ids);
 }
-
 void bcf_sr_destroy(bcf_srs_t *files)
 {
     int i;
@@ -356,17 +273,13 @@ void bcf_sr_destroy(bcf_srs_t *files)
     free(files->samples);
     if (files->targets) bcf_sr_regions_destroy(files->targets);
     if (files->regions) bcf_sr_regions_destroy(files->regions);
-    if (files->tmps.m) free(files->tmps.s);
-    if (files->n_threads) bcf_sr_destroy_threads(files);
-    bcf_sr_sort_destroy(&BCF_SR_AUX(files)->sort);
-    free(files->aux);
+    if ( files->tmps.m ) free(files->tmps.s);
     free(files);
 }
 
 void bcf_sr_remove_reader(bcf_srs_t *files, int i)
 {
     assert( !files->samples );  // not ready for this yet
-    bcf_sr_sort_remove_reader(files, &BCF_SR_AUX(files)->sort, i);
     bcf_sr_destroy1(&files->readers[i]);
     if ( i+1 < files->nreaders )
     {
@@ -377,13 +290,59 @@ void bcf_sr_remove_reader(bcf_srs_t *files, int i)
 }
 
 
+/*
+   Removes duplicate records from the buffer. The meaning of "duplicate" is
+   controlled by the $collapse variable, which can cause that from multiple
+   <indel|snp|any> lines only the first is considered and the rest is ignored.
+   The removal is done by setting the redundant lines' positions to -1 and
+   moving these lines at the end of the buffer.
+ */
+static void collapse_buffer(bcf_srs_t *files, bcf_sr_t *reader)
+{
+    int irec,jrec, has_snp=0, has_indel=0, has_any=0;
+    for (irec=1; irec<=reader->nbuffer; irec++)
+    {
+        bcf1_t *line = reader->buffer[irec];
+        if ( line->pos != reader->buffer[1]->pos ) break;
+        if ( files->collapse&COLLAPSE_ANY )
+        {
+            if ( !has_any ) has_any = 1;
+            else line->pos = -1;
+        }
+        int line_type = bcf_get_variant_types(line);
+        if ( files->collapse&COLLAPSE_SNPS && line_type&(VCF_SNP|VCF_MNP) )
+        {
+            if ( !has_snp ) has_snp = 1;
+            else line->pos = -1;
+        }
+        if ( files->collapse&COLLAPSE_INDELS && line_type&VCF_INDEL )
+        {
+            if ( !has_indel ) has_indel = 1;
+            else line->pos = -1;
+        }
+    }
+    bcf1_t *tmp;
+    irec = jrec = 1;
+    while ( irec<=reader->nbuffer && jrec<=reader->nbuffer )
+    {
+        if ( reader->buffer[irec]->pos != -1 ) { irec++; continue; }
+        if ( jrec<=irec ) jrec = irec+1;
+        while ( jrec<=reader->nbuffer && reader->buffer[jrec]->pos==-1 ) jrec++;
+        if ( jrec<=reader->nbuffer )
+        {
+            tmp = reader->buffer[irec]; reader->buffer[irec] = reader->buffer[jrec]; reader->buffer[jrec] = tmp;
+        }
+    }
+    reader->nbuffer = irec - 1;
+}
+
 void debug_buffer(FILE *fp, bcf_sr_t *reader)
 {
     int j;
     for (j=0; j<=reader->nbuffer; j++)
     {
         bcf1_t *line = reader->buffer[j];
-        fprintf(fp,"\t%p\t%s%s\t%s:%d\t%s ", (void*)line,reader->fname,j==0?"*":" ",reader->header->id[BCF_DT_CTG][line->rid].key,line->pos+1,line->n_allele?line->d.allele[0]:"");
+        fprintf(fp,"%s%s\t%s:%d\t%s ", reader->fname,j==0?"*":"",reader->header->id[BCF_DT_CTG][line->rid].key,line->pos+1,line->n_allele?line->d.allele[0]:"");
         int k;
         for (k=1; k<line->n_allele; k++) fprintf(fp," %s", line->d.allele[k]);
         fprintf(fp,"\n");
@@ -422,7 +381,7 @@ static int _reader_seek(bcf_sr_t *reader, const char *seq, int start, int end)
 {
     if ( end>=MAX_CSI_COOR )
     {
-        hts_log_error("The coordinate is out of csi index limit: %d", end+1);
+        fprintf(stderr,"The coordinate is out of csi index limit: %d\n", end+1);
         exit(1);
     }
     if ( reader->itr )
@@ -443,10 +402,7 @@ static int _reader_seek(bcf_sr_t *reader, const char *seq, int start, int end)
         if ( tid==-1 ) return -1;    // the sequence not present in this file
         reader->itr = bcf_itr_queryi(reader->bcf_idx,tid,start,end+1);
     }
-    if (!reader->itr) {
-        hts_log_error("Could not seek: %s:%d-%d", seq, start + 1, end + 1);
-        assert(0);
-    }
+    assert(reader->itr);
     return 0;
 }
 
@@ -508,32 +464,27 @@ static void _reader_fill_buffer(bcf_srs_t *files, bcf_sr_t *reader)
             if ( reader->file->format.format==vcf )
             {
                 if ( (ret=hts_getline(reader->file, KS_SEP_LINE, &files->tmps)) < 0 ) break;   // no more lines
-                ret = vcf_parse1(&files->tmps, reader->header, reader->buffer[reader->nbuffer+1]);
-                if ( ret<0 ) { files->errnum = vcf_parse_error; break; }
+                int ret = vcf_parse1(&files->tmps, reader->header, reader->buffer[reader->nbuffer+1]);
+                if ( ret<0 ) break;
             }
             else if ( reader->file->format.format==bcf )
             {
-                ret = bcf_read1(reader->file, reader->header, reader->buffer[reader->nbuffer+1]);
-                if ( ret < -1 ) files->errnum = bcf_read_error;
-                if ( ret < 0 ) break; // no more lines or an error
+                if ( (ret=bcf_read1(reader->file, reader->header, reader->buffer[reader->nbuffer+1])) < 0 ) break; // no more lines
             }
             else
             {
-                hts_log_error("Fixme: not ready for this");
+                fprintf(stderr,"[%s:%d %s] fixme: not ready for this\n", __FILE__,__LINE__,__FUNCTION__);
                 exit(1);
             }
         }
         else if ( reader->tbx_idx )
         {
             if ( (ret=tbx_itr_next(reader->file, reader->tbx_idx, reader->itr, &files->tmps)) < 0 ) break;  // no more lines
-            ret = vcf_parse1(&files->tmps, reader->header, reader->buffer[reader->nbuffer+1]);
-            if ( ret<0 ) { files->errnum = vcf_parse_error; break; }
+            vcf_parse1(&files->tmps, reader->header, reader->buffer[reader->nbuffer+1]);
         }
         else
         {
-            ret = bcf_itr_next(reader->file, reader->itr, reader->buffer[reader->nbuffer+1]);
-            if ( ret < -1 ) files->errnum = bcf_read_error;
-            if ( ret < 0 ) break; // no more lines or an error
+            if ( (ret=bcf_itr_next(reader->file, reader->itr, reader->buffer[reader->nbuffer+1])) < 0 ) break; // no more lines
             bcf_subset_format(reader->header,reader->buffer[reader->nbuffer+1]);
         }
 
@@ -555,6 +506,8 @@ static void _reader_fill_buffer(bcf_srs_t *files, bcf_sr_t *reader)
         tbx_itr_destroy(reader->itr);
         reader->itr = NULL;
     }
+    if ( files->collapse && reader->nbuffer>=2 && reader->buffer[1]->pos==reader->buffer[2]->pos )
+        collapse_buffer(files, reader);
 }
 
 /*
@@ -576,10 +529,84 @@ static void _reader_shift_buffer(bcf_sr_t *reader)
         reader->nbuffer = 0;    // no other line
 }
 
+/*
+ *  _reader_match_alleles() - from multiple buffered lines selects the one which
+ *  corresponds best to the template line. The logic is controlled by COLLAPSE_*
+ *  Returns 0 on success or -1 when no good matching line is found.
+ */
+static int _reader_match_alleles(bcf_srs_t *files, bcf_sr_t *reader, bcf1_t *tmpl)
+{
+    int i, irec = -1;
+
+    // if no template given, use the first available record
+    if ( !tmpl )
+        irec = 1;
+    else
+    {
+        int tmpl_type = bcf_get_variant_types(tmpl);
+        for (i=1; i<=reader->nbuffer; i++)
+        {
+            bcf1_t *line = reader->buffer[i];
+            if ( line->pos != reader->buffer[1]->pos ) break;  // done with this reader
+
+            // Easiest case: matching by position only
+            if ( files->collapse&COLLAPSE_ANY ) { irec=i; break; }
+
+            int line_type = bcf_get_variant_types(line);
+
+            // No matter what the alleles are, as long as they are both SNPs
+            if ( files->collapse&COLLAPSE_SNPS && tmpl_type&VCF_SNP && line_type&VCF_SNP ) { irec=i; break; }
+            // ... or indels
+            if ( files->collapse&COLLAPSE_INDELS && tmpl_type&VCF_INDEL && line_type&VCF_INDEL ) { irec=i; break; }
+
+            // More thorough checking: REFs must match
+            if ( tmpl->rlen != line->rlen ) continue;  // different length
+            if ( strcmp(tmpl->d.allele[0], line->d.allele[0]) ) continue; // the strings do not match
+
+            int ial,jal;
+            if ( files->collapse==COLLAPSE_NONE )
+            {
+                // Exact match, all alleles must be identical
+                if ( tmpl->n_allele!=line->n_allele ) continue;   // different number of alleles, skip
+
+                int nmatch = 1; // REF has been already checked
+                for (ial=1; ial<tmpl->n_allele; ial++)
+                {
+                    for (jal=1; jal<line->n_allele; jal++)
+                        if ( !strcmp(tmpl->d.allele[ial], line->d.allele[jal]) ) { nmatch++; break; }
+                }
+                if ( nmatch==tmpl->n_allele ) { irec=i; break; }    // found: exact match
+                continue;
+            }
+
+            if ( line->n_allele==1 && tmpl->n_allele==1 ) { irec=i; break; }    // both sites are non-variant
+
+            // COLLAPSE_SOME: at least some ALTs must match
+            for (ial=1; ial<tmpl->n_allele; ial++)
+            {
+                for (jal=1; jal<line->n_allele; jal++)
+                    if ( !strcmp(tmpl->d.allele[ial], line->d.allele[jal]) ) { irec=i; break; }
+                if ( irec>=1 ) break;
+            }
+            if ( irec>=1 ) break;
+        }
+        if ( irec==-1 ) return -1;  // no matching line was found
+    }
+
+    // Set the selected line (irec) as active: set it to buffer[0], move the remaining lines forward
+    // and put the old bcf1_t record at the end.
+    bcf1_t *tmp = reader->buffer[0];
+    reader->buffer[0] = reader->buffer[irec];
+    for (i=irec+1; i<=reader->nbuffer; i++) reader->buffer[i-1] = reader->buffer[i];
+    reader->buffer[ reader->nbuffer ] = tmp;
+    reader->nbuffer--;
+
+    return 0;
+}
+
 int _reader_next_line(bcf_srs_t *files)
 {
     int i, min_pos = INT_MAX;
-    const char *chr = NULL;
 
     // Loop until next suitable line is found or all readers have finished
     while ( 1 )
@@ -588,6 +615,7 @@ int _reader_next_line(bcf_srs_t *files)
         if ( files->regions && _readers_next_region(files)<0 ) break;
 
         // Fill buffers
+        const char *chr = NULL;
         for (i=0; i<files->nreaders; i++)
         {
             _reader_fill_buffer(files, &files->readers[i]);
@@ -598,10 +626,7 @@ int _reader_next_line(bcf_srs_t *files)
             {
                 min_pos = files->readers[i].buffer[1]->pos;
                 chr = bcf_seqname(files->readers[i].header, files->readers[i].buffer[1]);
-                bcf_sr_sort_set_active(&BCF_SR_AUX(files)->sort, i);
             }
-            else if ( min_pos==files->readers[i].buffer[1]->pos )
-                bcf_sr_sort_add_active(&BCF_SR_AUX(files)->sort, i);
         }
         if ( min_pos==INT_MAX )
         {
@@ -620,16 +645,33 @@ int _reader_next_line(bcf_srs_t *files)
                     if ( files->readers[i].nbuffer && files->readers[i].buffer[1]->pos==min_pos )
                         _reader_shift_buffer(&files->readers[i]);
                 min_pos = INT_MAX;
-                chr = NULL;
                 continue;
             }
         }
 
-        break;  // done: chr and min_pos are set
+        break;  // done: min_pos is set
     }
-    if ( !chr ) return 0;
 
-    return bcf_sr_sort_next(files, &BCF_SR_AUX(files)->sort, chr, min_pos);
+    // There can be records with duplicate positions. Set the active line intelligently so that
+    // the alleles match.
+    int nret = 0;   // number of readers sharing the position
+    bcf1_t *first = NULL;   // record which will be used for allele matching
+    for (i=0; i<files->nreaders; i++)
+    {
+        files->has_line[i] = 0;
+
+        // Skip readers with no records at this position
+        if ( !files->readers[i].nbuffer || files->readers[i].buffer[1]->pos!=min_pos ) continue;
+
+        // Until now buffer[0] of all reader was empty and the lines started at buffer[1].
+        // Now lines which are ready to be output will be moved to buffer[0].
+        if ( _reader_match_alleles(files, &files->readers[i], first) < 0 ) continue;
+        if ( !first ) first = files->readers[i].buffer[0];
+
+        nret++;
+        files->has_line[i] = 1;
+    }
+    return nret;
 }
 
 int bcf_sr_next_line(bcf_srs_t *files)
@@ -671,14 +713,13 @@ static void bcf_sr_seek_start(bcf_srs_t *readers)
 
 int bcf_sr_seek(bcf_srs_t *readers, const char *seq, int pos)
 {
-    if ( !readers->regions ) return 0;
-    bcf_sr_sort_reset(&BCF_SR_AUX(readers)->sort);
     if ( !seq && !pos )
     {
         // seek to start
         bcf_sr_seek_start(readers);
         return 0;
     }
+
     bcf_sr_regions_overlap(readers->regions, seq, pos, pos);
     int i, nret = 0;
     for (i=0; i<readers->nreaders; i++)
@@ -699,7 +740,7 @@ int bcf_sr_set_samples(bcf_srs_t *files, const char *fname, int is_file)
         smpl = hts_readlist(fname, is_file, &nsmpl);
         if ( !smpl )
         {
-            hts_log_error("Could not read the file: \"%s\"", fname);
+            fprintf(stderr,"Could not read the file: \"%s\"\n", fname);
             return 0;
         }
         if ( exclude )
@@ -729,8 +770,7 @@ int bcf_sr_set_samples(bcf_srs_t *files, const char *fname, int is_file)
         }
         if ( n_isec!=files->nreaders )
         {
-            hts_log_warning("The sample \"%s\" was not found in %s, skipping",
-                smpl[i], files->readers[n_isec].fname);
+            fprintf(stderr,"Warning: The sample \"%s\" was not found in %s, skipping\n", smpl[i], files->readers[n_isec].fname);
             continue;
         }
 
@@ -748,7 +788,7 @@ int bcf_sr_set_samples(bcf_srs_t *files, const char *fname, int is_file)
     if ( !files->n_smpl )
     {
         if ( files->nreaders>1 )
-            hts_log_warning("No samples in common");
+            fprintf(stderr,"No samples in common.\n");
         return 0;
     }
     for (i=0; i<files->nreaders; i++)
@@ -832,10 +872,10 @@ static bcf_sr_regions_t *_regions_init_string(const char *str)
         if ( *ep==':' )
         {
             sp = ep+1;
-            from = hts_parse_decimal(sp,(char**)&ep,0);
+            from = strtol(sp,(char**)&ep,10);
             if ( sp==ep )
             {
-                hts_log_error("Could not parse the region(s): %s", str);
+                fprintf(stderr,"[%s:%d %s] Could not parse the region(s): %s\n", __FILE__,__LINE__,__FUNCTION__,str);
                 free(reg); free(tmp.s); return NULL;
             }
             if ( !*ep || *ep==',' )
@@ -846,15 +886,15 @@ static bcf_sr_regions_t *_regions_init_string(const char *str)
             }
             if ( *ep!='-' )
             {
-                hts_log_error("Could not parse the region(s): %s", str);
+                fprintf(stderr,"[%s:%d %s] Could not parse the region(s): %s\n", __FILE__,__LINE__,__FUNCTION__,str);
                 free(reg); free(tmp.s); return NULL;
             }
             ep++;
             sp = ep;
-            to = hts_parse_decimal(sp,(char**)&ep,0);
+            to = strtol(sp,(char**)&ep,10);
             if ( *ep && *ep!=',' )
             {
-                hts_log_error("Could not parse the region(s): %s", str);
+                fprintf(stderr,"[%s:%d %s] Could not parse the region(s): %s\n", __FILE__,__LINE__,__FUNCTION__,str);
                 free(reg); free(tmp.s); return NULL;
             }
             if ( sp==ep ) to = MAX_CSI_COOR-1;
@@ -877,7 +917,6 @@ static bcf_sr_regions_t *_regions_init_string(const char *str)
 // returns -1 on error, 0 if the line is a comment line, 1 on success
 static int _regions_parse_line(char *line, int ichr,int ifrom,int ito, char **chr,char **chr_end,int *from,int *to)
 {
-    if (ifrom < 0 || ito < 0) return -1;
     *chr_end = NULL;
 
     if ( line[0]=='#' ) return 0;
@@ -899,15 +938,15 @@ static int _regions_parse_line(char *line, int ichr,int ifrom,int ito, char **ch
     if ( i<=k ) return -1;
     if ( k==l )
     {
-        *from = *to = hts_parse_decimal(ss, &tmp, 0);
+        *from = *to = strtol(ss, &tmp, 10);
         if ( tmp==ss ) return -1;
     }
     else
     {
         if ( k==ifrom )
-            *from = hts_parse_decimal(ss, &tmp, 0);
+            *from = strtol(ss, &tmp, 10);
         else
-            *to = hts_parse_decimal(ss, &tmp, 0);
+            *to = strtol(ss, &tmp, 10);
         if ( ss==tmp ) return -1;
 
         for (i=k; i<l && *se; i++)
@@ -917,9 +956,9 @@ static int _regions_parse_line(char *line, int ichr,int ifrom,int ito, char **ch
         }
         if ( i<l ) return -1;
         if ( k==ifrom )
-            *to = hts_parse_decimal(ss, &tmp, 0);
+            *to = strtol(ss, &tmp, 10);
         else
-            *from = hts_parse_decimal(ss, &tmp, 0);
+            *from = strtol(ss, &tmp, 10);
         if ( ss==tmp ) return -1;
     }
 
@@ -947,7 +986,7 @@ bcf_sr_regions_t *bcf_sr_regions_init(const char *regions, int is_file, int ichr
     reg->file = hts_open(regions, "rb");
     if ( !reg->file )
     {
-        hts_log_error("Could not open file: %s", regions);
+        fprintf(stderr,"[%s:%d %s] Could not open file: %s\n", __FILE__,__LINE__,__FUNCTION__,regions);
         free(reg);
         return NULL;
     }
@@ -973,8 +1012,7 @@ bcf_sr_regions_t *bcf_sr_regions_init(const char *regions, int is_file, int ichr
                     ret = _regions_parse_line(reg->line.s, ichr,ifrom,ifrom, &chr,&chr_end,&from,&to);
                 if ( ret<0 )
                 {
-                    hts_log_error("Could not parse the file %s, using the columns %d,%d[,%d]",
-                        regions,ichr+1,ifrom+1,ito+1);
+                    fprintf(stderr,"[%s:%d] Could not parse the file %s, using the columns %d,%d[,%d]\n", __FILE__,__LINE__,regions,ichr+1,ifrom+1,ito+1);
                     hts_close(reg->file); reg->file = NULL; free(reg);
                     return NULL;
                 }
@@ -1101,7 +1139,7 @@ int bcf_sr_regions_next(bcf_sr_regions_t *reg)
                 reg->file = hts_open(reg->fname, "r");
                 if ( !reg->file )
                 {
-                    hts_log_error("Could not open file: %s", reg->fname);
+                    fprintf(stderr,"[%s:%d %s] Could not open file: %s\n", __FILE__,__LINE__,__FUNCTION__,reg->fname);
                     reg->file = NULL;
                     bcf_sr_regions_destroy(reg);
                     return -1;
@@ -1116,8 +1154,7 @@ int bcf_sr_regions_next(bcf_sr_regions_t *reg)
         ret = _regions_parse_line(reg->line.s, ichr,ifrom,ito, &chr,&chr_end,&from,&to);
         if ( ret<0 )
         {
-            hts_log_error("Could not parse the file %s, using the columns %d,%d,%d",
-                reg->fname,ichr+1,ifrom+1,ito+1);
+            fprintf(stderr,"[%s:%d] Could not parse the file %s, using the columns %d,%d,%d\n", __FILE__,__LINE__,reg->fname,ichr+1,ifrom+1,ito+1);
             return -1;
         }
     }
@@ -1126,8 +1163,7 @@ int bcf_sr_regions_next(bcf_sr_regions_t *reg)
     *chr_end = 0;
     if ( khash_str2int_get(reg->seq_hash, chr, &reg->iseq)<0 )
     {
-        hts_log_error("Broken tabix index? The sequence \"%s\" not in dictionary [%s]",
-            chr, reg->line.s);
+        fprintf(stderr,"Broken tabix index? The sequence \"%s\" not in dictionary [%s]\n", chr,reg->line.s);
         exit(1);
     }
     *chr_end = '\t';
@@ -1139,13 +1175,6 @@ int bcf_sr_regions_next(bcf_sr_regions_t *reg)
 
 static int _regions_match_alleles(bcf_sr_regions_t *reg, int als_idx, bcf1_t *rec)
 {
-    if ( reg->regs )
-    {
-        // payload is not supported for in-memory regions, switch to regidx instead in future
-        hts_log_error("Compressed and indexed targets file is required");
-        exit(1);
-    }
-
     int i = 0, max_len = 0;
     if ( !reg->nals )
     {

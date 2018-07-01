@@ -29,7 +29,6 @@
 
 #include <stdint.h>
 #include <fcntl.h>
-#include <sys/types.h>
 
 #ifndef _WIN32
 #define netread(fd, ptr, len) read(fd, ptr, len)
@@ -77,7 +76,7 @@ extern "C" {
 
 	knetFile *knet_open(const char *fn, const char *mode);
 
-	/*
+	/* 
 	   This only works with local files.
 	 */
 	knetFile *knet_dopen(int fd, const char *mode);

@@ -2,23 +2,23 @@
 Copyright (c) 2013-2014 Genome Research Ltd.
 Author: James Bonfield <jkb@sanger.ac.uk>
 
-Redistribution and use in source and binary forms, with or without
+Redistribution and use in source and binary forms, with or without 
 modification, are permitted provided that the following conditions are met:
 
-   1. Redistributions of source code must retain the above copyright notice,
+   1. Redistributions of source code must retain the above copyright notice, 
 this list of conditions and the following disclaimer.
 
-   2. Redistributions in binary form must reproduce the above copyright notice,
-this list of conditions and the following disclaimer in the documentation
+   2. Redistributions in binary form must reproduce the above copyright notice, 
+this list of conditions and the following disclaimer in the documentation 
 and/or other materials provided with the distribution.
 
    3. Neither the names Genome Research Ltd and Wellcome Trust Sanger
 Institute nor the names of its contributors may be used to endorse or promote
 products derived from this software without specific prior written permission.
 
-THIS SOFTWARE IS PROVIDED BY GENOME RESEARCH LTD AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+THIS SOFTWARE IS PROVIDED BY GENOME RESEARCH LTD AND CONTRIBUTORS "AS IS" AND 
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE 
 DISCLAIMED. IN NO EVENT SHALL GENOME RESEARCH LTD OR CONTRIBUTORS BE LIABLE
 FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
 DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
@@ -34,7 +34,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * These functions can be shared between SAM, BAM and CRAM file
  * formats as all three internally use the same string encoding for
  * header fields.
- */
+ */ 
 
 /*
  * TODO.
@@ -47,6 +47,14 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef _SAM_HDR_H_
 #define _SAM_HDR_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#ifdef HAVE_CONFIG_H
+#include "io_lib_config.h"
+#endif
+
 #include <stdarg.h>
 
 #include "cram/string_alloc.h"
@@ -54,10 +62,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "htslib/khash.h"
 #include "htslib/kstring.h"
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 // For structure assignment. Eg kstring_t s = KS_INITIALIZER;
 #define KS_INITIALIZER {0,0,0}
@@ -109,7 +113,7 @@ typedef struct SAM_hdr_tag_s {
 } SAM_hdr_tag;
 
 /*! The parsed version of the SAM header string.
- *
+ * 
  * Each header type (SQ, RG, HD, etc) points to its own SAM_hdr_type
  * struct via the main hash table h in the SAM_hdr struct.
  *
@@ -157,15 +161,6 @@ typedef struct {
     int prev_id;      // -1 if none
 } SAM_PG;
 
-/*! Sort order parsed from @HD line */
-enum sam_sort_order {
-    ORDER_UNKNOWN  =-1,
-    ORDER_UNSORTED = 0,
-    ORDER_NAME     = 1,
-    ORDER_COORD    = 2,
-  //ORDER_COLLATE  = 3 // maybe one day!
-};
-
 KHASH_MAP_INIT_INT(sam_hdr, SAM_hdr_type*)
 KHASH_MAP_INIT_STR(m_s2i, int)
 
@@ -177,7 +172,7 @@ KHASH_MAP_INIT_STR(m_s2i, int)
  * their numeric array indices. Additionally PG has an array to hold
  * the linked list start points (the last in a PP chain).
  *
- * Use the appropriate sam_hdr_* functions to edit the header, and
+ * Use the appropriate sam_hdr_* functions to edit the header, and 
  * call sam_hdr_rebuild() any time the textual form needs to be
  * updated again.
  */
@@ -202,12 +197,9 @@ typedef struct {
     int npg;                  //!< Number of \@PG lines
     int npg_end;              //!< Number of terminating \@PG lines
     int npg_end_alloc;        //!< Size of pg_end field
-    SAM_PG *pg;               //!< Array of parsed \@PG lines
+    SAM_PG *pg;		      //!< Array of parsed \@PG lines
     khash_t(m_s2i) *pg_hash;  //!< Maps PG ID field to pg[] index
     int *pg_end;              //!< \@PG chain termination IDs
-
-    // @HD data
-    enum sam_sort_order sort_order; //!< @HD SO: field
 
     // @cond internal
     char ID_buf[1024];  // temporary buffer
@@ -217,7 +209,7 @@ typedef struct {
 } SAM_hdr;
 
 /*! Creates an empty SAM header, ready to be populated.
- *
+ * 
  * @return
  * Returns a SAM_hdr struct on success (free with sam_hdr_free())
  *         NULL on failure
@@ -263,7 +255,7 @@ void sam_hdr_decr_ref(SAM_hdr *hdr);
 
 /*! Deallocates all storage used by a SAM_hdr struct.
  *
- * This also decrements the header reference count. If after decrementing
+ * This also decrements the header reference count. If after decrementing 
  * it is still non-zero then the header is assumed to be in use by another
  * caller and the free is not done.
  *
@@ -289,8 +281,8 @@ char *sam_hdr_str(SAM_hdr *hdr);
  * optional new-line. If it contains more than 1 line then multiple lines
  * will be added in order.
  *
- * Input text is of maximum length len or as terminated earlier by a NUL.
- * Len may be 0 if unknown, in which case lines must be NUL-terminated.
+ * Len is the length of the text data, or 0 if unknown (in which case
+ * it should be null terminated).
  *
  * @return
  * Returns 0 on success;
@@ -321,10 +313,6 @@ int sam_hdr_add(SAM_hdr *sh, const char *type, ...);
  * varargs functions to call this while including their own additional
  * parameters; an example is in sam_hdr_add_PG().
  *
- * Note: this function invokes va_arg at least once, making the value
- * of ap indeterminate after the return.  The caller should call
- * va_start/va_end before/after calling this function or use va_copy.
- *
  * @return
  * Returns 0 on success;
  *        -1 on failure
@@ -339,7 +327,7 @@ int sam_hdr_vadd(SAM_hdr *sh, const char *type, va_list ap, ...);
  * Returns NULL if no type/ID is found
  */
 SAM_hdr_type *sam_hdr_find(SAM_hdr *hdr, char *type,
-                           char *ID_key, char *ID_value);
+			   char *ID_key, char *ID_value);
 
 /*!
  *
@@ -354,7 +342,7 @@ SAM_hdr_type *sam_hdr_find(SAM_hdr *hdr, char *type,
  * Returns NULL if no type/ID is found.
  */
 char *sam_hdr_find_line(SAM_hdr *hdr, char *type,
-                        char *ID_key, char *ID_value);
+			char *ID_key, char *ID_value);
 
 /*! Looks for a specific key in a single sam header line.
  *
@@ -368,9 +356,9 @@ char *sam_hdr_find_line(SAM_hdr *hdr, char *type,
  *         NULL on failure
  */
 SAM_hdr_tag *sam_hdr_find_key(SAM_hdr *sh,
-                              SAM_hdr_type *type,
-                              char *key,
-                              SAM_hdr_tag **prev);
+			      SAM_hdr_type *type,
+			      char *key,
+			      SAM_hdr_tag **prev);
 
 /*! Adds or updates tag key,value pairs in a header line.
  *
@@ -385,9 +373,6 @@ SAM_hdr_tag *sam_hdr_find_key(SAM_hdr *sh,
  *        -1 on failure
  */
 int sam_hdr_update(SAM_hdr *hdr, SAM_hdr_type *type, ...);
-
-/*! Returns the sort order from the @HD SO: field */
-enum sam_sort_order sam_hdr_sort_order(SAM_hdr *hdr);
 
 /*! Reconstructs the kstring from the header hash table.
  * @return
@@ -445,7 +430,7 @@ int sam_hdr_add_PG(SAM_hdr *sh, const char *name, ...);
  * A function to help with construction of CL tags in @PG records.
  * Takes an argc, argv pair and returns a single space-separated string.
  * This string should be deallocated by the calling function.
- *
+ * 
  * @return
  * Returns malloced char * on success;
  *         NULL on failure

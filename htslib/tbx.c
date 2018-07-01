@@ -1,6 +1,6 @@
 /*  tbx.c -- tabix API functions.
 
-    Copyright (C) 2009, 2010, 2012-2015, 2017 Genome Research Ltd.
+    Copyright (C) 2009, 2010, 2012-2014 Genome Research Ltd.
     Copyright (C) 2010-2012 Broad Institute.
 
     Author: Heng Li <lh3@sanger.ac.uk>
@@ -23,26 +23,22 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.  */
 
-#include <config.h>
-
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include <stdio.h>
 #include <assert.h>
-#include <errno.h>
 #include "htslib/tbx.h"
 #include "htslib/bgzf.h"
-#include "htslib/hts_endian.h"
-#include "hts_internal.h"
 
 #include "htslib/khash.h"
 KHASH_DECLARE(s2i, kh_cstr_t, int64_t)
 
-const tbx_conf_t tbx_conf_gff = { 0, 1, 4, 5, '#', 0 };
-const tbx_conf_t tbx_conf_bed = { TBX_UCSC, 1, 2, 3, '#', 0 };
-const tbx_conf_t tbx_conf_psltbl = { TBX_UCSC, 15, 17, 18, '#', 0 };
-const tbx_conf_t tbx_conf_sam = { TBX_SAM, 3, 4, 0, '@', 0 };
-const tbx_conf_t tbx_conf_vcf = { TBX_VCF, 1, 2, 0, '#', 0 };
+tbx_conf_t tbx_conf_gff = { 0, 1, 4, 5, '#', 0 };
+tbx_conf_t tbx_conf_bed = { TBX_UCSC, 1, 2, 3, '#', 0 };
+tbx_conf_t tbx_conf_psltbl = { TBX_UCSC, 15, 17, 18, '#', 0 };
+tbx_conf_t tbx_conf_sam = { TBX_SAM, 3, 4, 0, '@', 0 };
+tbx_conf_t tbx_conf_vcf = { TBX_VCF, 1, 2, 0, '#', 0 };
 
 typedef struct {
     int64_t beg, end;
@@ -59,17 +55,9 @@ static inline int get_tid(tbx_t *tbx, const char *ss, int is_add)
     if (is_add) {
         int absent;
         k = kh_put(s2i, d, ss, &absent);
-        if (absent < 0) {
-            return -1; // Out of memory
-        } else if (absent) {
-            char *ss_dup = strdup(ss);
-            if (ss_dup) {
-                kh_key(d, k) = ss_dup;
-                kh_val(d, k) = kh_size(d) - 1;
-            } else {
-                kh_del(s2i, d, k);
-                return -1; // Out of memory
-            }
+        if (absent) {
+            kh_key(d, k) = strdup(ss);
+            kh_val(d, k) = kh_size(d) - 1;
         }
     } else k = kh_get(s2i, d, ss);
     return k == kh_end(d)? -1 : kh_val(d, k);
@@ -107,11 +95,11 @@ int tbx_parse1(const tbx_conf_t *conf, int len, char *line, tbx_intv_t *intv)
                     }
                 } else if ((conf->preset&0xffff) == TBX_SAM) {
                     if (id == 6) { // CIGAR
-                        int l = 0;
+                        int l = 0, op;
                         char *t;
                         for (s = line + b; s < line + i;) {
                             long x = strtol(s, &t, 10);
-                            char op = toupper_c(*t);
+                            op = toupper(*t);
                             if (op == 'M' || op == 'D' || op == 'N') l += x;
                             s = t + 1;
                         }
@@ -158,8 +146,7 @@ static inline int get_intv(tbx_t *tbx, kstring_t *str, tbx_intv_t *intv, int is_
             case TBX_UCSC: type = "TBX_UCSC"; break;
             default: type = "TBX_GENERIC"; break;
         }
-        hts_log_error("Failed to parse %s, was wrong -p [type] used?\nThe offending line was: \"%s\"",
-            type, str->s);
+        fprintf(stderr, "[E::%s] failed to parse %s, was wrong -p [type] used?\nThe offending line was: \"%s\"\n", __func__, type, str->s);
         return -1;
     }
 }
@@ -263,80 +250,47 @@ void tbx_destroy(tbx_t *tbx)
     free(tbx);
 }
 
-int tbx_index_build3(const char *fn, const char *fnidx, int min_shift, int n_threads, const tbx_conf_t *conf)
+int tbx_index_build(const char *fn, int min_shift, const tbx_conf_t *conf)
 {
     tbx_t *tbx;
     BGZF *fp;
-    int ret;
+    if ( bgzf_is_bgzf(fn)!=1 ) { fprintf(stderr,"Not a BGZF file: %s\n", fn); return -1; }
     if ((fp = bgzf_open(fn, "r")) == 0) return -1;
-    if ( n_threads ) bgzf_mt(fp, n_threads, 256);
-    if ( bgzf_compression(fp) != bgzf ) { bgzf_close(fp); return -1; }
+    if ( !fp->is_compressed ) { bgzf_close(fp); return -1; }
     tbx = tbx_index(fp, min_shift, conf);
     bgzf_close(fp);
     if ( !tbx ) return -1;
-    ret = hts_idx_save_as(tbx->idx, fn, fnidx, min_shift > 0? HTS_FMT_CSI : HTS_FMT_TBI);
+    hts_idx_save(tbx->idx, fn, min_shift > 0? HTS_FMT_CSI : HTS_FMT_TBI);
     tbx_destroy(tbx);
-    return ret;
+    return 0;
 }
 
-int tbx_index_build2(const char *fn, const char *fnidx, int min_shift, const tbx_conf_t *conf)
-{
-    return tbx_index_build3(fn, fnidx, min_shift, 0, conf);
-}
-
-int tbx_index_build(const char *fn, int min_shift, const tbx_conf_t *conf)
-{
-    return tbx_index_build3(fn, NULL, min_shift, 0, conf);
-}
-
-tbx_t *tbx_index_load2(const char *fn, const char *fnidx)
+tbx_t *tbx_index_load(const char *fn)
 {
     tbx_t *tbx;
     uint8_t *meta;
     char *nm, *p;
-    uint32_t l_meta, l_nm;
+    uint32_t x[7];
+    int l_meta, l_nm;
     tbx = (tbx_t*)calloc(1, sizeof(tbx_t));
-    tbx->idx = fnidx? hts_idx_load2(fn, fnidx) : hts_idx_load(fn, HTS_FMT_TBI);
+    tbx->idx = hts_idx_load(fn, HTS_FMT_TBI);
     if ( !tbx->idx )
     {
         free(tbx);
         return NULL;
     }
     meta = hts_idx_get_meta(tbx->idx, &l_meta);
-    if ( !meta || l_meta < 28) goto invalid;
-
-    tbx->conf.preset = le_to_i32(&meta[0]);
-    tbx->conf.sc = le_to_i32(&meta[4]);
-    tbx->conf.bc = le_to_i32(&meta[8]);
-    tbx->conf.ec = le_to_i32(&meta[12]);
-    tbx->conf.meta_char = le_to_i32(&meta[16]);
-    tbx->conf.line_skip = le_to_i32(&meta[20]);
-    l_nm = le_to_u32(&meta[24]);
-    if (l_nm > l_meta - 28) goto invalid;
-
-    p = nm = (char*)meta + 28;
-    // This assumes meta is NUL-terminated, so we can merrily strlen away.
-    // hts_idx_load_local() assures this for us by adding a NUL on the end
-    // of whatever it reads.
-    for (; p - nm < l_nm; p += strlen(p) + 1) {
-        if (get_tid(tbx, p, 1) < 0) {
-            hts_log_error("%s", strerror(errno));
-            goto fail;
-        }
+    if ( !meta )
+    {
+        free(tbx);
+        return NULL;
     }
+    memcpy(x, meta, 28);
+    memcpy(&tbx->conf, x, 24);
+    p = nm = (char*)meta + 28;
+    l_nm = x[6];
+    for (; p - nm < l_nm; p += strlen(p) + 1) get_tid(tbx, p, 1);
     return tbx;
-
- invalid:
-    hts_log_error("Invalid index header for %s", fnidx ? fnidx : fn);
-
- fail:
-    tbx_destroy(tbx);
-    return NULL;
-}
-
-tbx_t *tbx_index_load(const char *fn)
-{
-    return tbx_index_load2(fn, NULL);
 }
 
 const char **tbx_seqnames(tbx_t *tbx, int *n)

@@ -1,6 +1,6 @@
 # Makefile rules useful for third-party code using htslib's public API.
 #
-#    Copyright (C) 2013-2016 Genome Research Ltd.
+#    Copyright (C) 2013-2015 Genome Research Ltd.
 #
 #    Author: John Marshall <jm18@sanger.ac.uk>
 #
@@ -30,7 +30,9 @@
 #	HTSDIR = <path to htslib top-level directory>
 #	include $(HTSDIR)/htslib.mk
 #
-#	foo.o: foo.c $(htslib_hts_h) $(htslib_kstring_h)
+#	foo.o: foo.c $(htslib_hts_h) $(HTSDIR)/htslib/kstring.h
+#
+# Variables are not provided for k*.h, as those never include other headers.
 
 HTSPREFIX = $(HTSDIR)/
 include $(HTSDIR)/htslib_vars.mk
@@ -48,17 +50,11 @@ include $(HTSDIR)/htslib_vars.mk
 
 HTSLIB_PUBLIC_HEADERS = \
 	$(HTSDIR)/htslib/bgzf.h \
-	$(HTSDIR)/htslib/cram.h \
 	$(HTSDIR)/htslib/faidx.h \
 	$(HTSDIR)/htslib/hfile.h \
 	$(HTSDIR)/htslib/hts.h \
 	$(HTSDIR)/htslib/hts_defs.h \
-	$(HTSDIR)/htslib/hts_endian.h \
-	$(HTSDIR)/htslib/hts_log.h \
-	$(HTSDIR)/htslib/kbitset.h \
-	$(HTSDIR)/htslib/kfunc.h \
 	$(HTSDIR)/htslib/khash.h \
-	$(HTSDIR)/htslib/khash_str2int.h \
 	$(HTSDIR)/htslib/klist.h \
 	$(HTSDIR)/htslib/knetfile.h \
 	$(HTSDIR)/htslib/kseq.h \
@@ -68,42 +64,25 @@ HTSLIB_PUBLIC_HEADERS = \
 	$(HTSDIR)/htslib/sam.h \
 	$(HTSDIR)/htslib/synced_bcf_reader.h \
 	$(HTSDIR)/htslib/tbx.h \
-	$(HTSDIR)/htslib/thread_pool.h \
 	$(HTSDIR)/htslib/vcf.h \
 	$(HTSDIR)/htslib/vcf_sweep.h \
 	$(HTSDIR)/htslib/vcfutils.h
 
 HTSLIB_ALL = \
 	$(HTSLIB_PUBLIC_HEADERS) \
-	$(HTSDIR)/bcf_sr_sort.c \
-	$(HTSDIR)/bcf_sr_sort.h \
 	$(HTSDIR)/bgzf.c \
-	$(HTSDIR)/config.h \
-	$(HTSDIR)/errmod.c \
 	$(HTSDIR)/faidx.c \
 	$(HTSDIR)/hfile_internal.h \
 	$(HTSDIR)/hfile.c \
-	$(HTSDIR)/hfile_gcs.c \
-	$(HTSDIR)/hfile_libcurl.c \
+	$(HTSDIR)/hfile_irods.c \
 	$(HTSDIR)/hfile_net.c \
-	$(HTSDIR)/hfile_s3.c \
 	$(HTSDIR)/hts.c \
-	$(HTSDIR)/hts_internal.h \
-	$(HTSDIR)/kfunc.c \
 	$(HTSDIR)/knetfile.c \
 	$(HTSDIR)/kstring.c \
-	$(HTSDIR)/md5.c \
-	$(HTSDIR)/multipart.c \
-	$(HTSDIR)/plugin.c \
-	$(HTSDIR)/probaln.c \
-	$(HTSDIR)/realn.c \
 	$(HTSDIR)/regidx.c \
 	$(HTSDIR)/sam.c \
 	$(HTSDIR)/synced_bcf_reader.c \
 	$(HTSDIR)/tbx.c \
-	$(HTSDIR)/textutils.c \
-	$(HTSDIR)/thread_pool.c \
-	$(HTSDIR)/thread_pool_internal.h \
 	$(HTSDIR)/vcf.c \
 	$(HTSDIR)/vcf_sweep.c \
 	$(HTSDIR)/vcfutils.c \
@@ -114,7 +93,6 @@ HTSLIB_ALL = \
 	$(HTSDIR)/cram/cram_decode.h \
 	$(HTSDIR)/cram/cram_encode.c \
 	$(HTSDIR)/cram/cram_encode.h \
-	$(HTSDIR)/cram/cram_external.c \
 	$(HTSDIR)/cram/cram_index.c \
 	$(HTSDIR)/cram/cram_index.h \
 	$(HTSDIR)/cram/cram_io.c \
@@ -127,22 +105,24 @@ HTSLIB_ALL = \
 	$(HTSDIR)/cram/files.c \
 	$(HTSDIR)/cram/mFILE.c \
 	$(HTSDIR)/cram/mFILE.h \
+	$(HTSDIR)/cram/md5.c \
+	$(HTSDIR)/cram/md5.h \
 	$(HTSDIR)/cram/misc.h \
 	$(HTSDIR)/cram/open_trace_file.c \
 	$(HTSDIR)/cram/open_trace_file.h \
 	$(HTSDIR)/cram/os.h \
 	$(HTSDIR)/cram/pooled_alloc.c \
 	$(HTSDIR)/cram/pooled_alloc.h \
-	$(HTSDIR)/cram/rANS_byte.h \
-	$(HTSDIR)/cram/rANS_static.c \
-	$(HTSDIR)/cram/rANS_static.h \
 	$(HTSDIR)/cram/sam_header.c \
 	$(HTSDIR)/cram/sam_header.h \
 	$(HTSDIR)/cram/string_alloc.c \
-	$(HTSDIR)/cram/string_alloc.h
-
-$(HTSDIR)/config.h:
-	+cd $(HTSDIR) && $(MAKE) config.h
+	$(HTSDIR)/cram/string_alloc.h \
+	$(HTSDIR)/cram/thread_pool.c \
+	$(HTSDIR)/cram/thread_pool.h \
+	$(HTSDIR)/cram/vlen.c \
+	$(HTSDIR)/cram/vlen.h \
+	$(HTSDIR)/cram/zfio.c \
+	$(HTSDIR)/cram/zfio.h
 
 $(HTSDIR)/libhts.a: $(HTSLIB_ALL)
 	+cd $(HTSDIR) && $(MAKE) lib-static
@@ -159,18 +139,12 @@ $(HTSDIR)/htsfile: $(HTSDIR)/htsfile.c $(HTSLIB_PUBLIC_HEADERS)
 $(HTSDIR)/tabix: $(HTSDIR)/tabix.c $(HTSLIB_PUBLIC_HEADERS)
 	+cd $(HTSDIR) && $(MAKE) tabix
 
-$(HTSDIR)/htslib_static.mk: $(HTSDIR)/htslib.pc.tmp
-	+cd $(HTSDIR) && $(MAKE) htslib_static.mk
-
-$(HTSDIR)/htslib.pc.tmp:
-	+cd $(HTSDIR) && $(MAKE) htslib.pc.tmp
-
 # Rules for phony targets.  You may wish to have your corresponding phony
 # targets invoke these in addition to their own recipes:
 #
 #	clean: clean-htslib
 
-all-htslib clean-htslib install-htslib plugins-htslib:
+clean-htslib install-htslib:
 	+cd $(HTSDIR) && $(MAKE) $(@:-htslib=)
 
-.PHONY: all-htslib clean-htslib install-htslib plugins-htslib
+.PHONY: clean-htslib install-htslib

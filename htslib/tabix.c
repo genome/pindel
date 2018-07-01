@@ -1,7 +1,7 @@
 /*  tabix.c -- Generic indexer for TAB-delimited genome position files.
 
     Copyright (C) 2009-2011 Broad Institute.
-    Copyright (C) 2010-2012, 2014-2018 Genome Research Ltd.
+    Copyright (C) 2010-2012, 2014 Genome Research Ltd.
 
     Author: Heng Li <lh3@sanger.ac.uk>
 
@@ -23,13 +23,10 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.  */
 
-#include <config.h>
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
-#include <strings.h>
 #include <getopt.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -70,6 +67,7 @@ static void error(const char *format, ...)
 int file_type(const char *fname)
 {
     int l = strlen(fname);
+    int strcasecmp(const char *s1, const char *s2);
     if (l>=7 && strcasecmp(fname+l-7, ".gff.gz") == 0) return IS_GFF;
     else if (l>=7 && strcasecmp(fname+l-7, ".bed.gz") == 0) return IS_BED;
     else if (l>=7 && strcasecmp(fname+l-7, ".sam.gz") == 0) return IS_SAM;
@@ -171,7 +169,7 @@ static int query_regions(args_t *args, char *fname, char **regs, int nregs)
                 hts_itr_t *itr = bcf_itr_querys(idx,hdr,regs[i]);
                 while ( bcf_itr_next(fp, itr, rec) >=0 )
                 {
-                    if ( reg_idx && !regidx_overlap(reg_idx, bcf_seqname(hdr,rec),rec->pos,rec->pos+rec->rlen-1, NULL) ) continue;
+                    if ( reg_idx && !regidx_overlap(reg_idx, bcf_seqname(hdr,rec),rec->pos,rec->pos+rec->rlen-1, NULL) ) continue; 
                     bcf_write(out,hdr,rec);
                 }
                 tbx_itr_destroy(itr);
@@ -300,9 +298,9 @@ int reheader_file(const char *fname, const char *header, int ftype, tbx_conf_t *
         // Output the new header
         FILE *hdr  = fopen(header,"r");
         if ( !hdr ) error("%s: %s", header,strerror(errno));
-        const size_t page_size = 32768;
-        char *buf = malloc(page_size);
-        BGZF *bgzf_out = bgzf_open("-", "w");
+        int page_size = getpagesize();
+        char *buf = valloc(page_size);
+        BGZF *bgzf_out = bgzf_dopen(fileno(stdout), "w");
         ssize_t nread;
         while ( (nread=fread(buf,1,page_size-1,hdr))>0 )
         {
@@ -328,7 +326,6 @@ int reheader_file(const char *fname, const char *header, int ftype, tbx_conf_t *
         }
         if (bgzf_close(bgzf_out) < 0) error("Error: %d\n",bgzf_out->errcode);
         if (bgzf_close(fp) < 0) error("Error: %d\n",fp->errcode);
-        free(buf);
     }
     else
         error("todo: reheader BCF, BAM\n");  // BCF is difficult, records contain pointers to the header.
@@ -366,35 +363,33 @@ static int usage(void)
 
 int main(int argc, char *argv[])
 {
-    int c, detect = 1, min_shift = 0, is_force = 0, list_chroms = 0, do_csi = 0;
-    tbx_conf_t conf = tbx_conf_gff;
+    int c, min_shift = 0, is_force = 0, list_chroms = 0, do_csi = 0;
+    tbx_conf_t conf = tbx_conf_gff, *conf_ptr = NULL;
     char *reheader = NULL;
     args_t args;
     memset(&args,0,sizeof(args_t));
 
-    static const struct option loptions[] =
+    static struct option loptions[] =
     {
-        {"help", no_argument, NULL, 2},
-        {"regions", required_argument, NULL, 'R'},
-        {"targets", required_argument, NULL, 'T'},
-        {"csi", no_argument, NULL, 'C'},
-        {"zero-based", no_argument, NULL, '0'},
-        {"print-header", no_argument, NULL, 'h'},
-        {"only-header", no_argument, NULL, 'H'},
-        {"begin", required_argument, NULL, 'b'},
-        {"comment", required_argument, NULL, 'c'},
-        {"end", required_argument, NULL, 'e'},
-        {"force", no_argument, NULL, 'f'},
-        {"preset", required_argument, NULL, 'p'},
-        {"sequence", required_argument, NULL, 's'},
-        {"skip-lines", required_argument, NULL, 'S'},
-        {"list-chroms", no_argument, NULL, 'l'},
-        {"reheader", required_argument, NULL, 'r'},
-        {"version", no_argument, NULL, 1},
-        {NULL, 0, NULL, 0}
+        {"help",0,0,'h'},
+        {"regions",1,0,'R'},
+        {"targets",1,0,'T'},
+        {"csi",0,0,'C'},
+        {"zero-based",0,0,'0'},
+        {"print-header",0,0,'h'},
+        {"only-header",0,0,'H'},
+        {"begin",1,0,'b'},
+        {"comment",1,0,'c'},
+        {"end",1,0,'e'},
+        {"force",0,0,'f'},
+        {"preset",1,0,'p'},
+        {"sequence",1,0,'s'},
+        {"skip-lines",1,0,'S'},
+        {"list-chroms",0,0,'l'},
+        {"reheader",1,0,'r'},
+        {0,0,0,0}
     };
 
-    char *tmp;
     while ((c = getopt_long(argc, argv, "hH?0b:c:e:fm:p:s:S:lr:CR:T:", loptions,NULL)) >= 0)
     {
         switch (c)
@@ -404,50 +399,25 @@ int main(int argc, char *argv[])
             case 'C': do_csi = 1; break;
             case 'r': reheader = optarg; break;
             case 'h': args.print_header = 1; break;
-            case 'H': args.print_header = 1; args.header_only = 1; break;
+            case 'H': args.header_only = 1; break;
             case 'l': list_chroms = 1; break;
-            case '0': conf.preset |= TBX_UCSC; detect = 0; break;
-            case 'b':
-                conf.bc = strtol(optarg,&tmp,10);
-                if ( *tmp ) error("Could not parse argument: -b %s\n", optarg);
-                detect = 0;
-                break;
-            case 'e':
-                conf.ec = strtol(optarg,&tmp,10);
-                if ( *tmp ) error("Could not parse argument: -e %s\n", optarg);
-                detect = 0;
-                break;
-            case 'c': conf.meta_char = *optarg; detect = 0; break;
+            case '0': conf.preset |= TBX_UCSC; break;
+            case 'b': conf.bc = atoi(optarg); break;
+            case 'e': conf.ec = atoi(optarg); break;
+            case 'c': conf.meta_char = *optarg; break;
             case 'f': is_force = 1; break;
-            case 'm':
-                min_shift = strtol(optarg,&tmp,10);
-                if ( *tmp ) error("Could not parse argument: -m %s\n", optarg);
-                break;
+            case 'm': min_shift = atoi(optarg); break;
             case 'p':
-                detect = 0;
-                if (strcmp(optarg, "gff") == 0) conf = tbx_conf_gff;
-                else if (strcmp(optarg, "bed") == 0) conf = tbx_conf_bed;
-                else if (strcmp(optarg, "sam") == 0) conf = tbx_conf_sam;
-                else if (strcmp(optarg, "vcf") == 0) conf = tbx_conf_vcf;
-                else if (strcmp(optarg, "bcf") == 0) detect = 1; // bcf is autodetected, preset is not needed
-                else if (strcmp(optarg, "bam") == 0) detect = 1; // same as bcf
-                else error("The preset string not recognised: '%s'\n", optarg);
-                break;
-            case 's':
-                conf.sc = strtol(optarg,&tmp,10);
-                if ( *tmp ) error("Could not parse argument: -s %s\n", optarg);
-                detect = 0;
-                break;
-            case 'S':
-                conf.line_skip = strtol(optarg,&tmp,10);
-                if ( *tmp ) error("Could not parse argument: -S %s\n", optarg);
-                detect = 0;
-                break;
-            case 1:
-                printf(
-"tabix (htslib) %s\n"
-"Copyright (C) 2018 Genome Research Ltd.\n", hts_version());
-                return EXIT_SUCCESS;
+                      if (strcmp(optarg, "gff") == 0) conf_ptr = &tbx_conf_gff;
+                      else if (strcmp(optarg, "bed") == 0) conf_ptr = &tbx_conf_bed;
+                      else if (strcmp(optarg, "sam") == 0) conf_ptr = &tbx_conf_sam;
+                      else if (strcmp(optarg, "vcf") == 0) conf_ptr = &tbx_conf_vcf;
+                      else if (strcmp(optarg, "bcf") == 0) ;    // bcf is autodetected, preset is not needed
+                      else if (strcmp(optarg, "bam") == 0) ;    // same as bcf
+                      else error("The preset string not recognised: '%s'\n", optarg);
+                      break;
+            case 's': conf.sc = atoi(optarg); break;
+            case 'S': conf.line_skip = atoi(optarg); break;
             default: return usage();
         }
     }
@@ -468,14 +438,14 @@ int main(int argc, char *argv[])
 
     char *fname = argv[optind];
     int ftype = file_type(fname);
-    if ( detect )  // no preset given
+    if ( !conf_ptr )    // no preset given
     {
-        if ( ftype==IS_GFF ) conf = tbx_conf_gff;
-        else if ( ftype==IS_BED ) conf = tbx_conf_bed;
-        else if ( ftype==IS_SAM ) conf = tbx_conf_sam;
+        if ( ftype==IS_GFF ) conf_ptr = &tbx_conf_gff;
+        else if ( ftype==IS_BED ) conf_ptr = &tbx_conf_bed;
+        else if ( ftype==IS_SAM ) conf_ptr = &tbx_conf_sam;
         else if ( ftype==IS_VCF )
         {
-            conf = tbx_conf_vcf;
+            conf_ptr = &tbx_conf_vcf;
             if ( !min_shift && do_csi ) min_shift = 14;
         }
         else if ( ftype==IS_BCF )
@@ -495,7 +465,10 @@ int main(int argc, char *argv[])
     if ( min_shift!=0 && !do_csi ) do_csi = 1;
 
     if ( reheader )
-        return reheader_file(fname, reheader, ftype, &conf);
+        return reheader_file(fname, reheader, ftype, conf_ptr);
+
+    if ( conf_ptr )
+        conf = *conf_ptr;
 
     char *suffix = ".tbi";
     if ( do_csi ) suffix = ".csi";
@@ -542,4 +515,5 @@ int main(int argc, char *argv[])
         if ( tbx_index_build(fname, min_shift, &conf) ) error("tbx_index_build failed: %s\n", fname);
         return 0;
     }
+    return 0;
 }

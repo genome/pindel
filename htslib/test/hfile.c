@@ -1,6 +1,6 @@
 /*  test/hfile.c -- Test cases for low-level input/output streams.
 
-    Copyright (C) 2013-2014, 2016 Genome Research Ltd.
+    Copyright (C) 2013-2014 Genome Research Ltd.
 
     Author: John Marshall <jm18@sanger.ac.uk>
 
@@ -21,8 +21,6 @@ THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.  */
-
-#include <config.h>
 
 #include <stdarg.h>
 #include <stdio.h>
@@ -62,8 +60,8 @@ char *slurp(const char *filename)
     char *text;
     struct stat sbuf;
     size_t filesize;
-    FILE *f = fopen(filename, "rb");
-    if (f == NULL) fail("fopen(\"%s\", \"rb\")", filename);
+    FILE *f = fopen(filename, "r");
+    if (f == NULL) fail("fopen(\"%s\", \"r\")", filename);
     if (fstat(fileno(f), &sbuf) != 0) fail("fstat(\"%s\")", filename);
     filesize = sbuf.st_size;
 
@@ -136,14 +134,6 @@ int main(void)
     if (n < 0) fail("hread");
 
     reopen("test/hfile4.tmp", "test/hfile5.tmp");
-    while (hgets(buffer, 80, fin) != NULL) {
-        size_t l = strlen(buffer);
-        if (l > 79) fail("hgets read %zu bytes, should be < 80", l);
-        if (hwrite(fout, buffer, l) != l) fail("hwrite");
-    }
-    if (herrno(fin)) fail("hgets");
-
-    reopen("test/hfile5.tmp", "test/hfile6.tmp");
     n = hread(fin, buffer, 200);
     if (n < 0) fail("hread");
     else if (n != 200) fail("hread only got %d", (int)n);
@@ -173,7 +163,7 @@ int main(void)
     if (hflush(fout) == EOF) fail("hflush");
 
     original = slurp("vcf.c");
-    for (i = 1; i <= 6; i++) {
+    for (i = 1; i <= 5; i++) {
         char *text;
         sprintf(buffer, "test/hfile%d.tmp", i);
         text = slurp(buffer);
@@ -202,82 +192,13 @@ int main(void)
     if ((c = hgetc(fin)) != EOF) fail("chars: hgetc (EOF) returned %d", c);
     if (hclose(fin) != 0) fail("hclose(test/hfile_chars.tmp) for reading");
 
-    fin = hopen("preload:test/hfile_chars.tmp", "r");
-    if (fin == NULL) fail("preloading \"test/hfile_chars.tmp\" for reading");
-    for (i = 0; i < 256; i++)
-        if ((c = hgetc(fin)) != i)
-            fail("preloading chars: hgetc (%d = 0x%x) returned %d = 0x%x", i, i, c, c);
-    if ((c = hgetc(fin)) != EOF) fail("preloading chars: hgetc (EOF) returned %d", c);
-    if (hclose(fin) != 0) fail("preloading hclose(test/hfile_chars.tmp) for reading");
-
-    char* test_string = strdup("Test string");
-    fin = hopen("mem:", "r:", test_string, 12);
-    if (fin == NULL) fail("hopen(\"mem:\", \"r:\", ...)");
-    if (hread(fin, buffer, 12) != 12)
-        fail("hopen('mem:', 'r') failed read");
-    if(strcmp(buffer, test_string) != 0)
-        fail("hopen('mem:', 'r') missread '%s' != '%s'", buffer, test_string);
-    char* internal_buf;
-    size_t interval_buf_len;
-    if((internal_buf = hfile_mem_get_buffer(fin, &interval_buf_len)) == NULL){
-        fail("hopen('mem:', 'r') failed to get internal buffer");
-    }
-    if (hclose(fin) != 0) fail("hclose mem for reading");
-
-    test_string = strdup("Test string");
-    fin = hopen("mem:", "wr:", test_string, 12);
-    if (fin == NULL) fail("hopen(\"mem:\", \"w:\", ...)");
-    if (hseek(fin, -1, SEEK_END) < 0)
-        fail("hopen('mem:', 'wr') failed seek");
-    if (hwrite(fin, " extra", 7) != 7)
-        fail("hopen('mem:', 'wr') failed write");
-    if (hseek(fin, 0, SEEK_SET) < 0)
-        fail("hopen('mem:', 'wr') failed seek");
-    if (hread(fin, buffer, 18) != 18)
-        fail("hopen('mem:', 'wr') failed read");
-    if (strcmp(buffer, "Test string extra") != 0)
-        fail("hopen('mem:', 'wr') misswrote '%s' != '%s'", buffer, "Test string extra");
-    if((internal_buf = hfile_mem_steal_buffer(fin, &interval_buf_len)) == NULL){
-        fail("hopen('mem:', 'wr') failed to get internal buffer");
-    }
-    free(internal_buf);
-    if (hclose(fin) != 0) fail("hclose mem for writing");
-
-    fin = hopen("data:,hello, world!%0A", "r");
+    fin = hopen("data:hello, world!\n", "r");
     if (fin == NULL) fail("hopen(\"data:...\")");
     n = hread(fin, buffer, 300);
     if (n < 0) fail("hread");
     buffer[n] = '\0';
-    if (strcmp(buffer, "hello, world!\x0A") != 0) fail("hread result");
+    if (strcmp(buffer, "hello, world!\n") != 0) fail("hread result");
     if (hclose(fin) != 0) fail("hclose(\"data:...\")");
-
-    fin = hopen("test/xx#blank.sam", "r");
-    if (fin == NULL) fail("hopen(\"test/xx#blank.sam\") for reading");
-    if (hread(fin, buffer, 100) != 0) fail("test/xx#blank.sam is non-empty");
-    if (hclose(fin) != 0) fail("hclose(\"test/xx#blank.sam\") for reading");
-
-    fin = hopen("data:,", "r");
-    if (fin == NULL) fail("hopen(\"data:\") for reading");
-    if (hread(fin, buffer, 100) != 0) fail("empty data: URL is non-empty");
-    if (hclose(fin) != 0) fail("hclose(\"data:\") for reading");
-
-    fin = hopen("data:;base64,"
-// Wikipedia's example quote from Thomas Hobbes' Leviathan
-"TWFuIGlzIGRpc3Rpbmd1aXNoZWQsIG5vdCBvbmx5IGJ5IGhpcyByZWFzb24sIGJ1dCBieSB0aGlz"
-"IHNpbmd1bGFyIHBhc3Npb24gZnJvbSBvdGhlciBhbmltYWxzLCB3aGljaCBpcyBhIGx1c3Qgb2Yg"
-"dGhlIG1pbmQsIHRoYXQgYnkgYSBwZXJzZXZlcmFuY2Ugb2YgZGVsaWdodCBpbiB0aGUgY29udGlu"
-"dWVkIGFuZCBpbmRlZmF0aWdhYmxlIGdlbmVyYXRpb24gb2Yga25vd2xlZGdlLCBleGNlZWRzIHRo"
-"ZSBzaG9ydCB2ZWhlbWVuY2Ugb2YgYW55IGNhcm5hbCBwbGVhc3VyZS4=", "r");
-    if (fin == NULL) fail("hopen(\"data:;base64,...\")");
-    n = hread(fin, buffer, 300);
-    if (n < 0) fail("hread for base64");
-    buffer[n] = '\0';
-    if (strcmp(buffer, "Man is distinguished, not only by his reason, but by "
-"this singular passion from other animals, which is a lust of the mind, that "
-"by a perseverance of delight in the continued and indefatigable generation "
-"of knowledge, exceeds the short vehemence of any carnal pleasure.") != 0)
-        fail("hread result for base64");
-    if (hclose(fin) != 0) fail("hclose(\"data:;base64,...\")");
 
     return EXIT_SUCCESS;
 }

@@ -28,8 +28,6 @@
    therefore I decide to heavily annotate this file, for Linux and
    Windows as well.  -ac */
 
-#include <config.h>
-
 #include <time.h>
 #include <stdio.h>
 #include <ctype.h>
@@ -43,11 +41,9 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
-#include <sys/select.h>
 #endif
 
 #include "htslib/knetfile.h"
-#include "htslib/hts_log.h"
 
 /* In winsock.h, the type of a socket is SOCKET, which is: "typedef
  * u_int SOCKET". An invalid SOCKET is: "(SOCKET)(~0)", or signed
@@ -76,9 +72,9 @@ static int socket_wait(int fd, int is_read)
 	if (ret == -1) perror("select");
 #else
 	if (ret == 0)
-		hts_log_warning("Select timed out");
+		fprintf(stderr, "select time-out\n");
 	else if (ret == SOCKET_ERROR)
-		hts_log_error("Select returned error %d", WSAGetLastError());
+		fprintf(stderr, "select: %d\n", WSAGetLastError());
 #endif
 	return ret;
 }
@@ -87,9 +83,6 @@ static int socket_wait(int fd, int is_read)
 /* This function does not work with Windows due to the lack of
  * getaddrinfo() in winsock. It is addapted from an example in "Beej's
  * Guide to Network Programming" (http://beej.us/guide/bgnet/). */
-#  ifdef __SUNPRO_C
-#    pragma error_messages(off, E_END_OF_LOOP_CODE_NOT_REACHED)
-#  endif
 static int socket_connect(const char *host, const char *port)
 {
 #define __err_connect(func) do { perror(func); freeaddrinfo(res); return -1; } while (0)
@@ -102,7 +95,7 @@ static int socket_connect(const char *host, const char *port)
 	hints.ai_socktype = SOCK_STREAM;
 	/* In Unix/Mac, getaddrinfo() is the most convenient way to get
 	 * server information. */
-	if ((ai_err = getaddrinfo(host, port, &hints, &res)) != 0) { hts_log_error("Can't resolve %s:%s: %s", host, port, gai_strerror(ai_err)); return -1; }
+	if ((ai_err = getaddrinfo(host, port, &hints, &res)) != 0) { fprintf(stderr, "can't resolve %s:%s: %s\n", host, port, gai_strerror(ai_err)); return -1; }
 	if ((fd = socket(res->ai_family, res->ai_socktype, res->ai_protocol)) == -1) __err_connect("socket");
 	/* The following two setsockopt() are used by ftplib
 	 * (http://nbpfaus.net/~pfau/ftplib/). I am not sure if they
@@ -113,9 +106,6 @@ static int socket_connect(const char *host, const char *port)
 	freeaddrinfo(res);
 	return fd;
 }
-#  ifdef __SUNPRO_C
-#    pragma error_messages(off, E_END_OF_LOOP_CODE_NOT_REACHED)
-#  endif
 #else
 /* MinGW's printf has problem with "%lld" */
 char *int64tostr(char *buf, int64_t x)
@@ -156,10 +146,10 @@ void knet_win32_destroy()
  * non-Windows OS, I do not use this one. */
 static SOCKET socket_connect(const char *host, const char *port)
 {
-#define __err_connect(func) \
-	do { \
-		hts_log_error("The %s operation returned error %d", func, WSAGetLastError()); \
-		return -1; \
+#define __err_connect(func)										\
+	do {														\
+		fprintf(stderr, "%s: %d\n", func, WSAGetLastError());	\
+		return -1;												\
 	} while (0)
 
 	int on = 1;
@@ -229,7 +219,7 @@ static int kftp_get_response(knetFile *ftp)
 		}
 		ftp->response[n++] = c;
 		if (c == '\n') {
-			if (n >= 4 && isdigit((int)((unsigned char) ftp->response[0])) && isdigit((int)((unsigned char) ftp->response[1])) && isdigit((int)((unsigned char) ftp->response[2]))
+			if (n >= 4 && isdigit(ftp->response[0]) && isdigit(ftp->response[1]) && isdigit(ftp->response[2])
 				&& ftp->response[3] != '-') break;
 			n = 0;
 			continue;
@@ -267,7 +257,7 @@ static int kftp_pasv_connect(knetFile *ftp)
 {
 	char host[80], port[10];
 	if (ftp->pasv_port == 0) {
-		hts_log_error("Must call kftp_pasv_prep() first");
+		fprintf(stderr, "[kftp_pasv_connect] kftp_pasv_prep() is not called before hand.\n");
 		return -1;
 	}
 	sprintf(host, "%d.%d.%d.%d", ftp->pasv_ip[0], ftp->pasv_ip[1], ftp->pasv_ip[2], ftp->pasv_ip[3]);
@@ -362,7 +352,7 @@ int kftp_connect_file(knetFile *fp)
 	kftp_pasv_connect(fp);
 	ret = kftp_get_response(fp);
 	if (ret != 150) {
-		hts_log_error("%s", fp->response);
+		fprintf(stderr, "[kftp_connect_file] %s\n", fp->response);
 		netclose(fp->fd);
 		fp->fd = -1;
 		return -1;
@@ -401,7 +391,7 @@ knetFile *khttp_parse_url(const char *fn, const char *mode)
 	} else {
 		fp->host = (strstr(proxy, "http://") == proxy)? strdup(proxy + 7) : strdup(proxy);
 		for (q = fp->host; *q && *q != ':'; ++q);
-		if (*q == ':') *q++ = 0;
+		if (*q == ':') *q++ = 0; 
 		fp->port = strdup(*q? q : "80");
 		fp->path = strdup(fn);
 	}
@@ -419,7 +409,7 @@ int khttp_connect_file(knetFile *fp)
 	fp->fd = socket_connect(fp->host, fp->port);
 	buf = (char*)calloc(0x10000, 1); // FIXME: I am lazy... But in principle, 64KB should be large enough.
 	l += sprintf(buf + l, "GET %s HTTP/1.0\r\nHost: %s\r\n", fp->path, fp->http_host);
-	if (fp->offset != 0) l += sprintf(buf + l, "Range: bytes=%lld-\r\n", (long long)fp->offset);
+    l += sprintf(buf + l, "Range: bytes=%lld-\r\n", (long long)fp->offset);
 	l += sprintf(buf + l, "\r\n");
 	if ( netwrite(fp->fd, buf, l) != l ) { free(buf); return -1; }
 	l = 0;
@@ -473,8 +463,7 @@ knetFile *knet_open(const char *fn, const char *mode)
 {
 	knetFile *fp = 0;
 	if (mode[0] != 'r') {
-		hts_log_error("Only mode \"r\" is supported");
-		errno = ENOTSUP;
+		fprintf(stderr, "[kftp_open] only mode \"r\" is supported.\n");
 		return 0;
 	}
 	if (strstr(fn, "ftp://") == fn) {
@@ -495,7 +484,7 @@ knetFile *knet_open(const char *fn, const char *mode)
 		 * be undefined on some systems, although it is defined on my
 		 * Mac and the Linux I have tested on. */
 		int fd = open(fn, O_RDONLY | O_BINARY);
-#else
+#else		
 		int fd = open(fn, O_RDONLY);
 #endif
 		if (fd == -1) {
@@ -569,7 +558,7 @@ off_t knet_seek(knetFile *fp, off_t off, int whence)
 		return fp->offset;
 	} else if (fp->type == KNF_TYPE_HTTP) {
 		if (whence == SEEK_END) { // FIXME: can we allow SEEK_END in future?
-			hts_log_error("SEEK_END is not supported for HTTP. Offset is unchanged");
+			fprintf(stderr, "[knet_seek] SEEK_END is not supported for HTTP. Offset is unchanged.\n");
 			errno = ESPIPE;
 			return -1;
 		}
@@ -580,7 +569,7 @@ off_t knet_seek(knetFile *fp, off_t off, int whence)
 		return fp->offset;
 	}
 	errno = EINVAL;
-	hts_log_error("%s", strerror(errno));
+	fprintf(stderr,"[knet_seek] %s\n", strerror(errno));
 	return -1;
 }
 
