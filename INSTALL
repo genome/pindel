@@ -4,22 +4,26 @@
 
 #  test if we have a argument on the command line
 
-if [ "$#" != "1" ]; then
-    echo " "
-    echo "INSTALL"
-    echo "    purpose:  builds the pindel executable "
-    echo "    IMPORTANT:  you should first clone and make/install htslib before installing Pindel. "
-    echo "    usage:    ./INSTALL [htslibdirectory]"
-    echo "    example:  ./INSTALL /home/user/tools/htslib/"
-    echo " "
-    exit 1
-fi
+#if [ "$#" != "1" ]; then
+ #   echo " "
+  #  echo "INSTALL"
+   # echo "    purpose:  builds the pindel executable "
+    #echo "    IMPORTANT:  you should first clone and make/install htslib before installing Pindel. "
+    #echo "    usage:    ./INSTALL [htslibdirectory]"
+    #echo "    example:  ./INSTALL /home/user/tools/htslib/"
+    #echo " "
+    #exit 1
+#fi
 
 # we are ok at this point so continue processing here
 
 # to make sure, convert relative path to absolute path
 
-ABSPATH=`cd $1; pwd`
+cd ./htslib
+make
+cd ../
+
+ABSPATH=`cd ./htslib; pwd`
 
 ABSPATH="$ABSPATH/"
 echo "path is now: $ABSPATH"
