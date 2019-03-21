@@ -36,6 +36,8 @@ ReadBuffer::~ReadBuffer()
 void ReadBuffer::flush()
 {
    // std::cout << "in flush " << std::endl;
+   std::vector<SPLIT_READ*> filteredReads(m_currentsize);
+
    #pragma omp parallel for
    for (int i=0; i<m_currentsize ; i++ ) {
       // std::cout << "before GetCloseEnd " << std::endl;
@@ -55,11 +57,11 @@ void ReadBuffer::flush()
          if (m_rawreads[i].hasCloseEnd()) {
             updateReadAfterCloseEndMapping(m_rawreads[i]);
 
-            #pragma omp critical
+            //#pragma omp critical
             {
                //			g_ReadSeq2Index.insert(std::pair<std::string, unsigned> (m_rawreads[i].UnmatchedSeq, m_filteredReads.size()));
                m_rawreads[i].SampleName2Number.insert(std::pair <std::string, unsigned> (m_rawreads[i].Tag, 1));
-               m_filteredReads.push_back(m_rawreads[i]);
+               filteredReads[i] = &m_rawreads[i];
                //std::cout << "with closed end: " << m_rawreads[i].Name << std::endl;
             }
 
@@ -94,6 +96,11 @@ void ReadBuffer::flush()
 
    }
    //std::cout << "end of flush " << std::endl;
+
+   for (size_t i = 0; i < filteredReads.size(); i++)
+      if (filteredReads[i])
+         m_filteredReads.push_back(*filteredReads[i]);
+
    m_rawreads.clear();
    m_currentsize = 0;
    std::cout << "The number of one end mapped read: " << m_filteredReads.size() << std::endl;
